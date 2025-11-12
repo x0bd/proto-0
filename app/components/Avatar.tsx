@@ -33,6 +33,7 @@ export default function Avatar({
 	const rightEyeRef = useRef<SVGEllipseElement>(null);
 	const mouthRef = useRef<SVGPathElement>(null);
 	const mouthGroupRef = useRef<SVGGElement>(null);
+	const svgBoxRef = useRef<SVGSVGElement | null>(null);
 	const breathingTL = useRef<gsap.core.Timeline>();
 
 	// Idle systems
@@ -267,6 +268,94 @@ export default function Avatar({
 		});
 	}
 
+	// Cursor tracking (eyes/mouth/face follow)
+	function handlePointerMove(e: React.MouseEvent<HTMLDivElement>) {
+		if (!containerRef.current) return;
+		// find the svg element once
+		if (!svgBoxRef.current) {
+			const el = containerRef.current.querySelector("svg");
+			svgBoxRef.current = (el as SVGSVGElement) || null;
+		}
+		const svgEl = svgBoxRef.current;
+		if (!svgEl) return;
+		const rect = svgEl.getBoundingClientRect();
+		const faceCenter = {
+			x: rect.left + rect.width / 2,
+			y: rect.top + rect.height * (140 / 280),
+		}; // eyes center row
+		const mx = e.clientX - faceCenter.x;
+		const my = e.clientY - faceCenter.y;
+		const nx = Math.max(-1, Math.min(1, mx / (rect.width * 0.25)));
+		const ny = Math.max(-1, Math.min(1, my / (rect.height * 0.25)));
+
+		// eye follow: subtle tilt and vertical shift around latest targets
+		const target = latestEyeTargetsRef.current;
+		const eyeTiltDelta = nx * 8; // deg
+		const eyeYDelta = ny * 6; // px
+		if (leftEyeRef.current)
+			gsap.to(leftEyeRef.current, {
+				rotation: -target.tilt + -eyeTiltDelta,
+				attr: { cy: target.cy + eyeYDelta },
+				duration: 0.2,
+				ease: "linear",
+			});
+		if (rightEyeRef.current)
+			gsap.to(rightEyeRef.current, {
+				rotation: target.tilt + eyeTiltDelta,
+				attr: { cy: target.cy + eyeYDelta },
+				duration: 0.2,
+				ease: "linear",
+			});
+
+		// mouth subtle tilt follow
+		if (mouthGroupRef.current)
+			gsap.to(mouthGroupRef.current, {
+				rotation: latestMouthRef.current.tilt + nx * 6,
+				duration: 0.25,
+				ease: "linear",
+			});
+
+		// container micro parallax
+		gsap.to(containerRef.current, {
+			x: nx * 6,
+			y: ny * 4,
+			duration: 0.25,
+			ease: "sine.out",
+		});
+	}
+
+	function handlePointerLeave() {
+		// return to latest emotion-driven targets
+		const t = latestEyeTargetsRef.current;
+		if (leftEyeRef.current)
+			gsap.to(leftEyeRef.current, {
+				rotation: -t.tilt,
+				attr: { cy: t.cy },
+				duration: 0.3,
+				ease: "power2.out",
+			});
+		if (rightEyeRef.current)
+			gsap.to(rightEyeRef.current, {
+				rotation: t.tilt,
+				attr: { cy: t.cy },
+				duration: 0.3,
+				ease: "power2.out",
+			});
+		if (mouthGroupRef.current)
+			gsap.to(mouthGroupRef.current, {
+				rotation: latestMouthRef.current.tilt,
+				duration: 0.3,
+				ease: "power2.out",
+			});
+		if (containerRef.current)
+			gsap.to(containerRef.current, {
+				x: 0,
+				y: 0,
+				duration: 0.35,
+				ease: "power2.out",
+			});
+	}
+
 	// Effects placed after function declarations to satisfy linter ordering
 	useEffect(() => {
 		startBreathing();
@@ -302,7 +391,12 @@ export default function Avatar({
 
 	return (
 		<div className={`flex items-center justify-center ${className}`}>
-			<div ref={containerRef} className="relative group">
+			<div
+				ref={containerRef}
+				className="relative group"
+				onMouseMove={handlePointerMove}
+				onMouseLeave={handlePointerLeave}
+			>
 				{/* Ultra-subtle hover glow */}
 				<div className="absolute -inset-6 bg-black/3 dark:bg-white/3 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
 
@@ -321,6 +415,30 @@ export default function Avatar({
 						ry="18"
 						fill="currentColor"
 						className="text-black dark:text-white"
+						onMouseEnter={() => {
+							// widen slightly on hover
+							if (leftEyeRef.current)
+								gsap.to(leftEyeRef.current, {
+									attr: {
+										ry: Math.max(
+											3,
+											latestEyeTargetsRef.current.ry + 4
+										),
+									},
+									duration: 0.15,
+									ease: "power2.out",
+								});
+						}}
+						onMouseLeave={() => {
+							if (leftEyeRef.current)
+								gsap.to(leftEyeRef.current, {
+									attr: {
+										ry: latestEyeTargetsRef.current.ry,
+									},
+									duration: 0.2,
+									ease: "power2.out",
+								});
+						}}
 					/>
 
 					{/* Right Eye - 90px from center (260 + 90 = 350) */}
@@ -332,6 +450,29 @@ export default function Avatar({
 						ry="18"
 						fill="currentColor"
 						className="text-black dark:text-white"
+						onMouseEnter={() => {
+							if (rightEyeRef.current)
+								gsap.to(rightEyeRef.current, {
+									attr: {
+										ry: Math.max(
+											3,
+											latestEyeTargetsRef.current.ry + 4
+										),
+									},
+									duration: 0.15,
+									ease: "power2.out",
+								});
+						}}
+						onMouseLeave={() => {
+							if (rightEyeRef.current)
+								gsap.to(rightEyeRef.current, {
+									attr: {
+										ry: latestEyeTargetsRef.current.ry,
+									},
+									duration: 0.2,
+									ease: "power2.out",
+								});
+						}}
 					/>
 
 					{/* Mouth - Perfectly centered & symmetric (drawn in local space) */}
