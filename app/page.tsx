@@ -79,7 +79,7 @@ export default function Home() {
 		<div className="h-screen w-screen bg-white dark:bg-black flex items-center justify-center overflow-hidden relative">
 			{/* Top-left label */}
 			<div className="absolute top-6 left-6 select-none">
-				<span className="text-lg cherry-bomb-one-regular text-black/70 dark:text-white/70">
+				<span className="text-2xl cherry-bomb-one-regular text-black/70 dark:text-white/70">
 					kokoro
 				</span>
 			</div>
