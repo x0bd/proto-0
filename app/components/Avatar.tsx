@@ -35,6 +35,22 @@ export default function Avatar({
 	const mouthGroupRef = useRef<SVGGElement>(null);
 	const breathingTL = useRef<gsap.core.Timeline>();
 
+	// Idle systems
+	const blinkTimerRef = useRef<gsap.core.Tween | null>(null);
+	const glanceTimerRef = useRef<gsap.core.Tween | null>(null);
+	const idleMouthTweenRef = useRef<gsap.core.Tween | null>(null);
+	const latestEyeTargetsRef = useRef<{
+		rx: number;
+		ry: number;
+		cy: number;
+		tilt: number;
+	}>({ rx: 32, ry: 18, cy: 140, tilt: 0 });
+	const latestMouthRef = useRef<{
+		width: number;
+		curve: number;
+		tilt: number;
+	}>({ width: 65, curve: 0, tilt: 0 });
+
 	function startBreathing() {
 		if (containerRef.current) {
 			breathingTL.current = gsap.timeline({ repeat: -1 });
@@ -135,6 +151,14 @@ export default function Avatar({
 			});
 		}
 
+		// Save latest eye targets for idle (blink/glance)
+		latestEyeTargetsRef.current = {
+			rx: Math.max(4, eyeWidth),
+			ry: Math.max(2, eyeHeight),
+			cy: 140 + eyeY,
+			tilt: eyeTilt,
+		};
+
 		// Animate mouth with perfect facial symmetry (drawn around local origin)
 		if (mouthRef.current) {
 			const half = mouthWidth / 2;
@@ -158,13 +182,117 @@ export default function Avatar({
 				delay: stagger * 2,
 			});
 		}
+
+		// Save latest mouth targets for idle wave
+		latestMouthRef.current = {
+			width: mouthWidth,
+			curve: mouthCurve,
+			tilt: mouthTilt,
+		};
+	}
+
+	function performBlink() {
+		const target = latestEyeTargetsRef.current;
+		const blinkDur = 0.08;
+		const ryClosed = 2;
+		if (leftEyeRef.current)
+			gsap.to(leftEyeRef.current, {
+				attr: { ry: ryClosed },
+				duration: blinkDur,
+				ease: "power1.in",
+			});
+		if (rightEyeRef.current)
+			gsap.to(rightEyeRef.current, {
+				attr: { ry: ryClosed },
+				duration: blinkDur,
+				ease: "power1.in",
+			});
+		// reopen
+		if (leftEyeRef.current)
+			gsap.to(leftEyeRef.current, {
+				attr: { ry: target.ry },
+				duration: 0.12,
+				ease: "power2.out",
+				delay: blinkDur,
+			});
+		if (rightEyeRef.current)
+			gsap.to(rightEyeRef.current, {
+				attr: { ry: target.ry },
+				duration: 0.12,
+				ease: "power2.out",
+				delay: blinkDur,
+			});
+	}
+
+	function performGlance() {
+		const deltaTilt = gsap.utils.random(-2, 2);
+		const deltaY = gsap.utils.random(-1.5, 1.5);
+		if (leftEyeRef.current)
+			gsap.to(leftEyeRef.current, {
+				rotation: `+=${deltaTilt}`,
+				attr: { cy: `+=${deltaY}` },
+				duration: 0.35,
+				yoyo: true,
+				repeat: 1,
+				ease: "sine.inOut",
+			});
+		if (rightEyeRef.current)
+			gsap.to(rightEyeRef.current, {
+				rotation: `+=${-deltaTilt}`,
+				attr: { cy: `+=${deltaY}` },
+				duration: 0.35,
+				yoyo: true,
+				repeat: 1,
+				ease: "sine.inOut",
+			});
+	}
+
+	function startIdleMouthWave() {
+		// Small wave around the current mouth curve, kept symmetric
+		const state = { offset: 0 };
+		idleMouthTweenRef.current = gsap.to(state, {
+			offset: 4,
+			duration: 2.2,
+			repeat: -1,
+			yoyo: true,
+			ease: "sine.inOut",
+			onUpdate: () => {
+				const m = latestMouthRef.current;
+				const half = m.width / 2;
+				const controlYLocal = m.curve + state.offset;
+				const d = `M ${-half} 0 Q 0 ${controlYLocal} ${half} 0`;
+				if (mouthRef.current)
+					gsap.set(mouthRef.current, { attr: { d } });
+			},
+		});
 	}
 
 	// Effects placed after function declarations to satisfy linter ordering
 	useEffect(() => {
 		startBreathing();
+		// inline starters to avoid deps warning
+		const startBlink = () => {
+			const delay = gsap.utils.random(2.8, 6.2);
+			blinkTimerRef.current = gsap.delayedCall(delay, () => {
+				performBlink();
+				startBlink();
+			});
+		};
+		startBlink();
+		const startGlance = () => {
+			const delay = gsap.utils.random(3.5, 7.5);
+			glanceTimerRef.current = gsap.delayedCall(delay, () => {
+				performGlance();
+				startGlance();
+			});
+		};
+		startGlance();
+		startIdleMouthWave();
 		return () => {
 			breathingTL.current?.kill();
+			blinkTimerRef.current?.kill();
+			glanceTimerRef.current?.kill();
+			idleMouthTweenRef.current?.kill();
 		};
 	}, []);
 

@@ -19,9 +19,9 @@ const notoSansJP = Noto_Sans_JP({
 });
 
 export const metadata: Metadata = {
-	title: "夢見るアバター | Dreaming Avatar",
+	title: "Kokoro | 心",
 	description:
-		"A vaporous, expressive avatar that reacts to emotions with beautiful GSAP animations. 感情的な表現を持つ夢のようなアバター。",
+		"Kokoro – a minimal, expressive avatar. Pure eyes and mouth, emotion through orientation. 心。",
 };
 
 export default function RootLayout({
