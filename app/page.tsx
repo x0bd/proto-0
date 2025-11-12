@@ -29,6 +29,8 @@ export default function Home() {
 		return root.classList.contains("dark") || prefersDark;
 	});
 
+	const [voiceEnabled, setVoiceEnabled] = useState(false);
+
 	useEffect(() => {
 		// Sync class with state on mount and whenever it changes
 		const root = document.documentElement;
@@ -89,7 +91,7 @@ export default function Home() {
 				className="absolute top-6 right-6 h-5 w-5 rounded-full border border-black/15 dark:border-white/20 shadow-sm transition-colors"
 				style={{ backgroundColor: isDark ? "#ffffff" : "#000000" }}
 			/>
-			<Avatar emotion={currentEmotion} />
+			<Avatar emotion={currentEmotion} voiceEnabled={voiceEnabled} />
 
 			{/* Minimal control bar */}
 			<div className="absolute bottom-8 left-1/2 -translate-x-1/2">
@@ -112,6 +114,17 @@ export default function Home() {
 							{k.toUpperCase()}
 						</button>
 					))}
+					{/* Voice toggle */}
+					<button
+						onClick={() => setVoiceEnabled((v) => !v)}
+						className={`px-3 py-2 rounded-full text-xs font-mono tracking-widest transition-colors border ${
+							voiceEnabled
+								? "bg-black text-white dark:bg-white dark:text-black border-black dark:border-white"
+								: "text-black dark:text-white hover:bg-black/5 dark:hover:bg-white/5 border-transparent hover:border-black/20 dark:hover:border-white/20"
+						}`}
+					>
+						VOICE
+					</button>
 				</div>
 			</div>
 		</div>

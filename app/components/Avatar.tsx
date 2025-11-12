@@ -14,6 +14,7 @@ interface EmotionState {
 interface AvatarProps {
 	emotion?: EmotionState;
 	className?: string;
+	voiceEnabled?: boolean;
 }
 
 const DEFAULT_EMOTION: EmotionState = {
@@ -27,6 +28,7 @@ const DEFAULT_EMOTION: EmotionState = {
 export default function Avatar({
 	emotion = DEFAULT_EMOTION,
 	className = "",
+	voiceEnabled = false,
 }: AvatarProps) {
 	const containerRef = useRef<HTMLDivElement>(null);
 	const leftEyeRef = useRef<SVGEllipseElement>(null);
@@ -34,6 +36,12 @@ export default function Avatar({
 	const mouthRef = useRef<SVGPathElement>(null);
 	const mouthGroupRef = useRef<SVGGElement>(null);
 	const svgBoxRef = useRef<SVGSVGElement | null>(null);
+	// Voice simulation (no mic) + optional spectrum group (kept hidden)
+	const spectrumGroupRef = useRef<SVGGElement>(null);
+	const spectrumBarsRef = useRef<SVGRectElement[]>([]);
+	const simTickerRef = useRef<((time: number) => void) | null>(null);
+	const simTimeRef = useRef<number>(0);
+	const simAmpRef = useRef<number>(0);
 	const breathingTL = useRef<gsap.core.Timeline>();
 
 	// Idle systems
@@ -389,6 +397,81 @@ export default function Avatar({
 		animateEmotion(emotion);
 	}, [emotion]);
 
+	// Voice simulation setup / teardown (no mic)
+	useEffect(() => {
+		// Always hide spectrum bars (we render only the mouth line animation)
+		if (spectrumGroupRef.current)
+			gsap.set(spectrumGroupRef.current, { opacity: 0 });
+
+		if (!voiceEnabled) {
+			// Stop voice sim ticker
+			if (simTickerRef.current) {
+				gsap.ticker.remove(simTickerRef.current);
+				simTickerRef.current = null;
+			}
+			// Restore mouth visibility and reset to emotion baseline immediately
+			if (mouthRef.current) {
+				const m = latestMouthRef.current;
+				const half = m.width / 2;
+				const d = `M ${-half} 0 Q 0 ${m.curve} ${half} 0`;
+				gsap.set(mouthRef.current, { opacity: 1, attr: { d } });
+			}
+			if (mouthGroupRef.current) {
+				gsap.to(mouthGroupRef.current, {
+					rotation: latestMouthRef.current.tilt,
+					duration: 0.25,
+					ease: "power2.out",
+				});
+			}
+			// (Re)start idle wave for subtle motion
+			if (idleMouthTweenRef.current) {
+				idleMouthTweenRef.current.kill();
+				idleMouthTweenRef.current = null;
+			}
+			startIdleMouthWave();
+			return;
+		}
+
+		// Pause idle wave during simulated voice
+		if (idleMouthTweenRef.current) {
+			idleMouthTweenRef.current.kill();
+			idleMouthTweenRef.current = null;
+		}
+		if (mouthRef.current) gsap.set(mouthRef.current, { opacity: 1 });
+
+		// Smooth, layered sine simulation
+		simTimeRef.current = 0;
+		simAmpRef.current = 0;
+		const ticker = () => {
+			simTimeRef.current += 0.016; // ~60fps
+			const t = simTimeRef.current;
+			// Layered sines for rich, smooth motion
+			const base = 10; // base amplitude
+			const amp =
+				base *
+				(0.55 * Math.sin(t * 6.2) +
+					0.35 * Math.sin(t * 9.1 + 0.7) +
+					0.2 * Math.sin(t * 13.4 + 1.9));
+			simAmpRef.current = amp; // -base..+base
+
+			// Update mouth path around latest emotion curve/width
+			const m = latestMouthRef.current;
+			const half = m.width / 2;
+			const controlYLocal = m.curve + simAmpRef.current;
+			const d = `M ${-half} 0 Q 0 ${controlYLocal} ${half} 0`;
+			if (mouthRef.current) gsap.set(mouthRef.current, { attr: { d } });
+		};
+		simTickerRef.current = ticker;
+		gsap.ticker.add(ticker);
+
+		return () => {
+			if (simTickerRef.current) {
+				gsap.ticker.remove(simTickerRef.current);
+				simTickerRef.current = null;
+			}
+		};
+	}, [voiceEnabled]);
+
 	return (
 		<div className={`flex items-center justify-center ${className}`}>
 			<div
@@ -486,6 +569,44 @@ export default function Avatar({
 							strokeLinecap="round"
 							className="text-black dark:text-white"
 						/>
+						{/* Voice spectrum bars (hidden until voiceEnabled) */}
+						<g ref={spectrumGroupRef} opacity="0">
+							{Array.from({ length: 9 }).map((_, i) => (
+								<rect
+									key={i}
+									ref={(el) => {
+										if (el) spectrumBarsRef.current[i] = el;
+									}}
+									x={-88 + i * 22}
+									y={-18}
+									width="8"
+									height="30"
+									rx="4"
+									fill="currentColor"
+									className="text-black dark:text-white origin-bottom"
+									style={{ transformOrigin: "center bottom" }}
+								/>
+							))}
+						</g>
+					</g>
+
+					{/* Voice Spectrum */}
+					<g
+						ref={spectrumGroupRef}
+						opacity={0}
+						transform="translate(260, 210)"
+					>
+						{Array.from({ length: 9 }).map((_, i) => (
+							<rect
+								key={i}
+								x={-10}
+								y={0}
+								width={20}
+								height={30}
+								fill="currentColor"
+								className="text-black dark:text-white"
+							/>
+						))}
 					</g>
 				</svg>
 			</div>
