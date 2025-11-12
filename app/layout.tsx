@@ -1,5 +1,10 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Noto_Sans_JP } from "next/font/google";
+import {
+	Geist,
+	Geist_Mono,
+	Noto_Sans_JP,
+	Cherry_Bomb_One,
+} from "next/font/google";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -18,6 +23,12 @@ const notoSansJP = Noto_Sans_JP({
 	weight: ["200", "300", "400", "500", "600", "700"],
 });
 
+const cherryBombOne = Cherry_Bomb_One({
+	variable: "--font-cherry-bomb-one",
+	subsets: ["latin"],
+	weight: "400",
+});
+
 export const metadata: Metadata = {
 	title: "Kokoro | 心",
 	description:
@@ -32,7 +43,7 @@ export default function RootLayout({
 	return (
 		<html lang="en">
 			<body
-				className={`${geistSans.variable} ${geistMono.variable} ${notoSansJP.variable} antialiased`}
+				className={`${geistSans.variable} ${geistMono.variable} ${notoSansJP.variable} ${cherryBombOne.variable} antialiased`}
 			>
 				{children}
 			</body>
