@@ -115,8 +115,12 @@ textarea:focus-visible {
 
 /* Apple-level animations */
 @keyframes shine {
-	0% { transform: translateX(-100%); }
-	100% { transform: translateX(100%); }
+	0% {
+		transform: translateX(-100%);
+	}
+	100% {
+		transform: translateX(100%);
+	}
 }
 
 .animate-shine {
