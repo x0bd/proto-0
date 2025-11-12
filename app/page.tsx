@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Avatar from "./components/Avatar";
 
 interface EmotionState {
@@ -19,6 +19,28 @@ export default function Home() {
 		anger: 0,
 		curiosity: 0.2,
 	});
+
+	const [isDark, setIsDark] = useState<boolean>(() => {
+		if (typeof window === "undefined") return false;
+		const root = document.documentElement;
+		const prefersDark =
+			window.matchMedia &&
+			window.matchMedia("(prefers-color-scheme: dark)").matches;
+		return root.classList.contains("dark") || prefersDark;
+	});
+
+	useEffect(() => {
+		// Sync class with state on mount and whenever it changes
+		const root = document.documentElement;
+		root.classList.toggle("dark", isDark);
+	}, [isDark]);
+
+	const toggleTheme = () => {
+		const root = document.documentElement;
+		const next = !isDark;
+		root.classList.toggle("dark", next);
+		setIsDark(next);
+	};
 
 	const presets: Record<string, EmotionState> = {
 		neutral: {
@@ -53,6 +75,20 @@ export default function Home() {
 
 	return (
 		<div className="h-screen w-screen bg-white dark:bg-black flex items-center justify-center overflow-hidden relative">
+			{/* Top-left label */}
+			<div className="absolute top-6 left-6 select-none">
+				<span className="text-sm font-mono tracking-widest text-black/70 dark:text-white/70">
+					kokoro
+				</span>
+			</div>
+
+			{/* Top-right theme toggle dot */}
+			<button
+				onClick={toggleTheme}
+				aria-label="Toggle theme"
+				className="absolute top-6 right-6 h-5 w-5 rounded-full border border-black/15 dark:border-white/20 shadow-sm transition-colors"
+				style={{ backgroundColor: isDark ? "#ffffff" : "#000000" }}
+			/>
 			<Avatar emotion={currentEmotion} />
 
 			{/* Minimal control bar */}
