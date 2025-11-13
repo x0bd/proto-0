@@ -3,11 +3,19 @@
 import { useEffect, useState } from "react";
 import Avatar from "./components/Avatar";
 import { motion, AnimatePresence } from "motion/react";
-import { MessageSquare, Mic } from "lucide-react";
+import { MessageSquare, Mic, SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
+import {
+	Sheet,
+	SheetContent,
+	SheetDescription,
+	SheetHeader,
+	SheetTitle,
+	SheetTrigger,
+} from "@/components/ui/sheet";
 
 interface EmotionState {
 	joy: number;
@@ -86,10 +94,54 @@ export default function Home() {
 	return (
 		<div className="h-screen w-screen bg-white dark:bg-black flex items-center justify-center overflow-hidden relative">
 			{/* Top-left label */}
-			<div className="absolute top-6 left-6 select-none">
+			<div className="absolute top-6 left-6 select-none flex items-center gap-2">
 				<span className="text-2xl cherry-bomb-one-regular text-black/70 dark:text-white/70">
 					kokoro
 				</span>
+				<Sheet>
+					<SheetTrigger asChild>
+						<Button
+							variant="ghost"
+							className="h-8 w-8 rounded-full p-0 text-black/70 dark:text-white/70"
+							aria-label="Open tweaks"
+							title="Open tweaks"
+						>
+							<SlidersHorizontal className="h-4 w-4" />
+						</Button>
+					</SheetTrigger>
+					<SheetContent
+						side="left"
+						className="w-[320px] sm:w-[360px]"
+					>
+						<SheetHeader>
+							<SheetTitle>Tweaks</SheetTitle>
+							<SheetDescription>Emotion presets</SheetDescription>
+						</SheetHeader>
+						<div className="mt-4 grid grid-cols-2 gap-2">
+							{(
+								[
+									"neutral",
+									"joy",
+									"sad",
+									"surprised",
+									"angry",
+									"curious",
+								] as const
+							).map((k) => (
+								<Button
+									key={k}
+									variant="outline"
+									className="justify-center"
+									onClick={() =>
+										setCurrentEmotion(presets[k])
+									}
+								>
+									{k.toUpperCase()}
+								</Button>
+							))}
+						</div>
+					</SheetContent>
+				</Sheet>
 			</div>
 
 			{/* Top-right theme toggle dot */}
@@ -172,27 +224,9 @@ export default function Home() {
 				</div>
 			</div>
 
-			{/* Minimal control bar */}
+			{/* Dock: only chat and voice icons */}
 			<div className="absolute bottom-8 left-1/2 -translate-x-1/2">
 				<div className="flex items-center gap-2 bg-white/60 dark:bg-black/60 backdrop-blur-md border border-black/10 dark:border-white/10 rounded-full px-3 py-2 shadow-sm">
-					{(
-						[
-							"neutral",
-							"joy",
-							"sad",
-							"surprised",
-							"angry",
-							"curious",
-						] as const
-					).map((k) => (
-						<button
-							key={k}
-							onClick={() => applyPreset(k)}
-							className="px-3 py-2 rounded-full text-xs font-mono tracking-widest text-black dark:text-white border border-transparent hover:border-black/20 dark:hover:border-white/20 hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
-						>
-							{k.toUpperCase()}
-						</button>
-					))}
 					{/* Mode toggles */}
 					<Button
 						variant={chatMode === "text" ? "default" : "ghost"}
