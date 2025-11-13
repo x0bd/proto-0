@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 import {
 	Sheet,
 	SheetContent,
@@ -143,16 +145,176 @@ export default function Home() {
 							>
 								<div className="h-full w-full pl-6 pr-14 pt-16 pb-24">
 									<Card className="h-full w-full bg-white/70 dark:bg-black/60 backdrop-blur-md border border-black/10 dark:border-white/10 shadow-sm rounded-xl flex flex-col">
-										<div className="px-4 py-3 border-b border-black/5 dark:border-white/10 text-xs uppercase tracking-widest text-black/60 dark:text-white/60">
-											Text Chat
-										</div>
-										<ScrollArea className="flex-1 px-4 py-3">
-											<div className="space-y-3">
-												<div className="text-xs text-black/50 dark:text-white/50">
-													Start a conversation with
-													kokoro.
-												</div>
+										<div className="px-3 py-2 border-b border-black/5 dark:border-white/10 flex items-center justify-between">
+											<div className="flex items-baseline gap-2">
+												<span className="cherry-bomb-one-regular text-[13px] tracking-[0.02em] leading-none text-black/80 dark:text-white/80">
+													Text Chat
+												</span>
+												<Badge
+													variant="outline"
+													className="h-5 text-[10px] px-2 rounded-full font-mono tracking-wide text-black/60 dark:text-white/60"
+												>
+													BETA
+												</Badge>
 											</div>
+											<div className="flex items-center gap-2">
+												<motion.span
+													className="h-1.5 w-1.5 rounded-full bg-black/60 dark:bg-white/60"
+													animate={{
+														opacity: [0.5, 1, 0.5],
+													}}
+													transition={{
+														duration: 1.6,
+														repeat: Infinity,
+														ease: "easeInOut",
+													}}
+												/>
+												<span className="font-mono text-[10px] tracking-[0.22em] uppercase text-black/55 dark:text-white/55">
+													LIVE
+												</span>
+											</div>
+										</div>
+										<ScrollArea className="flex-1 px-4 py-4">
+											<motion.div
+												initial="hidden"
+												animate="show"
+												variants={{
+													hidden: { opacity: 1 },
+													show: {
+														opacity: 1,
+														transition: {
+															staggerChildren: 0.06,
+														},
+													},
+												}}
+												className="space-y-4"
+											>
+												{/* Assistant message */}
+												<motion.div
+													variants={{
+														hidden: {
+															opacity: 0,
+															y: 6,
+														},
+														show: {
+															opacity: 1,
+															y: 0,
+														},
+													}}
+													className="flex items-start gap-3 pr-6"
+												>
+													<div className="mt-1 h-2 w-2 rounded-full bg-black/40 dark:bg-white/40" />
+													<div className="max-w-[75%]">
+														<div className="rounded-2xl border border-black/10 dark:border-white/10 bg-white/60 dark:bg-white/5 px-4 py-3">
+															<p className="text-[13px] leading-[1.6] tracking-[0.01em] text-black/80 dark:text-white/80">
+																こんにちは。I’m
+																Kokoro — a
+																minimal,
+																expressive
+																interface. How
+																would you like
+																to feel today?
+															</p>
+														</div>
+														<div className="font-mono text-[10px] uppercase tracking-[0.18em] text-black/40 dark:text-white/40 mt-1">
+															just now
+														</div>
+													</div>
+												</motion.div>
+												{/* User message */}
+												<motion.div
+													variants={{
+														hidden: {
+															opacity: 0,
+															y: 6,
+														},
+														show: {
+															opacity: 1,
+															y: 0,
+														},
+													}}
+													className="flex items-start gap-3 justify-end pl-6"
+												>
+													<div className="max-w-[75%] text-right">
+														<div className="inline-block rounded-2xl bg-black text-white dark:bg-white dark:text-black px-4 py-3 shadow-[0_1px_0_0_rgba(0,0,0,0.05)] dark:shadow-none">
+															<p className="text-[13px] leading-[1.6] tracking-[0.01em]">
+																Show me a joyful
+																expression,
+																subtle and
+																natural.
+															</p>
+														</div>
+														<div className="font-mono text-[10px] uppercase tracking-[0.18em] text-black/40 dark:text-white/40 mt-1">
+															just now
+														</div>
+													</div>
+													<div className="mt-1 h-2 w-2 rounded-full bg-black/40 dark:bg-white/40" />
+												</motion.div>
+												{/* Typing indicator */}
+												<motion.div
+													variants={{
+														hidden: {
+															opacity: 0,
+															y: 6,
+														},
+														show: {
+															opacity: 1,
+															y: 0,
+														},
+													}}
+													className="flex items-center gap-2 pl-5"
+												>
+													<div className="h-2 w-2 rounded-full bg-black/40 dark:bg-white/40" />
+													<div className="rounded-full border border-black/10 dark:border-white/10 bg-white/60 dark:bg-white/5 px-3 py-2">
+														<div className="flex items-center gap-1">
+															<motion.span
+																animate={{
+																	opacity: [
+																		0.2, 1,
+																		0.2,
+																	],
+																}}
+																transition={{
+																	duration: 1.2,
+																	repeat: Infinity,
+																	ease: "easeInOut",
+																}}
+																className="h-1.5 w-1.5 rounded-full bg-black/50 dark:bg-white/50"
+															/>
+															<motion.span
+																animate={{
+																	opacity: [
+																		0.2, 1,
+																		0.2,
+																	],
+																}}
+																transition={{
+																	duration: 1.2,
+																	repeat: Infinity,
+																	ease: "easeInOut",
+																	delay: 0.2,
+																}}
+																className="h-1.5 w-1.5 rounded-full bg-black/50 dark:bg-white/50"
+															/>
+															<motion.span
+																animate={{
+																	opacity: [
+																		0.2, 1,
+																		0.2,
+																	],
+																}}
+																transition={{
+																	duration: 1.2,
+																	repeat: Infinity,
+																	ease: "easeInOut",
+																	delay: 0.4,
+																}}
+																className="h-1.5 w-1.5 rounded-full bg-black/50 dark:bg-white/50"
+															/>
+														</div>
+													</div>
+												</motion.div>
+											</motion.div>
 										</ScrollArea>
 										<form
 											className="p-3 border-t border-black/5 dark:border-white/10 flex items-center gap-2"
@@ -160,10 +322,12 @@ export default function Home() {
 												e.preventDefault();
 											}}
 										>
-											<Input
-												placeholder="Type a message..."
-												className="flex-1 bg-transparent"
-											/>
+											<div className="flex-1">
+												<Input
+													placeholder="Type a message…"
+													className="flex-1 bg-transparent rounded-full font-mono text-[12px] tracking-[0.08em] placeholder:text-black/40 dark:placeholder:text-white/40"
+												/>
+											</div>
 											<Button
 												type="submit"
 												variant="default"
