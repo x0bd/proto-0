@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Avatar from "./components/Avatar";
 import { motion, AnimatePresence } from "motion/react";
-import { MessageSquare, Mic, SlidersHorizontal } from "lucide-react";
+import { MessageSquare, Mic, SlidersHorizontal, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -94,65 +94,21 @@ export default function Home() {
 	return (
 		<div className="h-screen w-screen bg-white dark:bg-black flex items-center justify-center overflow-hidden relative">
 			{/* Top-left label */}
-			<div className="absolute top-6 left-6 select-none flex items-center gap-2">
+			<div className="absolute top-6 left-6 select-none">
 				<span className="text-2xl cherry-bomb-one-regular text-black/70 dark:text-white/70">
 					kokoro
 				</span>
-				<Sheet>
-					<SheetTrigger asChild>
-						<Button
-							variant="ghost"
-							className="h-8 w-8 rounded-full p-0 text-black/70 dark:text-white/70"
-							aria-label="Open tweaks"
-							title="Open tweaks"
-						>
-							<SlidersHorizontal className="h-4 w-4" />
-						</Button>
-					</SheetTrigger>
-					<SheetContent
-						side="left"
-						className="w-[320px] sm:w-[360px]"
-					>
-						<SheetHeader>
-							<SheetTitle>Tweaks</SheetTitle>
-							<SheetDescription>Emotion presets</SheetDescription>
-						</SheetHeader>
-						<div className="mt-4 grid grid-cols-2 gap-2">
-							{(
-								[
-									"neutral",
-									"joy",
-									"sad",
-									"surprised",
-									"angry",
-									"curious",
-								] as const
-							).map((k) => (
-								<Button
-									key={k}
-									variant="outline"
-									className="justify-center"
-									onClick={() =>
-										setCurrentEmotion(presets[k])
-									}
-								>
-									{k.toUpperCase()}
-								</Button>
-							))}
-						</div>
-					</SheetContent>
-				</Sheet>
 			</div>
 
 			{/* Top-right theme toggle dot */}
 			<button
 				onClick={toggleTheme}
 				aria-label="Toggle theme"
-				className="absolute top-6 right-6 h-5 w-5 rounded-full border border-black/15 dark:border-white/20 shadow-sm transition-colors"
+				className="absolute top-6 right-6 h-5 w-5 rounded-full border border-black/15 dark:border-white/20 shadow-sm transition-colors z-50"
 				style={{ backgroundColor: isDark ? "#ffffff" : "#000000" }}
 			/>
 			{/* Split layout: face and chat share full width when in text mode */}
-			<div className="absolute inset-0">
+			<div className="absolute inset-0 z-0">
 				<div className="flex h-full w-full">
 					<motion.div
 						className="h-full"
@@ -185,7 +141,7 @@ export default function Home() {
 									ease: [0.2, 0.8, 0.2, 1],
 								}}
 							>
-								<div className="h-full w-full p-6">
+								<div className="h-full w-full pl-6 pr-14 pt-16 pb-24">
 									<Card className="h-full w-full bg-white/70 dark:bg-black/60 backdrop-blur-md border border-black/10 dark:border-white/10 shadow-sm rounded-xl flex flex-col">
 										<div className="px-4 py-3 border-b border-black/5 dark:border-white/10 text-xs uppercase tracking-widest text-black/60 dark:text-white/60">
 											Text Chat
@@ -261,6 +217,64 @@ export default function Home() {
 						<Mic className="h-4 w-4" />
 					</Button>
 				</div>
+			</div>
+			{/* Bottom-left Tweaks trigger (high z-index to avoid overlay issues) */}
+			<div className="absolute bottom-8 left-6 z-50">
+				<Sheet>
+					<SheetTrigger asChild>
+						<Button
+							variant="ghost"
+							className="h-8 w-8 rounded-full p-0 text-black/70 dark:text-white/70"
+							aria-label="Open tweaks"
+							title="Open tweaks"
+						>
+							<SlidersHorizontal className="h-4 w-4" />
+						</Button>
+					</SheetTrigger>
+					<SheetContent
+						side="left"
+						className="font-mono w-[320px] sm:w-[360px]"
+					>
+						<SheetHeader>
+							<SheetTitle>Tweaks</SheetTitle>
+							<SheetDescription>Emotion presets</SheetDescription>
+						</SheetHeader>
+						<div className="mt-4 grid grid-cols-2 gap-2">
+							{(
+								[
+									"neutral",
+									"joy",
+									"sad",
+									"surprised",
+									"angry",
+									"curious",
+								] as const
+							).map((k) => (
+								<Button
+									key={k}
+									variant="outline"
+									className="justify-center"
+									onClick={() =>
+										setCurrentEmotion(presets[k])
+									}
+								>
+									{k.toUpperCase()}
+								</Button>
+							))}
+						</div>
+					</SheetContent>
+				</Sheet>
+			</div>
+			{/* Bottom-right Settings button (placeholder) */}
+			<div className="absolute bottom-8 right-6 z-50">
+				<Button
+					variant="ghost"
+					className="h-8 w-8 rounded-full p-0 text-black/70 dark:text-white/70"
+					aria-label="Settings"
+					title="Settings"
+				>
+					<Settings className="h-4 w-4" />
+				</Button>
 			</div>
 		</div>
 	);
