@@ -53,7 +53,7 @@ export default function Avatar({
 		ry: number;
 		cy: number;
 		tilt: number;
-	}>({ rx: 32, ry: 18, cy: 140, tilt: 0 });
+	}>({ rx: 32, ry: 18, cy: 105, tilt: 0 });
 	const latestMouthRef = useRef<{
 		width: number;
 		curve: number;
@@ -134,7 +134,7 @@ export default function Avatar({
 				attr: {
 					rx: Math.max(4, eyeWidth),
 					ry: Math.max(2, eyeHeight),
-					cy: 140 + eyeY,
+					cy: 105 + eyeY,
 				},
 				rotation: -eyeTilt,
 				duration: 0.75,
@@ -150,7 +150,7 @@ export default function Avatar({
 				attr: {
 					rx: Math.max(4, eyeWidth),
 					ry: Math.max(2, eyeHeight),
-					cy: 140 + eyeY,
+					cy: 105 + eyeY,
 				},
 				rotation: eyeTilt,
 				duration: 0.75,
@@ -164,7 +164,7 @@ export default function Avatar({
 		latestEyeTargetsRef.current = {
 			rx: Math.max(4, eyeWidth),
 			ry: Math.max(2, eyeHeight),
-			cy: 140 + eyeY,
+			cy: 105 + eyeY,
 			tilt: eyeTilt,
 		};
 
@@ -187,7 +187,7 @@ export default function Avatar({
 				rotation: mouthTilt,
 				duration: 0.8,
 				ease: "power2.out",
-				svgOrigin: "260 210",
+				svgOrigin: "260 175",
 				delay: stagger * 2,
 			});
 		}
@@ -290,7 +290,7 @@ export default function Avatar({
 		const faceCenter = {
 			x: rect.left + rect.width / 2,
 			y: rect.top + rect.height * (140 / 280),
-		}; // eyes center row
+		}; // face pivot row (SVG vertical center)
 		const mx = e.clientX - faceCenter.x;
 		const my = e.clientY - faceCenter.y;
 		const nx = Math.max(-1, Math.min(1, mx / (rect.width * 0.25)));
@@ -493,7 +493,7 @@ export default function Avatar({
 					<ellipse
 						ref={leftEyeRef}
 						cx="170"
-						cy="140"
+						cy="105"
 						rx="32"
 						ry="18"
 						fill="currentColor"
@@ -528,7 +528,7 @@ export default function Avatar({
 					<ellipse
 						ref={rightEyeRef}
 						cx="350"
-						cy="140"
+						cy="105"
 						rx="32"
 						ry="18"
 						fill="currentColor"
@@ -559,7 +559,7 @@ export default function Avatar({
 					/>
 
 					{/* Mouth - Perfectly centered & symmetric (drawn in local space) */}
-					<g ref={mouthGroupRef} transform="translate(260,210)">
+					<g ref={mouthGroupRef} transform="translate(260,175)">
 						<path
 							ref={mouthRef}
 							d="M -33 0 Q 0 0 33 0"
@@ -594,7 +594,7 @@ export default function Avatar({
 					<g
 						ref={spectrumGroupRef}
 						opacity={0}
-						transform="translate(260, 210)"
+						transform="translate(260, 175)"
 					>
 						{Array.from({ length: 9 }).map((_, i) => (
 							<rect
