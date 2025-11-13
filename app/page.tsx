@@ -99,62 +99,78 @@ export default function Home() {
 				className="absolute top-6 right-6 h-5 w-5 rounded-full border border-black/15 dark:border-white/20 shadow-sm transition-colors"
 				style={{ backgroundColor: isDark ? "#ffffff" : "#000000" }}
 			/>
-			<motion.div
-				initial={false}
-				animate={{
-					x: chatMode === "text" ? -180 : 0,
-					scale: chatMode === "text" ? 0.98 : 1,
-				}}
-				transition={{ duration: 0.45, ease: [0.2, 0.8, 0.2, 1] }}
-			>
-				<Avatar emotion={currentEmotion} voiceEnabled={voiceEnabled} />
-			</motion.div>
-
-			{/* Right-side Text Chat Panel */}
-			<AnimatePresence>
-				{chatMode === "text" ? (
-					<motion.aside
-						key="chat-panel"
-						initial={{ opacity: 0, x: 240 }}
-						animate={{ opacity: 1, x: 0 }}
-						exit={{ opacity: 0, x: 240 }}
-						transition={{ duration: 0.4, ease: [0.2, 0.8, 0.2, 1] }}
-						className="absolute right-6 top-24"
+			{/* Split layout: face and chat share full width when in text mode */}
+			<div className="absolute inset-0">
+				<div className="flex h-full w-full">
+					<motion.div
+						className="h-full"
+						initial={false}
+						animate={{
+							width: chatMode === "text" ? "50%" : "100%",
+						}}
+						transition={{
+							duration: 0.45,
+							ease: [0.2, 0.8, 0.2, 1],
+						}}
 					>
-						<Card className="w-[380px] max-w-[min(90vw,420px)] h-[70vh] bg-white/70 dark:bg-black/60 backdrop-blur-md border border-black/10 dark:border-white/10 shadow-sm rounded-xl flex flex-col">
-							<div className="px-4 py-3 border-b border-black/5 dark:border-white/10 text-xs uppercase tracking-widest text-black/60 dark:text-white/60">
-								Text Chat
-							</div>
-							<ScrollArea className="flex-1 px-4 py-3">
-								<div className="space-y-3">
-									{/* Placeholder messages */}
-									<div className="text-xs text-black/50 dark:text-white/50">
-										Start a conversation with kokoro.
-									</div>
-								</div>
-							</ScrollArea>
-							<form
-								className="p-3 border-t border-black/5 dark:border-white/10 flex items-center gap-2"
-								onSubmit={(e) => {
-									e.preventDefault();
+						<div className="h-full w-full flex items-center justify-center">
+							<Avatar
+								emotion={currentEmotion}
+								voiceEnabled={voiceEnabled}
+							/>
+						</div>
+					</motion.div>
+					<AnimatePresence initial={false}>
+						{chatMode === "text" ? (
+							<motion.div
+								key="chat-panel"
+								className="h-full"
+								initial={{ width: 0, opacity: 0 }}
+								animate={{ width: "50%", opacity: 1 }}
+								exit={{ width: 0, opacity: 0 }}
+								transition={{
+									duration: 0.45,
+									ease: [0.2, 0.8, 0.2, 1],
 								}}
 							>
-								<Input
-									placeholder="Type a message..."
-									className="flex-1 bg-transparent"
-								/>
-								<Button
-									type="submit"
-									variant="default"
-									className="rounded-full"
-								>
-									Send
-								</Button>
-							</form>
-						</Card>
-					</motion.aside>
-				) : null}
-			</AnimatePresence>
+								<div className="h-full w-full p-6">
+									<Card className="h-full w-full bg-white/70 dark:bg-black/60 backdrop-blur-md border border-black/10 dark:border-white/10 shadow-sm rounded-xl flex flex-col">
+										<div className="px-4 py-3 border-b border-black/5 dark:border-white/10 text-xs uppercase tracking-widest text-black/60 dark:text-white/60">
+											Text Chat
+										</div>
+										<ScrollArea className="flex-1 px-4 py-3">
+											<div className="space-y-3">
+												<div className="text-xs text-black/50 dark:text-white/50">
+													Start a conversation with
+													kokoro.
+												</div>
+											</div>
+										</ScrollArea>
+										<form
+											className="p-3 border-t border-black/5 dark:border-white/10 flex items-center gap-2"
+											onSubmit={(e) => {
+												e.preventDefault();
+											}}
+										>
+											<Input
+												placeholder="Type a message..."
+												className="flex-1 bg-transparent"
+											/>
+											<Button
+												type="submit"
+												variant="default"
+												className="rounded-full"
+											>
+												Send
+											</Button>
+										</form>
+									</Card>
+								</div>
+							</motion.div>
+						) : null}
+					</AnimatePresence>
+				</div>
+			</div>
 
 			{/* Minimal control bar */}
 			<div className="absolute bottom-8 left-1/2 -translate-x-1/2">
