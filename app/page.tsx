@@ -56,6 +56,33 @@ export default function Home() {
 	const [chatMode, setChatMode] = useState<ChatMode>("none");
 	const voiceEnabled = chatMode === "voice";
 
+	// Responsive breakpoint state for md (>=768px)
+	const [isMdUp, setIsMdUp] = useState<boolean>(() => {
+		if (typeof window === "undefined") return true;
+		return window.matchMedia("(min-width: 768px)").matches;
+	});
+	useEffect(() => {
+		if (typeof window === "undefined") return;
+		const mq = window.matchMedia("(min-width: 768px)");
+		const onChange = (ev: MediaQueryListEvent) => setIsMdUp(ev.matches);
+		// Support older browsers
+		if (mq.addEventListener) {
+			mq.addEventListener("change", onChange);
+		} else {
+			// @ts-expect-error - legacy API
+			mq.addListener(onChange);
+		}
+		setIsMdUp(mq.matches);
+		return () => {
+			if (mq.removeEventListener) {
+				mq.removeEventListener("change", onChange);
+			} else {
+				// @ts-expect-error - legacy API
+				mq.removeListener(onChange);
+			}
+		};
+	}, []);
+
 	useEffect(() => {
 		// Sync class with state on mount and whenever it changes
 		const root = document.documentElement;
@@ -118,19 +145,26 @@ export default function Home() {
 			/>
 			{/* Split layout: face and chat share full width when in text mode */}
 			<div className="absolute inset-0 z-0">
-				<div className="flex h-full w-full">
+				<div className="flex flex-col md:flex-row h-full w-full">
 					<motion.div
-						className="h-full"
+						className="h-1/2 md:h-full w-full"
 						initial={false}
-						animate={{
-							width: chatMode === "text" ? "50%" : "100%",
-						}}
+						animate={
+							isMdUp
+								? {
+										width:
+											chatMode === "text"
+												? "50%"
+												: "100%",
+								  }
+								: undefined
+						}
 						transition={{
 							duration: 0.45,
 							ease: [0.2, 0.8, 0.2, 1],
 						}}
 					>
-						<div className="h-full w-full flex items-center justify-center">
+						<div className="h-full w-full flex items-center justify-center md:scale-100 scale-[0.82]">
 							<Avatar
 								emotion={currentEmotion}
 								voiceEnabled={voiceEnabled}
@@ -141,16 +175,28 @@ export default function Home() {
 						{chatMode === "text" ? (
 							<motion.div
 								key="chat-panel"
-								className="h-full"
-								initial={{ width: 0, opacity: 0 }}
-								animate={{ width: "50%", opacity: 1 }}
-								exit={{ width: 0, opacity: 0 }}
+								className="h-1/2 md:h-full w-full"
+								initial={
+									isMdUp
+										? { width: 0, opacity: 0 }
+										: { opacity: 0 }
+								}
+								animate={
+									isMdUp
+										? { width: "50%", opacity: 1 }
+										: { opacity: 1 }
+								}
+								exit={
+									isMdUp
+										? { width: 0, opacity: 0 }
+										: { opacity: 0 }
+								}
 								transition={{
 									duration: 0.45,
 									ease: [0.2, 0.8, 0.2, 1],
 								}}
 							>
-								<div className="h-full w-full pl-6 pr-14 pt-16 pb-24">
+								<div className="h-full w-full pl-4 pr-4 pt-12 pb-20 md:pl-6 md:pr-14 md:pt-16 md:pb-24">
 									<Card className="relative overflow-hidden h-full w-full bg-white/70 dark:bg-black/60 backdrop-blur-md border border-black/10 dark:border-white/10 shadow-sm rounded-xl flex flex-col">
 										<div className="pointer-events-none absolute inset-0 surface-grid opacity-[0.35] dark:opacity-[0.25]" />
 										<div className="shine-bar" />
@@ -405,7 +451,7 @@ export default function Home() {
 			</div>
 
 			{/* Dock: only chat and voice icons */}
-			<div className="absolute bottom-8 left-1/2 -translate-x-1/2">
+			<div className="absolute bottom-6 md:bottom-8 left-1/2 -translate-x-1/2">
 				<div className="flex items-center gap-2 bg-white/60 dark:bg-black/60 backdrop-blur-md border border-black/10 dark:border-white/10 rounded-full px-3 py-2 shadow-sm">
 					{/* Mode toggles */}
 					<Button
@@ -443,7 +489,7 @@ export default function Home() {
 				</div>
 			</div>
 			{/* Bottom-left Tweaks trigger (high z-index to avoid overlay issues) */}
-			<div className="absolute bottom-8 left-6 z-50">
+			<div className="absolute bottom-6 md:bottom-8 left-6 z-50">
 				<Sheet>
 					<SheetTrigger asChild>
 						<Button
@@ -490,7 +536,7 @@ export default function Home() {
 				</Sheet>
 			</div>
 			{/* Bottom-right Settings button (placeholder) */}
-			<div className="absolute bottom-8 right-6 z-50">
+			<div className="absolute bottom-6 md:bottom-8 right-6 z-50">
 				<Button
 					variant="ghost"
 					className="h-8 w-8 rounded-full p-0 text-black/70 dark:text-white/70"
