@@ -154,7 +154,7 @@ export default function Home() {
 							ease: [0.2, 0.8, 0.2, 1],
 						}}
 					>
-						<div className="h-full w-full flex items-center justify-center md:scale-100 scale-[0.82]">
+						<div className="h-full w-full flex items-center justify-center scale-110 md:scale-100">
 							<Avatar
 								emotion={currentEmotion}
 								voiceEnabled={voiceEnabled}
