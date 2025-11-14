@@ -165,7 +165,7 @@ export default function Home() {
 						{chatMode === "text" ? (
 							<motion.div
 								key="chat-panel"
-								className="h-1/2 md:h-full w-full"
+								className="h-1/2 md:h-full w-full overflow-hidden"
 								initial={
 									isMdUp
 										? { width: 0, opacity: 0 }
@@ -186,8 +186,8 @@ export default function Home() {
 									ease: [0.2, 0.8, 0.2, 1],
 								}}
 							>
-								<div className="h-full w-full pl-4 pr-4 pt-12 pb-20 md:pl-6 md:pr-14 md:pt-16 md:pb-24">
-									<Card className="relative overflow-hidden h-full w-full bg-white/70 dark:bg-black/60 backdrop-blur-md border border-black/10 dark:border-white/10 shadow-sm rounded-xl flex flex-col">
+								<div className="h-full w-full pl-4 pr-4 pt-4 pb-20 md:pl-6 md:pr-14 md:pt-16 md:pb-24 flex flex-col">
+									<Card className="relative overflow-hidden flex-1 w-full bg-white/70 dark:bg-black/60 backdrop-blur-md border border-black/10 dark:border-white/10 shadow-sm rounded-xl flex flex-col min-h-0">
 										<div className="pointer-events-none absolute inset-0 surface-grid opacity-[0.35] dark:opacity-[0.25]" />
 										<div className="shine-bar" />
 										<div className="px-3 py-2 border-b border-black/5 dark:border-white/10 flex items-center justify-between">
