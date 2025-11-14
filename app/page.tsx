@@ -151,7 +151,9 @@ export default function Home() {
 								}}
 							>
 								<div className="h-full w-full pl-6 pr-14 pt-16 pb-24">
-									<Card className="h-full w-full bg-white/70 dark:bg-black/60 backdrop-blur-md border border-black/10 dark:border-white/10 shadow-sm rounded-xl flex flex-col">
+									<Card className="relative overflow-hidden h-full w-full bg-white/70 dark:bg-black/60 backdrop-blur-md border border-black/10 dark:border-white/10 shadow-sm rounded-xl flex flex-col">
+										<div className="pointer-events-none absolute inset-0 surface-grid opacity-[0.35] dark:opacity-[0.25]" />
+										<div className="shine-bar" />
 										<div className="px-3 py-2 border-b border-black/5 dark:border-white/10 flex items-center justify-between">
 											<div className="flex items-baseline gap-2">
 												<span className="cherry-bomb-one-regular text-[13px] tracking-[0.02em] leading-none text-black/80 dark:text-white/80">
@@ -182,6 +184,11 @@ export default function Home() {
 											</div>
 										</div>
 										<ScrollArea className="flex-1 px-4 py-4 mask-fade-y">
+											<div className="flex items-center justify-center mb-3">
+												<span className="font-mono text-[10px] tracking-[0.18em] uppercase text-black/40 dark:text-white/40">
+													Kokoro ・ 心
+												</span>
+											</div>
 											<motion.div
 												initial="hidden"
 												animate="show"
@@ -202,10 +209,18 @@ export default function Home() {
 														hidden: {
 															opacity: 0,
 															y: 6,
+															rotate: -0.3,
 														},
 														show: {
 															opacity: 1,
 															y: 0,
+															rotate: 0,
+															transition: {
+																type: "spring",
+																stiffness: 420,
+																damping: 32,
+																mass: 0.6,
+															},
 														},
 													}}
 													className="flex items-start gap-3 pr-6"
@@ -234,10 +249,18 @@ export default function Home() {
 														hidden: {
 															opacity: 0,
 															y: 6,
+															rotate: 0.3,
 														},
 														show: {
 															opacity: 1,
 															y: 0,
+															rotate: 0,
+															transition: {
+																type: "spring",
+																stiffness: 420,
+																damping: 32,
+																mass: 0.6,
+															},
 														},
 													}}
 													className="flex items-start gap-3 justify-end pl-6"
@@ -251,8 +274,27 @@ export default function Home() {
 																natural.
 															</p>
 														</div>
-														<div className="font-mono text-[10px] uppercase tracking-[0.18em] text-black/40 dark:text-white/40 mt-1">
+														<div className="font-mono text-[10px] uppercase tracking-[0.18em] text-black/40 dark:text-white/40 mt-1 flex items-center gap-1 justify-end">
 															just now
+															<motion.span
+																animate={{
+																	opacity: [
+																		0.4, 1,
+																		0.4,
+																	],
+																	scale: [
+																		1, 1.08,
+																		1,
+																	],
+																}}
+																transition={{
+																	duration: 1.8,
+																	repeat: Infinity,
+																	ease: "easeInOut",
+																}}
+																className="inline-block h-1.5 w-1.5 rounded-full bg-black/50 dark:bg-white/50"
+																title="Read"
+															/>
 														</div>
 													</div>
 													<div className="mt-1 h-2 w-2 rounded-full bg-black/40 dark:bg-white/40" />
