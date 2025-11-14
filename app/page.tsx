@@ -3,7 +3,14 @@
 import { useEffect, useState } from "react";
 import Avatar from "./components/Avatar";
 import { motion, AnimatePresence } from "motion/react";
-import { MessageSquare, Mic, SlidersHorizontal, Settings } from "lucide-react";
+import {
+	MessageSquare,
+	Mic,
+	SlidersHorizontal,
+	Settings,
+	Paperclip,
+	ArrowUp,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -174,7 +181,7 @@ export default function Home() {
 												</span>
 											</div>
 										</div>
-										<ScrollArea className="flex-1 px-4 py-4">
+										<ScrollArea className="flex-1 px-4 py-4 mask-fade-y">
 											<motion.div
 												initial="hidden"
 												animate="show"
@@ -250,6 +257,14 @@ export default function Home() {
 													</div>
 													<div className="mt-1 h-2 w-2 rounded-full bg-black/40 dark:bg-white/40" />
 												</motion.div>
+												{/* Day divider */}
+												<div className="flex items-center gap-3 opacity-70 px-1">
+													<Separator className="flex-1 bg-black/10 dark:bg-white/10" />
+													<span className="font-mono text-[10px] tracking-[0.18em] uppercase text-black/40 dark:text-white/40">
+														Today ・ 今日
+													</span>
+													<Separator className="flex-1 bg-black/10 dark:bg-white/10" />
+												</div>
 												{/* Typing indicator */}
 												<motion.div
 													variants={{
@@ -322,18 +337,21 @@ export default function Home() {
 												e.preventDefault();
 											}}
 										>
-											<div className="flex-1">
+											<div className="flex-1 relative">
+												<span className="absolute left-3 top-1/2 -translate-y-1/2 text-black/40 dark:text-white/40">
+													<Paperclip className="h-4 w-4" />
+												</span>
 												<Input
 													placeholder="Type a message…"
-													className="flex-1 bg-transparent rounded-full font-mono text-[12px] tracking-[0.08em] placeholder:text-black/40 dark:placeholder:text-white/40"
+													className="flex-1 bg-transparent rounded-full font-mono text-[12px] tracking-[0.08em] pl-9 placeholder:text-black/40 dark:placeholder:text-white/40"
 												/>
 											</div>
 											<Button
 												type="submit"
 												variant="default"
-												className="rounded-full"
+												className="h-9 w-9 rounded-full p-0 flex items-center justify-center bg-black text-white dark:bg-white dark:text-black"
 											>
-												Send
+												<ArrowUp className="h-4 w-4" />
 											</Button>
 										</form>
 									</Card>
