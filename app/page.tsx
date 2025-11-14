@@ -59,28 +59,14 @@ export default function Home() {
 	// Responsive breakpoint state for md (>=768px)
 	const [isMdUp, setIsMdUp] = useState<boolean>(() => {
 		if (typeof window === "undefined") return true;
-		return window.matchMedia("(min-width: 768px)").matches;
+		return window.innerWidth >= 768;
 	});
 	useEffect(() => {
 		if (typeof window === "undefined") return;
-		const mq = window.matchMedia("(min-width: 768px)");
-		const onChange = (ev: MediaQueryListEvent) => setIsMdUp(ev.matches);
-		// Support older browsers
-		if (mq.addEventListener) {
-			mq.addEventListener("change", onChange);
-		} else {
-			// @ts-expect-error - legacy API
-			mq.addListener(onChange);
-		}
-		setIsMdUp(mq.matches);
-		return () => {
-			if (mq.removeEventListener) {
-				mq.removeEventListener("change", onChange);
-			} else {
-				// @ts-expect-error - legacy API
-				mq.removeListener(onChange);
-			}
-		};
+		const onResize = () => setIsMdUp(window.innerWidth >= 768);
+		onResize();
+		window.addEventListener("resize", onResize);
+		return () => window.removeEventListener("resize", onResize);
 	}, []);
 
 	useEffect(() => {
@@ -128,7 +114,7 @@ export default function Home() {
 	};
 
 	return (
-		<div className="h-screen w-screen bg-white dark:bg-black flex items-center justify-center overflow-hidden relative">
+		<div className="min-h-dvh w-screen bg-white dark:bg-black flex items-center justify-center overflow-hidden relative">
 			{/* Top-left label */}
 			<div className="absolute top-6 left-6 select-none">
 				<span className="text-2xl cherry-bomb-one-regular text-black/70 dark:text-white/70">
@@ -147,7 +133,11 @@ export default function Home() {
 			<div className="absolute inset-0 z-0">
 				<div className="flex flex-col md:flex-row h-full w-full">
 					<motion.div
-						className="h-1/2 md:h-full w-full"
+						className={`${
+							!isMdUp && chatMode !== "text"
+								? "h-full"
+								: "h-1/2 md:h-full"
+						} w-full`}
 						initial={false}
 						animate={
 							isMdUp
@@ -229,7 +219,7 @@ export default function Home() {
 												</span>
 											</div>
 										</div>
-										<ScrollArea className="flex-1 px-4 py-4 mask-fade-y">
+										<ScrollArea className="flex-1 px-4 py-4 mask-fade-y overscroll-contain">
 											<div className="flex items-center justify-center mb-3">
 												<span className="font-mono text-[10px] tracking-[0.18em] uppercase text-black/40 dark:text-white/40">
 													Kokoro ・ 心
@@ -423,6 +413,11 @@ export default function Home() {
 											className="p-3 border-t border-black/5 dark:border-white/10 flex items-center gap-2"
 											onSubmit={(e) => {
 												e.preventDefault();
+											}}
+											style={{
+												// Respect mobile safe-area and keyboard adjustments
+												paddingBottom:
+													"calc(env(safe-area-inset-bottom, 0px))",
 											}}
 										>
 											<div className="flex-1 relative">
