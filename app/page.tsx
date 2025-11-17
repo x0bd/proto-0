@@ -110,16 +110,16 @@ export default function Home() {
 			<div className="absolute bottom-6 md:bottom-8 left-1/2 -translate-x-1/2 z-40">
 				<Button
 					variant="ghost"
-					className={`h-9 w-9 rounded-full p-0 flex items-center justify-center border bg-white/70 dark:bg-black/70 border-black/10 dark:border-white/15 ${
+					className={`h-12 w-12 rounded-full p-0 flex items-center justify-center border border-black/10 dark:border-white/15 ${
 						voiceEnabled
-							? "text-black dark:text-black bg-emerald-400/90 dark:bg-emerald-300/90"
-							: "text-black/70 dark:text-white/70"
+							? "voice-toggle-active"
+							: "bg-white/70 dark:bg-black/70 text-black/70 dark:text-white/70"
 					}`}
 					onClick={() => setVoiceEnabled((v) => !v)}
 					aria-label="Toggle voice mode"
 					title="Toggle voice mode"
 				>
-					<Mic className="h-4 w-4" />
+					<Mic className="h-5 w-5" />
 				</Button>
 			</div>
 			{/* Bottom-left Tweaks trigger (high z-index to avoid overlay issues) */}
