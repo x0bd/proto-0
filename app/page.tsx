@@ -31,6 +31,7 @@ export default function Home() {
 	});
 
 	const [voiceEnabled, setVoiceEnabled] = useState<boolean>(true);
+	const [voiceLevel, setVoiceLevel] = useState<number>(0);
 
 	const [isDark, setIsDark] = useState<boolean>(() => {
 		if (typeof window === "undefined") return false;
@@ -53,6 +54,33 @@ export default function Home() {
 		root.classList.toggle("dark", next);
 		setIsDark(next);
 	};
+
+	// Simulated voice "loudness" driving the mic breath halo.
+	// Later we can replace this with real mic amplitude while keeping the same visual mapping.
+	useEffect(() => {
+		if (!voiceEnabled) {
+			setVoiceLevel(0);
+			return;
+		}
+
+		let frameId: number;
+		const start = performance.now();
+
+		const loop = (time: number) => {
+			const t = (time - start) / 1000;
+			const composite =
+				0.55 * Math.sin(t * 6.2) +
+				0.35 * Math.sin(t * 9.1 + 0.7) +
+				0.2 * Math.sin(t * 13.4 + 1.9);
+			const level = Math.min(1, Math.max(0, 0.5 + 0.5 * composite));
+			setVoiceLevel(level);
+			frameId = requestAnimationFrame(loop);
+		};
+
+		frameId = requestAnimationFrame(loop);
+
+		return () => cancelAnimationFrame(frameId);
+	}, [voiceEnabled]);
 
 	const presets: Record<string, EmotionState> = {
 		neutral: {
@@ -108,19 +136,39 @@ export default function Home() {
 
 			{/* Voice toggle */}
 			<div className="absolute bottom-6 md:bottom-8 left-1/2 -translate-x-1/2 z-40">
-				<Button
-					variant="ghost"
-					className={`h-12 w-12 rounded-full p-0 flex items-center justify-center border border-black/10 dark:border-white/15 ${
-						voiceEnabled
-							? "voice-toggle-active"
-							: "bg-white/70 dark:bg-black/70 text-black/70 dark:text-white/70"
-					}`}
-					onClick={() => setVoiceEnabled((v) => !v)}
-					aria-label="Toggle voice mode"
-					title="Toggle voice mode"
-				>
-					<Mic className="h-5 w-5" />
-				</Button>
+				{(() => {
+					// Map voiceLevel (0..1) to a subtle but expressive halo + scale
+					const scale = 1 + voiceLevel * 0.12;
+					const ring = voiceLevel * (isDark ? 18 : 14);
+					const yOffset = 10 + voiceLevel * 6;
+					const blur = 26 + voiceLevel * 18;
+					const ringAlpha = isDark ? 0.24 : 0.18;
+					const innerAlpha = isDark ? 0.95 : 0.78;
+
+					const activeStyle = voiceEnabled
+						? {
+								transform: `scale(${scale})`,
+								boxShadow: `0 0 0 ${ring}px rgba(0,0,0,${ringAlpha}), 0 ${yOffset}px ${blur}px rgba(0,0,0,${innerAlpha})`,
+						  }
+						: undefined;
+
+					return (
+						<Button
+							variant="ghost"
+							className={`h-12 w-12 rounded-full p-0 flex items-center justify-center border border-black/10 dark:border-white/15 ${
+								voiceEnabled
+									? "voice-toggle-active"
+									: "bg-white/70 dark:bg-black/70 text-black/70 dark:text-white/70"
+							}`}
+							style={activeStyle}
+							onClick={() => setVoiceEnabled((v) => !v)}
+							aria-label="Toggle voice mode"
+							title="Toggle voice mode"
+						>
+							<Mic className="h-5 w-5" />
+						</Button>
+					);
+				})()}
 			</div>
 			{/* Bottom-left Tweaks trigger (high z-index to avoid overlay issues) */}
 			<div className="absolute bottom-6 md:bottom-8 left-6 z-50">
