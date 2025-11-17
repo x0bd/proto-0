@@ -190,24 +190,21 @@ export default function Home() {
 									<Card className="relative overflow-hidden flex-1 w-full bg-white/70 dark:bg-black/60 backdrop-blur-md border border-black/10 dark:border-white/10 shadow-sm rounded-2xl flex flex-col min-h-0">
 										<div className="pointer-events-none absolute inset-0 surface-grid opacity-[0.35] dark:opacity-[0.25]" />
 										<div className="shine-bar" />
-										<div className="px-4 py-2.5 border-b border-black/5 dark:border-white/10 flex items-center justify-between">
-											<div className="flex flex-col gap-0.5">
-												<span className="font-mono text-[10px] tracking-[0.2em] uppercase text-black/45 dark:text-white/45">
-													CHANNEL
+										<div className="px-5 pt-3 pb-[10px] border-b border-black/5 dark:border-white/10 flex items-center justify-between">
+											<div>
+												<span className="font-mono text-[10px] tracking-[0.45em] uppercase text-black/40 dark:text-white/40">
+													session
 												</span>
-												<div className="flex items-center gap-2">
-													<span className="text-[13px] leading-none tracking-[0.01em] text-black/80 dark:text-white/80">
-														Text · kokoro
+												<div className="flex items-center gap-2 mt-1.5">
+													<span className="text-[15px] leading-none tracking-[0.01em] text-black/85 dark:text-white/85">
+														text · kokoro
 													</span>
-													<Badge
-														variant="outline"
-														className="h-5 text-[10px] px-2 rounded-full font-mono tracking-[0.18em] uppercase text-black/55 dark:text-white/55 border-black/15 dark:border-white/20"
-													>
-														BETA
-													</Badge>
+													<span className="font-mono text-[10px] px-2 py-[2px] rounded-full border border-black/12 dark:border-white/20 uppercase tracking-[0.28em] text-black/55 dark:text-white/55">
+														beta
+													</span>
 												</div>
 											</div>
-											<div className="flex items-center gap-2">
+											<div className="flex items-center gap-3">
 												<motion.span
 													className="h-1.5 w-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400 shadow-[0_0_0_4px_rgba(16,185,129,0.18)] dark:shadow-[0_0_0_4px_rgba(52,211,153,0.12)]"
 													animate={{
@@ -222,9 +219,14 @@ export default function Home() {
 														ease: "easeInOut",
 													}}
 												/>
-												<span className="font-mono text-[10px] tracking-[0.24em] uppercase text-black/55 dark:text-white/55">
-													LIVE
-												</span>
+												<div className="flex flex-col items-end leading-none">
+													<span className="font-mono text-[10px] tracking-[0.3em] uppercase text-black/55 dark:text-white/55">
+														live
+													</span>
+													<span className="font-mono text-[9px] tracking-[0.32em] uppercase text-black/35 dark:text-white/35">
+														sync · 00.7s
+													</span>
+												</div>
 											</div>
 										</div>
 										<ScrollArea className="flex-1 px-4 py-4 md:px-5 md:py-5 mask-fade-y overscroll-contain">
@@ -252,39 +254,32 @@ export default function Home() {
 													variants={{
 														hidden: {
 															opacity: 0,
-															y: 6,
-															rotate: -0.3,
+															y: 12,
 														},
 														show: {
 															opacity: 1,
 															y: 0,
-															rotate: 0,
 															transition: {
-																type: "spring",
-																stiffness: 420,
-																damping: 32,
-																mass: 0.6,
+																duration: 0.5,
+																ease: [
+																	0.22, 0.61,
+																	0.36, 1,
+																],
 															},
 														},
 													}}
-													className="flex items-start gap-3 pr-6"
+													className="space-y-3 pr-4"
 												>
-													<div className="mt-1 h-2 w-2 rounded-full bg-black/40 dark:bg-white/40" />
-													<div className="max-w-[75%]">
-														<div className="rounded-2xl border border-black/8 dark:border-white/8 bg-white/70 dark:bg-white/[0.03] px-4 py-3.5">
-															<p className="text-[13px] leading-[1.6] tracking-[0.01em] text-black/80 dark:text-white/80">
-																こんにちは。I’m
-																Kokoro — a
-																minimal,
-																expressive
-																interface. How
-																would you like
-																to feel today?
-															</p>
-														</div>
-														<div className="font-mono text-[10px] uppercase tracking-[0.18em] text-black/35 dark:text-white/35 mt-1">
-															just now
-														</div>
+													<div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-[0.28em] text-black/45 dark:text-white/45">
+														<span>kokoro</span>
+														<span className="h-px flex-1 bg-black/10 dark:bg-white/10" />
+														<span>just now</span>
+													</div>
+													<div className="rounded-[22px] border border-black/8 dark:border-white/10 bg-linear-to-br from-white/90 to-white/60 dark:from-white/5 dark:to-white/2 px-5 py-4 text-[13px] leading-[1.7] tracking-[0.01em] text-black/85 dark:text-white/85 shadow-[0_25px_60px_rgba(15,15,15,0.08)] dark:shadow-[0_25px_60px_rgba(0,0,0,0.55)]">
+														こんにちは。I’m Kokoro —
+														a minimal, expressive
+														interface. How would you
+														like to feel today?
 													</div>
 												</motion.div>
 												{/* User message */}
@@ -292,56 +287,52 @@ export default function Home() {
 													variants={{
 														hidden: {
 															opacity: 0,
-															y: 6,
-															rotate: 0.3,
+															y: 12,
 														},
 														show: {
 															opacity: 1,
 															y: 0,
-															rotate: 0,
 															transition: {
-																type: "spring",
-																stiffness: 420,
-																damping: 32,
-																mass: 0.6,
+																duration: 0.5,
+																ease: [
+																	0.22, 0.61,
+																	0.36, 1,
+																],
+																delay: 0.08,
 															},
 														},
 													}}
-													className="flex items-start gap-3 justify-end pl-6"
+													className="space-y-3 pl-4 text-right"
 												>
-													<div className="max-w-[75%] text-right">
-														<div className="inline-block rounded-2xl bg-black text-white dark:bg-white dark:text-black px-4 py-3.5 shadow-[0_4px_18px_rgba(0,0,0,0.28)] dark:shadow-[0_10px_45px_rgba(0,0,0,0.65)]">
-															<p className="text-[13px] leading-[1.6] tracking-[0.01em]">
-																Show me a joyful
-																expression,
-																subtle and
-																natural.
-															</p>
-														</div>
-														<div className="font-mono text-[10px] uppercase tracking-[0.18em] text-black/35 dark:text-white/35 mt-1 flex items-center gap-1 justify-end">
-															just now
-															<motion.span
-																animate={{
-																	opacity: [
-																		0.4, 1,
-																		0.4,
-																	],
-																	scale: [
-																		1, 1.08,
-																		1,
-																	],
-																}}
-																transition={{
-																	duration: 1.8,
-																	repeat: Infinity,
-																	ease: "easeInOut",
-																}}
-																className="inline-block h-1.5 w-1.5 rounded-full bg-black/50 dark:bg-white/50"
-																title="Read"
-															/>
-														</div>
+													<div className="flex items-center gap-2 justify-end text-[10px] font-mono uppercase tracking-[0.28em] text-black/45 dark:text-white/45">
+														<span>you</span>
+														<span className="h-px flex-1 bg-black/10 dark:bg-white/10" />
+														<span>just now</span>
 													</div>
-													<div className="mt-1 h-2 w-2 rounded-full bg-black/40 dark:bg-white/40" />
+													<div className="inline-flex rounded-[22px] bg-black text-white dark:bg-white dark:text-black px-5 py-4 text-[13px] leading-[1.7] tracking-[0.01em] shadow-[0_35px_65px_rgba(0,0,0,0.35)] dark:shadow-[0_35px_65px_rgba(0,0,0,0.75)]">
+														Show me a joyful
+														expression, subtle and
+														natural.
+													</div>
+													<div className="font-mono text-[10px] uppercase tracking-[0.24em] text-black/35 dark:text-white/35 flex items-center gap-1 justify-end">
+														status · read
+														<motion.span
+															animate={{
+																opacity: [
+																	0.4, 1, 0.4,
+																],
+																scale: [
+																	1, 1.08, 1,
+																],
+															}}
+															transition={{
+																duration: 1.6,
+																repeat: Infinity,
+																ease: "easeInOut",
+															}}
+															className="inline-block h-1.5 w-1.5 rounded-full bg-black/50 dark:bg-white/50"
+														/>
+													</div>
 												</motion.div>
 												{/* Day divider */}
 												<div className="flex items-center gap-3 opacity-70 px-1">

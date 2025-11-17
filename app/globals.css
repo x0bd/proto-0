@@ -5,10 +5,10 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-	--color-background: var(--background);
-	--color-foreground: var(--foreground);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
 	--font-sans: var(--font-geist-sans), var(--font-noto-sans-jp);
-	--font-mono: var(--font-geist-mono);
+  --font-mono: var(--font-geist-mono);
 	--font-japanese: var(--font-noto-sans-jp);
 	--font-cherry-bomb: var(--font-cherry-bomb-one);
 	--color-sidebar-ring: var(--sidebar-ring);
@@ -164,7 +164,7 @@ textarea:focus-visible {
 	animation: shine 2s ease-in-out infinite;
 }
 
-:root {
+  :root {
 	--radius: 0.625rem;
 	--background: oklch(1 0 0);
 	--foreground: oklch(0.141 0.005 285.823);
