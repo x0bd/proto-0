@@ -185,12 +185,27 @@ export default function Home() {
 		const nx = Math.max(-1, Math.min(1, mx / (innerWidth * 0.25))); // -1..1
 		const ny = Math.max(-1, Math.min(1, my / (innerHeight * 0.25))); // -1..1
 
+		// Radial intensity with a calm "dead zone" near the center
+		const r = Math.min(1, Math.hypot(nx, ny));
+		const deadZone = 0.18;
+		const intensity =
+			r <= deadZone ? 0 : smooth01((r - deadZone) / (1 - deadZone));
+
 		// Map to raw emotion targets
-		const joy = smooth01(-ny); // cursor above center → joy
-		const sadness = smooth01(ny); // below center → sadness
-		const curiosity = smooth01(Math.abs(nx)); // horizontal distance → curiosity
-		const anger = smooth01(Math.max(0, Math.abs(nx) - 0.4) / 0.6); // only at far edges
-		const surprise = smooth01(Math.abs(ny) * 0.5); // vertical motion → mild surprise
+		const joyBase = smooth01(-ny); // cursor above center → joy
+		const sadnessBase = smooth01(ny); // below center → sadness
+		const curiosityBase = smooth01(Math.abs(nx)); // horizontal distance → curiosity
+		// Anger appears only at very far horizontal extremes and is capped for elegance
+		const angerBase =
+			smooth01(Math.max(0, Math.abs(nx) - 0.55) / 0.45) * 0.65;
+		// Mild surprise from vertical distance, never fully dominating
+		const surpriseBase = smooth01(Math.abs(ny) * 0.6) * 0.7;
+
+		const joy = joyBase * intensity;
+		const sadness = sadnessBase * intensity;
+		const curiosity = curiosityBase * intensity;
+		const anger = angerBase * intensity;
+		const surprise = surpriseBase * intensity;
 
 		const pointerTarget: EmotionState = {
 			joy,
@@ -201,7 +216,7 @@ export default function Home() {
 		};
 
 		// Blend pointer-driven emotion with baseMood so presets still matter
-		const weightPointer = 0.7;
+		const weightPointer = 0.6;
 		const weightBase = 1 - weightPointer;
 		const base = baseEmotionRef.current;
 

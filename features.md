@@ -45,10 +45,10 @@ A minimal, expressive avatar whose entire soul is eyes + mouth. Built like the f
 
 ### **Emotion Intelligence**
 
--   [ ] **Cursor → Emotion mapping**
-    -   [ ] Vertical pointer position modulates joy/sadness smoothly
-    -   [ ] Horizontal offsets modulate curiosity/anger bias
-    -   [ ] Gentle hysteresis for organic feel
+-   [x] **Cursor → Emotion mapping**
+-   [x] Vertical pointer position modulates joy/sadness smoothly
+-   [x] Horizontal offsets modulate curiosity/anger bias
+-   [x] Gentle hysteresis for organic feel
 -   [ ] **Emotion memory system**
     -   [ ] Face "remembers" recent emotions and blends them subtly
     -   [ ] Emotional momentum (slow transitions between extreme states)
