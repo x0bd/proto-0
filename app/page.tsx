@@ -2,21 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Avatar from "./components/Avatar";
-import { motion, AnimatePresence } from "motion/react";
-import {
-	MessageSquare,
-	Mic,
-	SlidersHorizontal,
-	Settings,
-	Paperclip,
-	ArrowUp,
-} from "lucide-react";
+import { Mic, SlidersHorizontal, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import {
 	Sheet,
 	SheetContent,
@@ -35,7 +22,6 @@ interface EmotionState {
 }
 
 export default function Home() {
-	type ChatMode = "none" | "text" | "voice";
 	const [currentEmotion, setCurrentEmotion] = useState<EmotionState>({
 		joy: 0.3,
 		sadness: 0,
@@ -43,6 +29,8 @@ export default function Home() {
 		anger: 0,
 		curiosity: 0.2,
 	});
+
+	const [voiceEnabled, setVoiceEnabled] = useState<boolean>(true);
 
 	const [isDark, setIsDark] = useState<boolean>(() => {
 		if (typeof window === "undefined") return false;
@@ -52,22 +40,6 @@ export default function Home() {
 			window.matchMedia("(prefers-color-scheme: dark)").matches;
 		return root.classList.contains("dark") || prefersDark;
 	});
-
-	const [chatMode, setChatMode] = useState<ChatMode>("none");
-	const voiceEnabled = chatMode === "voice";
-
-	// Responsive breakpoint state for md (>=768px)
-	const [isMdUp, setIsMdUp] = useState<boolean>(() => {
-		if (typeof window === "undefined") return true;
-		return window.innerWidth >= 768;
-	});
-	useEffect(() => {
-		if (typeof window === "undefined") return;
-		const onResize = () => setIsMdUp(window.innerWidth >= 768);
-		onResize();
-		window.addEventListener("resize", onResize);
-		return () => window.removeEventListener("resize", onResize);
-	}, []);
 
 	useEffect(() => {
 		// Sync class with state on mount and whenever it changes
@@ -129,358 +101,26 @@ export default function Home() {
 				className="absolute top-6 right-6 h-5 w-5 rounded-full border border-black/15 dark:border-white/20 shadow-sm transition-colors z-50"
 				style={{ backgroundColor: isDark ? "#ffffff" : "#000000" }}
 			/>
-			{/* Split layout: face and chat share full width when in text mode */}
-			<div className="absolute inset-0 z-0">
-				<div className="flex flex-col md:flex-row h-full w-full">
-					<motion.div
-						className={`${
-							!isMdUp && chatMode !== "text"
-								? "h-full"
-								: "h-1/2 md:h-full"
-						} w-full`}
-						initial={false}
-						animate={
-							isMdUp
-								? {
-										width:
-											chatMode === "text"
-												? "50%"
-												: "100%",
-								  }
-								: undefined
-						}
-						transition={{
-							duration: 0.45,
-							ease: [0.2, 0.8, 0.2, 1],
-						}}
-					>
-						<div className="h-full w-full flex items-center justify-center scale-110 md:scale-100">
-							<Avatar
-								emotion={currentEmotion}
-								voiceEnabled={voiceEnabled}
-							/>
-						</div>
-					</motion.div>
-					<AnimatePresence initial={false}>
-						{chatMode === "text" ? (
-							<motion.div
-								key="chat-panel"
-								className="h-1/2 md:h-full w-full overflow-hidden"
-								initial={
-									isMdUp
-										? { width: 0, opacity: 0 }
-										: { opacity: 0 }
-								}
-								animate={
-									isMdUp
-										? { width: "50%", opacity: 1 }
-										: { opacity: 1 }
-								}
-								exit={
-									isMdUp
-										? { width: 0, opacity: 0 }
-										: { opacity: 0 }
-								}
-								transition={{
-									duration: 0.45,
-									ease: [0.2, 0.8, 0.2, 1],
-								}}
-							>
-								<div className="h-full w-full pl-4 pr-4 pt-4 pb-20 md:pl-6 md:pr-14 md:pt-16 md:pb-24 flex flex-col">
-									<Card className="relative overflow-hidden flex-1 w-full bg-white/70 dark:bg-black/60 backdrop-blur-md border border-black/10 dark:border-white/10 shadow-sm rounded-2xl flex flex-col min-h-0">
-										<div className="pointer-events-none absolute inset-0 surface-grid opacity-[0.35] dark:opacity-[0.25]" />
-										<div className="shine-bar" />
-										<div className="px-5 pt-3 pb-[10px] border-b border-black/5 dark:border-white/10 flex items-center justify-between">
-											<div>
-												<span className="font-mono text-[10px] tracking-[0.45em] uppercase text-black/40 dark:text-white/40">
-													session
-												</span>
-												<div className="flex items-center gap-2 mt-1.5">
-													<span className="text-[15px] leading-none tracking-[0.01em] text-black/85 dark:text-white/85">
-														text · kokoro
-													</span>
-													<span className="font-mono text-[10px] px-2 py-[2px] rounded-full border border-black/12 dark:border-white/20 uppercase tracking-[0.28em] text-black/55 dark:text-white/55">
-														beta
-													</span>
-												</div>
-											</div>
-											<div className="flex items-center gap-3">
-												<motion.span
-													className="h-1.5 w-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400 shadow-[0_0_0_4px_rgba(16,185,129,0.18)] dark:shadow-[0_0_0_4px_rgba(52,211,153,0.12)]"
-													animate={{
-														opacity: [
-															0.65, 1, 0.65,
-														],
-														scale: [1, 1.05, 1],
-													}}
-													transition={{
-														duration: 1.8,
-														repeat: Infinity,
-														ease: "easeInOut",
-													}}
-												/>
-												<div className="flex flex-col items-end leading-none">
-													<span className="font-mono text-[10px] tracking-[0.3em] uppercase text-black/55 dark:text-white/55">
-														live
-													</span>
-													<span className="font-mono text-[9px] tracking-[0.32em] uppercase text-black/35 dark:text-white/35">
-														sync · 00.7s
-													</span>
-												</div>
-											</div>
-										</div>
-										<ScrollArea className="flex-1 px-4 py-4 md:px-5 md:py-5 mask-fade-y overscroll-contain">
-											<div className="flex items-center justify-center mb-3">
-												<span className="font-mono text-[10px] tracking-[0.18em] uppercase text-black/40 dark:text-white/40">
-													Kokoro ・ 心
-												</span>
-											</div>
-											<motion.div
-												initial="hidden"
-												animate="show"
-												variants={{
-													hidden: { opacity: 1 },
-													show: {
-														opacity: 1,
-														transition: {
-															staggerChildren: 0.06,
-														},
-													},
-												}}
-												className="space-y-4"
-											>
-												{/* Assistant message */}
-												<motion.div
-													variants={{
-														hidden: {
-															opacity: 0,
-															y: 12,
-														},
-														show: {
-															opacity: 1,
-															y: 0,
-															transition: {
-																duration: 0.5,
-																ease: [
-																	0.22, 0.61,
-																	0.36, 1,
-																],
-															},
-														},
-													}}
-													className="space-y-3 pr-4"
-												>
-													<div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-[0.28em] text-black/45 dark:text-white/45">
-														<span>kokoro</span>
-														<span className="h-px flex-1 bg-black/10 dark:bg-white/10" />
-														<span>just now</span>
-													</div>
-													<div className="rounded-[22px] border border-black/8 dark:border-white/10 bg-linear-to-br from-white/90 to-white/60 dark:from-white/5 dark:to-white/2 px-5 py-4 text-[13px] leading-[1.7] tracking-[0.01em] text-black/85 dark:text-white/85 shadow-[0_25px_60px_rgba(15,15,15,0.08)] dark:shadow-[0_25px_60px_rgba(0,0,0,0.55)]">
-														こんにちは。I’m Kokoro —
-														a minimal, expressive
-														interface. How would you
-														like to feel today?
-													</div>
-												</motion.div>
-												{/* User message */}
-												<motion.div
-													variants={{
-														hidden: {
-															opacity: 0,
-															y: 12,
-														},
-														show: {
-															opacity: 1,
-															y: 0,
-															transition: {
-																duration: 0.5,
-																ease: [
-																	0.22, 0.61,
-																	0.36, 1,
-																],
-																delay: 0.08,
-															},
-														},
-													}}
-													className="space-y-3 pl-4 text-right"
-												>
-													<div className="flex items-center gap-2 justify-end text-[10px] font-mono uppercase tracking-[0.28em] text-black/45 dark:text-white/45">
-														<span>you</span>
-														<span className="h-px flex-1 bg-black/10 dark:bg-white/10" />
-														<span>just now</span>
-													</div>
-													<div className="inline-flex rounded-[22px] bg-black text-white dark:bg-white dark:text-black px-5 py-4 text-[13px] leading-[1.7] tracking-[0.01em] shadow-[0_35px_65px_rgba(0,0,0,0.35)] dark:shadow-[0_35px_65px_rgba(0,0,0,0.75)]">
-														Show me a joyful
-														expression, subtle and
-														natural.
-													</div>
-													<div className="font-mono text-[10px] uppercase tracking-[0.24em] text-black/35 dark:text-white/35 flex items-center gap-1 justify-end">
-														status · read
-														<motion.span
-															animate={{
-																opacity: [
-																	0.4, 1, 0.4,
-																],
-																scale: [
-																	1, 1.08, 1,
-																],
-															}}
-															transition={{
-																duration: 1.6,
-																repeat: Infinity,
-																ease: "easeInOut",
-															}}
-															className="inline-block h-1.5 w-1.5 rounded-full bg-black/50 dark:bg-white/50"
-														/>
-													</div>
-												</motion.div>
-												{/* Day divider */}
-												<div className="flex items-center gap-3 opacity-70 px-1">
-													<Separator className="flex-1 bg-black/10 dark:bg-white/10" />
-													<span className="font-mono text-[10px] tracking-[0.18em] uppercase text-black/40 dark:text-white/40">
-														Today ・ 今日
-													</span>
-													<Separator className="flex-1 bg-black/10 dark:bg-white/10" />
-												</div>
-												{/* Typing indicator */}
-												<motion.div
-													variants={{
-														hidden: {
-															opacity: 0,
-															y: 6,
-														},
-														show: {
-															opacity: 1,
-															y: 0,
-														},
-													}}
-													className="flex items-center gap-2 pl-5"
-												>
-													<div className="h-2 w-2 rounded-full bg-black/40 dark:bg-white/40" />
-													<div className="rounded-full border border-black/10 dark:border-white/10 bg-white/60 dark:bg-white/5 px-3 py-2">
-														<div className="flex items-center gap-1">
-															<motion.span
-																animate={{
-																	opacity: [
-																		0.2, 1,
-																		0.2,
-																	],
-																}}
-																transition={{
-																	duration: 1.2,
-																	repeat: Infinity,
-																	ease: "easeInOut",
-																}}
-																className="h-1.5 w-1.5 rounded-full bg-black/50 dark:bg-white/50"
-															/>
-															<motion.span
-																animate={{
-																	opacity: [
-																		0.2, 1,
-																		0.2,
-																	],
-																}}
-																transition={{
-																	duration: 1.2,
-																	repeat: Infinity,
-																	ease: "easeInOut",
-																	delay: 0.2,
-																}}
-																className="h-1.5 w-1.5 rounded-full bg-black/50 dark:bg-white/50"
-															/>
-															<motion.span
-																animate={{
-																	opacity: [
-																		0.2, 1,
-																		0.2,
-																	],
-																}}
-																transition={{
-																	duration: 1.2,
-																	repeat: Infinity,
-																	ease: "easeInOut",
-																	delay: 0.4,
-																}}
-																className="h-1.5 w-1.5 rounded-full bg-black/50 dark:bg-white/50"
-															/>
-														</div>
-													</div>
-												</motion.div>
-											</motion.div>
-										</ScrollArea>
-										<form
-											className="p-3 border-t border-black/5 dark:border-white/10 flex items-center gap-2"
-											onSubmit={(e) => {
-												e.preventDefault();
-											}}
-											style={{
-												// Respect mobile safe-area and keyboard adjustments
-												paddingBottom:
-													"calc(env(safe-area-inset-bottom, 0px))",
-											}}
-										>
-											<div className="flex-1 relative">
-												<span className="absolute left-3 top-1/2 -translate-y-1/2 text-black/40 dark:text-white/40">
-													<Paperclip className="h-4 w-4" />
-												</span>
-												<Input
-													placeholder="Type a message…"
-													className="flex-1 bg-transparent rounded-full font-mono text-[12px] tracking-[0.08em] pl-9 placeholder:text-black/40 dark:placeholder:text-white/40"
-												/>
-											</div>
-											<Button
-												type="submit"
-												variant="default"
-												className="h-9 w-9 rounded-full p-0 flex items-center justify-center bg-black text-white dark:bg-white dark:text-black"
-											>
-												<ArrowUp className="h-4 w-4" />
-											</Button>
-										</form>
-									</Card>
-								</div>
-							</motion.div>
-						) : null}
-					</AnimatePresence>
-				</div>
+			{/* Centered face */}
+			<div className="absolute inset-0 z-0 flex items-center justify-center">
+				<Avatar emotion={currentEmotion} voiceEnabled={voiceEnabled} />
 			</div>
 
-			{/* Dock: only chat and voice icons */}
-			<div className="absolute bottom-6 md:bottom-8 left-1/2 -translate-x-1/2">
-				<div className="flex items-center gap-2 bg-white/60 dark:bg-black/60 backdrop-blur-md border border-black/10 dark:border-white/10 rounded-full px-3 py-2 shadow-sm">
-					{/* Mode toggles */}
-					<Button
-						variant={chatMode === "text" ? "default" : "ghost"}
-						className={`h-8 w-8 rounded-full p-0 ${
-							chatMode === "text"
-								? "bg-black text-white dark:bg-white dark:text-black"
-								: "text-black/70 dark:text-white/70"
-						}`}
-						onClick={() =>
-							setChatMode((m) => (m === "text" ? "none" : "text"))
-						}
-						aria-label="Text chat"
-						title="Text chat"
-					>
-						<MessageSquare className="h-4 w-4" />
-					</Button>
-					<Button
-						variant={chatMode === "voice" ? "default" : "ghost"}
-						className={`h-8 w-8 rounded-full p-0 ${
-							chatMode === "voice"
-								? "bg-black text-white dark:bg-white dark:text-black"
-								: "text-black/70 dark:text-white/70"
-						}`}
-						onClick={() =>
-							setChatMode((m) =>
-								m === "voice" ? "none" : "voice"
-							)
-						}
-						aria-label="Voice chat"
-						title="Voice chat"
-					>
-						<Mic className="h-4 w-4" />
-					</Button>
-				</div>
+			{/* Voice toggle */}
+			<div className="absolute bottom-6 md:bottom-8 left-1/2 -translate-x-1/2 z-40">
+				<Button
+					variant="ghost"
+					className={`h-9 w-9 rounded-full p-0 flex items-center justify-center border bg-white/70 dark:bg-black/70 border-black/10 dark:border-white/15 ${
+						voiceEnabled
+							? "text-black dark:text-black bg-emerald-400/90 dark:bg-emerald-300/90"
+							: "text-black/70 dark:text-white/70"
+					}`}
+					onClick={() => setVoiceEnabled((v) => !v)}
+					aria-label="Toggle voice mode"
+					title="Toggle voice mode"
+				>
+					<Mic className="h-4 w-4" />
+				</Button>
 			</div>
 			{/* Bottom-left Tweaks trigger (high z-index to avoid overlay issues) */}
 			<div className="absolute bottom-6 md:bottom-8 left-6 z-50">
