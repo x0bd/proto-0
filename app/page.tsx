@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import type React from "react";
 import Avatar from "./components/Avatar";
 import { Mic, SlidersHorizontal, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -21,17 +22,50 @@ interface EmotionState {
 	curiosity: number;
 }
 
+const NEUTRAL_EMOTION: EmotionState = {
+	joy: 0.3,
+	sadness: 0,
+	surprise: 0,
+	anger: 0,
+	curiosity: 0.2,
+};
+
+function clamp01(v: number) {
+	return Math.min(1, Math.max(0, v));
+}
+
+function smooth01(t: number) {
+	const x = clamp01(t);
+	return x * x * (3 - 2 * x);
+}
+
+function lerpEmotion(
+	a: EmotionState,
+	b: EmotionState,
+	alpha: number
+): EmotionState {
+	const t = clamp01(alpha);
+	return {
+		joy: a.joy + (b.joy - a.joy) * t,
+		sadness: a.sadness + (b.sadness - a.sadness) * t,
+		surprise: a.surprise + (b.surprise - a.surprise) * t,
+		anger: a.anger + (b.anger - a.anger) * t,
+		curiosity: a.curiosity + (b.curiosity - a.curiosity) * t,
+	};
+}
+
 export default function Home() {
-	const [currentEmotion, setCurrentEmotion] = useState<EmotionState>({
-		joy: 0.3,
-		sadness: 0,
-		surprise: 0,
-		anger: 0,
-		curiosity: 0.2,
-	});
+	const [currentEmotion, setCurrentEmotion] =
+		useState<EmotionState>(NEUTRAL_EMOTION);
+	const [baseEmotion, setBaseEmotion] =
+		useState<EmotionState>(NEUTRAL_EMOTION);
 
 	const [voiceEnabled, setVoiceEnabled] = useState<boolean>(true);
 	const [voiceLevel, setVoiceLevel] = useState<number>(0);
+
+	// Cursor → Emotion mapping target (lives in a ref for smooth RAF-based interpolation)
+	const targetEmotionRef = useRef<EmotionState>(NEUTRAL_EMOTION);
+	const baseEmotionRef = useRef<EmotionState>(NEUTRAL_EMOTION);
 
 	const [isDark, setIsDark] = useState<boolean>(() => {
 		if (typeof window === "undefined") return false;
@@ -54,6 +88,24 @@ export default function Home() {
 		root.classList.toggle("dark", next);
 		setIsDark(next);
 	};
+
+	// Keep baseEmotionRef in sync with state
+	useEffect(() => {
+		baseEmotionRef.current = baseEmotion;
+	}, [baseEmotion]);
+
+	// Smoothly interpolate currentEmotion toward targetEmotionRef
+	useEffect(() => {
+		let frameId: number;
+		const step = () => {
+			setCurrentEmotion((prev) =>
+				lerpEmotion(prev, targetEmotionRef.current, 0.08)
+			);
+			frameId = requestAnimationFrame(step);
+		};
+		frameId = requestAnimationFrame(step);
+		return () => cancelAnimationFrame(frameId);
+	}, []);
 
 	// Simulated voice "loudness" driving the mic breath halo.
 	// Later we can replace this with real mic amplitude while keeping the same visual mapping.
@@ -110,11 +162,78 @@ export default function Home() {
 	};
 
 	const applyPreset = (key: keyof typeof presets) => {
-		setCurrentEmotion(presets[key]);
+		const preset = presets[key];
+		setBaseEmotion(preset);
+		baseEmotionRef.current = preset;
+		targetEmotionRef.current = preset;
+		setCurrentEmotion(preset);
+	};
+
+	// Cursor → Emotion mapping (viewport-based approximation; face is centered)
+	const handlePointerMove = (e: React.MouseEvent<HTMLDivElement>) => {
+		if (typeof window === "undefined") return;
+		const { innerWidth, innerHeight } = window;
+		const centerX = innerWidth / 2;
+		const centerY = innerHeight / 2;
+
+		const clientX = e.clientX;
+		const clientY = e.clientY;
+
+		// Normalize around the face center with a soft radius
+		const mx = clientX - centerX;
+		const my = clientY - centerY;
+		const nx = Math.max(-1, Math.min(1, mx / (innerWidth * 0.25))); // -1..1
+		const ny = Math.max(-1, Math.min(1, my / (innerHeight * 0.25))); // -1..1
+
+		// Map to raw emotion targets
+		const joy = smooth01(-ny); // cursor above center → joy
+		const sadness = smooth01(ny); // below center → sadness
+		const curiosity = smooth01(Math.abs(nx)); // horizontal distance → curiosity
+		const anger = smooth01(Math.max(0, Math.abs(nx) - 0.4) / 0.6); // only at far edges
+		const surprise = smooth01(Math.abs(ny) * 0.5); // vertical motion → mild surprise
+
+		const pointerTarget: EmotionState = {
+			joy,
+			sadness,
+			surprise,
+			anger,
+			curiosity,
+		};
+
+		// Blend pointer-driven emotion with baseMood so presets still matter
+		const weightPointer = 0.7;
+		const weightBase = 1 - weightPointer;
+		const base = baseEmotionRef.current;
+
+		const blendedTarget: EmotionState = {
+			joy: base.joy * weightBase + pointerTarget.joy * weightPointer,
+			sadness:
+				base.sadness * weightBase +
+				pointerTarget.sadness * weightPointer,
+			surprise:
+				base.surprise * weightBase +
+				pointerTarget.surprise * weightPointer,
+			anger:
+				base.anger * weightBase + pointerTarget.anger * weightPointer,
+			curiosity:
+				base.curiosity * weightBase +
+				pointerTarget.curiosity * weightPointer,
+		};
+
+		targetEmotionRef.current = blendedTarget;
+	};
+
+	const handlePointerLeave = () => {
+		// When cursor leaves, drift back toward the baseEmotion
+		targetEmotionRef.current = baseEmotionRef.current;
 	};
 
 	return (
-		<div className="min-h-dvh w-screen bg-white dark:bg-black flex items-center justify-center overflow-hidden relative">
+		<div
+			className="min-h-dvh w-screen bg-white dark:bg-black flex items-center justify-center overflow-hidden relative"
+			onMouseMove={handlePointerMove}
+			onMouseLeave={handlePointerLeave}
+		>
 			{/* Top-left label */}
 			<div className="absolute top-6 left-6 select-none">
 				<span className="text-2xl cherry-bomb-one-regular text-black/70 dark:text-white/70">
@@ -206,9 +325,7 @@ export default function Home() {
 									key={k}
 									variant="outline"
 									className="justify-center"
-									onClick={() =>
-										setCurrentEmotion(presets[k])
-									}
+									onClick={() => applyPreset(k)}
 								>
 									{k.toUpperCase()}
 								</Button>
