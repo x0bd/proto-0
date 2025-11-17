@@ -98,9 +98,23 @@ export default function Home() {
 	useEffect(() => {
 		let frameId: number;
 		const step = () => {
-			setCurrentEmotion((prev) =>
-				lerpEmotion(prev, targetEmotionRef.current, 0.08)
-			);
+			setCurrentEmotion((prev) => {
+				const next = lerpEmotion(prev, targetEmotionRef.current, 0.08);
+
+				// Emotion memory: gently pull the long-term base mood toward
+				// whatever Kokoro has actually been feeling recently.
+				const memoryLerp = 0.015; // smaller = longer "memory"
+				const newBase = lerpEmotion(
+					baseEmotionRef.current,
+					next,
+					memoryLerp
+				);
+				baseEmotionRef.current = newBase;
+				// Keep React state in sync so presets/tweaks reflect the evolving mood.
+				setBaseEmotion(newBase);
+
+				return next;
+			});
 			frameId = requestAnimationFrame(step);
 		};
 		frameId = requestAnimationFrame(step);

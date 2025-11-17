@@ -49,10 +49,10 @@ A minimal, expressive avatar whose entire soul is eyes + mouth. Built like the f
 -   [x] Vertical pointer position modulates joy/sadness smoothly
 -   [x] Horizontal offsets modulate curiosity/anger bias
 -   [x] Gentle hysteresis for organic feel
--   [ ] **Emotion memory system**
-    -   [ ] Face "remembers" recent emotions and blends them subtly
-    -   [ ] Emotional momentum (slow transitions between extreme states)
-    -   [ ] Context-aware emotion suggestions
+-   [x] **Emotion memory system**
+-   [x] Face "remembers" recent emotions and blends them subtly
+-   [x] Emotional momentum (slow transitions between extreme states)
+-   [ ] Context-aware emotion suggestions
 
 ### **Advanced Interactions**
 
