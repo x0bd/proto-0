@@ -259,86 +259,96 @@ export default function Home() {
 
 	return (
 		<div
-			className="min-h-dvh w-screen bg-background text-foreground flex items-center justify-center overflow-hidden relative selection:bg-primary selection:text-primary-foreground font-sans"
+			className="min-h-dvh w-screen bg-background text-foreground flex items-center justify-center overflow-hidden relative selection:bg-primary selection:text-primary-foreground font-sans transition-colors duration-700"
 			onMouseMove={handlePointerMove}
 			onMouseLeave={handlePointerLeave}
 		>
-			{/* Header: Minimal & Bureaucratic */}
+			{/* Washi Paper Texture Overlay */}
+			<div className="absolute inset-0 pointer-events-none opacity-[0.03] z-0 mix-blend-multiply dark:mix-blend-overlay bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
+
+			{/* Header: Japanese Bureaucratic */}
 			<div className="absolute top-8 left-8 right-8 flex justify-between items-center z-50 select-none">
-				<div className="flex items-center gap-3 opacity-80">
-					<div className="w-3 h-3 rounded-full bg-primary/80" />
-					<h1 className="text-sm font-medium tracking-wide text-muted-foreground uppercase">
-						Kokoro Interface
-					</h1>
+				<div className="flex items-center gap-4 opacity-80">
+					<div className="w-3 h-3 rounded-full bg-primary animate-pulse-slow" />
+					<div className="flex flex-col">
+						<h1 className="text-sm font-medium tracking-widest text-foreground uppercase">
+							ココロ (KOKORO) SYS
+						</h1>
+						<span className="text-[10px] text-muted-foreground tracking-widest">
+							VER. 0.9.2 // 正常 (NORMAL)
+						</span>
+					</div>
 				</div>
 
 				<button
 					onClick={toggleTheme}
-					className="flex items-center gap-3 px-4 py-2 bg-secondary/50 hover:bg-secondary text-secondary-foreground rounded-full transition-all shadow-sm hover:shadow-md active:scale-95"
+					className="group flex items-center gap-3 px-5 py-2.5 bg-secondary/30 hover:bg-secondary/50 text-secondary-foreground rounded-full transition-all duration-500 hover:scale-105 active:scale-95 backdrop-blur-sm border border-transparent hover:border-border/50"
 				>
-					<span className="text-xs font-medium tracking-wide">
-						{isDark ? "Archive Mode" : "Paper Mode"}
+					<span className="text-xs font-medium tracking-wide group-hover:text-primary transition-colors">
+						{isDark ? "墨 (Sumi)" : "和紙 (Washi)"}
 					</span>
 					<div
-						className={`w-2 h-2 rounded-full ${
+						className={`w-2 h-2 rounded-full transition-colors duration-500 ${
 							isDark ? "bg-white" : "bg-black"
 						}`}
 					/>
 				</button>
 			</div>
 
-			{/* Centered face: Clean & Framed */}
+			{/* Centered face: Soft & Floating */}
 			<div className="absolute inset-0 z-10 flex items-center justify-center">
 				<div className="relative">
-					{/* Soft Containment Shadow */}
-					<div className="absolute inset-[-80px] bg-primary/5 rounded-full blur-3xl pointer-events-none" />
+					{/* Soft Aura */}
+					<div className="absolute inset-[-100px] bg-primary/5 rounded-[3rem] blur-3xl pointer-events-none animate-pulse-slower" />
 					<Avatar emotion={currentEmotion} voiceEnabled={voiceEnabled} />
 				</div>
 			</div>
 
-			{/* Bottom Controls: Tactile & Physical */}
-			<div className="absolute bottom-12 left-0 right-0 flex justify-center items-center gap-6 z-50">
-				{/* Tweaks */}
+			{/* Bottom Controls: Marshmallow & Bento */}
+			<div className="absolute bottom-12 left-0 right-0 flex justify-center items-center gap-8 z-50">
+				{/* Mood Bento (Drawer) */}
 				<Sheet>
 					<SheetTrigger asChild>
 						<Button
 							variant="secondary"
-							className="h-12 w-12 rounded-full shadow-sm hover:shadow-md transition-all active:scale-95 bg-white dark:bg-white/10 border border-border"
+							className="h-14 w-14 rounded-[1.25rem] shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 active:scale-95 bg-white/80 dark:bg-white/5 border border-white/20 backdrop-blur-md"
 						>
 							<SlidersHorizontal className="h-5 w-5 text-muted-foreground" />
 						</Button>
 					</SheetTrigger>
 					<SheetContent
 						side="bottom"
-						className="h-[300px] rounded-t-[2rem] border-t border-border bg-background/95 backdrop-blur-xl p-8"
+						className="h-[400px] rounded-t-[2.5rem] border-t-0 bg-background/95 backdrop-blur-xl p-8 shadow-2xl"
 					>
-						<div className="max-w-md mx-auto">
-							<SheetHeader className="mb-6 text-center">
-								<SheetTitle className="text-lg font-medium text-foreground">
-									Emotional Calibration
+						<div className="max-w-md mx-auto h-full flex flex-col">
+							<SheetHeader className="mb-8 text-center space-y-2">
+								<SheetTitle className="text-xl font-medium text-foreground tracking-wide">
+									感情 (Mood) Bento
 								</SheetTitle>
-								<SheetDescription className="text-muted-foreground">
-									Select a baseline neural state.
+								<SheetDescription className="text-muted-foreground text-xs tracking-widest uppercase">
+									Select Neural Configuration
 								</SheetDescription>
 							</SheetHeader>
-							<div className="grid grid-cols-3 gap-3">
+							
+							<div className="grid grid-cols-3 gap-4 flex-1">
 								{(
 									[
-										"neutral",
-										"joy",
-										"sad",
-										"surprised",
-										"angry",
-										"curious",
+										{ id: "neutral", label: "平常", sub: "Neutral" },
+										{ id: "joy", label: "喜び", sub: "Joy" },
+										{ id: "sad", label: "悲しみ", sub: "Sadness" },
+										{ id: "surprised", label: "驚き", sub: "Surprise" },
+										{ id: "angry", label: "怒り", sub: "Anger" },
+										{ id: "curious", label: "好奇心", sub: "Curious" },
 									] as const
-								).map((k) => (
+								).map((item) => (
 									<Button
-										key={k}
+										key={item.id}
 										variant="outline"
-										className="h-12 rounded-xl border-border hover:border-primary/50 hover:bg-primary/5 transition-all capitalize text-sm font-medium"
-										onClick={() => applyPreset(k)}
+										className="h-full flex flex-col gap-1 rounded-[1.5rem] border-border/50 hover:border-primary/50 hover:bg-primary/5 transition-all duration-300 hover:scale-105 active:scale-95"
+										onClick={() => applyPreset(item.id as any)}
 									>
-										{k}
+										<span className="text-lg font-medium text-foreground">{item.label}</span>
+										<span className="text-[10px] text-muted-foreground uppercase tracking-wider">{item.sub}</span>
 									</Button>
 								))}
 							</div>
@@ -346,7 +356,7 @@ export default function Home() {
 					</SheetContent>
 				</Sheet>
 
-				{/* Voice Toggle: The Main Switch */}
+				{/* Voice Toggle: Soft Switch */}
 				<div className="relative">
 					{(() => {
 						const scale = 1 + voiceLevel * 0.1;
@@ -355,22 +365,22 @@ export default function Home() {
 									transform: `scale(${scale})`,
 									backgroundColor: "var(--primary)",
 									color: "var(--primary-foreground)",
-									boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+									boxShadow: "0 8px 32px -4px var(--primary)",
 							  }
 							: undefined;
 
 						return (
 							<Button
 								variant="secondary"
-								className={`h-16 w-16 rounded-full shadow-md hover:shadow-lg transition-all duration-300 active:scale-95 border border-border flex items-center justify-center ${
+								className={`h-20 w-20 rounded-[1.75rem] shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-500 active:scale-95 border border-white/20 flex items-center justify-center ${
 									voiceEnabled
 										? ""
-										: "bg-white dark:bg-white/10 text-muted-foreground"
+										: "bg-white/80 dark:bg-white/5 text-muted-foreground backdrop-blur-md"
 								}`}
 								style={activeStyle}
 								onClick={() => setVoiceEnabled((v) => !v)}
 							>
-								<Mic className="h-6 w-6" />
+								<Mic className="h-7 w-7" />
 							</Button>
 						);
 					})()}
@@ -379,7 +389,7 @@ export default function Home() {
 				{/* Settings */}
 				<Button
 					variant="secondary"
-					className="h-12 w-12 rounded-full shadow-sm hover:shadow-md transition-all active:scale-95 bg-white dark:bg-white/10 border border-border"
+					className="h-14 w-14 rounded-[1.25rem] shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 active:scale-95 bg-white/80 dark:bg-white/5 border border-white/20 backdrop-blur-md"
 				>
 					<Settings className="h-5 w-5 text-muted-foreground" />
 				</Button>
