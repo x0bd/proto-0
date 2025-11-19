@@ -70,6 +70,7 @@ export default function Home() {
 		useState<EmotionState>(NEUTRAL_EMOTION);
 	const [baseEmotion, setBaseEmotion] =
 		useState<EmotionState>(NEUTRAL_EMOTION);
+	const [activePreset, setActivePreset] = useState<string | null>("neutral");
 
 	const [voiceEnabled, setVoiceEnabled] = useState<boolean>(true);
 	const [voiceLevel, setVoiceLevel] = useState<number>(0);
@@ -192,6 +193,7 @@ export default function Home() {
 		baseEmotionRef.current = preset;
 		targetEmotionRef.current = preset;
 		setCurrentEmotion(preset);
+		setActivePreset(key as string);
 	};
 
 	// Cursor → Emotion mapping (viewport-based approximation; face is centered)
@@ -282,8 +284,8 @@ export default function Home() {
 				<div className="flex items-center gap-4 opacity-80">
 					<div className="w-3 h-3 rounded-full bg-primary animate-pulse-slow" />
 					<div className="flex flex-col">
-						<h1 className="text-sm font-medium tracking-widest text-foreground uppercase">
-							ココロ (KOKORO) SYS
+						<h1 className="text-2xl font-medium tracking-widest text-foreground uppercase font-[family-name:var(--font-cherry-bomb-one)]">
+							ココロ
 						</h1>
 						<span className="text-[10px] text-muted-foreground tracking-widest">
 							VER. 0.9.2 // 正常 (NORMAL)
@@ -355,7 +357,7 @@ export default function Home() {
 										{ id: "curious", label: "好奇心", sub: "Curious", icon: Search },
 									] as const
 								).map((item) => {
-									const isActive = currentEmotion === item.id;
+									const isActive = activePreset === item.id;
 									const Icon = item.icon;
 									
 									return (
@@ -364,7 +366,7 @@ export default function Home() {
 											variant="outline"
 											className={`h-full flex flex-col gap-2 rounded-[1.5rem] border-border/50 transition-all duration-300 hover:scale-105 active:scale-95 ${
 												isActive 
-													? "bg-primary/10 border-primary text-primary shadow-[0_0_20px_-5px_var(--primary)]" 
+													? "bg-primary/10 border-primary text-primary" 
 													: "hover:border-primary/50 hover:bg-primary/5 hover:text-primary"
 											}`}
 											onClick={() => applyPreset(item.id as any)}
@@ -391,7 +393,6 @@ export default function Home() {
 									transform: `scale(${scale})`,
 									backgroundColor: "var(--primary)",
 									color: "var(--primary-foreground)",
-									boxShadow: "0 8px 32px -4px var(--primary)",
 							  }
 							: undefined;
 
