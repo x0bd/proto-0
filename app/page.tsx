@@ -1,9 +1,20 @@
+
 "use client";
 
 import { useEffect, useRef, useState } from "react";
 import type React from "react";
 import Avatar from "./components/Avatar";
-import { Mic, SlidersHorizontal, Settings } from "lucide-react";
+import {
+	Mic,
+	Settings,
+	SlidersHorizontal,
+	Smile,
+	Frown,
+	Zap,
+	Flame,
+	Search,
+	Meh,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
 	Sheet,
@@ -307,6 +318,7 @@ export default function Home() {
 			{/* Bottom Controls: Marshmallow & Bento */}
 			<div className="absolute bottom-12 left-0 right-0 flex justify-center items-center gap-8 z-50">
 				{/* Mood Bento (Drawer) */}
+				{/* Mood Bento (Drawer) */}
 				<Sheet>
 					<SheetTrigger asChild>
 						<Button
@@ -318,12 +330,14 @@ export default function Home() {
 					</SheetTrigger>
 					<SheetContent
 						side="bottom"
-						className="h-[400px] rounded-t-[2.5rem] border-t-0 bg-background/95 backdrop-blur-xl p-8 shadow-2xl"
+						className="h-[450px] rounded-t-[2.5rem] border-t-0 bg-background/95 backdrop-blur-xl p-8 shadow-2xl"
 					>
-						<div className="max-w-md mx-auto h-full flex flex-col">
+						<div className="max-w-md mx-auto h-full flex flex-col relative">
+
+
 							<SheetHeader className="mb-8 text-center space-y-2">
-								<SheetTitle className="text-xl font-medium text-foreground tracking-wide">
-									感情 (Mood) Bento
+								<SheetTitle className="text-xl font-medium text-foreground tracking-wide flex items-center justify-center gap-2">
+									<span className="text-primary">●</span> 感情 (Mood) Bento
 								</SheetTitle>
 								<SheetDescription className="text-muted-foreground text-xs tracking-widest uppercase">
 									Select Neural Configuration
@@ -333,24 +347,36 @@ export default function Home() {
 							<div className="grid grid-cols-3 gap-4 flex-1">
 								{(
 									[
-										{ id: "neutral", label: "平常", sub: "Neutral" },
-										{ id: "joy", label: "喜び", sub: "Joy" },
-										{ id: "sad", label: "悲しみ", sub: "Sadness" },
-										{ id: "surprised", label: "驚き", sub: "Surprise" },
-										{ id: "angry", label: "怒り", sub: "Anger" },
-										{ id: "curious", label: "好奇心", sub: "Curious" },
+										{ id: "neutral", label: "平常", sub: "Neutral", icon: Meh },
+										{ id: "joy", label: "喜び", sub: "Joy", icon: Smile },
+										{ id: "sad", label: "悲しみ", sub: "Sadness", icon: Frown },
+										{ id: "surprised", label: "驚き", sub: "Surprise", icon: Zap },
+										{ id: "angry", label: "怒り", sub: "Anger", icon: Flame },
+										{ id: "curious", label: "好奇心", sub: "Curious", icon: Search },
 									] as const
-								).map((item) => (
-									<Button
-										key={item.id}
-										variant="outline"
-										className="h-full flex flex-col gap-1 rounded-[1.5rem] border-border/50 hover:border-primary/50 hover:bg-primary/5 transition-all duration-300 hover:scale-105 active:scale-95"
-										onClick={() => applyPreset(item.id as any)}
-									>
-										<span className="text-lg font-medium text-foreground">{item.label}</span>
-										<span className="text-[10px] text-muted-foreground uppercase tracking-wider">{item.sub}</span>
-									</Button>
-								))}
+								).map((item) => {
+									const isActive = currentEmotion === item.id;
+									const Icon = item.icon;
+									
+									return (
+										<Button
+											key={item.id}
+											variant="outline"
+											className={`h-full flex flex-col gap-2 rounded-[1.5rem] border-border/50 transition-all duration-300 hover:scale-105 active:scale-95 ${
+												isActive 
+													? "bg-primary/10 border-primary text-primary shadow-[0_0_20px_-5px_var(--primary)]" 
+													: "hover:border-primary/50 hover:bg-primary/5 hover:text-primary"
+											}`}
+											onClick={() => applyPreset(item.id as any)}
+										>
+											<Icon className={`h-6 w-6 ${isActive ? "fill-current" : ""}`} />
+											<div className="flex flex-col items-center gap-0.5">
+												<span className="text-sm font-medium">{item.label}</span>
+												<span className="text-[9px] opacity-60 uppercase tracking-wider">{item.sub}</span>
+											</div>
+										</Button>
+									);
+								})}
 							</div>
 						</div>
 					</SheetContent>
