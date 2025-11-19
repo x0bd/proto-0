@@ -283,16 +283,11 @@ export default function Home() {
 			{/* Header: Japanese Bureaucratic */}
 			<div className="absolute top-8 left-8 right-8 flex justify-between items-center z-50 select-none">
 				<div className="flex items-center gap-4 opacity-80">
-					<div className="w-3 h-3 rounded-full bg-primary animate-pulse-slow" />
-					<div className="flex flex-col">
-						<h1 className="text-2xl font-medium tracking-widest text-foreground uppercase font-[family-name:var(--font-cherry-bomb-one)]">
-							ココロ
-						</h1>
-						<span className="text-[10px] text-muted-foreground tracking-widest">
-							VER. 0.9.2 // 正常 (NORMAL)
-						</span>
-					</div>
-				</div>
+				<div className="w-3 h-3 rounded-full bg-primary animate-pulse-slow" />
+				<h1 className="text-2xl font-medium tracking-widest text-foreground uppercase font-[family-name:var(--font-cherry-bomb-one)]">
+					ココロ
+				</h1>
+			</div>
 
 				<button
 					onClick={toggleTheme}
@@ -420,11 +415,18 @@ export default function Home() {
 					className="h-14 w-14 rounded-[1.25rem] shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 active:scale-95 bg-white/80 dark:bg-white/5 border border-white/20 backdrop-blur-md"
 				>
 					<Settings className="h-5 w-5 text-muted-foreground" />
-				</Button>
-			</div>
+			</Button>
+		</div>
 
-			{/* Floating Chat Window */}
-			<ChatWindow />
+		{/* Version Info - Bottom Left */}
+		<div className="absolute bottom-8 left-8 z-50 select-none opacity-60">
+			<span className="text-[10px] text-muted-foreground tracking-widest font-mono">
+				VER. 0.9.2 // 正常 (NORMAL)
+			</span>
+		</div>
+
+		{/* Floating Chat Window */}
+		<ChatWindow />
 		</div>
 	);
 }

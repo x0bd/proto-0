@@ -74,8 +74,8 @@ export function ChatWindow() {
 						>
 							<div className="flex items-center gap-2">
 								<div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-								<span className="text-sm font-medium tracking-wide">
-									Kokoro
+								<span className="text-lg font-medium tracking-widest font-[family-name:var(--font-cherry-bomb-one)]">
+									ココロ
 								</span>
 							</div>
 							<div className="flex items-center gap-1">
