@@ -58,47 +58,46 @@ export function ChatWindow() {
 							opacity: 1,
 							scale: 1,
 							y: 0,
-							height: isMinimized ? "auto" : 500,
-							width: isMinimized ? 300 : 380,
+							height: isMinimized ? "auto" : 480,
+							width: isMinimized ? 280 : 380,
 						}}
 						exit={{ opacity: 0, scale: 0.9, y: 20 }}
 						transition={{ type: "spring", damping: 25, stiffness: 300 }}
-						className="pointer-events-auto bg-background/80 backdrop-blur-xl border border-white/20 shadow-2xl rounded-3xl overflow-hidden flex flex-col"
-						drag={!isMinimized} // Only drag when not minimized to avoid weird layout issues, or allow both.
+						className="pointer-events-auto bg-background/95 backdrop-blur-xl border border-white/20 shadow-2xl rounded-[2rem] overflow-hidden flex flex-col"
+						drag={!isMinimized}
 						dragMomentum={false}
-						// Use dragConstraints to keep it on screen if needed, but for now free floating is fine or constrained to window
 					>
 						{/* Header */}
 						<div
-							className="h-14 px-6 flex items-center justify-between border-b border-white/10 bg-white/5 cursor-grab active:cursor-grabbing select-none"
-							onPointerDown={(e) => e.preventDefault()} // Prevent text selection during drag
+							className="h-14 px-5 flex items-center justify-between border-b border-border/50 bg-secondary/30 cursor-grab active:cursor-grabbing select-none"
+							onPointerDown={(e) => e.preventDefault()}
 						>
-							<div className="flex items-center gap-3">
-								<div className="w-2.5 h-2.5 rounded-full bg-primary animate-pulse" />
-								<span className="font-medium tracking-wide text-sm opacity-80">
-									CHAT // 对話
+							<div className="flex items-center gap-2">
+								<div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+								<span className="text-sm font-medium tracking-wide">
+									Kokoro
 								</span>
 							</div>
 							<div className="flex items-center gap-1">
 								<Button
 									variant="ghost"
 									size="icon"
-									className="h-8 w-8 rounded-full hover:bg-white/10"
+									className="h-7 w-7 rounded-lg hover:bg-secondary/50 text-muted-foreground hover:text-foreground"
 									onClick={() => setIsMinimized(!isMinimized)}
 								>
 									{isMinimized ? (
-										<Maximize2 className="h-3.5 w-3.5" />
+										<Maximize2 className="h-3 w-3" />
 									) : (
-										<Minimize2 className="h-3.5 w-3.5" />
+										<Minimize2 className="h-3 w-3" />
 									)}
 								</Button>
 								<Button
 									variant="ghost"
 									size="icon"
-									className="h-8 w-8 rounded-full hover:bg-red-500/20 hover:text-red-400"
+									className="h-7 w-7 rounded-lg hover:bg-red-500/20 text-muted-foreground hover:text-red-400"
 									onClick={() => setIsOpen(false)}
 								>
-									<X className="h-4 w-4" />
+									<X className="h-3.5 w-3.5" />
 								</Button>
 							</div>
 						</div>
@@ -106,8 +105,8 @@ export function ChatWindow() {
 						{/* Content */}
 						{!isMinimized && (
 							<>
-								<ScrollArea className="flex-1 p-6">
-									<div className="space-y-4">
+								<ScrollArea className="flex-1 p-5">
+									<div className="space-y-3">
 										{messages.map((msg) => (
 											<div
 												key={msg.id}
@@ -118,10 +117,10 @@ export function ChatWindow() {
 												}`}
 											>
 												<div
-													className={`max-w-[80%] px-4 py-3 rounded-2xl text-sm leading-relaxed ${
+													className={`max-w-[85%] px-4 py-2.5 text-sm leading-relaxed ${
 														msg.role === "user"
-															? "bg-primary text-primary-foreground rounded-tr-sm"
-															: "bg-secondary/50 text-secondary-foreground rounded-tl-sm backdrop-blur-sm"
+															? "bg-primary/10 text-foreground rounded-[1.25rem] rounded-tr-sm border border-primary/20"
+															: "bg-secondary/50 text-foreground rounded-[1.25rem] rounded-tl-sm border border-border/30 backdrop-blur-sm"
 													}`}
 												>
 													{msg.content}
@@ -132,7 +131,7 @@ export function ChatWindow() {
 								</ScrollArea>
 
 								{/* Input */}
-								<div className="p-4 border-t border-white/10 bg-white/5">
+								<div className="p-4 border-t border-border/50 bg-secondary/20">
 									<form
 										onSubmit={(e) => {
 											e.preventDefault();
@@ -143,16 +142,16 @@ export function ChatWindow() {
 										<Input
 											value={inputValue}
 											onChange={(e) => setInputValue(e.target.value)}
-											placeholder="Type a message..."
-											className="bg-black/5 border-white/10 focus-visible:ring-primary/20 rounded-xl h-11"
+											placeholder="Message Kokoro..."
+											className="bg-background/50 border-border/50 focus-visible:ring-primary/20 focus-visible:border-primary/50 rounded-xl h-10 text-foreground placeholder:text-muted-foreground"
 										/>
 										<Button
 											type="submit"
 											size="icon"
-											className="h-11 w-11 rounded-xl shrink-0"
+											className="h-10 w-10 rounded-xl shrink-0 bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm"
 											disabled={!inputValue.trim()}
 										>
-											<Send className="h-4 w-4" />
+											<Send className="h-3.5 w-3.5" />
 										</Button>
 									</form>
 								</div>
@@ -167,9 +166,9 @@ export function ChatWindow() {
 						whileHover={{ scale: 1.05 }}
 						whileTap={{ scale: 0.95 }}
 						onClick={() => setIsOpen(true)}
-						className="pointer-events-auto h-14 w-14 rounded-2xl bg-primary text-primary-foreground shadow-lg flex items-center justify-center"
+						className="pointer-events-auto h-14 w-14 rounded-[1.25rem] bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg flex items-center justify-center border border-primary/20"
 					>
-						<MessageSquare className="h-6 w-6" />
+						<MessageSquare className="h-5 w-5" />
 					</motion.button>
 				)}
 			</AnimatePresence>
