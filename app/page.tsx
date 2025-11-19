@@ -259,119 +259,129 @@ export default function Home() {
 
 	return (
 		<div
-			className="min-h-dvh w-screen bg-white dark:bg-black flex items-center justify-center overflow-hidden relative"
+			className="min-h-dvh w-screen bg-background text-foreground flex items-center justify-center overflow-hidden relative selection:bg-primary selection:text-primary-foreground font-sans"
 			onMouseMove={handlePointerMove}
 			onMouseLeave={handlePointerLeave}
 		>
-			{/* Top-left label */}
-			<div className="absolute top-6 left-6 select-none">
-				<span className="text-2xl cherry-bomb-one-regular text-black/70 dark:text-white/70">
-					kokoro
-				</span>
+			{/* Header: Minimal & Bureaucratic */}
+			<div className="absolute top-8 left-8 right-8 flex justify-between items-center z-50 select-none">
+				<div className="flex items-center gap-3 opacity-80">
+					<div className="w-3 h-3 rounded-full bg-primary/80" />
+					<h1 className="text-sm font-medium tracking-wide text-muted-foreground uppercase">
+						Kokoro Interface
+					</h1>
+				</div>
+
+				<button
+					onClick={toggleTheme}
+					className="flex items-center gap-3 px-4 py-2 bg-secondary/50 hover:bg-secondary text-secondary-foreground rounded-full transition-all shadow-sm hover:shadow-md active:scale-95"
+				>
+					<span className="text-xs font-medium tracking-wide">
+						{isDark ? "Archive Mode" : "Paper Mode"}
+					</span>
+					<div
+						className={`w-2 h-2 rounded-full ${
+							isDark ? "bg-white" : "bg-black"
+						}`}
+					/>
+				</button>
 			</div>
 
-			{/* Top-right theme toggle dot */}
-			<button
-				onClick={toggleTheme}
-				aria-label="Toggle theme"
-				className="absolute top-6 right-6 h-5 w-5 rounded-full border border-black/15 dark:border-white/20 shadow-sm transition-colors z-50"
-				style={{ backgroundColor: isDark ? "#ffffff" : "#000000" }}
-			/>
-			{/* Centered face */}
-			<div className="absolute inset-0 z-0 flex items-center justify-center">
-				<Avatar emotion={currentEmotion} voiceEnabled={voiceEnabled} />
+			{/* Centered face: Clean & Framed */}
+			<div className="absolute inset-0 z-10 flex items-center justify-center">
+				<div className="relative">
+					{/* Soft Containment Shadow */}
+					<div className="absolute inset-[-80px] bg-primary/5 rounded-full blur-3xl pointer-events-none" />
+					<Avatar emotion={currentEmotion} voiceEnabled={voiceEnabled} />
+				</div>
 			</div>
 
-			{/* Voice toggle */}
-			<div className="absolute bottom-6 md:bottom-8 left-1/2 -translate-x-1/2 z-40">
-				{(() => {
-					// Map voiceLevel (0..1) to a subtle but expressive halo + scale
-					const scale = 1 + voiceLevel * 0.12;
-					const ring = voiceLevel * (isDark ? 18 : 14);
-					const yOffset = 10 + voiceLevel * 6;
-					const blur = 26 + voiceLevel * 18;
-					const ringAlpha = isDark ? 0.24 : 0.18;
-					const innerAlpha = isDark ? 0.95 : 0.78;
-
-					const activeStyle = voiceEnabled
-						? {
-								transform: `scale(${scale})`,
-								boxShadow: `0 0 0 ${ring}px rgba(0,0,0,${ringAlpha}), 0 ${yOffset}px ${blur}px rgba(0,0,0,${innerAlpha})`,
-						  }
-						: undefined;
-
-					return (
-						<Button
-							variant="ghost"
-							className={`h-12 w-12 rounded-full p-0 flex items-center justify-center border border-black/10 dark:border-white/15 ${
-								voiceEnabled
-									? "voice-toggle-active"
-									: "bg-white/70 dark:bg-black/70 text-black/70 dark:text-white/70"
-							}`}
-							style={activeStyle}
-							onClick={() => setVoiceEnabled((v) => !v)}
-							aria-label="Toggle voice mode"
-							title="Toggle voice mode"
-						>
-							<Mic className="h-5 w-5" />
-						</Button>
-					);
-				})()}
-			</div>
-			{/* Bottom-left Tweaks trigger (high z-index to avoid overlay issues) */}
-			<div className="absolute bottom-6 md:bottom-8 left-6 z-50">
+			{/* Bottom Controls: Tactile & Physical */}
+			<div className="absolute bottom-12 left-0 right-0 flex justify-center items-center gap-6 z-50">
+				{/* Tweaks */}
 				<Sheet>
 					<SheetTrigger asChild>
 						<Button
-							variant="ghost"
-							className="h-8 w-8 rounded-full p-0 text-black/70 dark:text-white/70"
-							aria-label="Open tweaks"
-							title="Open tweaks"
+							variant="secondary"
+							className="h-12 w-12 rounded-full shadow-sm hover:shadow-md transition-all active:scale-95 bg-white dark:bg-white/10 border border-border"
 						>
-							<SlidersHorizontal className="h-4 w-4" />
+							<SlidersHorizontal className="h-5 w-5 text-muted-foreground" />
 						</Button>
 					</SheetTrigger>
 					<SheetContent
-						side="left"
-						className="font-mono w-[320px] sm:w-[360px]"
+						side="bottom"
+						className="h-[300px] rounded-t-[2rem] border-t border-border bg-background/95 backdrop-blur-xl p-8"
 					>
-						<SheetHeader>
-							<SheetTitle>Tweaks</SheetTitle>
-							<SheetDescription>Emotion presets</SheetDescription>
-						</SheetHeader>
-						<div className="mt-4 grid grid-cols-2 gap-2">
-							{(
-								[
-									"neutral",
-									"joy",
-									"sad",
-									"surprised",
-									"angry",
-									"curious",
-								] as const
-							).map((k) => (
-								<Button
-									key={k}
-									variant="outline"
-									className="justify-center"
-									onClick={() => applyPreset(k)}
-								>
-									{k.toUpperCase()}
-								</Button>
-							))}
+						<div className="max-w-md mx-auto">
+							<SheetHeader className="mb-6 text-center">
+								<SheetTitle className="text-lg font-medium text-foreground">
+									Emotional Calibration
+								</SheetTitle>
+								<SheetDescription className="text-muted-foreground">
+									Select a baseline neural state.
+								</SheetDescription>
+							</SheetHeader>
+							<div className="grid grid-cols-3 gap-3">
+								{(
+									[
+										"neutral",
+										"joy",
+										"sad",
+										"surprised",
+										"angry",
+										"curious",
+									] as const
+								).map((k) => (
+									<Button
+										key={k}
+										variant="outline"
+										className="h-12 rounded-xl border-border hover:border-primary/50 hover:bg-primary/5 transition-all capitalize text-sm font-medium"
+										onClick={() => applyPreset(k)}
+									>
+										{k}
+									</Button>
+								))}
+							</div>
 						</div>
 					</SheetContent>
 				</Sheet>
-			</div>
-			{/* Bottom-right Settings button (placeholder) */}
-			<div className="absolute bottom-6 md:bottom-8 right-6 z-50">
+
+				{/* Voice Toggle: The Main Switch */}
+				<div className="relative">
+					{(() => {
+						const scale = 1 + voiceLevel * 0.1;
+						const activeStyle = voiceEnabled
+							? {
+									transform: `scale(${scale})`,
+									backgroundColor: "var(--primary)",
+									color: "var(--primary-foreground)",
+									boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+							  }
+							: undefined;
+
+						return (
+							<Button
+								variant="secondary"
+								className={`h-16 w-16 rounded-full shadow-md hover:shadow-lg transition-all duration-300 active:scale-95 border border-border flex items-center justify-center ${
+									voiceEnabled
+										? ""
+										: "bg-white dark:bg-white/10 text-muted-foreground"
+								}`}
+								style={activeStyle}
+								onClick={() => setVoiceEnabled((v) => !v)}
+							>
+								<Mic className="h-6 w-6" />
+							</Button>
+						);
+					})()}
+				</div>
+
+				{/* Settings */}
 				<Button
-					variant="ghost"
-					className="h-8 w-8 rounded-full p-0 text-black/70 dark:text-white/70"
-					aria-label="Settings"
-					title="Settings"
+					variant="secondary"
+					className="h-12 w-12 rounded-full shadow-sm hover:shadow-md transition-all active:scale-95 bg-white dark:bg-white/10 border border-border"
 				>
-					<Settings className="h-4 w-4" />
+					<Settings className="h-5 w-5 text-muted-foreground" />
 				</Button>
 			</div>
 		</div>
