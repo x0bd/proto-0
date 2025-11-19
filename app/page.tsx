@@ -4,6 +4,7 @@
 import { useEffect, useRef, useState } from "react";
 import type React from "react";
 import Avatar from "./components/Avatar";
+import { ChatWindow } from "./components/ChatWindow";
 import {
 	Mic,
 	Settings,
@@ -421,6 +422,9 @@ export default function Home() {
 					<Settings className="h-5 w-5 text-muted-foreground" />
 				</Button>
 			</div>
+
+			{/* Floating Chat Window */}
+			<ChatWindow />
 		</div>
 	);
 }

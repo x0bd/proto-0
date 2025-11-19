@@ -23,22 +23,6 @@ A minimal, expressive avatar whose entire soul is eyes + mouth. Built like the f
 -   [x] **Playful click interactions**:
     -   [x] Face boop (click anywhere for squash-stretch + blink)
     -   [x] Eye winks (click individual eyes)
-    -   [x] Mouth smile (click mouth for instant smile)
-    -   [x] Double-click surprise (wide eyes + open mouth)
--   [x] **Control systems**:
-    -   [x] Emotion presets with tweak panel
-    -   [x] Voice/Text chat mode toggles
-    -   [x] Voice mode (simulated): smooth audio spectrum visualization
--   [x] **Chat interface**:
-    -   [x] Split-screen layout (50/50 desktop, stacked mobile)
-    -   [x] Premium Apple/Vercel-style chat UI
-    -   [x] Mobile responsive with proper keyboard handling
-
-## Design System ✅
-
--   [x] **Single-source symmetry**: face center set explicitly; all transforms pivot around it
--   [x] **Smoothness everywhere**: GSAP curves (back.out, elastic.out), premium easing
--   [x] **Accessibility-first**: proper ARIA labels, keyboard navigation
 -   [x] **Mobile-first responsive**: touch events, proper scaling, keyboard handling
 
 ## Next Level Features 🚀
