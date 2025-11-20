@@ -297,13 +297,14 @@ export default function Home() {
 
 				<button
 					onClick={toggleTheme}
-					className="group flex items-center justify-center w-10 h-10 bg-secondary/30 hover:bg-secondary/50 text-secondary-foreground rounded-full transition-all duration-300 active:scale-95 backdrop-blur-sm border border-transparent hover:border-border/50"
+					className="group flex items-center gap-3 px-5 py-2.5 bg-secondary/30 hover:bg-secondary/50 text-secondary-foreground rounded-full transition-all duration-500 hover:scale-105 active:scale-95 backdrop-blur-sm border border-transparent hover:border-border/50"
 				>
+					<span className="text-xs font-medium tracking-wide group-hover:text-primary transition-colors hidden md:inline-block">
+						{isDark ? "墨 (Sumi)" : "和紙 (Washi)"}
+					</span>
 					<div
-						className={`w-4 h-4 rounded-full transition-colors duration-500 ${
-							isDark
-								? "bg-white shadow-[0_0_8px_rgba(255,255,255,0.5)]"
-								: "bg-black"
+						className={`w-2 h-2 rounded-full transition-colors duration-500 ${
+							isDark ? "bg-white" : "bg-black"
 						}`}
 					/>
 				</button>
@@ -311,7 +312,7 @@ export default function Home() {
 
 			<div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
 				<motion.div
-					className="relative cursor-grab active:cursor-grabbing touch-none w-full max-w-[90vw] md:max-w-[800px] lg:max-w-[1000px] px-4 md:px-0 pointer-events-auto"
+					className="relative cursor-grab active:cursor-grabbing touch-none w-[95vw] md:w-full max-w-[95vw] md:max-w-[800px] lg:max-w-[1000px] px-0 md:px-0 pointer-events-auto"
 					drag="x"
 					dragConstraints={{ left: 0, right: 0 }}
 					dragElastic={0.2}
@@ -375,10 +376,22 @@ export default function Home() {
 			</div>
 
 			{/* Version Info - Bottom Left */}
-			<div className="absolute bottom-8 left-8 z-50 select-none opacity-60">
+			<div className="absolute bottom-8 left-8 z-50 select-none opacity-60 hidden md:block">
 				<span className="text-[10px] text-muted-foreground tracking-widest font-mono">
 					VER. 0.9.2 // 正常 (NORMAL)
 				</span>
+			</div>
+
+			{/* Mobile Info - Top Left below Header */}
+			<div className="absolute top-24 left-8 z-40 md:hidden select-none pointer-events-none">
+				<div className="flex flex-col gap-1">
+					<span className="text-[10px] text-muted-foreground tracking-widest font-mono uppercase">
+						Mood: {activePreset || "Neutral"}
+					</span>
+					<span className="text-[10px] text-muted-foreground/50 tracking-widest font-mono uppercase">
+						Ver 0.9.2
+					</span>
+				</div>
 			</div>
 
 			{/* Floating Chat Window */}
