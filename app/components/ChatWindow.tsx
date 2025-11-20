@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { X, MessageSquare, Send, Minimize2, Maximize2 } from "lucide-react";
+import { X, Minimize2, Maximize2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -13,45 +13,34 @@ interface Message {
 	content: string;
 }
 
-export function ChatWindow() {
-	const [isOpen, setIsOpen] = React.useState(true);
+interface ChatWindowProps {
+	isOpen: boolean;
+	onClose: () => void;
+}
+
+export function ChatWindow({ isOpen, onClose }: ChatWindowProps) {
 	const [isMinimized, setIsMinimized] = React.useState(false);
 	const [messages, setMessages] = React.useState<Message[]>([
 		{
 			id: "1",
 			role: "assistant",
-			content: "Hello. I am Kokoro. How are you feeling today?",
+			content: "Voice transcription history active.",
 		},
 	]);
 	const [inputValue, setInputValue] = React.useState("");
 
-	const handleSend = () => {
-		if (!inputValue.trim()) return;
-		const newMsg: Message = {
-			id: Date.now().toString(),
-			role: "user",
-			content: inputValue,
-		};
-		setMessages((prev) => [...prev, newMsg]);
-		setInputValue("");
-
-		// Simulate response
-		setTimeout(() => {
-			setMessages((prev) => [
-				...prev,
-				{
-					id: (Date.now() + 1).toString(),
-					role: "assistant",
-					content: "I sense a shift in your emotional state.",
-				},
-			]);
-		}, 1000);
-	};
+	// Auto-scroll to bottom when messages change
+	const scrollRef = React.useRef<HTMLDivElement>(null);
+	React.useEffect(() => {
+		if (scrollRef.current) {
+			scrollRef.current.scrollIntoView({ behavior: "smooth" });
+		}
+	}, [messages]);
 
 	return (
-		<div className="fixed bottom-8 right-8 z-50 pointer-events-none">
+		<div className="fixed bottom-32 right-8 z-40 pointer-events-none">
 			<AnimatePresence mode="wait">
-				{isOpen ? (
+				{isOpen && (
 					<motion.div
 						initial={{ opacity: 0, scale: 0.9, y: 20 }}
 						animate={{
@@ -74,9 +63,7 @@ export function ChatWindow() {
 						>
 							<div className="flex items-center gap-2">
 								<div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-								<span className="text-lg font-medium tracking-widest font-[family-name:var(--font-cherry-bomb-one)]">
-									ココロ
-								</span>
+									VOICE HISTORY
 							</div>
 							<div className="flex items-center gap-1">
 								<Button
@@ -95,7 +82,7 @@ export function ChatWindow() {
 									variant="ghost"
 									size="icon"
 									className="h-7 w-7 rounded-lg hover:bg-red-500/20 text-muted-foreground hover:text-red-400"
-									onClick={() => setIsOpen(false)}
+									onClick={onClose}
 								>
 									<X className="h-3.5 w-3.5" />
 								</Button>
@@ -127,49 +114,12 @@ export function ChatWindow() {
 												</div>
 											</div>
 										))}
+										<div ref={scrollRef} />
 									</div>
 								</ScrollArea>
-
-								{/* Input */}
-								<div className="p-4 border-t border-border/50 bg-secondary/20">
-									<form
-										onSubmit={(e) => {
-											e.preventDefault();
-											handleSend();
-										}}
-										className="flex gap-2"
-									>
-										<Input
-											value={inputValue}
-											onChange={(e) => setInputValue(e.target.value)}
-											placeholder="Message Kokoro..."
-											className="bg-background/50 border-border/50 focus-visible:ring-primary/20 focus-visible:border-primary/50 rounded-xl h-10 text-foreground placeholder:text-muted-foreground"
-										/>
-										<Button
-											type="submit"
-											size="icon"
-											className="h-10 w-10 rounded-xl shrink-0 bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm"
-											disabled={!inputValue.trim()}
-										>
-											<Send className="h-3.5 w-3.5" />
-										</Button>
-									</form>
-								</div>
 							</>
 						)}
 					</motion.div>
-				) : (
-					<motion.button
-						initial={{ scale: 0, rotate: -10 }}
-						animate={{ scale: 1, rotate: 0 }}
-						exit={{ scale: 0, rotate: 10 }}
-						whileHover={{ scale: 1.05 }}
-						whileTap={{ scale: 0.95 }}
-						onClick={() => setIsOpen(true)}
-						className="pointer-events-auto h-14 w-14 rounded-[1.25rem] bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg flex items-center justify-center border border-primary/20"
-					>
-						<MessageSquare className="h-5 w-5" />
-					</motion.button>
 				)}
 			</AnimatePresence>
 		</div>

@@ -3,28 +3,15 @@
 
 import { useEffect, useRef, useState } from "react";
 import type React from "react";
+import { motion, type PanInfo } from "motion/react";
 import Avatar from "./components/Avatar";
 import { ChatWindow } from "./components/ChatWindow";
 import {
 	Mic,
 	Settings,
-	SlidersHorizontal,
-	Smile,
-	Frown,
-	Zap,
-	Flame,
-	Search,
-	Meh,
+	History,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-	Sheet,
-	SheetContent,
-	SheetDescription,
-	SheetHeader,
-	SheetTitle,
-	SheetTrigger,
-} from "@/components/ui/sheet";
 
 interface EmotionState {
 	joy: number;
@@ -72,6 +59,7 @@ export default function Home() {
 	const [baseEmotion, setBaseEmotion] =
 		useState<EmotionState>(NEUTRAL_EMOTION);
 	const [activePreset, setActivePreset] = useState<string | null>("neutral");
+	const [isHistoryOpen, setIsHistoryOpen] = useState(false);
 
 	const [voiceEnabled, setVoiceEnabled] = useState<boolean>(true);
 	const [voiceLevel, setVoiceLevel] = useState<number>(0);
@@ -271,6 +259,26 @@ export default function Home() {
 		targetEmotionRef.current = baseEmotionRef.current;
 	};
 
+	const cyclePreset = (direction: number) => {
+		const keys = Object.keys(presets);
+		const currentIndex = keys.indexOf(activePreset || "neutral");
+		let nextIndex = currentIndex + direction;
+		if (nextIndex >= keys.length) nextIndex = 0;
+		if (nextIndex < 0) nextIndex = keys.length - 1;
+		applyPreset(keys[nextIndex] as keyof typeof presets);
+	};
+
+	const handleDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+		const threshold = 50;
+		if (info.offset.x < -threshold) {
+			// Swipe Left -> Next
+			cyclePreset(1);
+		} else if (info.offset.x > threshold) {
+			// Swipe Right -> Prev
+			cyclePreset(-1);
+		}
+	};
+
 	return (
 		<div
 			className="min-h-dvh w-screen bg-background text-foreground flex items-center justify-center overflow-hidden relative selection:bg-primary selection:text-primary-foreground font-sans transition-colors duration-700"
@@ -306,79 +314,30 @@ export default function Home() {
 
 			{/* Centered face: Soft & Floating */}
 			<div className="absolute inset-0 z-10 flex items-center justify-center">
-				<div className="relative">
+				<motion.div
+					className="relative cursor-grab active:cursor-grabbing touch-none"
+					drag="x"
+					dragConstraints={{ left: 0, right: 0 }}
+					dragElastic={0.2}
+					onDragEnd={handleDragEnd}
+				>
 					{/* Soft Aura */}
 					<div className="absolute inset-[-100px] bg-primary/5 rounded-[3rem] blur-3xl pointer-events-none animate-pulse-slower" />
 					<Avatar emotion={currentEmotion} voiceEnabled={voiceEnabled} />
-				</div>
+				</motion.div>
 			</div>
 
 			{/* Bottom Controls: Marshmallow & Bento */}
 			<div className="absolute bottom-12 left-0 right-0 flex justify-center items-center gap-8 z-50">
 				{/* Mood Bento (Drawer) */}
-				{/* Mood Bento (Drawer) */}
-				<Sheet>
-					<SheetTrigger asChild>
-						<Button
-							variant="secondary"
-							className="h-14 w-14 rounded-[1.25rem] shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 active:scale-95 bg-white/80 dark:bg-white/5 border border-white/20 backdrop-blur-md"
-						>
-							<SlidersHorizontal className="h-5 w-5 text-muted-foreground" />
-						</Button>
-					</SheetTrigger>
-					<SheetContent
-						side="bottom"
-						className="h-[450px] rounded-t-[2.5rem] border-t-0 bg-background/95 backdrop-blur-xl p-8 shadow-2xl"
-					>
-						<div className="max-w-md mx-auto h-full flex flex-col relative">
-
-
-							<SheetHeader className="mb-8 text-center space-y-2">
-								<SheetTitle className="text-xl font-medium text-foreground tracking-wide flex items-center justify-center gap-2">
-									<span className="text-primary">●</span> 感情 (Mood) Bento
-								</SheetTitle>
-								<SheetDescription className="text-muted-foreground text-xs tracking-widest uppercase">
-									Select Neural Configuration
-								</SheetDescription>
-							</SheetHeader>
-							
-							<div className="grid grid-cols-3 gap-4 flex-1">
-								{(
-									[
-										{ id: "neutral", label: "平常", sub: "Neutral", icon: Meh },
-										{ id: "joy", label: "喜び", sub: "Joy", icon: Smile },
-										{ id: "sad", label: "悲しみ", sub: "Sadness", icon: Frown },
-										{ id: "surprised", label: "驚き", sub: "Surprise", icon: Zap },
-										{ id: "angry", label: "怒り", sub: "Anger", icon: Flame },
-										{ id: "curious", label: "好奇心", sub: "Curious", icon: Search },
-									] as const
-								).map((item) => {
-									const isActive = activePreset === item.id;
-									const Icon = item.icon;
-									
-									return (
-										<Button
-											key={item.id}
-											variant="outline"
-											className={`h-full flex flex-col gap-2 rounded-[1.5rem] border-border/50 transition-all duration-300 hover:scale-105 active:scale-95 ${
-												isActive 
-													? "bg-primary/10 border-primary text-primary" 
-													: "hover:border-primary/50 hover:bg-primary/5 hover:text-primary"
-											}`}
-											onClick={() => applyPreset(item.id as any)}
-										>
-											<Icon className={`h-6 w-6 ${isActive ? "fill-current" : ""}`} />
-											<div className="flex flex-col items-center gap-0.5">
-												<span className="text-sm font-medium">{item.label}</span>
-												<span className="text-[9px] opacity-60 uppercase tracking-wider">{item.sub}</span>
-											</div>
-										</Button>
-									);
-								})}
-							</div>
-						</div>
-					</SheetContent>
-				</Sheet>
+				{/* History Toggle */}
+				<Button
+					variant="secondary"
+					className="h-14 w-14 rounded-[1.25rem] shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 active:scale-95 bg-white/80 dark:bg-white/5 border border-white/20 backdrop-blur-md"
+					onClick={() => setIsHistoryOpen(!isHistoryOpen)}
+				>
+					<History className="h-5 w-5 text-muted-foreground" />
+				</Button>
 
 				{/* Voice Toggle: Soft Switch */}
 				<div className="relative">
@@ -426,7 +385,8 @@ export default function Home() {
 		</div>
 
 		{/* Floating Chat Window */}
-		<ChatWindow />
+		{/* Floating Chat Window */}
+		<ChatWindow isOpen={isHistoryOpen} onClose={() => setIsHistoryOpen(false)} />
 		</div>
 	);
 }
