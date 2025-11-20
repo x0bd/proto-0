@@ -322,7 +322,7 @@ export default function Home() {
 
 			<div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none overflow-visible">
 				<motion.div
-					className="relative cursor-grab active:cursor-grabbing touch-none w-screen max-w-none md:max-w-[800px] lg:max-w-[1000px] px-0 pointer-events-auto"
+					className="relative cursor-grab active:cursor-grabbing touch-none w-screen max-w-none md:max-w-[800px] lg:max-w-[1000px] px-0 pointer-events-auto h-[50vh] md:h-auto flex items-center justify-center"
 					drag="x"
 					dragConstraints={{ left: 0, right: 0 }}
 					dragElastic={0.2}

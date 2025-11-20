@@ -613,7 +613,7 @@ export default function Avatar({
 			>
 				<svg
 					viewBox="0 0 520 280"
-					className="relative w-full h-auto min-w-[280px]"
+					className="relative w-full h-auto min-w-[280px] md:min-w-[auto] scale-[1.4] md:scale-100 origin-center"
 				>
 					{/* Left Eye - 90px from center (260 - 90 = 170) */}
 					<ellipse
