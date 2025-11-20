@@ -38,7 +38,7 @@ export function ChatWindow({ isOpen, onClose }: ChatWindowProps) {
 	}, [messages]);
 
 	return (
-		<div className="fixed bottom-32 right-8 z-40 pointer-events-none">
+		<div className="fixed bottom-24 left-4 right-4 md:left-auto md:right-8 md:bottom-32 z-40 pointer-events-none flex justify-center md:block">
 			<AnimatePresence mode="wait">
 				{isOpen && (
 					<motion.div
@@ -47,8 +47,8 @@ export function ChatWindow({ isOpen, onClose }: ChatWindowProps) {
 							opacity: 1,
 							scale: 1,
 							y: 0,
-							height: isMinimized ? "auto" : 480,
-							width: isMinimized ? 280 : 380,
+							height: isMinimized ? "auto" : "min(480px, 60vh)",
+							width: isMinimized ? 280 : "min(380px, 90vw)",
 						}}
 						exit={{ opacity: 0, scale: 0.9, y: 20 }}
 						transition={{ type: "spring", damping: 25, stiffness: 300 }}

@@ -616,10 +616,8 @@ export default function Avatar({
 				<div className="absolute -inset-4 bg-black/2 dark:bg-white/2 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
 				<svg
-					width="520"
-					height="280"
 					viewBox="0 0 520 280"
-					className="relative"
+					className="relative w-full h-full max-w-[520px] max-h-[280px]"
 				>
 					{/* Left Eye - 90px from center (260 - 90 = 170) */}
 					<ellipse

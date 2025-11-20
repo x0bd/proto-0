@@ -312,10 +312,9 @@ export default function Home() {
 				</button>
 			</div>
 
-			{/* Centered face: Soft & Floating */}
-			<div className="absolute inset-0 z-10 flex items-center justify-center">
+			<div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
 				<motion.div
-					className="relative cursor-grab active:cursor-grabbing touch-none"
+					className="relative cursor-grab active:cursor-grabbing touch-none w-full max-w-[520px] px-4 md:px-0 pointer-events-auto"
 					drag="x"
 					dragConstraints={{ left: 0, right: 0 }}
 					dragElastic={0.2}
@@ -328,7 +327,7 @@ export default function Home() {
 			</div>
 
 			{/* Bottom Controls: Marshmallow & Bento */}
-			<div className="absolute bottom-12 left-0 right-0 flex justify-center items-center gap-8 z-50">
+			<div className="absolute bottom-8 md:bottom-12 left-0 right-0 flex justify-center items-center gap-4 md:gap-8 z-50">
 				{/* Mood Bento (Drawer) */}
 				{/* History Toggle */}
 				<Button
