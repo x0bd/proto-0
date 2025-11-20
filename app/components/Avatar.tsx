@@ -611,10 +611,6 @@ export default function Avatar({
 				onClick={performBoop}
 				onDoubleClick={performSurprise}
 			>
-				{/* Enhanced playful hover glow */}
-				<div className="absolute -inset-8 bg-black/5 dark:bg-white/5 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-				<div className="absolute -inset-4 bg-black/2 dark:bg-white/2 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
 				<svg
 					viewBox="0 0 520 280"
 					className="relative w-full h-auto min-w-[280px]"

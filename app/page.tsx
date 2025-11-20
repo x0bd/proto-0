@@ -297,14 +297,13 @@ export default function Home() {
 
 				<button
 					onClick={toggleTheme}
-					className="group flex items-center gap-3 px-5 py-2.5 bg-secondary/30 hover:bg-secondary/50 text-secondary-foreground rounded-full transition-all duration-500 hover:scale-105 active:scale-95 backdrop-blur-sm border border-transparent hover:border-border/50"
+					className="group flex items-center justify-center w-10 h-10 bg-secondary/30 hover:bg-secondary/50 text-secondary-foreground rounded-full transition-all duration-300 active:scale-95 backdrop-blur-sm border border-transparent hover:border-border/50"
 				>
-					<span className="text-xs font-medium tracking-wide group-hover:text-primary transition-colors">
-						{isDark ? "墨 (Sumi)" : "和紙 (Washi)"}
-					</span>
 					<div
-						className={`w-2 h-2 rounded-full transition-colors duration-500 ${
-							isDark ? "bg-white" : "bg-black"
+						className={`w-4 h-4 rounded-full transition-colors duration-500 ${
+							isDark
+								? "bg-white shadow-[0_0_8px_rgba(255,255,255,0.5)]"
+								: "bg-black"
 						}`}
 					/>
 				</button>
@@ -318,8 +317,6 @@ export default function Home() {
 					dragElastic={0.2}
 					onDragEnd={handleDragEnd}
 				>
-					{/* Soft Aura */}
-					<div className="absolute inset-[-100px] bg-primary/5 rounded-[3rem] blur-3xl pointer-events-none animate-pulse-slower" />
 					<Avatar
 						emotion={currentEmotion}
 						voiceEnabled={voiceEnabled}
