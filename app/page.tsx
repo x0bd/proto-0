@@ -309,7 +309,7 @@ export default function Home() {
 					onClick={toggleTheme}
 					className="group flex items-center gap-3 px-5 py-2.5 bg-secondary/30 hover:bg-secondary/50 text-secondary-foreground rounded-full transition-all duration-500 hover:scale-105 active:scale-95 backdrop-blur-sm border border-transparent hover:border-border/50"
 				>
-					<span className="text-xs font-medium tracking-wide group-hover:text-primary transition-colors hidden md:inline-block">
+					<span className="text-xs font-medium tracking-wide group-hover:text-primary transition-colors">
 						{isDark ? "墨 (Sumi)" : "和紙 (Washi)"}
 					</span>
 					<div
@@ -429,8 +429,13 @@ export default function Home() {
 				</Button>
 			</div>
 
-			{/* Mood Info - Bottom Left */}
-			<div className="absolute bottom-8 left-8 z-50 select-none opacity-60">
+			{/* Mood Info - Bottom Left (Desktop) / Top Left (Mobile) */}
+			<div className="absolute bottom-8 left-8 z-50 select-none opacity-60 hidden md:block">
+				<span className="text-[10px] text-muted-foreground tracking-widest font-mono uppercase">
+					MOOD // {activePreset || "NEUTRAL"}
+				</span>
+			</div>
+			<div className="absolute top-24 left-8 z-40 select-none opacity-60 md:hidden pointer-events-none">
 				<span className="text-[10px] text-muted-foreground tracking-widest font-mono uppercase">
 					MOOD // {activePreset || "NEUTRAL"}
 				</span>
