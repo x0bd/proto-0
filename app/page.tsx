@@ -310,9 +310,9 @@ export default function Home() {
 				</button>
 			</div>
 
-			<div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
+			<div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none overflow-visible">
 				<motion.div
-					className="relative cursor-grab active:cursor-grabbing touch-none w-[95vw] md:w-full max-w-[95vw] md:max-w-[800px] lg:max-w-[1000px] px-0 md:px-0 pointer-events-auto"
+					className="relative cursor-grab active:cursor-grabbing touch-none w-screen max-w-none md:max-w-[800px] lg:max-w-[1000px] px-0 pointer-events-auto"
 					drag="x"
 					dragConstraints={{ left: 0, right: 0 }}
 					dragElastic={0.2}
@@ -375,23 +375,11 @@ export default function Home() {
 				</Button>
 			</div>
 
-			{/* Version Info - Bottom Left */}
-			<div className="absolute bottom-8 left-8 z-50 select-none opacity-60 hidden md:block">
-				<span className="text-[10px] text-muted-foreground tracking-widest font-mono">
-					VER. 0.9.2 // 正常 (NORMAL)
+			{/* Mood Info - Bottom Left */}
+			<div className="absolute bottom-8 left-8 z-50 select-none opacity-60">
+				<span className="text-[10px] text-muted-foreground tracking-widest font-mono uppercase">
+					MOOD // {activePreset || "NEUTRAL"}
 				</span>
-			</div>
-
-			{/* Mobile Info - Top Left below Header */}
-			<div className="absolute top-24 left-8 z-40 md:hidden select-none pointer-events-none">
-				<div className="flex flex-col gap-1">
-					<span className="text-[10px] text-muted-foreground tracking-widest font-mono uppercase">
-						Mood: {activePreset || "Neutral"}
-					</span>
-					<span className="text-[10px] text-muted-foreground/50 tracking-widest font-mono uppercase">
-						Ver 0.9.2
-					</span>
-				</div>
 			</div>
 
 			{/* Floating Chat Window */}
