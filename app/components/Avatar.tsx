@@ -600,10 +600,10 @@ export default function Avatar({
 	}, [voiceEnabled]);
 
 	return (
-		<div className={`flex items-center justify-center ${className}`}>
+		<div className={`flex items-center justify-center w-full ${className}`}>
 			<div
 				ref={containerRef}
-				className="relative group cursor-pointer"
+				className="relative group cursor-pointer w-full"
 				onMouseMove={handlePointerMove}
 				onMouseLeave={handlePointerLeave}
 				onTouchMove={handlePointerMove}
@@ -617,7 +617,7 @@ export default function Avatar({
 
 				<svg
 					viewBox="0 0 520 280"
-					className="relative w-full h-full max-w-[520px] max-h-[280px]"
+					className="relative w-full h-auto min-w-[280px]"
 				>
 					{/* Left Eye - 90px from center (260 - 90 = 170) */}
 					<ellipse
