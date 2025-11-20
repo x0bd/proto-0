@@ -2,10 +2,16 @@
 
 import { useEffect, useRef, useState } from "react";
 import type React from "react";
-import { motion, type PanInfo } from "motion/react";
+import { motion, type PanInfo, AnimatePresence } from "motion/react";
 import Avatar from "./components/Avatar";
 import { ChatWindow } from "./components/ChatWindow";
-import { Mic, Settings, History } from "lucide-react";
+import {
+	Mic,
+	Settings,
+	History,
+	ChevronLeft,
+	ChevronRight,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface EmotionState {
@@ -55,6 +61,7 @@ export default function Home() {
 		useState<EmotionState>(NEUTRAL_EMOTION);
 	const [activePreset, setActivePreset] = useState<string | null>("neutral");
 	const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+	const [showSwipeHints, setShowSwipeHints] = useState(true);
 
 	const [voiceEnabled, setVoiceEnabled] = useState<boolean>(true);
 	const [voiceLevel, setVoiceLevel] = useState<number>(0);
@@ -90,6 +97,14 @@ export default function Home() {
 		baseEmotionRef.current = baseEmotion;
 	}, [baseEmotion]);
 
+	// Auto-hide hints after 5 seconds
+	useEffect(() => {
+		const timer = setTimeout(() => {
+			setShowSwipeHints(false);
+		}, 5000);
+		return () => clearTimeout(timer);
+	}, []);
+
 	// Smoothly interpolate currentEmotion toward targetEmotionRef
 	useEffect(() => {
 		let frameId: number;
@@ -118,7 +133,6 @@ export default function Home() {
 	}, []);
 
 	// Simulated voice "loudness" driving the mic breath halo.
-	// Later we can replace this with real mic amplitude while keeping the same visual mapping.
 	useEffect(() => {
 		if (!voiceEnabled) {
 			setVoiceLevel(0);
@@ -180,7 +194,7 @@ export default function Home() {
 		setActivePreset(key as string);
 	};
 
-	// Cursor → Emotion mapping (viewport-based approximation; face is centered)
+	// Cursor → Emotion mapping
 	const handlePointerMove = (e: React.MouseEvent<HTMLDivElement>) => {
 		if (typeof window === "undefined") return;
 		const { innerWidth, innerHeight } = window;
@@ -190,26 +204,21 @@ export default function Home() {
 		const clientX = e.clientX;
 		const clientY = e.clientY;
 
-		// Normalize around the face center with a soft radius
 		const mx = clientX - centerX;
 		const my = clientY - centerY;
 		const nx = Math.max(-1, Math.min(1, mx / (innerWidth * 0.25))); // -1..1
 		const ny = Math.max(-1, Math.min(1, my / (innerHeight * 0.25))); // -1..1
 
-		// Radial intensity with a calm "dead zone" near the center
 		const r = Math.min(1, Math.hypot(nx, ny));
 		const deadZone = 0.18;
 		const intensity =
 			r <= deadZone ? 0 : smooth01((r - deadZone) / (1 - deadZone));
 
-		// Map to raw emotion targets
-		const joyBase = smooth01(-ny); // cursor above center → joy
-		const sadnessBase = smooth01(ny); // below center → sadness
-		const curiosityBase = smooth01(Math.abs(nx)); // horizontal distance → curiosity
-		// Anger appears only at very far horizontal extremes and is capped for elegance
+		const joyBase = smooth01(-ny);
+		const sadnessBase = smooth01(ny);
+		const curiosityBase = smooth01(Math.abs(nx));
 		const angerBase =
 			smooth01(Math.max(0, Math.abs(nx) - 0.55) / 0.45) * 0.65;
-		// Mild surprise from vertical distance, never fully dominating
 		const surpriseBase = smooth01(Math.abs(ny) * 0.6) * 0.7;
 
 		const joy = joyBase * intensity;
@@ -226,7 +235,6 @@ export default function Home() {
 			curiosity,
 		};
 
-		// Blend pointer-driven emotion with baseMood so presets still matter
 		const weightPointer = 0.6;
 		const weightBase = 1 - weightPointer;
 		const base = baseEmotionRef.current;
@@ -250,7 +258,6 @@ export default function Home() {
 	};
 
 	const handlePointerLeave = () => {
-		// When cursor leaves, drift back toward the baseEmotion
 		targetEmotionRef.current = baseEmotionRef.current;
 	};
 
@@ -261,6 +268,9 @@ export default function Home() {
 		if (nextIndex >= keys.length) nextIndex = 0;
 		if (nextIndex < 0) nextIndex = keys.length - 1;
 		applyPreset(keys[nextIndex] as keyof typeof presets);
+
+		// Hide hints if user interacts
+		if (showSwipeHints) setShowSwipeHints(false);
 	};
 
 	const handleDragEnd = (
@@ -318,6 +328,51 @@ export default function Home() {
 					dragElastic={0.2}
 					onDragEnd={handleDragEnd}
 				>
+					{/* Swipe Hints Overlay */}
+					<AnimatePresence>
+						{showSwipeHints && (
+							<motion.div
+								initial={{ opacity: 0 }}
+								animate={{ opacity: 1 }}
+								exit={{ opacity: 0 }}
+								transition={{ duration: 1 }}
+								className="absolute inset-0 flex items-center justify-between px-4 md:px-8 pointer-events-none z-50"
+							>
+								<motion.div
+									initial={{ x: 10, opacity: 0 }}
+									animate={{ x: 0, opacity: 0.5 }}
+									transition={{
+										repeat: Infinity,
+										repeatType: "reverse",
+										duration: 1.5,
+									}}
+									className="flex items-center gap-2"
+								>
+									<ChevronLeft className="w-8 h-8 text-muted-foreground" />
+									<span className="text-xs font-mono tracking-widest uppercase text-muted-foreground hidden md:block">
+										Prev Mood
+									</span>
+								</motion.div>
+
+								<motion.div
+									initial={{ x: -10, opacity: 0 }}
+									animate={{ x: 0, opacity: 0.5 }}
+									transition={{
+										repeat: Infinity,
+										repeatType: "reverse",
+										duration: 1.5,
+									}}
+									className="flex items-center gap-2"
+								>
+									<span className="text-xs font-mono tracking-widest uppercase text-muted-foreground hidden md:block">
+										Next Mood
+									</span>
+									<ChevronRight className="w-8 h-8 text-muted-foreground" />
+								</motion.div>
+							</motion.div>
+						)}
+					</AnimatePresence>
+
 					<Avatar
 						emotion={currentEmotion}
 						voiceEnabled={voiceEnabled}
@@ -327,7 +382,6 @@ export default function Home() {
 
 			{/* Bottom Controls: Marshmallow & Bento */}
 			<div className="absolute bottom-8 md:bottom-12 left-0 right-0 flex justify-center items-center gap-4 md:gap-8 z-50">
-				{/* Mood Bento (Drawer) */}
 				{/* History Toggle */}
 				<Button
 					variant="secondary"
@@ -382,8 +436,6 @@ export default function Home() {
 				</span>
 			</div>
 
-			{/* Floating Chat Window */}
-			{/* Floating Chat Window */}
 			<ChatWindow
 				isOpen={isHistoryOpen}
 				onClose={() => setIsHistoryOpen(false)}
