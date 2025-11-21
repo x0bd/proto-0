@@ -438,6 +438,7 @@ export default function Home() {
 			<ChatWindow
 				isOpen={isHistoryOpen}
 				onClose={() => setIsHistoryOpen(false)}
+				isListening={voiceEnabled}
 			/>
 		</div>
 	);
