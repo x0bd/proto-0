@@ -190,19 +190,20 @@ export function ChatWindow({ isOpen, onClose, isListening }: ChatWindowProps) {
 						drag
 						dragMomentum={false}
 						dragElastic={0.1}
-						dragConstraints={{ left: -200, right: 200, top: -200, bottom: 200 }}
 					>
 						{/* Clean Glass Header */}
 						<div
 							className="p-6 flex items-center justify-between cursor-grab active:cursor-grabbing select-none z-10"
 							onPointerDown={(e) => e.preventDefault()}
 						>
-							<div className="flex items-center gap-3 opacity-60">
-								<div className="w-1.5 h-1.5 rounded-full bg-primary" />
-								<span className="text-[10px] font-medium tracking-[0.2em] uppercase">
-									History
+							{/* Status Badge */}
+							<div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/5 backdrop-blur-md">
+								<div className={`w-1.5 h-1.5 rounded-full ${isListening ? "bg-green-500 animate-pulse" : "bg-zinc-400 dark:bg-zinc-600"}`} />
+								<span className="text-[10px] font-medium tracking-wider uppercase text-muted-foreground">
+									{isListening ? "Listening" : "Paused"}
 								</span>
 							</div>
+
 							<div className="flex items-center gap-2">
 								<Button
 									variant="ghost"
@@ -229,57 +230,45 @@ export function ChatWindow({ isOpen, onClose, isListening }: ChatWindowProps) {
 
 						{/* Content */}
 						{!isMinimized && (
-							<>
-								<ScrollArea className="flex-1 px-2 relative z-10">
-									<div className="px-3 pb-20 space-y-6 pt-4">
-										{messages.map((msg) => (
-											<motion.div
-												initial={{ opacity: 0, y: 10 }}
-												animate={{ opacity: 1, y: 0 }}
-												key={msg.id}
-												className={`flex ${
+							<ScrollArea className="flex-1 px-2 relative z-10">
+								<div className="px-3 pb-6 space-y-6 pt-2">
+									{messages.map((msg) => (
+										<motion.div
+											initial={{ opacity: 0, y: 10 }}
+											animate={{ opacity: 1, y: 0 }}
+											key={msg.id}
+											className={`flex ${
+												msg.role === "user"
+													? "justify-end"
+													: "justify-start"
+											}`}
+										>
+											<div
+												className={`max-w-[85%] p-4 text-sm leading-relaxed shadow-sm relative overflow-hidden ${
 													msg.role === "user"
-														? "justify-end"
-														: "justify-start"
+														? "bg-primary text-primary-foreground rounded-[1.5rem] rounded-tr-sm"
+														: "bg-white dark:bg-white/5 text-foreground rounded-[1.5rem] rounded-tl-sm border border-black/5 dark:border-white/5"
 												}`}
 											>
-												<div
-													className={`max-w-[85%] p-4 text-sm leading-relaxed shadow-sm relative overflow-hidden ${
-														msg.role === "user"
-															? "bg-primary text-primary-foreground rounded-[1.5rem] rounded-tr-sm"
-															: "bg-white dark:bg-white/5 text-foreground rounded-[1.5rem] rounded-tl-sm border border-black/5 dark:border-white/5"
-													}`}
-												>
-													{msg.type === "audio" ? (
-														<AudioMessage
-															duration={
-																msg.duration ||
-																"0:00"
-															}
-															transcription={msg.transcription}
-														/>
-													) : (
-														<div className="relative z-10">
-															{msg.content}
-														</div>
-													)}
-												</div>
-											</motion.div>
-										))}
-										<div ref={scrollRef} />
-									</div>
-								</ScrollArea>
-
-								{/* Footer / Input Area Hint */}
-								<div className="absolute bottom-0 left-0 right-0 p-4 pt-6 bg-gradient-to-t from-white via-white/90 to-transparent dark:from-black dark:via-black/90 z-20">
-									<div className="h-12 rounded-[1.25rem] bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/5 flex items-center px-4 gap-3 opacity-50 hover:opacity-100 transition-all cursor-text backdrop-blur-sm">
-										<div className={`w-1 h-1 rounded-full bg-foreground/50 ${isListening ? "animate-pulse" : ""}`} />
-										<span className="text-xs text-muted-foreground font-medium tracking-wide">
-											{isListening ? "Listening..." : "Mic Paused"}
-										</span>
-									</div>
+												{msg.type === "audio" ? (
+													<AudioMessage
+														duration={
+															msg.duration ||
+															"0:00"
+														}
+														transcription={msg.transcription}
+													/>
+												) : (
+													<div className="relative z-10">
+														{msg.content}
+													</div>
+												)}
+											</div>
+										</motion.div>
+									))}
+									<div ref={scrollRef} />
 								</div>
-							</>
+							</ScrollArea>
 						)}
 					</motion.div>
 				)}
