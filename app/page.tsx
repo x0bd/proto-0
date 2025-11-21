@@ -13,6 +13,7 @@ import {
 	ChevronRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useTheme } from "next-themes";
 
 interface EmotionState {
 	joy: number;
@@ -70,27 +71,12 @@ export default function Home() {
 	const targetEmotionRef = useRef<EmotionState>(NEUTRAL_EMOTION);
 	const baseEmotionRef = useRef<EmotionState>(NEUTRAL_EMOTION);
 
-	const [isDark, setIsDark] = useState<boolean>(() => {
-		if (typeof window === "undefined") return false;
-		const root = document.documentElement;
-		const prefersDark =
-			window.matchMedia &&
-			window.matchMedia("(prefers-color-scheme: dark)").matches;
-		return root.classList.contains("dark") || prefersDark;
-	});
+	const { theme, setTheme } = useTheme();
+	const [mounted, setMounted] = useState(false);
 
 	useEffect(() => {
-		// Sync class with state on mount and whenever it changes
-		const root = document.documentElement;
-		root.classList.toggle("dark", isDark);
-	}, [isDark]);
-
-	const toggleTheme = () => {
-		const root = document.documentElement;
-		const next = !isDark;
-		root.classList.toggle("dark", next);
-		setIsDark(next);
-	};
+		setMounted(true);
+	}, []);
 
 	// Keep baseEmotionRef in sync with state
 	useEffect(() => {
@@ -306,15 +292,23 @@ export default function Home() {
 				</div>
 
 				<button
-					onClick={toggleTheme}
+					onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
 					className="group flex items-center gap-3 px-5 py-2.5 bg-secondary/30 hover:bg-secondary/50 text-secondary-foreground rounded-full transition-all duration-500 hover:scale-105 active:scale-95 backdrop-blur-sm border border-transparent hover:border-border/50"
 				>
 					<span className="text-xs font-medium tracking-wide group-hover:text-primary transition-colors">
-						{isDark ? "墨 (Sumi)" : "和紙 (Washi)"}
+						{mounted
+							? theme === "dark"
+								? "墨 (Sumi)"
+								: "和紙 (Washi)"
+							: "..."}
 					</span>
 					<div
 						className={`w-2 h-2 rounded-full transition-colors duration-500 ${
-							isDark ? "bg-white" : "bg-black"
+							mounted
+								? theme === "dark"
+									? "bg-white"
+									: "bg-black"
+								: "bg-gray-400"
 						}`}
 					/>
 				</button>
