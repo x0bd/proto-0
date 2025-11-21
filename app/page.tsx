@@ -5,6 +5,7 @@ import type React from "react";
 import { motion, type PanInfo, AnimatePresence } from "motion/react";
 import Avatar from "./components/Avatar";
 import { ChatWindow } from "./components/ChatWindow";
+import { CustomizationModal } from "./components/CustomizationModal";
 import {
 	Mic,
 	Sparkles,
@@ -63,6 +64,7 @@ export default function Home() {
 		useState<EmotionState>(NEUTRAL_EMOTION);
 	const [activePreset, setActivePreset] = useState<string | null>("neutral");
 	const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+	const [isCustomizationOpen, setIsCustomizationOpen] = useState(false);
 	const [showSwipeHints, setShowSwipeHints] = useState(true);
 
 	const [voiceEnabled, setVoiceEnabled] = useState<boolean>(true);
@@ -424,13 +426,22 @@ export default function Home() {
 				<Button
 					variant="secondary"
 					className="h-14 w-14 rounded-[1.25rem] shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 active:scale-95 bg-white/80 dark:bg-white/5 border border-white/20 backdrop-blur-md"
+					onClick={() => setIsCustomizationOpen(true)}
 				>
 					<Sparkles className="h-5 w-5 text-muted-foreground" />
 				</Button>
 			</div>
 
-			{/* Settings - Bottom Right (Subtle) */}
-			<div className="absolute bottom-8 right-8 z-50">
+			{/* Settings - Bottom Right (Desktop) / Top Right (Mobile) */}
+			<div className="absolute bottom-8 right-8 z-50 hidden md:block">
+				<Button
+					variant="ghost"
+					className="h-10 w-10 rounded-full opacity-40 hover:opacity-100 hover:bg-secondary/20 transition-all duration-500"
+				>
+					<Settings className="h-4 w-4 text-muted-foreground" />
+				</Button>
+			</div>
+			<div className="absolute top-8 right-4 z-50 md:hidden">
 				<Button
 					variant="ghost"
 					className="h-10 w-10 rounded-full opacity-40 hover:opacity-100 hover:bg-secondary/20 transition-all duration-500"
@@ -455,6 +466,11 @@ export default function Home() {
 				isOpen={isHistoryOpen}
 				onClose={() => setIsHistoryOpen(false)}
 				isListening={voiceEnabled}
+			/>
+
+			<CustomizationModal
+				isOpen={isCustomizationOpen}
+				onClose={() => setIsCustomizationOpen(false)}
 			/>
 		</div>
 	);
