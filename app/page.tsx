@@ -248,6 +248,9 @@ export default function Home() {
 	};
 
 	const cyclePreset = (direction: number) => {
+		if (typeof navigator !== "undefined" && navigator.vibrate) {
+			navigator.vibrate(20); // Haptic feedback on swipe
+		}
 		const keys = Object.keys(presets);
 		const currentIndex = keys.indexOf(activePreset || "neutral");
 		let nextIndex = currentIndex + direction;
@@ -292,7 +295,9 @@ export default function Home() {
 				</div>
 
 				<button
-					onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+					onClick={() =>
+						setTheme(theme === "dark" ? "light" : "dark")
+					}
 					className="group flex items-center gap-3 px-5 py-2.5 bg-secondary/30 hover:bg-secondary/50 text-secondary-foreground rounded-full transition-all duration-500 hover:scale-105 active:scale-95 backdrop-blur-sm border border-transparent hover:border-border/50"
 				>
 					<span className="text-xs font-medium tracking-wide group-hover:text-primary transition-colors">

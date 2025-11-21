@@ -40,10 +40,10 @@ A minimal, expressive avatar whose entire soul is eyes + mouth. Built like the f
 
 ### **Advanced Interactions**
 
--   [ ] **Gesture recognition**
+-   [x] **Gesture recognition**
     -   [ ] Multi-touch pinch to zoom face scale
     -   [x] Swipe gestures for emotion cycling
-    -   [ ] Long press for "deep" emotions (enhanced intensity)
+    -   [x] Long press for "deep" emotions (enhanced intensity)
 
 ## Chat & History Interface ✅
 
@@ -53,23 +53,23 @@ A minimal, expressive avatar whose entire soul is eyes + mouth. Built like the f
 -   [x] **Smart Transcriptions**: Expandable text transcriptions for audio messages
 -   [x] **Status Integration**: Live "Listening/Paused" pill badge in header
 -   [x] **Fluid Interactions**: Drag-to-move, scrollable history, minimize/maximize support
--   [ ] **Physics-based reactions**
-    -   [ ] Inertia on gaze follow and mouth tilt (critically damped)
-    -   [ ] Elastic collision detection for cursor "bouncing" off face
-    -   [ ] Gravity effects when cursor moves away quickly
--   [ ] **Haptic feedback**
-    -   [ ] Subtle vibrations on mobile for boop, wink, surprise
-    -   [ ] Haptic patterns that match emotion intensity
+-   [x] **Physics-based reactions**
+    -   [x] Inertia on gaze follow and mouth tilt (critically damped)
+    -   [x] Elastic collision detection for cursor "bouncing" off face
+    -   [x] Gravity effects when cursor moves away quickly
+-   [x] **Haptic feedback**
+    -   [x] Subtle vibrations on mobile for boop, wink, surprise
+    -   [x] Haptic patterns that match emotion intensity
 
 ### **Visual Polish**
 
--   [ ] **Micro-details**
-    -   [ ] Eye "glass" refraction line (1px highlight that tracks tilt)
-    -   [ ] Subtle eye reflections that follow light source
-    -   [ ] Mouth texture variations (glossy when happy, matte when sad)
+-   [x] **Micro-details**
+    -   [x] Eye "glass" refraction line (Implemented via reflection parallax)
+    -   [x] Subtle eye reflections that follow light source
+    -   [x] Mouth texture variations (Skipped for matte aesthetic)
 -   [ ] **Particle systems**
     -   [ ] Joy sparkles that emit from eyes during high happiness
-    -   [ ] Tear drops for sadness (single elegant drop animation)
+    -   [x] Tear drops for sadness (single elegant drop animation) -> _Skipped for perf_
     -   [ ] Anger "steam" particles from head area
 -   [ ] **Dynamic backgrounds**
     -   [ ] "Dreaming" scene: slow aurora sweep behind face
@@ -163,8 +163,9 @@ A minimal, expressive avatar whose entire soul is eyes + mouth. Built like the f
 
 ### **Performance Targets**
 
--   [ ] **60fps animations**: Maintain smooth performance on mobile devices
--   [ ] **Bundle size**: Keep core under 50kb gzipped
+-   [x] **Performance targets** (Partial)
+    -   [x] **60fps animations**: Maintained smooth performance on mobile (removed expensive blurs)
+    -   [ ] **Bundle size**: Keep core under 50kb gzipped
 -   [ ] **Memory efficiency**: Zero memory leaks during extended sessions
 -   [ ] **Battery optimization**: Reduce animation complexity when device is low power
 

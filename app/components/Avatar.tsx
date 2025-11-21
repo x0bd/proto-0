@@ -33,6 +33,8 @@ export default function Avatar({
 	const containerRef = useRef<HTMLDivElement>(null);
 	const leftEyeRef = useRef<SVGEllipseElement>(null);
 	const rightEyeRef = useRef<SVGEllipseElement>(null);
+	const leftHighlightRef = useRef<SVGEllipseElement>(null);
+	const rightHighlightRef = useRef<SVGEllipseElement>(null);
 	const mouthRef = useRef<SVGPathElement>(null);
 	const mouthGroupRef = useRef<SVGGElement>(null);
 	const svgBoxRef = useRef<SVGSVGElement | null>(null);
@@ -65,6 +67,13 @@ export default function Avatar({
 		tilt: number;
 	}>({ width: 65, curve: 0, tilt: 0 });
 
+	// Haptic helper
+	const triggerHaptic = (pattern: number | number[]) => {
+		if (typeof navigator !== "undefined" && navigator.vibrate) {
+			navigator.vibrate(pattern);
+		}
+	};
+
 	function startBreathing() {
 		if (containerRef.current) {
 			breathingTL.current = gsap.timeline({ repeat: -1 });
@@ -84,6 +93,7 @@ export default function Avatar({
 
 	function performDeepEmotion() {
 		isLongPressActiveRef.current = true;
+		triggerHaptic(50); // Initial rumble start
 
 		// Shake effect
 		if (containerRef.current) {
@@ -241,6 +251,17 @@ export default function Avatar({
 				transformOrigin: "center center",
 				delay: 0,
 			});
+			// Sync highlight
+			if (leftHighlightRef.current) {
+				gsap.to(leftHighlightRef.current, {
+					attr: {
+						cx: 170 - eyeWidth * 0.3,
+						cy: 105 + eyeY - eyeHeight * 0.3,
+					}, // Top-left offset
+					duration: 0.75,
+					ease: "power2.out",
+				});
+			}
 		}
 
 		// Animate right eye with slight delay
@@ -257,6 +278,18 @@ export default function Avatar({
 				transformOrigin: "center center",
 				delay: stagger,
 			});
+			// Sync highlight
+			if (rightHighlightRef.current) {
+				gsap.to(rightHighlightRef.current, {
+					attr: {
+						cx: 350 - eyeWidth * 0.3,
+						cy: 105 + eyeY - eyeHeight * 0.3,
+					},
+					duration: 0.75,
+					ease: "power2.out",
+					delay: stagger,
+				});
+			}
 		}
 
 		// Save latest eye targets for idle (blink/glance)
@@ -401,6 +434,7 @@ export default function Avatar({
 		const my = clientY - faceCenter.y;
 		const nx = Math.max(-1, Math.min(1, mx / (rect.width * 0.3)));
 		const ny = Math.max(-1, Math.min(1, my / (rect.height * 0.3)));
+		const r = Math.hypot(nx, ny);
 
 		// More dramatic eye follow with playful bounce
 		const target = latestEyeTargetsRef.current;
@@ -410,41 +444,74 @@ export default function Avatar({
 
 		// Don't override scale if deep emotion is active
 		if (!isLongPressActiveRef.current) {
-			if (leftEyeRef.current)
+			if (leftEyeRef.current) {
+				const leftY = target.cy + eyeYDelta;
 				gsap.to(leftEyeRef.current, {
 					rotation: -target.tilt + -eyeTiltDelta,
-					attr: { cy: target.cy + eyeYDelta },
+					attr: { cy: leftY },
 					scale: eyeScale,
-					duration: 0.3,
-					ease: "back.out(1.2)",
+					duration: 0.4, // Heavier inertia
+					ease: "power3.out",
 				});
-			if (rightEyeRef.current)
+				if (leftHighlightRef.current) {
+					gsap.to(leftHighlightRef.current, {
+						attr: { cy: leftY - target.ry * 0.3 }, // Maintain offset
+						x: -eyeTiltDelta, // Parallax x
+						duration: 0.4,
+						ease: "power3.out",
+					});
+				}
+			}
+			if (rightEyeRef.current) {
+				const rightY = target.cy + eyeYDelta;
 				gsap.to(rightEyeRef.current, {
 					rotation: target.tilt + eyeTiltDelta,
-					attr: { cy: target.cy + eyeYDelta },
+					attr: { cy: rightY },
 					scale: eyeScale,
-					duration: 0.3,
-					ease: "back.out(1.2)",
+					duration: 0.4, // Heavier inertia
+					ease: "power3.out",
 				});
+				if (rightHighlightRef.current) {
+					gsap.to(rightHighlightRef.current, {
+						attr: { cy: rightY - target.ry * 0.3 },
+						x: eyeTiltDelta,
+						duration: 0.4,
+						ease: "power3.out",
+					});
+				}
+			}
 		}
 
 		// More expressive mouth tilt with overshoot
 		if (mouthGroupRef.current)
 			gsap.to(mouthGroupRef.current, {
 				rotation: latestMouthRef.current.tilt + nx * 10,
-				duration: 0.35,
-				ease: "back.out(1.1)",
+				duration: 0.45,
+				ease: "power3.out",
 			});
 
 		// Enhanced container movement with head lean
 		// Skip if shaking
 		if (!isLongPressActiveRef.current) {
+			// Collision/Repulsion logic: if cursor is too close to center, push face away
+			const repulsionThreshold = 0.4; // normalized radius
+			let repX = 0;
+			let repY = 0;
+
+			// r is already calculated as hypot(nx, ny)
+			if (r < repulsionThreshold && r > 0) {
+				// Stronger repulsion the closer you get
+				const force = (1 - r / repulsionThreshold) * 25;
+				repX = -nx * force;
+				repY = -ny * force;
+			}
+
 			gsap.to(containerRef.current, {
-				x: nx * 8,
-				y: ny * 6,
+				x: nx * 8 + repX,
+				y: ny * 6 + repY,
 				rotation: nx * 2, // head tilt
-				duration: 0.3,
-				ease: "power2.out",
+				duration: 0.5, // Increased for inertia
+				ease: "power3.out", // Heavier feel (critically damped-ish)
 			});
 		}
 	}
@@ -460,35 +527,36 @@ export default function Avatar({
 				rotation: -t.tilt,
 				attr: { cy: t.cy },
 				scale: 1,
-				duration: 0.4,
-				ease: "back.out(1.1)",
+				duration: 0.6,
+				ease: "power3.out",
 			});
 		if (rightEyeRef.current)
 			gsap.to(rightEyeRef.current, {
 				rotation: t.tilt,
 				attr: { cy: t.cy },
 				scale: 1,
-				duration: 0.4,
-				ease: "back.out(1.1)",
+				duration: 0.6,
+				ease: "power3.out",
 			});
 		if (mouthGroupRef.current)
 			gsap.to(mouthGroupRef.current, {
 				rotation: latestMouthRef.current.tilt,
-				duration: 0.4,
-				ease: "back.out(1.1)",
+				duration: 0.6,
+				ease: "power3.out",
 			});
 		if (containerRef.current)
 			gsap.to(containerRef.current, {
 				x: 0,
 				y: 0,
 				rotation: 0,
-				duration: 0.45,
-				ease: "back.out(1.1)",
+				duration: 1.2,
+				ease: "elastic.out(1, 0.5)", // Gravity/Pendulum settle
 			});
 	}
 
 	// Playful interactions
 	function performWink(eye: "left" | "right") {
+		triggerHaptic(10); // Light tick
 		const eyeRef = eye === "left" ? leftEyeRef : rightEyeRef;
 		const target = latestEyeTargetsRef.current;
 
@@ -509,6 +577,7 @@ export default function Avatar({
 	}
 
 	function performSurprise() {
+		triggerHaptic([40, 50, 20]); // Double pulse
 		const target = latestEyeTargetsRef.current;
 		const tl = gsap.timeline();
 
@@ -555,6 +624,7 @@ export default function Avatar({
 	}
 
 	function performBoop() {
+		triggerHaptic(15); // Sharp boop
 		if (containerRef.current) {
 			gsap.timeline()
 				.to(containerRef.current, {
@@ -579,6 +649,7 @@ export default function Avatar({
 	}
 
 	function performMouthClick() {
+		triggerHaptic(10); // Light tick
 		if (mouthRef.current) {
 			const m = latestMouthRef.current;
 			const half = m.width / 2;
@@ -775,6 +846,17 @@ export default function Avatar({
 								});
 						}}
 					/>
+					{/* Left Highlight */}
+					<ellipse
+						ref={leftHighlightRef}
+						cx="162"
+						cy="98"
+						rx="8"
+						ry="5"
+						fill="white"
+						fillOpacity="0.2"
+						className="pointer-events-none mix-blend-screen"
+					/>
 
 					{/* Right Eye - 90px from center (260 + 90 = 350) */}
 					<ellipse
@@ -820,6 +902,17 @@ export default function Avatar({
 									ease: "power2.out",
 								});
 						}}
+					/>
+					{/* Right Highlight */}
+					<ellipse
+						ref={rightHighlightRef}
+						cx="342"
+						cy="98"
+						rx="8"
+						ry="5"
+						fill="white"
+						fillOpacity="0.2"
+						className="pointer-events-none mix-blend-screen"
 					/>
 
 					{/* Mouth - Perfectly centered & symmetric (drawn in local space) */}
