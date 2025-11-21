@@ -44,6 +44,11 @@ export default function Avatar({
 	const simAmpRef = useRef<number>(0);
 	const breathingTL = useRef<gsap.core.Timeline>();
 
+	// Long press logic
+	const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
+	const isLongPressActiveRef = useRef(false);
+	const deepEmotionTweenRef = useRef<gsap.core.Tween | null>(null);
+
 	// Idle systems
 	const blinkTimerRef = useRef<gsap.core.Tween | null>(null);
 	const glanceTimerRef = useRef<gsap.core.Tween | null>(null);
@@ -77,7 +82,101 @@ export default function Avatar({
 		}
 	}
 
+	function performDeepEmotion() {
+		isLongPressActiveRef.current = true;
+
+		// Shake effect
+		if (containerRef.current) {
+			deepEmotionTweenRef.current = gsap.to(containerRef.current, {
+				x: "+=2",
+				y: "-=2",
+				yoyo: true,
+				repeat: -1,
+				duration: 0.05,
+				ease: "none",
+			});
+		}
+
+		// Dilation effect
+		const target = latestEyeTargetsRef.current;
+		if (leftEyeRef.current && rightEyeRef.current) {
+			gsap.to([leftEyeRef.current, rightEyeRef.current], {
+				attr: {
+					rx: target.rx + 8,
+					ry: target.ry + 8,
+				},
+				scale: 1.15,
+				duration: 0.4,
+				ease: "back.out(1.5)",
+			});
+		}
+	}
+
+	function stopDeepEmotion() {
+		if (deepEmotionTweenRef.current) {
+			deepEmotionTweenRef.current.kill();
+			deepEmotionTweenRef.current = null;
+		}
+		isLongPressActiveRef.current = false;
+
+		// Reset shake
+		if (containerRef.current) {
+			gsap.to(containerRef.current, {
+				x: 0,
+				y: 0,
+				duration: 0.2,
+				ease: "power2.out",
+			});
+		}
+
+		// Reset eyes
+		const target = latestEyeTargetsRef.current;
+		if (leftEyeRef.current && rightEyeRef.current) {
+			gsap.to([leftEyeRef.current, rightEyeRef.current], {
+				attr: {
+					rx: target.rx,
+					ry: target.ry,
+				},
+				scale: 1,
+				duration: 0.3,
+				ease: "power2.out",
+			});
+		}
+	}
+
+	function handlePointerDown(e: React.MouseEvent | React.TouchEvent) {
+		// Start timer
+		longPressTimerRef.current = setTimeout(() => {
+			performDeepEmotion();
+		}, 500);
+	}
+
+	function handlePointerUp(e: React.MouseEvent | React.TouchEvent) {
+		if (longPressTimerRef.current) {
+			clearTimeout(longPressTimerRef.current);
+			longPressTimerRef.current = null;
+		}
+
+		if (isLongPressActiveRef.current) {
+			stopDeepEmotion();
+		} else {
+			// It was a short tap -> Boop!
+			performBoop();
+		}
+	}
+
+	function handlePointerCancel() {
+		if (longPressTimerRef.current) {
+			clearTimeout(longPressTimerRef.current);
+			longPressTimerRef.current = null;
+		}
+		if (isLongPressActiveRef.current) {
+			stopDeepEmotion();
+		}
+	}
+
 	function animateEmotion(state: EmotionState) {
+		// ... (No changes to logic, just skipping helper functions for brevity if untouched, but here we include full logic) ...
 		const { joy, sadness, surprise, anger, curiosity } = state;
 
 		// Enhanced emotion calculations with smoother curves
@@ -309,22 +408,25 @@ export default function Avatar({
 		const eyeYDelta = ny * 8; // increased from 6
 		const eyeScale = 1 + Math.abs(nx) * 0.05; // subtle scale on extreme movements
 
-		if (leftEyeRef.current)
-			gsap.to(leftEyeRef.current, {
-				rotation: -target.tilt + -eyeTiltDelta,
-				attr: { cy: target.cy + eyeYDelta },
-				scale: eyeScale,
-				duration: 0.3,
-				ease: "back.out(1.2)",
-			});
-		if (rightEyeRef.current)
-			gsap.to(rightEyeRef.current, {
-				rotation: target.tilt + eyeTiltDelta,
-				attr: { cy: target.cy + eyeYDelta },
-				scale: eyeScale,
-				duration: 0.3,
-				ease: "back.out(1.2)",
-			});
+		// Don't override scale if deep emotion is active
+		if (!isLongPressActiveRef.current) {
+			if (leftEyeRef.current)
+				gsap.to(leftEyeRef.current, {
+					rotation: -target.tilt + -eyeTiltDelta,
+					attr: { cy: target.cy + eyeYDelta },
+					scale: eyeScale,
+					duration: 0.3,
+					ease: "back.out(1.2)",
+				});
+			if (rightEyeRef.current)
+				gsap.to(rightEyeRef.current, {
+					rotation: target.tilt + eyeTiltDelta,
+					attr: { cy: target.cy + eyeYDelta },
+					scale: eyeScale,
+					duration: 0.3,
+					ease: "back.out(1.2)",
+				});
+		}
 
 		// More expressive mouth tilt with overshoot
 		if (mouthGroupRef.current)
@@ -335,16 +437,22 @@ export default function Avatar({
 			});
 
 		// Enhanced container movement with head lean
-		gsap.to(containerRef.current, {
-			x: nx * 8,
-			y: ny * 6,
-			rotation: nx * 2, // head tilt
-			duration: 0.3,
-			ease: "power2.out",
-		});
+		// Skip if shaking
+		if (!isLongPressActiveRef.current) {
+			gsap.to(containerRef.current, {
+				x: nx * 8,
+				y: ny * 6,
+				rotation: nx * 2, // head tilt
+				duration: 0.3,
+				ease: "power2.out",
+			});
+		}
 	}
 
 	function handlePointerLeave() {
+		// Stop long press if user leaves area
+		handlePointerCancel();
+
 		// return to latest emotion-driven targets with gentle bounce
 		const t = latestEyeTargetsRef.current;
 		if (leftEyeRef.current)
@@ -428,7 +536,6 @@ export default function Avatar({
 			const m = latestMouthRef.current;
 			const half = (m.width + 20) / 2;
 			const surpriseD = `M ${-half} 0 Q 0 15 ${half} 0`;
-
 			tl.to(
 				mouthRef.current,
 				{
@@ -607,9 +714,17 @@ export default function Avatar({
 				onMouseMove={handlePointerMove}
 				onMouseLeave={handlePointerLeave}
 				onTouchMove={handlePointerMove}
-				onTouchEnd={handlePointerLeave}
-				onClick={performBoop}
-				onDoubleClick={performSurprise}
+				onMouseDown={handlePointerDown}
+				onMouseUp={handlePointerUp}
+				onTouchStart={handlePointerDown}
+				onTouchEnd={(e) => {
+					handlePointerUp(e);
+					handlePointerLeave();
+				}}
+				onTouchCancel={handlePointerCancel}
+				// Remove onClick and onDoubleClick to prevent conflicts with custom handlers
+				// We handle "boop" in handlePointerUp now
+				// Double click logic for surprise is removed/superseded by long press or can be re-added if needed
 			>
 				<svg
 					viewBox="0 0 520 280"
@@ -765,25 +880,6 @@ export default function Avatar({
 								/>
 							))}
 						</g>
-					</g>
-
-					{/* Voice Spectrum */}
-					<g
-						ref={spectrumGroupRef}
-						opacity={0}
-						transform="translate(260, 175)"
-					>
-						{Array.from({ length: 9 }).map((_, i) => (
-							<rect
-								key={i}
-								x={-10}
-								y={0}
-								width={20}
-								height={30}
-								fill="currentColor"
-								className="text-black dark:text-white"
-							/>
-						))}
 					</g>
 				</svg>
 			</div>
