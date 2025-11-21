@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { motion, AnimatePresence } from "motion/react";
+import { motion, AnimatePresence, useDragControls } from "motion/react";
 import { X, Minimize2, Maximize2, Play, Pause, ChevronDown, ChevronUp, AlignLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -128,6 +128,7 @@ function AudioMessage({ duration, transcription }: { duration: string; transcrip
 
 export function ChatWindow({ isOpen, onClose, isListening }: ChatWindowProps) {
 	const [isMinimized, setIsMinimized] = React.useState(false);
+	const dragControls = useDragControls();
 	const [messages, setMessages] = React.useState<Message[]>([
 		{
 			id: "1",
@@ -188,13 +189,15 @@ export function ChatWindow({ isOpen, onClose, isListening }: ChatWindowProps) {
 						}}
 						className="pointer-events-auto bg-white/80 dark:bg-black/80 backdrop-blur-2xl border border-white/20 dark:border-white/10 shadow-2xl rounded-[2rem] overflow-hidden flex flex-col relative ring-1 ring-black/5 dark:ring-white/5"
 						drag
+						dragControls={dragControls}
+						dragListener={false}
 						dragMomentum={false}
 						dragElastic={0.1}
 					>
 						{/* Clean Glass Header */}
 						<div
 							className="p-6 flex items-center justify-between cursor-grab active:cursor-grabbing select-none z-10"
-							onPointerDown={(e) => e.preventDefault()}
+							onPointerDown={(e) => dragControls.start(e)}
 						>
 							{/* Status Badge */}
 							<div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/5 backdrop-blur-md">
