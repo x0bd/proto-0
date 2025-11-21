@@ -33,8 +33,6 @@ export default function Avatar({
 	const containerRef = useRef<HTMLDivElement>(null);
 	const leftEyeRef = useRef<SVGEllipseElement>(null);
 	const rightEyeRef = useRef<SVGEllipseElement>(null);
-	const leftHighlightRef = useRef<SVGEllipseElement>(null);
-	const rightHighlightRef = useRef<SVGEllipseElement>(null);
 	const mouthRef = useRef<SVGPathElement>(null);
 	const mouthGroupRef = useRef<SVGGElement>(null);
 	const svgBoxRef = useRef<SVGSVGElement | null>(null);
@@ -251,17 +249,6 @@ export default function Avatar({
 				transformOrigin: "center center",
 				delay: 0,
 			});
-			// Sync highlight
-			if (leftHighlightRef.current) {
-				gsap.to(leftHighlightRef.current, {
-					attr: {
-						cx: 170 - eyeWidth * 0.3,
-						cy: 105 + eyeY - eyeHeight * 0.3,
-					}, // Top-left offset
-					duration: 0.75,
-					ease: "power2.out",
-				});
-			}
 		}
 
 		// Animate right eye with slight delay
@@ -278,18 +265,6 @@ export default function Avatar({
 				transformOrigin: "center center",
 				delay: stagger,
 			});
-			// Sync highlight
-			if (rightHighlightRef.current) {
-				gsap.to(rightHighlightRef.current, {
-					attr: {
-						cx: 350 - eyeWidth * 0.3,
-						cy: 105 + eyeY - eyeHeight * 0.3,
-					},
-					duration: 0.75,
-					ease: "power2.out",
-					delay: stagger,
-				});
-			}
 		}
 
 		// Save latest eye targets for idle (blink/glance)
@@ -453,14 +428,6 @@ export default function Avatar({
 					duration: 0.4, // Heavier inertia
 					ease: "power3.out",
 				});
-				if (leftHighlightRef.current) {
-					gsap.to(leftHighlightRef.current, {
-						attr: { cy: leftY - target.ry * 0.3 }, // Maintain offset
-						x: -eyeTiltDelta, // Parallax x
-						duration: 0.4,
-						ease: "power3.out",
-					});
-				}
 			}
 			if (rightEyeRef.current) {
 				const rightY = target.cy + eyeYDelta;
@@ -471,14 +438,6 @@ export default function Avatar({
 					duration: 0.4, // Heavier inertia
 					ease: "power3.out",
 				});
-				if (rightHighlightRef.current) {
-					gsap.to(rightHighlightRef.current, {
-						attr: { cy: rightY - target.ry * 0.3 },
-						x: eyeTiltDelta,
-						duration: 0.4,
-						ease: "power3.out",
-					});
-				}
 			}
 		}
 
@@ -846,17 +805,6 @@ export default function Avatar({
 								});
 						}}
 					/>
-					{/* Left Highlight */}
-					<ellipse
-						ref={leftHighlightRef}
-						cx="162"
-						cy="98"
-						rx="8"
-						ry="5"
-						fill="white"
-						fillOpacity="0.2"
-						className="pointer-events-none mix-blend-screen"
-					/>
 
 					{/* Right Eye - 90px from center (260 + 90 = 350) */}
 					<ellipse
@@ -902,17 +850,6 @@ export default function Avatar({
 									ease: "power2.out",
 								});
 						}}
-					/>
-					{/* Right Highlight */}
-					<ellipse
-						ref={rightHighlightRef}
-						cx="342"
-						cy="98"
-						rx="8"
-						ry="5"
-						fill="white"
-						fillOpacity="0.2"
-						className="pointer-events-none mix-blend-screen"
 					/>
 
 					{/* Mouth - Perfectly centered & symmetric (drawn in local space) */}

@@ -61,21 +61,6 @@ A minimal, expressive avatar whose entire soul is eyes + mouth. Built like the f
     -   [x] Subtle vibrations on mobile for boop, wink, surprise
     -   [x] Haptic patterns that match emotion intensity
 
-### **Visual Polish**
-
--   [x] **Micro-details**
-    -   [x] Eye "glass" refraction line (Implemented via reflection parallax)
-    -   [x] Subtle eye reflections that follow light source
-    -   [x] Mouth texture variations (Skipped for matte aesthetic)
--   [ ] **Particle systems**
-    -   [ ] Joy sparkles that emit from eyes during high happiness
-    -   [x] Tear drops for sadness (single elegant drop animation) -> _Skipped for perf_
-    -   [ ] Anger "steam" particles from head area
--   [ ] **Dynamic backgrounds**
-    -   [ ] "Dreaming" scene: slow aurora sweep behind face
-    -   [ ] "Focus" scene: subtle geometric patterns that pulse with breathing
-    -   [ ] "Neon rain" scene: vertical lines responding to emotions
-
 ### **Smart Features**
 
 -   [ ] **TTS "breathing" mode**

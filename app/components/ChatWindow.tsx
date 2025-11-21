@@ -285,20 +285,20 @@ export function ChatWindow({ isOpen, onClose, isListening }: ChatWindowProps) {
 						{!isMinimized && (
 							<ScrollArea className="flex-1 px-2 relative z-10 overflow-hidden min-h-0">
 								<div className="px-3 pb-6 space-y-6 pt-2">
-									{messages.map((msg) => (
+										{messages.map((msg) => (
 										<motion.div
 											initial={{ opacity: 0, y: 10 }}
 											animate={{ opacity: 1, y: 0 }}
-											key={msg.id}
-											className={`flex ${
-												msg.role === "user"
-													? "justify-end"
-													: "justify-start"
-											}`}
-										>
-											<div
-												className={`max-w-[85%] p-4 text-sm leading-relaxed shadow-sm relative overflow-hidden ${
+												key={msg.id}
+												className={`flex ${
 													msg.role === "user"
+														? "justify-end"
+														: "justify-start"
+												}`}
+											>
+												<div
+												className={`max-w-[85%] p-4 text-sm leading-relaxed shadow-sm relative overflow-hidden ${
+														msg.role === "user"
 														? "bg-primary text-primary-foreground rounded-[1.5rem] rounded-tr-sm"
 														: "bg-white dark:bg-white/5 text-foreground rounded-[1.5rem] rounded-tl-sm border border-black/5 dark:border-white/5"
 												}`}
@@ -313,15 +313,15 @@ export function ChatWindow({ isOpen, onClose, isListening }: ChatWindowProps) {
 													/>
 												) : (
 													<div className="relative z-10">
-														{msg.content}
-													</div>
+													{msg.content}
+												</div>
 												)}
 											</div>
 										</motion.div>
-									))}
-									<div ref={scrollRef} />
-								</div>
-							</ScrollArea>
+										))}
+										<div ref={scrollRef} />
+									</div>
+								</ScrollArea>
 						)}
 					</motion.div>
 				)}

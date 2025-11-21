@@ -7,10 +7,11 @@ import Avatar from "./components/Avatar";
 import { ChatWindow } from "./components/ChatWindow";
 import {
 	Mic,
-	Settings,
+	Sparkles,
 	History,
 	ChevronLeft,
 	ChevronRight,
+	Settings,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "next-themes";
@@ -419,12 +420,22 @@ export default function Home() {
 					})()}
 				</div>
 
-				{/* Settings */}
+				{/* Sparkles */}
 				<Button
 					variant="secondary"
 					className="h-14 w-14 rounded-[1.25rem] shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 active:scale-95 bg-white/80 dark:bg-white/5 border border-white/20 backdrop-blur-md"
 				>
-					<Settings className="h-5 w-5 text-muted-foreground" />
+					<Sparkles className="h-5 w-5 text-muted-foreground" />
+				</Button>
+			</div>
+
+			{/* Settings - Bottom Right (Subtle) */}
+			<div className="absolute bottom-8 right-8 z-50">
+				<Button
+					variant="ghost"
+					className="h-10 w-10 rounded-full opacity-40 hover:opacity-100 hover:bg-secondary/20 transition-all duration-500"
+				>
+					<Settings className="h-4 w-4 text-muted-foreground" />
 				</Button>
 			</div>
 
