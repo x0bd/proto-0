@@ -42,8 +42,17 @@ A minimal, expressive avatar whose entire soul is eyes + mouth. Built like the f
 
 -   [ ] **Gesture recognition**
     -   [ ] Multi-touch pinch to zoom face scale
-    -   [ ] Swipe gestures for emotion cycling
+    -   [x] Swipe gestures for emotion cycling
     -   [ ] Long press for "deep" emotions (enhanced intensity)
+
+## Chat & History Interface ✅
+
+-   [x] **Draggable Glass Window**: Floating history window with glassmorphism aesthetic
+-   [x] **Rich Message Types**: Support for text and expandable audio messages
+-   [x] **Voice Visualization**: Real-time audio spectrum visualization for voice notes
+-   [x] **Smart Transcriptions**: Expandable text transcriptions for audio messages
+-   [x] **Status Integration**: Live "Listening/Paused" pill badge in header
+-   [x] **Fluid Interactions**: Drag-to-move, scrollable history, minimize/maximize support
 -   [ ] **Physics-based reactions**
     -   [ ] Inertia on gaze follow and mouth tilt (critically damped)
     -   [ ] Elastic collision detection for cursor "bouncing" off face
