@@ -28,19 +28,19 @@ export function CustomizationModal({ isOpen, onClose }: CustomizationModalProps)
 					{/* Modal */}
 					<div className="fixed inset-0 z-[101] flex items-center justify-center p-4 pointer-events-none">
 						<motion.div
-							initial={{ opacity: 0, scale: 0.96, y: 8 }}
-							animate={{ opacity: 1, scale: 1, y: 0 }}
-							exit={{ opacity: 0, scale: 0.96, y: 8 }}
+							initial={{ opacity: 0, scale: 0.95, y: 10, filter: "blur(10px)" }}
+							animate={{ opacity: 1, scale: 1, y: 0, filter: "blur(0px)" }}
+							exit={{ opacity: 0, scale: 0.95, y: 10, filter: "blur(10px)" }}
 							transition={{
 								type: "spring",
-								damping: 30,
-								stiffness: 400,
+								damping: 25,
+								stiffness: 300,
 								mass: 0.8,
 							}}
-							className="pointer-events-auto w-full max-w-md"
+							className="pointer-events-auto w-full max-w-2xl"
 							onClick={(e) => e.stopPropagation()}
 						>
-							<div className="bg-white/95 dark:bg-black/95 backdrop-blur-2xl border border-black/5 dark:border-white/10 shadow-2xl rounded-[2rem] overflow-hidden ring-1 ring-black/5 dark:ring-white/5">
+							<div className="bg-white/80 dark:bg-black/80 backdrop-blur-2xl border border-white/20 dark:border-white/10 shadow-2xl rounded-[2rem] overflow-hidden ring-1 ring-black/5 dark:ring-white/5">
 								{/* Header */}
 								<div className="relative px-8 pt-8 pb-6 border-b border-black/5 dark:border-white/5">
 									{/* Subtle noise texture */}
@@ -73,19 +73,19 @@ export function CustomizationModal({ isOpen, onClose }: CustomizationModalProps)
 								</div>
 
 								{/* Content */}
-								<div className="relative px-8 py-6">
+								<div className="relative px-8 py-8">
 									{/* Subtle noise texture */}
 									<div className="absolute inset-0 pointer-events-none opacity-[0.02] bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
 									
-									<div className="relative space-y-6">
+									<div className="relative grid grid-cols-1 md:grid-cols-2 gap-6">
 										{/* Placeholder sections - to be filled with customization options */}
 										<div className="space-y-3">
 											<label className="text-xs font-medium text-muted-foreground tracking-wider uppercase">
 												Appearance
 											</label>
-											<div className="h-24 rounded-2xl bg-black/[0.02] dark:bg-white/[0.02] border border-black/5 dark:border-white/5 flex items-center justify-center">
-												<span className="text-sm text-muted-foreground/50">
-													Coming soon
+											<div className="h-32 rounded-2xl bg-black/[0.02] dark:bg-white/[0.02] border border-black/5 dark:border-white/5 flex items-center justify-center hover:bg-black/[0.04] dark:hover:bg-white/[0.04] transition-colors cursor-pointer group">
+												<span className="text-sm text-muted-foreground/50 group-hover:text-primary transition-colors">
+													Theme & Colors
 												</span>
 											</div>
 										</div>
@@ -94,20 +94,20 @@ export function CustomizationModal({ isOpen, onClose }: CustomizationModalProps)
 											<label className="text-xs font-medium text-muted-foreground tracking-wider uppercase">
 												Voice Settings
 											</label>
-											<div className="h-24 rounded-2xl bg-black/[0.02] dark:bg-white/[0.02] border border-black/5 dark:border-white/5 flex items-center justify-center">
-												<span className="text-sm text-muted-foreground/50">
-													Coming soon
+											<div className="h-32 rounded-2xl bg-black/[0.02] dark:bg-white/[0.02] border border-black/5 dark:border-white/5 flex items-center justify-center hover:bg-black/[0.04] dark:hover:bg-white/[0.04] transition-colors cursor-pointer group">
+												<span className="text-sm text-muted-foreground/50 group-hover:text-primary transition-colors">
+													Voice Model
 												</span>
 											</div>
 										</div>
 
-										<div className="space-y-3">
+										<div className="space-y-3 md:col-span-2">
 											<label className="text-xs font-medium text-muted-foreground tracking-wider uppercase">
 												Emotion Presets
 											</label>
-											<div className="h-24 rounded-2xl bg-black/[0.02] dark:bg-white/[0.02] border border-black/5 dark:border-white/5 flex items-center justify-center">
-												<span className="text-sm text-muted-foreground/50">
-													Coming soon
+											<div className="h-24 rounded-2xl bg-black/[0.02] dark:bg-white/[0.02] border border-black/5 dark:border-white/5 flex items-center justify-center hover:bg-black/[0.04] dark:hover:bg-white/[0.04] transition-colors cursor-pointer group">
+												<span className="text-sm text-muted-foreground/50 group-hover:text-primary transition-colors">
+													Manage Presets
 												</span>
 											</div>
 										</div>
