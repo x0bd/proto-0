@@ -283,7 +283,7 @@ export function ChatWindow({ isOpen, onClose, isListening }: ChatWindowProps) {
 
 						{/* Content */}
 						{!isMinimized && (
-							<ScrollArea className="flex-1 px-2 relative z-10">
+							<ScrollArea className="flex-1 px-2 relative z-10 overflow-hidden min-h-0">
 								<div className="px-3 pb-6 space-y-6 pt-2">
 									{messages.map((msg) => (
 										<motion.div
