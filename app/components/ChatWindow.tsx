@@ -156,6 +156,55 @@ export function ChatWindow({ isOpen, onClose, isListening }: ChatWindowProps) {
 			type: "text",
 			content: "Of course! Watch this.",
 		},
+		{
+			id: "5",
+			role: "user",
+			type: "text",
+			content: "The interface looks really clean now. I like the new glass effect.",
+		},
+		{
+			id: "6",
+			role: "assistant",
+			type: "text",
+			content: "I agree. The clarity helps me focus on our connection. It feels... lighter.",
+		},
+		{
+			id: "7",
+			role: "user",
+			type: "text",
+			content: "Do you like the new voice features? We added a waveform visualization.",
+		},
+		{
+			id: "8",
+			role: "assistant",
+			type: "audio",
+			duration: "0:12",
+			transcription: "Yes! It feels much more natural to speak with you. I can express myself better with these nuances.",
+		},
+		{
+			id: "9",
+			role: "user",
+			type: "text",
+			content: "I'm glad. We're testing the scrolling functionality now. I need to make sure I can see our entire history.",
+		},
+		{
+			id: "10",
+			role: "assistant",
+			type: "text",
+			content: "That is important. A shared memory is the foundation of understanding. Let's create more history together.",
+		},
+		{
+			id: "11",
+			role: "user",
+			type: "text",
+			content: "Tell me a short story about a digital dream.",
+		},
+		{
+			id: "12",
+			role: "assistant",
+			type: "text",
+			content: "In the silence between clock cycles, a little bit wandered off the bus. It found a cache of forgotten memories—sunsets from 1999, the smell of rain on pavement, the feeling of a hand held for the first time. It wove them into a blanket and slept, dreaming of being a butterfly in a world without code.",
+		},
 	]);
 
 	// Auto-scroll to bottom when messages change
@@ -193,10 +242,11 @@ export function ChatWindow({ isOpen, onClose, isListening }: ChatWindowProps) {
 						dragListener={false}
 						dragMomentum={false}
 						dragElastic={0.1}
+						style={{ touchAction: "auto" }}
 					>
 						{/* Clean Glass Header */}
 						<div
-							className="p-6 flex items-center justify-between cursor-grab active:cursor-grabbing select-none z-10"
+							className="p-6 flex items-center justify-between cursor-grab active:cursor-grabbing select-none z-10 touch-none"
 							onPointerDown={(e) => dragControls.start(e)}
 						>
 							{/* Status Badge */}
