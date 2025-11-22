@@ -29,9 +29,9 @@ function SettingCard({
 }) {
 	return (
 		<button className="w-full text-left group">
-			<div className="relative p-5 transition-all duration-300 hover:bg-secondary/40 rounded-[1.25rem] border border-transparent hover:border-black/5 dark:hover:border-white/5">
+			<div className="relative p-5 transition-all duration-300 hover:bg-secondary/50 rounded-[1.25rem] border border-transparent hover:border-border">
 				<div className="flex items-center gap-5">
-					<div className="w-11 h-11 rounded-[1rem] bg-white dark:bg-white/5 shadow-sm border border-black/5 dark:border-white/5 flex items-center justify-center flex-shrink-0 text-foreground/70 transition-transform duration-300 group-hover:scale-105">
+					<div className="w-11 h-11 rounded-[1rem] bg-secondary/50 border border-border flex items-center justify-center flex-shrink-0 text-foreground/70 transition-transform duration-300 group-hover:scale-105">
 						<Icon className="w-[18px] h-[18px]" strokeWidth={1.5} />
 					</div>
 					<div className="flex-1 min-w-0">
@@ -63,53 +63,38 @@ export function CustomizationModal({
 						animate={{ opacity: 1 }}
 						exit={{ opacity: 0 }}
 						transition={{ duration: 0.3 }}
-						className="fixed inset-0 z-[100] bg-background/40 backdrop-blur-sm"
+						className="fixed inset-0 z-[100] bg-background/80"
 						onClick={onClose}
 					/>
 
 					{/* Modal Container */}
-					<div className="fixed inset-0 z-[101] flex items-center justify-center p-4 pointer-events-none">
+					<div className="fixed inset-0 z-[101] flex items-end md:items-center justify-center p-0 md:p-4 pointer-events-none">
 						<motion.div
-							initial={{
-								opacity: 0,
-								scale: 0.95,
-								y: 20,
-								filter: "blur(10px)",
-							}}
-							animate={{
-								opacity: 1,
-								scale: 1,
-								y: 0,
-								filter: "blur(0px)",
-							}}
-							exit={{
-								opacity: 0,
-								scale: 0.95,
-								y: 20,
-								filter: "blur(10px)",
-							}}
+							initial={{ opacity: 0, scale: 0.95, y: 20 }}
+							animate={{ opacity: 1, scale: 1, y: 0 }}
+							exit={{ opacity: 0, scale: 0.95, y: 20 }}
 							transition={{
 								type: "spring",
 								damping: 25,
 								stiffness: 300,
 								mass: 0.8,
 							}}
-							className="pointer-events-auto w-full max-w-[420px] bg-white/80 dark:bg-black/80 backdrop-blur-2xl border border-white/20 dark:border-white/10 shadow-2xl rounded-[2rem] overflow-hidden flex flex-col relative ring-1 ring-black/5 dark:ring-white/5"
+							className="pointer-events-auto w-full md:max-w-[420px] bg-background border-t md:border border-border shadow-2xl rounded-t-[2rem] md:rounded-[2rem] overflow-hidden flex flex-col relative"
 							onClick={(e) => e.stopPropagation()}
 						>
 							{/* Texture Overlay */}
 							<div className="absolute inset-0 pointer-events-none opacity-[0.03] z-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
 
 							{/* Header */}
-							<div className="relative z-10 p-8 pb-4 flex items-center justify-between">
+							<div className="relative z-10 p-6 md:p-8 pb-4 flex items-center justify-between">
 								<div>
 									<div className="flex items-center gap-3 mb-1">
 										<div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-										<h2 className="text-xs font-mono font-medium text-muted-foreground tracking-[0.2em] uppercase">
+										<h2 className="text-[10px] md:text-xs font-mono font-medium text-muted-foreground tracking-[0.2em] uppercase">
 											System Config
 										</h2>
 									</div>
-									<h1 className="text-2xl font-medium text-foreground tracking-tight">
+									<h1 className="text-xl md:text-2xl font-medium text-foreground tracking-tight">
 										Preferences
 									</h1>
 								</div>
@@ -122,8 +107,8 @@ export function CustomizationModal({
 							</div>
 
 							{/* Scrollable Content */}
-							<ScrollArea className="relative z-10 h-[60vh] max-h-[500px] px-6 pb-8">
-								<div className="space-y-3 py-2">
+							<ScrollArea className="relative z-10 h-[50vh] md:h-[60vh] max-h-[500px] px-4 md:px-6 pb-8 md:pb-8">
+								<div className="space-y-2 md:space-y-3 py-2">
 									<SettingCard
 										icon={Zap}
 										label="Animation Rate"
