@@ -29,19 +29,20 @@ function SettingCard({
 }) {
 	return (
 		<button className="w-full text-left group">
-			<div className="relative p-4 transition-all duration-200 hover:bg-black/5 dark:hover:bg-white/5 rounded-2xl">
-				<div className="flex items-center gap-4">
-					<div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 text-primary transition-colors">
-						<Icon className="w-5 h-5" strokeWidth={2} />
+			<div className="relative p-5 transition-all duration-300 hover:bg-secondary/40 rounded-[1.25rem] border border-transparent hover:border-black/5 dark:hover:border-white/5">
+				<div className="flex items-center gap-5">
+					<div className="w-11 h-11 rounded-[1rem] bg-white dark:bg-white/5 shadow-sm border border-black/5 dark:border-white/5 flex items-center justify-center flex-shrink-0 text-foreground/70 transition-transform duration-300 group-hover:scale-105">
+						<Icon className="w-[18px] h-[18px]" strokeWidth={1.5} />
 					</div>
 					<div className="flex-1 min-w-0">
-						<h3 className="text-[15px] font-medium text-foreground leading-tight mb-0.5">
+						<h3 className="text-[14px] font-medium text-foreground tracking-wide mb-0.5">
 							{label}
 						</h3>
-						<p className="text-[13px] text-muted-foreground leading-normal opacity-80">
+						<p className="text-[12px] text-muted-foreground/80 font-mono leading-normal">
 							{description}
 						</p>
 					</div>
+					<div className="w-1.5 h-1.5 rounded-full bg-foreground/10 group-hover:bg-primary transition-colors" />
 				</div>
 			</div>
 		</button>
@@ -96,31 +97,37 @@ export function CustomizationModal({
 							className="pointer-events-auto w-full max-w-[420px] bg-white/80 dark:bg-black/80 backdrop-blur-2xl border border-white/20 dark:border-white/10 shadow-2xl rounded-[2rem] overflow-hidden flex flex-col relative ring-1 ring-black/5 dark:ring-white/5"
 							onClick={(e) => e.stopPropagation()}
 						>
+							{/* Texture Overlay */}
+							<div className="absolute inset-0 pointer-events-none opacity-[0.03] z-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
+
 							{/* Header */}
-							<div className="p-6 pb-2 flex items-center justify-between">
+							<div className="relative z-10 p-8 pb-4 flex items-center justify-between">
 								<div>
-									<h2 className="text-lg font-semibold text-foreground tracking-tight">
-										Customization
-									</h2>
-									<p className="text-xs text-muted-foreground font-medium tracking-wide uppercase opacity-70 mt-1">
-										Personalize Experience
-									</p>
+									<div className="flex items-center gap-3 mb-1">
+										<div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+										<h2 className="text-xs font-mono font-medium text-muted-foreground tracking-[0.2em] uppercase">
+											System Config
+										</h2>
+									</div>
+									<h1 className="text-2xl font-medium text-foreground tracking-tight">
+										Preferences
+									</h1>
 								</div>
 								<button
 									onClick={onClose}
-									className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+									className="w-9 h-9 rounded-xl flex items-center justify-center bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 transition-colors"
 								>
-									<X className="w-4 h-4 text-muted-foreground" />
+									<X className="w-4 h-4 text-foreground/70" />
 								</button>
 							</div>
 
 							{/* Scrollable Content */}
-							<ScrollArea className="h-[60vh] max-h-[500px] px-4 pb-6">
-								<div className="space-y-1 py-2">
+							<ScrollArea className="relative z-10 h-[60vh] max-h-[500px] px-6 pb-8">
+								<div className="space-y-3 py-2">
 									<SettingCard
 										icon={Zap}
-										label="Animation Speed"
-										description="Control timing and easing curves"
+										label="Animation Rate"
+										description="Adjust interpolation speed and easing"
 									/>
 									<SettingCard
 										icon={Volume2}
