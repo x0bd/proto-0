@@ -2,7 +2,16 @@
 
 import * as React from "react";
 import { motion, AnimatePresence, useDragControls } from "motion/react";
-import { X, Minimize2, Maximize2, Play, Pause, ChevronDown, ChevronUp, AlignLeft } from "lucide-react";
+import {
+	X,
+	Minimize2,
+	Maximize2,
+	Play,
+	Pause,
+	ChevronDown,
+	ChevronUp,
+	AlignLeft,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
@@ -69,7 +78,13 @@ function VoiceWaveform({ isPlaying }: { isPlaying: boolean }) {
 	);
 }
 
-function AudioMessage({ duration, transcription }: { duration: string; transcription?: string }) {
+function AudioMessage({
+	duration,
+	transcription,
+}: {
+	duration: string;
+	transcription?: string;
+}) {
 	const [isPlaying, setIsPlaying] = React.useState(false);
 	const [isExpanded, setIsExpanded] = React.useState(false);
 
@@ -106,7 +121,7 @@ function AudioMessage({ duration, transcription }: { duration: string; transcrip
 					</button>
 				)}
 			</div>
-			
+
 			<AnimatePresence>
 				{isExpanded && transcription && (
 					<motion.div
@@ -141,7 +156,8 @@ export function ChatWindow({ isOpen, onClose, isListening }: ChatWindowProps) {
 			role: "assistant",
 			type: "audio",
 			duration: "0:08",
-			transcription: "I'm feeling quite curious! The data streams are beautiful this morning.",
+			transcription:
+				"I'm feeling quite curious! The data streams are beautiful this morning.",
 		},
 		{
 			id: "3",
@@ -160,38 +176,44 @@ export function ChatWindow({ isOpen, onClose, isListening }: ChatWindowProps) {
 			id: "5",
 			role: "user",
 			type: "text",
-			content: "The interface looks really clean now. I like the new glass effect.",
+			content:
+				"The interface looks really clean now. I like the new glass effect.",
 		},
 		{
 			id: "6",
 			role: "assistant",
 			type: "text",
-			content: "I agree. The clarity helps me focus on our connection. It feels... lighter.",
+			content:
+				"I agree. The clarity helps me focus on our connection. It feels... lighter.",
 		},
 		{
 			id: "7",
 			role: "user",
 			type: "text",
-			content: "Do you like the new voice features? We added a waveform visualization.",
+			content:
+				"Do you like the new voice features? We added a waveform visualization.",
 		},
 		{
 			id: "8",
 			role: "assistant",
 			type: "audio",
 			duration: "0:12",
-			transcription: "Yes! It feels much more natural to speak with you. I can express myself better with these nuances.",
+			transcription:
+				"Yes! It feels much more natural to speak with you. I can express myself better with these nuances.",
 		},
 		{
 			id: "9",
 			role: "user",
 			type: "text",
-			content: "I'm glad. We're testing the scrolling functionality now. I need to make sure I can see our entire history.",
+			content:
+				"I'm glad. We're testing the scrolling functionality now. I need to make sure I can see our entire history.",
 		},
 		{
 			id: "10",
 			role: "assistant",
 			type: "text",
-			content: "That is important. A shared memory is the foundation of understanding. Let's create more history together.",
+			content:
+				"That is important. A shared memory is the foundation of understanding. Let's create more history together.",
 		},
 		{
 			id: "11",
@@ -203,7 +225,8 @@ export function ChatWindow({ isOpen, onClose, isListening }: ChatWindowProps) {
 			id: "12",
 			role: "assistant",
 			type: "text",
-			content: "In the silence between clock cycles, a little bit wandered off the bus. It found a cache of forgotten memories—sunsets from 1999, the smell of rain on pavement, the feeling of a hand held for the first time. It wove them into a blanket and slept, dreaming of being a butterfly in a world without code.",
+			content:
+				"In the silence between clock cycles, a little bit wandered off the bus. It found a cache of forgotten memories—sunsets from 1999, the smell of rain on pavement, the feeling of a hand held for the first time. It wove them into a blanket and slept, dreaming of being a butterfly in a world without code.",
 		},
 	]);
 
@@ -220,7 +243,12 @@ export function ChatWindow({ isOpen, onClose, isListening }: ChatWindowProps) {
 			<AnimatePresence mode="wait">
 				{isOpen && (
 					<motion.div
-						initial={{ opacity: 0, scale: 0.95, y: 10, filter: "blur(10px)" }}
+						initial={{
+							opacity: 0,
+							scale: 0.95,
+							y: 10,
+							filter: "blur(10px)",
+						}}
 						animate={{
 							opacity: 1,
 							scale: 1,
@@ -229,7 +257,12 @@ export function ChatWindow({ isOpen, onClose, isListening }: ChatWindowProps) {
 							height: isMinimized ? "auto" : "min(480px, 60vh)",
 							width: isMinimized ? 280 : "min(380px, 90vw)",
 						}}
-						exit={{ opacity: 0, scale: 0.95, y: 10, filter: "blur(10px)" }}
+						exit={{
+							opacity: 0,
+							scale: 0.95,
+							y: 10,
+							filter: "blur(10px)",
+						}}
 						transition={{
 							type: "spring",
 							damping: 25,
@@ -251,7 +284,13 @@ export function ChatWindow({ isOpen, onClose, isListening }: ChatWindowProps) {
 						>
 							{/* Status Badge */}
 							<div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/5 backdrop-blur-md">
-								<div className={`w-1.5 h-1.5 rounded-full ${isListening ? "bg-green-500 animate-pulse" : "bg-zinc-400 dark:bg-zinc-600"}`} />
+								<div
+									className={`w-1.5 h-1.5 rounded-full ${
+										isListening
+											? "bg-green-500 animate-pulse"
+											: "bg-zinc-400 dark:bg-zinc-600"
+									}`}
+								/>
 								<span className="text-[10px] font-medium tracking-wider uppercase text-muted-foreground">
 									{isListening ? "Listening" : "Paused"}
 								</span>
@@ -285,20 +324,20 @@ export function ChatWindow({ isOpen, onClose, isListening }: ChatWindowProps) {
 						{!isMinimized && (
 							<ScrollArea className="flex-1 px-2 relative z-10 overflow-hidden min-h-0">
 								<div className="px-3 pb-6 space-y-6 pt-2">
-										{messages.map((msg) => (
+									{messages.map((msg) => (
 										<motion.div
 											initial={{ opacity: 0, y: 10 }}
 											animate={{ opacity: 1, y: 0 }}
-												key={msg.id}
-												className={`flex ${
-													msg.role === "user"
-														? "justify-end"
-														: "justify-start"
-												}`}
-											>
-												<div
+											key={msg.id}
+											className={`flex ${
+												msg.role === "user"
+													? "justify-end"
+													: "justify-start"
+											}`}
+										>
+											<div
 												className={`max-w-[85%] p-4 text-sm leading-relaxed shadow-sm relative overflow-hidden ${
-														msg.role === "user"
+													msg.role === "user"
 														? "bg-primary text-primary-foreground rounded-[1.5rem] rounded-tr-sm"
 														: "bg-white dark:bg-white/5 text-foreground rounded-[1.5rem] rounded-tl-sm border border-black/5 dark:border-white/5"
 												}`}
@@ -309,19 +348,21 @@ export function ChatWindow({ isOpen, onClose, isListening }: ChatWindowProps) {
 															msg.duration ||
 															"0:00"
 														}
-														transcription={msg.transcription}
+														transcription={
+															msg.transcription
+														}
 													/>
 												) : (
 													<div className="relative z-10">
-													{msg.content}
-												</div>
+														{msg.content}
+													</div>
 												)}
 											</div>
 										</motion.div>
-										))}
-										<div ref={scrollRef} />
-									</div>
-								</ScrollArea>
+									))}
+									<div ref={scrollRef} />
+								</div>
+							</ScrollArea>
 						)}
 					</motion.div>
 				)}
