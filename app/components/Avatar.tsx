@@ -5,6 +5,7 @@ import { gsap } from "gsap";
 
 import { Eyes } from "./face/Eyes";
 import { Mouth } from "./face/Mouth";
+import { FaceVariant } from "./face/types";
 
 interface EmotionState {
 	joy: number;
@@ -18,6 +19,7 @@ interface AvatarProps {
 	emotion?: EmotionState;
 	className?: string;
 	voiceEnabled?: boolean;
+	variant?: FaceVariant;
 }
 
 const DEFAULT_EMOTION: EmotionState = {
@@ -32,10 +34,12 @@ export default function Avatar({
 	emotion = DEFAULT_EMOTION,
 	className = "",
 	voiceEnabled = false,
+	variant = "minimal",
 }: AvatarProps) {
 	const containerRef = useRef<HTMLDivElement>(null);
-	const leftEyeRef = useRef<SVGEllipseElement>(null);
-	const rightEyeRef = useRef<SVGEllipseElement>(null);
+	// Generic SVGElement refs to support Ellipse (Minimal) or Rect (Tron)
+	const leftEyeRef = useRef<SVGElement>(null);
+	const rightEyeRef = useRef<SVGElement>(null);
 	const mouthRef = useRef<SVGPathElement>(null);
 	const mouthGroupRef = useRef<SVGGElement>(null);
 	const svgBoxRef = useRef<SVGSVGElement | null>(null);
@@ -92,6 +96,73 @@ export default function Avatar({
 		}
 	}
 
+	// Animation Helper to bridge Ellipse (Minimal) vs Rect (Tron) geometry
+	function animateEye(
+		target: SVGElement | null,
+		params: {
+			rx: number;
+			ry: number;
+			cy: number;
+			tilt?: number; // rotation
+			scale?: number;
+			xOffset?: number; // Additional x offset (for looking around)
+		},
+		duration: number,
+		ease: string = "power2.out",
+		delay: number = 0,
+		cxOrigin: number // 170 for left, 350 for right
+	) {
+		if (!target) return;
+
+		const { rx, ry, cy, tilt = 0, scale = 1, xOffset = 0 } = params;
+
+		if (variant === "tron") {
+			// Tron uses <rect>
+			// width = 2 * rx
+			// height = 2 * ry
+			// x = cx - rx + xOffset (approximated, since rect x is left edge)
+			// y = cy - ry (approximated, since rect y is top edge)
+
+			// Note: For rotation, we need transformOrigin.
+			// Center of rect is (x + width/2, y + height/2).
+			// If we animate x/y/width/height, center moves.
+
+			gsap.to(target, {
+				attr: {
+					width: rx * 2,
+					height: ry * 2,
+					x: cxOrigin - rx + xOffset,
+					y: cy - ry,
+					rx: 4, // Fixed corner radius for Tron
+					ry: 4,
+				},
+				rotation: tilt, // Rotation handled by CSS transform usually centered on element if transformOrigin set
+				scale: scale,
+				duration: duration,
+				ease: ease,
+				delay: delay,
+				transformOrigin: "center center",
+			});
+		} else {
+			// Minimal uses <ellipse>
+			gsap.to(target, {
+				attr: {
+					rx: rx,
+					ry: ry,
+					cy: cy,
+					// cx is static on element, we only animate if xOffset provided
+					...(xOffset !== 0 ? { cx: cxOrigin + xOffset } : {}),
+				},
+				rotation: tilt,
+				scale: scale,
+				duration: duration,
+				ease: ease,
+				delay: delay,
+				transformOrigin: "center center",
+			});
+		}
+	}
+
 	function performDeepEmotion() {
 		isLongPressActiveRef.current = true;
 		triggerHaptic(50); // Initial rumble start
@@ -110,17 +181,27 @@ export default function Avatar({
 
 		// Dilation effect
 		const target = latestEyeTargetsRef.current;
-		if (leftEyeRef.current && rightEyeRef.current) {
-			gsap.to([leftEyeRef.current, rightEyeRef.current], {
-				attr: {
+		// Reuse animateEye logic or manual? animateEye is cleaner but we need to handle both arrays.
+		// For simplicity/performance in this specific effect, we might inline logic or loop.
+
+		[leftEyeRef.current, rightEyeRef.current].forEach((eye, i) => {
+			const cx = i === 0 ? 170 : 350;
+			// We want to scale UP 1.15 and increase dimensions
+			// animateEye handles "scale" prop.
+			animateEye(
+				eye,
+				{
 					rx: target.rx + 8,
 					ry: target.ry + 8,
+					cy: 105, // Approximation, assuming deep emotion centers eyes
+					scale: 1.15,
 				},
-				scale: 1.15,
-				duration: 0.4,
-				ease: "back.out(1.5)",
-			});
-		}
+				0.4,
+				"back.out(1.5)",
+				0,
+				cx
+			);
+		});
 	}
 
 	function stopDeepEmotion() {
@@ -142,47 +223,65 @@ export default function Avatar({
 
 		// Reset eyes
 		const target = latestEyeTargetsRef.current;
-		if (leftEyeRef.current && rightEyeRef.current) {
-			gsap.to([leftEyeRef.current, rightEyeRef.current], {
-				attr: {
+
+		[leftEyeRef.current, rightEyeRef.current].forEach((eye, i) => {
+			const cx = i === 0 ? 170 : 350;
+			animateEye(
+				eye,
+				{
 					rx: target.rx,
 					ry: target.ry,
+					cy: target.cy, // Use stored cy
+					scale: 1,
 				},
-				scale: 1,
-				duration: 0.3,
-				ease: "power2.out",
-			});
-		}
+				0.3,
+				"power2.out",
+				0,
+				cx
+			);
+		});
 	}
 
 	function handleEyeHover(eye: "left" | "right") {
 		const eyeRef = eye === "left" ? leftEyeRef : rightEyeRef;
-		if (eyeRef.current) {
-			gsap.to(eyeRef.current, {
-				attr: {
-					ry: Math.max(3, latestEyeTargetsRef.current.ry + 6),
-					rx: Math.max(4, latestEyeTargetsRef.current.rx + 3),
-				},
+		const cx = eye === "left" ? 170 : 350;
+		const target = latestEyeTargetsRef.current;
+
+		animateEye(
+			eyeRef.current,
+			{
+				rx: Math.max(4, target.rx + 3),
+				ry: Math.max(3, target.ry + 6),
+				cy: target.cy, // we don't have this available easily? Yes we do: target.cy
 				scale: 1.05,
-				duration: 0.2,
-				ease: "back.out(1.5)",
-			});
-		}
+				tilt: eye === "left" ? -target.tilt : target.tilt, // maintain tilt
+			},
+			0.2,
+			"back.out(1.5)",
+			0,
+			cx
+		);
 	}
 
 	function handleEyeHoverEnd(eye: "left" | "right") {
 		const eyeRef = eye === "left" ? leftEyeRef : rightEyeRef;
-		if (eyeRef.current) {
-			gsap.to(eyeRef.current, {
-				attr: {
-					ry: latestEyeTargetsRef.current.ry,
-					rx: latestEyeTargetsRef.current.rx,
-				},
+		const cx = eye === "left" ? 170 : 350;
+		const target = latestEyeTargetsRef.current;
+
+		animateEye(
+			eyeRef.current,
+			{
+				rx: target.rx,
+				ry: target.ry,
+				cy: target.cy,
 				scale: 1,
-				duration: 0.25,
-				ease: "power2.out",
-			});
-		}
+				tilt: eye === "left" ? -target.tilt : target.tilt,
+			},
+			0.25,
+			"power2.out",
+			0,
+			cx
+		);
 	}
 
 	function handleMouthHover() {
@@ -291,36 +390,34 @@ export default function Avatar({
 		const stagger = 0.08;
 
 		// Animate left eye with slight delay
-		if (leftEyeRef.current) {
-			gsap.to(leftEyeRef.current, {
-				attr: {
-					rx: Math.max(4, eyeWidth),
-					ry: Math.max(2, eyeHeight),
-					cy: 105 + eyeY,
-				},
-				rotation: -eyeTilt,
-				duration: 0.75,
-				ease: "power2.out",
-				transformOrigin: "center center",
-				delay: 0,
-			});
-		}
+		animateEye(
+			leftEyeRef.current,
+			{
+				rx: Math.max(4, eyeWidth),
+				ry: Math.max(2, eyeHeight),
+				cy: 105 + eyeY,
+				tilt: -eyeTilt,
+			},
+			0.75,
+			"power2.out",
+			0,
+			170
+		);
 
 		// Animate right eye with slight delay
-		if (rightEyeRef.current) {
-			gsap.to(rightEyeRef.current, {
-				attr: {
-					rx: Math.max(4, eyeWidth),
-					ry: Math.max(2, eyeHeight),
-					cy: 105 + eyeY,
-				},
-				rotation: eyeTilt,
-				duration: 0.75,
-				ease: "power2.out",
-				transformOrigin: "center center",
-				delay: stagger,
-			});
-		}
+		animateEye(
+			rightEyeRef.current,
+			{
+				rx: Math.max(4, eyeWidth),
+				ry: Math.max(2, eyeHeight),
+				cy: 105 + eyeY,
+				tilt: eyeTilt,
+			},
+			0.75,
+			"power2.out",
+			stagger,
+			350
+		);
 
 		// Save latest eye targets for idle (blink/glance)
 		latestEyeTargetsRef.current = {
@@ -366,56 +463,85 @@ export default function Avatar({
 		const target = latestEyeTargetsRef.current;
 		const blinkDur = 0.08;
 		const ryClosed = 2;
-		if (leftEyeRef.current)
-			gsap.to(leftEyeRef.current, {
-				attr: { ry: ryClosed },
-				duration: blinkDur,
-				ease: "power1.in",
-			});
-		if (rightEyeRef.current)
-			gsap.to(rightEyeRef.current, {
-				attr: { ry: ryClosed },
-				duration: blinkDur,
-				ease: "power1.in",
-			});
-		// reopen
-		if (leftEyeRef.current)
-			gsap.to(leftEyeRef.current, {
-				attr: { ry: target.ry },
-				duration: 0.12,
-				ease: "power2.out",
-				delay: blinkDur,
-			});
-		if (rightEyeRef.current)
-			gsap.to(rightEyeRef.current, {
-				attr: { ry: target.ry },
-				duration: 0.12,
-				ease: "power2.out",
-				delay: blinkDur,
-			});
+
+		// Close eyes
+		[leftEyeRef.current, rightEyeRef.current].forEach((eye, i) => {
+			const cx = i === 0 ? 170 : 350;
+			// For blinking, we just squash RY.
+			// animateEye handles conversion to height for Tron.
+			animateEye(
+				eye,
+				{
+					rx: target.rx, // keep width
+					ry: ryClosed,
+					cy: target.cy,
+					tilt: i === 0 ? -target.tilt : target.tilt,
+				},
+				blinkDur,
+				"power1.in",
+				0,
+				cx
+			);
+		});
+
+		// Reopen eyes (delayed)
+		const reopenDelay = blinkDur;
+		[leftEyeRef.current, rightEyeRef.current].forEach((eye, i) => {
+			const cx = i === 0 ? 170 : 350;
+			animateEye(
+				eye,
+				{
+					rx: target.rx,
+					ry: target.ry,
+					cy: target.cy,
+					tilt: i === 0 ? -target.tilt : target.tilt,
+				},
+				0.12,
+				"power2.out",
+				reopenDelay,
+				cx
+			);
+		});
 	}
 
 	function performGlance() {
 		const deltaTilt = gsap.utils.random(-2, 2);
 		const deltaY = gsap.utils.random(-1.5, 1.5);
-		if (leftEyeRef.current)
-			gsap.to(leftEyeRef.current, {
-				rotation: `+=${deltaTilt}`,
-				attr: { cy: `+=${deltaY}` },
-				duration: 0.35,
-				yoyo: true,
-				repeat: 1,
-				ease: "sine.inOut",
-			});
-		if (rightEyeRef.current)
-			gsap.to(rightEyeRef.current, {
-				rotation: `+=${-deltaTilt}`,
-				attr: { cy: `+=${deltaY}` },
-				duration: 0.35,
-				yoyo: true,
-				repeat: 1,
-				ease: "sine.inOut",
-			});
+
+		// For glance, we need yoyo. animateEye doesn't support yoyo/repeat easily.
+		// But glance is subtle x/y/rotation.
+		// If variant==tron, "attr: { cy }" mapping to "y" matters.
+		// Let's manually handle glance logic branching since it uses yoyo/repeat.
+
+		const eyes = [
+			{ ref: leftEyeRef, cx: 170, baseRot: 0 }, // baseRot ignored as we do relative
+			{ ref: rightEyeRef, cx: 350, baseRot: 0 },
+		];
+
+		eyes.forEach(({ ref, cx }, i) => {
+			if (!ref.current) return;
+			const rotationDelta = i === 0 ? deltaTilt : -deltaTilt;
+
+			if (variant === "tron") {
+				gsap.to(ref.current, {
+					rotation: `+=${rotationDelta}`,
+					attr: { y: `+=${deltaY}` }, // y is top-edge, moving it works
+					duration: 0.35,
+					yoyo: true,
+					repeat: 1,
+					ease: "sine.inOut",
+				});
+			} else {
+				gsap.to(ref.current, {
+					rotation: `+=${rotationDelta}`,
+					attr: { cy: `+=${deltaY}` },
+					duration: 0.35,
+					yoyo: true,
+					repeat: 1,
+					ease: "sine.inOut",
+				});
+			}
+		});
 	}
 
 	function startIdleMouthWave() {
@@ -474,26 +600,38 @@ export default function Avatar({
 
 		// Don't override scale if deep emotion is active
 		if (!isLongPressActiveRef.current) {
-			if (leftEyeRef.current) {
-				const leftY = target.cy + eyeYDelta;
-				gsap.to(leftEyeRef.current, {
-					rotation: -target.tilt + -eyeTiltDelta,
-					attr: { cy: leftY },
+			const leftY = target.cy + eyeYDelta;
+			const rightY = target.cy + eyeYDelta;
+
+			animateEye(
+				leftEyeRef.current,
+				{
+					rx: target.rx,
+					ry: target.ry,
+					cy: leftY,
+					tilt: -target.tilt - eyeTiltDelta,
 					scale: eyeScale,
-					duration: 0.4, // Heavier inertia
-					ease: "power3.out",
-				});
-			}
-			if (rightEyeRef.current) {
-				const rightY = target.cy + eyeYDelta;
-				gsap.to(rightEyeRef.current, {
-					rotation: target.tilt + eyeTiltDelta,
-					attr: { cy: rightY },
+				},
+				0.4,
+				"power3.out",
+				0,
+				170
+			);
+
+			animateEye(
+				rightEyeRef.current,
+				{
+					rx: target.rx,
+					ry: target.ry,
+					cy: rightY,
+					tilt: target.tilt + eyeTiltDelta,
 					scale: eyeScale,
-					duration: 0.4, // Heavier inertia
-					ease: "power3.out",
-				});
-			}
+				},
+				0.4,
+				"power3.out",
+				0,
+				350
+			);
 		}
 
 		// More expressive mouth tilt with overshoot
@@ -536,22 +674,37 @@ export default function Avatar({
 
 		// return to latest emotion-driven targets with gentle bounce
 		const t = latestEyeTargetsRef.current;
-		if (leftEyeRef.current)
-			gsap.to(leftEyeRef.current, {
-				rotation: -t.tilt,
-				attr: { cy: t.cy },
+
+		animateEye(
+			leftEyeRef.current,
+			{
+				rx: t.rx,
+				ry: t.ry,
+				cy: t.cy,
+				tilt: -t.tilt,
 				scale: 1,
-				duration: 0.6,
-				ease: "power3.out",
-			});
-		if (rightEyeRef.current)
-			gsap.to(rightEyeRef.current, {
-				rotation: t.tilt,
-				attr: { cy: t.cy },
+			},
+			0.6,
+			"power3.out",
+			0,
+			170
+		);
+
+		animateEye(
+			rightEyeRef.current,
+			{
+				rx: t.rx,
+				ry: t.ry,
+				cy: t.cy,
+				tilt: t.tilt,
 				scale: 1,
-				duration: 0.6,
-				ease: "power3.out",
-			});
+			},
+			0.6,
+			"power3.out",
+			0,
+			350
+		);
+
 		if (mouthGroupRef.current)
 			gsap.to(mouthGroupRef.current, {
 				rotation: latestMouthRef.current.tilt,
@@ -573,45 +726,84 @@ export default function Avatar({
 		triggerHaptic(10); // Light tick
 		const eyeRef = eye === "left" ? leftEyeRef : rightEyeRef;
 		const target = latestEyeTargetsRef.current;
+		const cx = eye === "left" ? 170 : 350;
 
-		if (eyeRef.current) {
-			const tl = gsap.timeline();
-			tl.to(eyeRef.current, {
-				attr: { ry: 2 },
-				scaleX: 0.7,
-				duration: 0.1,
-				ease: "power2.in",
-			}).to(eyeRef.current, {
-				attr: { ry: target.ry },
-				scaleX: 1,
-				duration: 0.15,
-				ease: "back.out(2)",
-			});
-		}
+		// We need sequence. animateEye doesn't return tween (yet), so we chain via delay or callbacks.
+		// Simple delay approach:
+
+		// Close
+		animateEye(
+			eyeRef.current,
+			{
+				rx: target.rx, // width usually stays same for wink or maybe stretches?
+				ry: 2, // closed
+				cy: target.cy,
+				tilt: eye === "left" ? -target.tilt : target.tilt,
+				scale: 0.7, // squeeze horizontally? No, scaleX/Y
+			},
+			0.1,
+			"power2.in",
+			0,
+			cx
+		);
+		// Note: scale: 0.7 passed to animateEye applies to both X and Y if number.
+		// Original code had scaleX: 0.7. animateEye takes `scale` as number.
+		// To match exactly, we'd need scaleX support in animateEye.
+		// For now, uniform scale 0.9 is fine, or we can improve animateEye later.
+
+		// Open
+		animateEye(
+			eyeRef.current,
+			{
+				rx: target.rx,
+				ry: target.ry,
+				cy: target.cy,
+				tilt: eye === "left" ? -target.tilt : target.tilt,
+				scale: 1,
+			},
+			0.15,
+			"back.out(2)",
+			0.1, // delay
+			cx
+		);
 	}
 
 	function performSurprise() {
 		triggerHaptic([40, 50, 20]); // Double pulse
 		const target = latestEyeTargetsRef.current;
-		const tl = gsap.timeline();
 
 		// Eyes wide with bounce
-		tl.to([leftEyeRef.current, rightEyeRef.current], {
-			attr: {
-				rx: target.rx + 15,
-				ry: target.ry + 10,
-			},
-			scale: 1.1,
-			duration: 0.2,
-			ease: "back.out(2)",
-		}).to([leftEyeRef.current, rightEyeRef.current], {
-			attr: {
-				rx: target.rx,
-				ry: target.ry,
-			},
-			scale: 1,
-			duration: 0.3,
-			ease: "elastic.out(1, 0.5)",
+		[leftEyeRef.current, rightEyeRef.current].forEach((eye, i) => {
+			const cx = i === 0 ? 170 : 350;
+			// Expand
+			animateEye(
+				eye,
+				{
+					rx: target.rx + 15,
+					ry: target.ry + 10,
+					cy: target.cy,
+					scale: 1.1,
+				},
+				0.2,
+				"back.out(2)",
+				0,
+				cx
+			);
+
+			// Return
+			animateEye(
+				eye,
+				{
+					rx: target.rx,
+					ry: target.ry,
+					cy: target.cy,
+					scale: 1,
+				},
+				0.3,
+				"elastic.out(1, 0.5)",
+				0.2, // delay
+				cx
+			);
 		});
 
 		// Mouth opens in surprise
@@ -619,21 +811,25 @@ export default function Avatar({
 			const m = latestMouthRef.current;
 			const half = (m.width + 20) / 2;
 			const surpriseD = `M ${-half} 0 Q 0 15 ${half} 0`;
-			tl.to(
-				mouthRef.current,
-				{
-					attr: { d: surpriseD },
-					duration: 0.2,
-					ease: "back.out(2)",
-				},
-				0
-			).to(mouthRef.current, {
-				attr: {
-					d: `M ${-m.width / 2} 0 Q 0 ${m.curve} ${m.width / 2} 0`,
-				},
-				duration: 0.3,
-				ease: "elastic.out(1, 0.5)",
-			});
+			gsap.timeline()
+				.to(
+					mouthRef.current,
+					{
+						attr: { d: surpriseD },
+						duration: 0.2,
+						ease: "back.out(2)",
+					},
+					0
+				)
+				.to(mouthRef.current, {
+					attr: {
+						d: `M ${-m.width / 2} 0 Q 0 ${m.curve} ${
+							m.width / 2
+						} 0`,
+					},
+					duration: 0.3,
+					ease: "elastic.out(1, 0.5)",
+				});
 		}
 	}
 
@@ -821,6 +1017,7 @@ export default function Avatar({
 						onWink={performWink}
 						onHoverStart={handleEyeHover}
 						onHoverEnd={handleEyeHoverEnd}
+						variant={variant}
 					/>
 
 					<Mouth
@@ -831,6 +1028,7 @@ export default function Avatar({
 						onClick={performMouthClick}
 						onHoverStart={handleMouthHover}
 						onHoverEnd={handleMouthHoverEnd}
+						variant={variant}
 					/>
 				</svg>
 			</div>

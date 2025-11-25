@@ -58,6 +58,6 @@ A roadmap for transforming Kokoro from a single-face entity into a multi-persona
 ## 4. Implementation Phases 📅
 
 1.  **Phase 1: Refactor** ✅: Extract geometry logic from `Avatar.tsx` into sub-components (`Eyes.tsx`, `Mouth.tsx`) to make swapping easier.
-2.  **Phase 2: The Engine**: Implement the `variant` prop and one new face (e.g., Tron) to test the abstraction.
+2.  **Phase 2: The Engine** ✅: Implement the `variant` prop and one new face (e.g., Tron) to test the abstraction.
 3.  **Phase 3: The Studio**: Build the UI controls in `CustomizationModal` to toggle these states live.
 4.  **Phase 4: Polish**: Add unique sound/haptics per variant.

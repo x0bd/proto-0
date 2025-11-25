@@ -1,4 +1,5 @@
 import { RefObject, MutableRefObject } from "react";
+import { FaceVariant } from "./types";
 
 interface MouthProps {
 	mouthRef: RefObject<SVGPathElement | null>;
@@ -8,7 +9,7 @@ interface MouthProps {
 	onClick: () => void;
 	onHoverStart: () => void;
 	onHoverEnd: () => void;
-	variant?: "minimal" | "tron" | "kawaii" | "analogue";
+	variant?: FaceVariant;
 }
 
 export function Mouth({
@@ -21,6 +22,11 @@ export function Mouth({
 	onHoverEnd,
 	variant = "minimal",
 }: MouthProps) {
+	// For Tron, maybe we use a different stroke style or shape?
+	// Currently sticking to the same bezier path but maybe we can add a filter or color change later.
+	// The "Stepped" look would require changing the 'd' attribute logic in Avatar.tsx which is complex.
+	// For Phase 2, we'll keep the geometry similar but maybe sharper stroke?
+
 	return (
 		<g ref={groupRef} transform="translate(260,175)">
 			<path
@@ -28,8 +34,9 @@ export function Mouth({
 				d="M -33 0 Q 0 0 33 0"
 				fill="none"
 				stroke="currentColor"
-				strokeWidth="4"
-				strokeLinecap="round"
+				strokeWidth={variant === "tron" ? "4" : "4"}
+				strokeLinecap={variant === "tron" ? "square" : "round"}
+				shapeRendering={variant === "tron" ? "crispEdges" : "auto"}
 				className="text-black dark:text-white cursor-pointer transition-opacity hover:opacity-80"
 				onClick={(e) => {
 					e.stopPropagation();
@@ -50,7 +57,7 @@ export function Mouth({
 						y={-18}
 						width="8"
 						height="30"
-						rx="4"
+						rx={variant === "tron" ? "0" : "4"}
 						fill="currentColor"
 						className="text-black dark:text-white origin-bottom"
 						style={{ transformOrigin: "center bottom" }}
