@@ -69,6 +69,7 @@ export default function Home() {
 	const [isCustomizationOpen, setIsCustomizationOpen] = useState(false);
 	const [showSwipeHints, setShowSwipeHints] = useState(true);
 	const [faceVariant, setFaceVariant] = useState<FaceVariant>("minimal");
+	const [accentColor, setAccentColor] = useState<string>("neutral");
 
 	const [voiceEnabled, setVoiceEnabled] = useState<boolean>(true);
 	const [voiceLevel, setVoiceLevel] = useState<number>(0);
@@ -284,7 +285,7 @@ export default function Home() {
 
 	return (
 		<div
-			className="min-h-dvh w-screen bg-background text-foreground flex items-center justify-center overflow-hidden relative selection:bg-primary selection:text-primary-foreground font-sans transition-colors duration-700"
+			className={`min-h-dvh w-screen bg-background text-foreground flex items-center justify-center overflow-hidden relative selection:bg-primary selection:text-primary-foreground font-sans transition-colors duration-700 theme-${accentColor}`}
 			onMouseMove={handlePointerMove}
 			onMouseLeave={handlePointerLeave}
 		>
@@ -477,6 +478,8 @@ export default function Home() {
 				onClose={() => setIsCustomizationOpen(false)}
 				currentVariant={faceVariant}
 				onVariantChange={setFaceVariant}
+				accentColor={accentColor}
+				onAccentChange={setAccentColor}
 			/>
 		</div>
 	);

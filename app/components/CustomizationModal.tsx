@@ -20,6 +20,8 @@ interface CustomizationModalProps {
 	onClose: () => void;
 	currentVariant: FaceVariant;
 	onVariantChange: (variant: FaceVariant) => void;
+	accentColor: string;
+	onAccentChange: (color: string) => void;
 }
 
 const VARIANTS: { id: FaceVariant; label: string; desc: string }[] = [
@@ -29,6 +31,52 @@ const VARIANTS: { id: FaceVariant; label: string; desc: string }[] = [
 	// { id: "analogue", label: "Analogue", desc: "Hand-drawn sketchy lines" },
 ];
 
+const COLORS = [
+	{ id: "neutral", label: "Obsidian", color: "bg-neutral-900" },
+	{ id: "rose", label: "Sakura", color: "bg-rose-500" },
+	{ id: "cyan", label: "Cyber", color: "bg-cyan-500" },
+	{ id: "amber", label: "Amber", color: "bg-amber-500" },
+	{ id: "violet", label: "Void", color: "bg-violet-600" },
+];
+
+function ColorSelector({
+	active,
+	onChange,
+}: {
+	active: string;
+	onChange: (color: string) => void;
+}) {
+	return (
+		<div className="pb-2">
+			<h3 className="text-[11px] font-mono font-medium text-muted-foreground tracking-[0.15em] uppercase mb-4 ml-1">
+				Accent Color
+			</h3>
+			<div className="flex flex-wrap gap-2">
+				{COLORS.map((c) => {
+					const isActive = active === c.id;
+					return (
+						<button
+							key={c.id}
+							onClick={() => {
+								onChange(c.id);
+							}}
+							className={`group relative w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
+								isActive
+									? "scale-110 ring-2 ring-primary ring-offset-2 ring-offset-background"
+									: "hover:scale-105"
+							}`}
+						>
+							<div
+								className={`w-full h-full rounded-full ${c.color} opacity-90`}
+							/>
+						</button>
+					);
+				})}
+			</div>
+		</div>
+	);
+}
+
 function VariantSelector({
 	current,
 	onChange,
@@ -37,11 +85,11 @@ function VariantSelector({
 	onChange: (v: FaceVariant) => void;
 }) {
 	return (
-		<div className="px-5 pb-6">
+		<div className="pb-6">
 			<h3 className="text-[11px] font-mono font-medium text-muted-foreground tracking-[0.15em] uppercase mb-4 ml-1">
 				Face Archetype
 			</h3>
-			<div className="grid grid-cols-2 gap-3">
+			<div className="grid grid-cols-1 gap-3">
 				{VARIANTS.map((v) => {
 					const isActive = current === v.id;
 					return (
@@ -117,6 +165,8 @@ export function CustomizationModal({
 	onClose,
 	currentVariant,
 	onVariantChange,
+	accentColor,
+	onAccentChange,
 }: CustomizationModalProps) {
 	return (
 		<AnimatePresence mode="wait">
@@ -144,7 +194,7 @@ export function CustomizationModal({
 								stiffness: 300,
 								mass: 0.8,
 							}}
-							className="pointer-events-auto w-full md:max-w-[420px] bg-background border-t md:border border-border shadow-2xl rounded-t-[2rem] md:rounded-[2rem] overflow-hidden flex flex-col relative"
+							className="pointer-events-auto w-full md:max-w-[680px] bg-background border-t md:border border-border shadow-2xl rounded-t-[2rem] md:rounded-[2rem] overflow-hidden flex flex-col relative"
 							onClick={(e) => e.stopPropagation()}
 						>
 							{/* Texture Overlay */}
@@ -172,14 +222,25 @@ export function CustomizationModal({
 							</div>
 
 							{/* Scrollable Content */}
-							<ScrollArea className="relative z-10 h-[50vh] md:h-[60vh] max-h-[500px] px-0 md:px-2 pb-8 md:pb-8">
-								<div className="space-y-2 md:space-y-3 py-2">
-									<VariantSelector
-										current={currentVariant}
-										onChange={onVariantChange}
-									/>
+							<ScrollArea className="relative z-10 h-[50vh] md:h-[60vh] max-h-[600px] px-0 md:px-0 pb-8 md:pb-8">
+								<div className="flex flex-col md:flex-row md:items-start md:h-full">
+									{/* Left Col: Visuals (Variant + Colors) */}
+									<div className="flex-1 px-4 md:px-8 py-4 space-y-8 border-b md:border-b-0 md:border-r border-border/50">
+										<VariantSelector
+											current={currentVariant}
+											onChange={onVariantChange}
+										/>
+										<ColorSelector
+											active={accentColor}
+											onChange={onAccentChange}
+										/>
+									</div>
 
-									<div className="px-4 md:px-6 space-y-2 md:space-y-3">
+									{/* Right Col: Settings */}
+									<div className="flex-1 px-4 md:px-8 py-4 space-y-3">
+										<h3 className="text-[11px] font-mono font-medium text-muted-foreground tracking-[0.15em] uppercase mb-4 ml-1">
+											System Controls
+										</h3>
 										<SettingCard
 											icon={Zap}
 											label="Animation Rate"
