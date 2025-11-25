@@ -23,6 +23,8 @@ export function Eyes({
 		"text-black dark:text-white cursor-pointer transition-opacity hover:opacity-80";
 	// Tron specific classes (cyan/magenta glow handled via drop-shadow in parent or just color)
 	// For now, simple color switch or keeping currentColor
+	const tronEyeClass =
+		"text-black dark:text-white cursor-pointer transition-opacity hover:opacity-80 drop-shadow-[0_0_8px_rgba(var(--primary-rgb),0.5)]";
 
 	if (variant === "tron") {
 		return (
@@ -44,7 +46,7 @@ export function Eyes({
 					rx="4"
 					ry="4"
 					fill="currentColor"
-					className={eyeClass}
+					className={tronEyeClass}
 					onClick={(e) => {
 						e.stopPropagation();
 						onWink("left");
@@ -61,7 +63,7 @@ export function Eyes({
 					rx="4"
 					ry="4"
 					fill="currentColor"
-					className={eyeClass}
+					className={tronEyeClass}
 					onClick={(e) => {
 						e.stopPropagation();
 						onWink("right");

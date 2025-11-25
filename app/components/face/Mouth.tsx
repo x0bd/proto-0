@@ -37,7 +37,11 @@ export function Mouth({
 				strokeWidth={variant === "tron" ? "4" : "4"}
 				strokeLinecap={variant === "tron" ? "square" : "round"}
 				shapeRendering={variant === "tron" ? "crispEdges" : "auto"}
-				className="text-black dark:text-white cursor-pointer transition-opacity hover:opacity-80"
+				className={`text-black dark:text-white cursor-pointer transition-opacity hover:opacity-80 ${
+					variant === "tron"
+						? "drop-shadow-[0_0_5px_rgba(var(--primary-rgb),0.5)]"
+						: ""
+				}`}
 				onClick={(e) => {
 					e.stopPropagation();
 					onClick();

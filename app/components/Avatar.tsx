@@ -75,7 +75,19 @@ export default function Avatar({
 	// Haptic helper
 	const triggerHaptic = (pattern: number | number[]) => {
 		if (typeof navigator !== "undefined" && navigator.vibrate) {
-			navigator.vibrate(pattern);
+			// Tron: sharper, shorter, more mechanical
+			if (variant === "tron") {
+				// Convert pattern to "sharp" clicks if feasible, or just shorten durations
+				if (typeof pattern === "number") {
+					navigator.vibrate(Math.min(pattern, 10)); // max 10ms click
+				} else {
+					// Array: map to short bursts
+					navigator.vibrate(pattern.map((p) => Math.min(p, 10)));
+				}
+			} else {
+				// Minimal: Organic, full duration
+				navigator.vibrate(pattern);
+			}
 		}
 	};
 
