@@ -421,23 +421,23 @@ export default function Avatar({
 		if (!isLongPressActiveRef.current) {
 			if (leftEyeRef.current) {
 				const leftY = target.cy + eyeYDelta;
-				gsap.to(leftEyeRef.current, {
-					rotation: -target.tilt + -eyeTiltDelta,
+			gsap.to(leftEyeRef.current, {
+				rotation: -target.tilt + -eyeTiltDelta,
 					attr: { cy: leftY },
-					scale: eyeScale,
+				scale: eyeScale,
 					duration: 0.4, // Heavier inertia
 					ease: "power3.out",
-				});
+			});
 			}
 			if (rightEyeRef.current) {
 				const rightY = target.cy + eyeYDelta;
-				gsap.to(rightEyeRef.current, {
-					rotation: target.tilt + eyeTiltDelta,
+			gsap.to(rightEyeRef.current, {
+				rotation: target.tilt + eyeTiltDelta,
 					attr: { cy: rightY },
-					scale: eyeScale,
+				scale: eyeScale,
 					duration: 0.4, // Heavier inertia
 					ease: "power3.out",
-				});
+			});
 			}
 		}
 
@@ -465,13 +465,13 @@ export default function Avatar({
 				repY = -ny * force;
 			}
 
-			gsap.to(containerRef.current, {
+		gsap.to(containerRef.current, {
 				x: nx * 8 + repX,
 				y: ny * 6 + repY,
-				rotation: nx * 2, // head tilt
+			rotation: nx * 2, // head tilt
 				duration: 0.5, // Increased for inertia
 				ease: "power3.out", // Heavier feel (critically damped-ish)
-			});
+		});
 		}
 	}
 

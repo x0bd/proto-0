@@ -63,10 +63,6 @@ A minimal, expressive avatar whose entire soul is eyes + mouth. Built like the f
 
 ### **Smart Features**
 
--   [ ] **TTS "breathing" mode**
-    -   [ ] Timed blink cadence for "thinking" states
-    -   [ ] Micro-mouth pulses during text generation
-    -   [ ] Idle phoneme illusion with deterministic waveform
 -   [ ] **Presets 2.0**
     -   [ ] Save/share emotion scenes as tiny JSON
     -   [ ] QR code sharing for instant emotion transfer
