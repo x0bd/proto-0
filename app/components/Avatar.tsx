@@ -3,6 +3,9 @@
 import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
 
+import { Eyes } from "./face/Eyes";
+import { Mouth } from "./face/Mouth";
+
 interface EmotionState {
 	joy: number;
 	sadness: number;
@@ -146,6 +149,58 @@ export default function Avatar({
 					ry: target.ry,
 				},
 				scale: 1,
+				duration: 0.3,
+				ease: "power2.out",
+			});
+		}
+	}
+
+	function handleEyeHover(eye: "left" | "right") {
+		const eyeRef = eye === "left" ? leftEyeRef : rightEyeRef;
+		if (eyeRef.current) {
+			gsap.to(eyeRef.current, {
+				attr: {
+					ry: Math.max(3, latestEyeTargetsRef.current.ry + 6),
+					rx: Math.max(4, latestEyeTargetsRef.current.rx + 3),
+				},
+				scale: 1.05,
+				duration: 0.2,
+				ease: "back.out(1.5)",
+			});
+		}
+	}
+
+	function handleEyeHoverEnd(eye: "left" | "right") {
+		const eyeRef = eye === "left" ? leftEyeRef : rightEyeRef;
+		if (eyeRef.current) {
+			gsap.to(eyeRef.current, {
+				attr: {
+					ry: latestEyeTargetsRef.current.ry,
+					rx: latestEyeTargetsRef.current.rx,
+				},
+				scale: 1,
+				duration: 0.25,
+				ease: "power2.out",
+			});
+		}
+	}
+
+	function handleMouthHover() {
+		if (mouthGroupRef.current) {
+			gsap.to(mouthGroupRef.current, {
+				scale: 1.05,
+				rotation: `+=${gsap.utils.random(-2, 2)}`,
+				duration: 0.2,
+				ease: "back.out(1.5)",
+			});
+		}
+	}
+
+	function handleMouthHoverEnd() {
+		if (mouthGroupRef.current) {
+			gsap.to(mouthGroupRef.current, {
+				scale: 1,
+				rotation: latestMouthRef.current.tilt,
 				duration: 0.3,
 				ease: "power2.out",
 			});
@@ -421,23 +476,23 @@ export default function Avatar({
 		if (!isLongPressActiveRef.current) {
 			if (leftEyeRef.current) {
 				const leftY = target.cy + eyeYDelta;
-			gsap.to(leftEyeRef.current, {
-				rotation: -target.tilt + -eyeTiltDelta,
+				gsap.to(leftEyeRef.current, {
+					rotation: -target.tilt + -eyeTiltDelta,
 					attr: { cy: leftY },
-				scale: eyeScale,
+					scale: eyeScale,
 					duration: 0.4, // Heavier inertia
 					ease: "power3.out",
-			});
+				});
 			}
 			if (rightEyeRef.current) {
 				const rightY = target.cy + eyeYDelta;
-			gsap.to(rightEyeRef.current, {
-				rotation: target.tilt + eyeTiltDelta,
+				gsap.to(rightEyeRef.current, {
+					rotation: target.tilt + eyeTiltDelta,
 					attr: { cy: rightY },
-				scale: eyeScale,
+					scale: eyeScale,
 					duration: 0.4, // Heavier inertia
 					ease: "power3.out",
-			});
+				});
 			}
 		}
 
@@ -465,13 +520,13 @@ export default function Avatar({
 				repY = -ny * force;
 			}
 
-		gsap.to(containerRef.current, {
+			gsap.to(containerRef.current, {
 				x: nx * 8 + repX,
 				y: ny * 6 + repY,
-			rotation: nx * 2, // head tilt
+				rotation: nx * 2, // head tilt
 				duration: 0.5, // Increased for inertia
 				ease: "power3.out", // Heavier feel (critically damped-ish)
-		});
+			});
 		}
 	}
 
@@ -760,157 +815,23 @@ export default function Avatar({
 					viewBox="0 0 520 280"
 					className="relative w-full h-auto min-w-[280px] md:min-w-[auto] scale-[1.4] md:scale-100 origin-center"
 				>
-					{/* Left Eye - 90px from center (260 - 90 = 170) */}
-					<ellipse
-						ref={leftEyeRef}
-						cx="170"
-						cy="105"
-						rx="32"
-						ry="18"
-						fill="currentColor"
-						className="text-black dark:text-white cursor-pointer transition-opacity hover:opacity-80"
-						onClick={(e) => {
-							e.stopPropagation();
-							performWink("left");
-						}}
-						onMouseEnter={() => {
-							// More dramatic hover effect
-							if (leftEyeRef.current)
-								gsap.to(leftEyeRef.current, {
-									attr: {
-										ry: Math.max(
-											3,
-											latestEyeTargetsRef.current.ry + 6
-										),
-										rx: Math.max(
-											4,
-											latestEyeTargetsRef.current.rx + 3
-										),
-									},
-									scale: 1.05,
-									duration: 0.2,
-									ease: "back.out(1.5)",
-								});
-						}}
-						onMouseLeave={() => {
-							if (leftEyeRef.current)
-								gsap.to(leftEyeRef.current, {
-									attr: {
-										ry: latestEyeTargetsRef.current.ry,
-										rx: latestEyeTargetsRef.current.rx,
-									},
-									scale: 1,
-									duration: 0.25,
-									ease: "power2.out",
-								});
-						}}
+					<Eyes
+						leftRef={leftEyeRef}
+						rightRef={rightEyeRef}
+						onWink={performWink}
+						onHoverStart={handleEyeHover}
+						onHoverEnd={handleEyeHoverEnd}
 					/>
 
-					{/* Right Eye - 90px from center (260 + 90 = 350) */}
-					<ellipse
-						ref={rightEyeRef}
-						cx="350"
-						cy="105"
-						rx="32"
-						ry="18"
-						fill="currentColor"
-						className="text-black dark:text-white cursor-pointer transition-opacity hover:opacity-80"
-						onClick={(e) => {
-							e.stopPropagation();
-							performWink("right");
-						}}
-						onMouseEnter={() => {
-							// More dramatic hover effect
-							if (rightEyeRef.current)
-								gsap.to(rightEyeRef.current, {
-									attr: {
-										ry: Math.max(
-											3,
-											latestEyeTargetsRef.current.ry + 6
-										),
-										rx: Math.max(
-											4,
-											latestEyeTargetsRef.current.rx + 3
-										),
-									},
-									scale: 1.05,
-									duration: 0.2,
-									ease: "back.out(1.5)",
-								});
-						}}
-						onMouseLeave={() => {
-							if (rightEyeRef.current)
-								gsap.to(rightEyeRef.current, {
-									attr: {
-										ry: latestEyeTargetsRef.current.ry,
-										rx: latestEyeTargetsRef.current.rx,
-									},
-									scale: 1,
-									duration: 0.25,
-									ease: "power2.out",
-								});
-						}}
+					<Mouth
+						mouthRef={mouthRef}
+						groupRef={mouthGroupRef}
+						spectrumGroupRef={spectrumGroupRef}
+						spectrumBarsRef={spectrumBarsRef}
+						onClick={performMouthClick}
+						onHoverStart={handleMouthHover}
+						onHoverEnd={handleMouthHoverEnd}
 					/>
-
-					{/* Mouth - Perfectly centered & symmetric (drawn in local space) */}
-					<g ref={mouthGroupRef} transform="translate(260,175)">
-						<path
-							ref={mouthRef}
-							d="M -33 0 Q 0 0 33 0"
-							fill="none"
-							stroke="currentColor"
-							strokeWidth="4"
-							strokeLinecap="round"
-							className="text-black dark:text-white cursor-pointer transition-opacity hover:opacity-80"
-							onClick={(e) => {
-								e.stopPropagation();
-								performMouthClick();
-							}}
-							onMouseEnter={() => {
-								// Subtle hover wiggle
-								if (mouthGroupRef.current) {
-									gsap.to(mouthGroupRef.current, {
-										scale: 1.05,
-										rotation: `+=${gsap.utils.random(
-											-2,
-											2
-										)}`,
-										duration: 0.2,
-										ease: "back.out(1.5)",
-									});
-								}
-							}}
-							onMouseLeave={() => {
-								if (mouthGroupRef.current) {
-									gsap.to(mouthGroupRef.current, {
-										scale: 1,
-										rotation: latestMouthRef.current.tilt,
-										duration: 0.3,
-										ease: "power2.out",
-									});
-								}
-							}}
-						/>
-						{/* Voice spectrum bars (hidden until voiceEnabled) */}
-						<g ref={spectrumGroupRef} opacity="0">
-							{Array.from({ length: 9 }).map((_, i) => (
-								<rect
-									key={i}
-									ref={(el) => {
-										if (el) spectrumBarsRef.current[i] = el;
-									}}
-									x={-88 + i * 22}
-									y={-18}
-									width="8"
-									height="30"
-									rx="4"
-									fill="currentColor"
-									className="text-black dark:text-white origin-bottom"
-									style={{ transformOrigin: "center bottom" }}
-								/>
-							))}
-						</g>
-					</g>
 				</svg>
 			</div>
 		</div>

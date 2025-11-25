@@ -89,10 +89,8 @@ A minimal, expressive avatar whose entire soul is eyes + mouth. Built like the f
     -   [ ] Headless emotion engine for custom UIs
     -   [ ] React hooks for emotion state management
     -   [ ] TypeScript emotion type system
--   [ ] **Customization**
-    -   [ ] Theme system beyond dark/light (neon, pastel, monochrome)
-    -   [ ] Custom face geometry (different eye shapes, mouth styles)
-    -   [ ] Animation speed controls and easing customization
+-   [ ] **Customization** (Moved to `theming.md`)
+    -   _Refer to `theming.md` for the detailed roadmap on Face Variants (Tron, Kawaii, Analogue) and Theme Studio._
 
 ### **AI Integration** 🤖
 
