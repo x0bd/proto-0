@@ -10,12 +10,75 @@ import {
 	Smile,
 	Eye,
 	Accessibility,
+	Check,
 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { FaceVariant } from "./face/types";
 
 interface CustomizationModalProps {
 	isOpen: boolean;
 	onClose: () => void;
+	currentVariant: FaceVariant;
+	onVariantChange: (variant: FaceVariant) => void;
+}
+
+const VARIANTS: { id: FaceVariant; label: string; desc: string }[] = [
+	{ id: "minimal", label: "Minimal", desc: "The original elliptical purity" },
+	{ id: "tron", label: "Tron", desc: "Cybernetic neon rectangles" },
+	// { id: "kawaii", label: "Kawaii", desc: "Soft round aesthetics" },
+	// { id: "analogue", label: "Analogue", desc: "Hand-drawn sketchy lines" },
+];
+
+function VariantSelector({
+	current,
+	onChange,
+}: {
+	current: FaceVariant;
+	onChange: (v: FaceVariant) => void;
+}) {
+	return (
+		<div className="px-5 pb-6">
+			<h3 className="text-[11px] font-mono font-medium text-muted-foreground tracking-[0.15em] uppercase mb-4 ml-1">
+				Face Archetype
+			</h3>
+			<div className="grid grid-cols-2 gap-3">
+				{VARIANTS.map((v) => {
+					const isActive = current === v.id;
+					return (
+						<button
+							key={v.id}
+							onClick={() => onChange(v.id)}
+							className={`relative group flex flex-col items-start p-4 rounded-[1.25rem] border transition-all duration-300 ${
+								isActive
+									? "bg-primary/5 border-primary/20 shadow-sm"
+									: "bg-secondary/30 border-transparent hover:bg-secondary/60"
+							}`}
+						>
+							<div className="flex items-center justify-between w-full mb-2">
+								<span
+									className={`text-sm font-medium tracking-tight ${
+										isActive
+											? "text-primary"
+											: "text-foreground"
+									}`}
+								>
+									{v.label}
+								</span>
+								{isActive && (
+									<div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
+										<Check className="w-3 h-3 text-primary-foreground" />
+									</div>
+								)}
+							</div>
+							<p className="text-[11px] text-muted-foreground/80 font-mono leading-tight text-left">
+								{v.desc}
+							</p>
+						</button>
+					);
+				})}
+			</div>
+		</div>
+	);
 }
 
 function SettingCard({
@@ -52,6 +115,8 @@ function SettingCard({
 export function CustomizationModal({
 	isOpen,
 	onClose,
+	currentVariant,
+	onVariantChange,
 }: CustomizationModalProps) {
 	return (
 		<AnimatePresence mode="wait">
@@ -107,38 +172,40 @@ export function CustomizationModal({
 							</div>
 
 							{/* Scrollable Content */}
-							<ScrollArea className="relative z-10 h-[50vh] md:h-[60vh] max-h-[500px] px-4 md:px-6 pb-8 md:pb-8">
+							<ScrollArea className="relative z-10 h-[50vh] md:h-[60vh] max-h-[500px] px-0 md:px-2 pb-8 md:pb-8">
 								<div className="space-y-2 md:space-y-3 py-2">
-									<SettingCard
-										icon={Zap}
-										label="Animation Rate"
-										description="Adjust interpolation speed and easing"
+									<VariantSelector
+										current={currentVariant}
+										onChange={onVariantChange}
 									/>
-									<SettingCard
-										icon={Volume2}
-										label="Sound Design"
-										description="Hover sounds and ambient tones"
-									/>
-									<SettingCard
-										icon={Vibrate}
-										label="Haptic Feedback"
-										description="Vibration patterns for mobile"
-									/>
-									<SettingCard
-										icon={Smile}
-										label="Emotion Presets"
-										description="Manage saved emotion scenes"
-									/>
-									<SettingCard
-										icon={Eye}
-										label="Face Geometry"
-										description="Customize eye shapes and style"
-									/>
-									<SettingCard
-										icon={Accessibility}
-										label="Accessibility"
-										description="Reduced motion and high contrast"
-									/>
+
+									<div className="px-4 md:px-6 space-y-2 md:space-y-3">
+										<SettingCard
+											icon={Zap}
+											label="Animation Rate"
+											description="Adjust interpolation speed and easing"
+										/>
+										<SettingCard
+											icon={Volume2}
+											label="Sound Design"
+											description="Hover sounds and ambient tones"
+										/>
+										<SettingCard
+											icon={Vibrate}
+											label="Haptic Feedback"
+											description="Vibration patterns for mobile"
+										/>
+										<SettingCard
+											icon={Smile}
+											label="Emotion Presets"
+											description="Manage saved emotion scenes"
+										/>
+										<SettingCard
+											icon={Accessibility}
+											label="Accessibility"
+											description="Reduced motion and high contrast"
+										/>
+									</div>
 								</div>
 							</ScrollArea>
 						</motion.div>

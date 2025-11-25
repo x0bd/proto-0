@@ -17,6 +17,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { useTheme } from "next-themes";
 
+import { FaceVariant } from "./components/face/types";
+
 interface EmotionState {
 	joy: number;
 	sadness: number;
@@ -66,6 +68,7 @@ export default function Home() {
 	const [isHistoryOpen, setIsHistoryOpen] = useState(false);
 	const [isCustomizationOpen, setIsCustomizationOpen] = useState(false);
 	const [showSwipeHints, setShowSwipeHints] = useState(true);
+	const [faceVariant, setFaceVariant] = useState<FaceVariant>("minimal");
 
 	const [voiceEnabled, setVoiceEnabled] = useState<boolean>(true);
 	const [voiceLevel, setVoiceLevel] = useState<number>(0);
@@ -378,6 +381,7 @@ export default function Home() {
 					<Avatar
 						emotion={currentEmotion}
 						voiceEnabled={voiceEnabled}
+						variant={faceVariant}
 					/>
 				</motion.div>
 			</div>
@@ -471,6 +475,8 @@ export default function Home() {
 			<CustomizationModal
 				isOpen={isCustomizationOpen}
 				onClose={() => setIsCustomizationOpen(false)}
+				currentVariant={faceVariant}
+				onVariantChange={setFaceVariant}
 			/>
 		</div>
 	);
