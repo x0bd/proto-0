@@ -36,6 +36,18 @@ export default function Avatar({
 	voiceEnabled = false,
 	variant = "minimal",
 }: AvatarProps) {
+	// Helper for mouth geometry
+	const generateMouthPath = (width: number, curve: number) => {
+		const half = width / 2;
+		if (variant === "tron") {
+			// Stepped path: Digital pulse
+			// Use curve/2 to match visual height of bezier peak
+			const y = curve / 2;
+			return `M ${-half} 0 L ${-half/2} 0 L ${-half/2} ${y} L ${half/2} ${y} L ${half/2} 0 L ${half} 0`;
+		}
+		return `M ${-half} 0 Q 0 ${curve} ${half} 0`;
+	};
+
 	const containerRef = useRef<HTMLDivElement>(null);
 	// Generic SVGElement refs to support Ellipse (Minimal) or Rect (Tron)
 	const leftEyeRef = useRef<SVGElement>(null);
@@ -93,18 +105,57 @@ export default function Avatar({
 
 	function startBreathing() {
 		if (containerRef.current) {
-			breathingTL.current = gsap.timeline({ repeat: -1 });
-			breathingTL.current
-				.to(containerRef.current, {
-					scale: 1.015,
-					duration: 2.4,
-					ease: "sine.inOut",
-				})
-				.to(containerRef.current, {
-					scale: 1,
-					duration: 2.8,
-					ease: "sine.inOut",
-				});
+			// Kill any existing breathing/glitch
+			if (breathingTL.current) breathingTL.current.kill();
+
+			if (variant === "tron") {
+				// Glitch Idle: Random jumps instead of smooth breathing
+				const glitchLoop = () => {
+					// Random delay between glitches
+					const delay = gsap.utils.random(0.5, 2.5);
+					
+					breathingTL.current = gsap.timeline({
+						onComplete: glitchLoop
+					});
+
+					// 1. Tiny position shift
+					breathingTL.current.to(containerRef.current, {
+						x: gsap.utils.random(-2, 2),
+						y: gsap.utils.random(-2, 2),
+						duration: 0, // instant
+					})
+					// 2. Hold
+					.to(containerRef.current, {
+						duration: 0.1,
+					})
+					// 3. Reset
+					.to(containerRef.current, {
+						x: 0,
+						y: 0,
+						duration: 0,
+					})
+					// 4. Wait
+					.to(containerRef.current, {
+						duration: delay
+					});
+				};
+				glitchLoop();
+
+			} else {
+				// Standard Organic Breathing
+				breathingTL.current = gsap.timeline({ repeat: -1 });
+				breathingTL.current
+					.to(containerRef.current, {
+						scale: 1.015,
+						duration: 2.4,
+						ease: "sine.inOut",
+					})
+					.to(containerRef.current, {
+						scale: 1,
+						duration: 2.8,
+						ease: "sine.inOut",
+					});
+			}
 		}
 	}
 
@@ -127,6 +178,10 @@ export default function Avatar({
 		if (!target) return;
 
 		const { rx, ry, cy, tilt = 0, scale = 1, xOffset = 0 } = params;
+		
+		// Tron Override: Use stepped easing for robotic feel if not specified otherwise
+		// But allow overrides (like blink) to pass their own ease
+		const finalEase = variant === "tron" && ease.startsWith("power") ? "steps(5)" : ease;
 
 		if (variant === "tron") {
 			// Tron uses <rect>
@@ -151,7 +206,7 @@ export default function Avatar({
 				rotation: tilt, // Rotation handled by CSS transform usually centered on element if transformOrigin set
 				scale: scale,
 				duration: duration,
-				ease: ease,
+				ease: finalEase,
 				delay: delay,
 				transformOrigin: "center center",
 			});
@@ -441,9 +496,7 @@ export default function Avatar({
 
 		// Animate mouth with perfect facial symmetry (drawn around local origin)
 		if (mouthRef.current) {
-			const half = mouthWidth / 2;
-			const controlYLocal = mouthCurve; // local space (0,0) is mouth center
-			const pathData = `M ${-half} 0 Q 0 ${controlYLocal} ${half} 0`;
+			const pathData = generateMouthPath(mouthWidth, mouthCurve);
 			gsap.to(mouthRef.current, {
 				attr: { d: pathData },
 				duration: 0.8,
@@ -473,8 +526,8 @@ export default function Avatar({
 
 	function performBlink() {
 		const target = latestEyeTargetsRef.current;
-		const blinkDur = 0.08;
-		const ryClosed = 2;
+		const blinkDur = variant === "tron" ? 0.05 : 0.08; // Faster blink for Tron
+		const ryClosed = variant === "tron" ? 0.5 : 2; // Thinner line for Tron
 
 		// Close eyes
 		[leftEyeRef.current, rightEyeRef.current].forEach((eye, i) => {
@@ -490,14 +543,14 @@ export default function Avatar({
 					tilt: i === 0 ? -target.tilt : target.tilt,
 				},
 				blinkDur,
-				"power1.in",
+				variant === "tron" ? "steps(2)" : "power1.in", // Digital blink
 				0,
 				cx
 			);
 		});
 
 		// Reopen eyes (delayed)
-		const reopenDelay = blinkDur;
+		const reopenDelay = blinkDur + (variant === "tron" ? 0.05 : 0);
 		[leftEyeRef.current, rightEyeRef.current].forEach((eye, i) => {
 			const cx = i === 0 ? 170 : 350;
 			animateEye(
@@ -509,7 +562,7 @@ export default function Avatar({
 					tilt: i === 0 ? -target.tilt : target.tilt,
 				},
 				0.12,
-				"power2.out",
+				variant === "tron" ? "steps(3)" : "power2.out",
 				reopenDelay,
 				cx
 			);
@@ -538,10 +591,10 @@ export default function Avatar({
 				gsap.to(ref.current, {
 					rotation: `+=${rotationDelta}`,
 					attr: { y: `+=${deltaY}` }, // y is top-edge, moving it works
-					duration: 0.35,
+					duration: 0.1, // Faster glance
 					yoyo: true,
 					repeat: 1,
-					ease: "sine.inOut",
+					ease: "steps(3)",
 				});
 			} else {
 				gsap.to(ref.current, {
@@ -567,9 +620,8 @@ export default function Avatar({
 			ease: "sine.inOut",
 			onUpdate: () => {
 				const m = latestMouthRef.current;
-				const half = m.width / 2;
 				const controlYLocal = m.curve + state.offset;
-				const d = `M ${-half} 0 Q 0 ${controlYLocal} ${half} 0`;
+				const d = generateMouthPath(m.width, controlYLocal);
 				if (mouthRef.current)
 					gsap.set(mouthRef.current, { attr: { d } });
 			},
@@ -821,8 +873,7 @@ export default function Avatar({
 		// Mouth opens in surprise
 		if (mouthRef.current && mouthGroupRef.current) {
 			const m = latestMouthRef.current;
-			const half = (m.width + 20) / 2;
-			const surpriseD = `M ${-half} 0 Q 0 15 ${half} 0`;
+			const surpriseD = generateMouthPath(m.width + 20, 15);
 			gsap.timeline()
 				.to(
 					mouthRef.current,
@@ -835,9 +886,7 @@ export default function Avatar({
 				)
 				.to(mouthRef.current, {
 					attr: {
-						d: `M ${-m.width / 2} 0 Q 0 ${m.curve} ${
-							m.width / 2
-						} 0`,
+						d: generateMouthPath(m.width, m.curve),
 					},
 					duration: 0.3,
 					ease: "elastic.out(1, 0.5)",
@@ -874,8 +923,7 @@ export default function Avatar({
 		triggerHaptic(10); // Light tick
 		if (mouthRef.current) {
 			const m = latestMouthRef.current;
-			const half = m.width / 2;
-			const smileD = `M ${-half} 0 Q 0 ${m.curve - 20} ${half} 0`;
+			const smileD = generateMouthPath(m.width, m.curve - 20);
 
 			gsap.timeline()
 				.to(mouthRef.current, {
@@ -884,7 +932,7 @@ export default function Avatar({
 					ease: "back.out(2)",
 				})
 				.to(mouthRef.current, {
-					attr: { d: `M ${-half} 0 Q 0 ${m.curve} ${half} 0` },
+					attr: { d: generateMouthPath(m.width, m.curve) },
 					duration: 0.25,
 					ease: "elastic.out(1, 0.4)",
 				});
@@ -918,7 +966,7 @@ export default function Avatar({
 			glanceTimerRef.current?.kill();
 			idleMouthTweenRef.current?.kill();
 		};
-	}, []);
+	}, [variant]);
 
 	useEffect(() => {
 		animateEmotion(emotion);
@@ -939,8 +987,7 @@ export default function Avatar({
 			// Restore mouth visibility and reset to emotion baseline immediately
 			if (mouthRef.current) {
 				const m = latestMouthRef.current;
-				const half = m.width / 2;
-				const d = `M ${-half} 0 Q 0 ${m.curve} ${half} 0`;
+				const d = generateMouthPath(m.width, m.curve);
 				gsap.set(mouthRef.current, { opacity: 1, attr: { d } });
 			}
 			if (mouthGroupRef.current) {
@@ -983,9 +1030,8 @@ export default function Avatar({
 
 			// Update mouth path around latest emotion curve/width
 			const m = latestMouthRef.current;
-			const half = m.width / 2;
 			const controlYLocal = m.curve + simAmpRef.current;
-			const d = `M ${-half} 0 Q 0 ${controlYLocal} ${half} 0`;
+			const d = generateMouthPath(m.width, controlYLocal);
 			if (mouthRef.current) gsap.set(mouthRef.current, { attr: { d } });
 		};
 		simTickerRef.current = ticker;
