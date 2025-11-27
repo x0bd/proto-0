@@ -89,14 +89,14 @@ function VariantSelector({
 			<h3 className="text-[11px] font-mono font-medium text-muted-foreground tracking-[0.15em] uppercase mb-4 ml-1">
 				Face Archetype
 			</h3>
-			<div className="grid grid-cols-1 gap-3">
+			<div className="grid grid-cols-1 md:grid-cols-3 gap-3">
 				{VARIANTS.map((v) => {
 					const isActive = current === v.id;
 					return (
 						<button
 							key={v.id}
 							onClick={() => onChange(v.id)}
-							className={`relative group flex flex-col items-start p-4 rounded-[1.25rem] border transition-all duration-300 ${
+							className={`relative group flex flex-col items-start p-4 rounded-[1.25rem] border transition-all duration-300 h-full ${
 								isActive
 									? "bg-primary/5 border-primary/20 shadow-sm"
 									: "bg-secondary/30 border-transparent hover:bg-secondary/60"
@@ -129,38 +129,7 @@ function VariantSelector({
 	);
 }
 
-function SettingCard({
-	icon: Icon,
-	label,
-	description,
-}: {
-	icon: any;
-	label: string;
-	description: string;
-}) {
-	return (
-		<button className="w-full text-left group">
-			<div className="relative p-5 transition-all duration-300 hover:bg-secondary/50 rounded-[1.25rem] border border-transparent hover:border-border">
-				<div className="flex items-center gap-5">
-					<div className="w-11 h-11 rounded-[1rem] bg-secondary/50 border border-border flex items-center justify-center flex-shrink-0 text-foreground/70 transition-transform duration-300 group-hover:scale-105">
-						<Icon className="w-[18px] h-[18px]" strokeWidth={1.5} />
-					</div>
-					<div className="flex-1 min-w-0">
-						<h3 className="text-[14px] font-medium text-foreground tracking-wide mb-0.5">
-							{label}
-						</h3>
-						<p className="text-[12px] text-muted-foreground/80 font-mono leading-normal">
-							{description}
-						</p>
-					</div>
-					<div className="w-1.5 h-1.5 rounded-full bg-foreground/10 group-hover:bg-primary transition-colors" />
-				</div>
-			</div>
-		</button>
-	);
-}
-
-export function CustomizationModal({
+export const CustomizationModal = React.memo(function CustomizationModal({
 	isOpen,
 	onClose,
 	currentVariant,
@@ -177,8 +146,8 @@ export function CustomizationModal({
 						initial={{ opacity: 0 }}
 						animate={{ opacity: 1 }}
 						exit={{ opacity: 0 }}
-						transition={{ duration: 0.3 }}
-						className="fixed inset-0 z-[100] bg-background/80"
+						transition={{ duration: 0.2 }}
+						className="fixed inset-0 z-[100] bg-background/80 backdrop-blur-sm will-change-opacity"
 						onClick={onClose}
 					/>
 
@@ -190,15 +159,15 @@ export function CustomizationModal({
 							exit={{ opacity: 0, scale: 0.95, y: 20 }}
 							transition={{
 								type: "spring",
-								damping: 25,
+								damping: 20,
 								stiffness: 300,
-								mass: 0.8,
+								mass: 0.5, // Lighter mass for snappier feel
 							}}
-							className="pointer-events-auto w-full md:max-w-[680px] bg-background border-t md:border border-border shadow-2xl rounded-t-[2rem] md:rounded-[2rem] overflow-hidden flex flex-col relative"
+							className="pointer-events-auto w-full md:max-w-[800px] bg-background border-t md:border border-border shadow-2xl rounded-t-[2rem] md:rounded-[2rem] overflow-hidden flex flex-col relative will-change-transform"
 							onClick={(e) => e.stopPropagation()}
 						>
-							{/* Texture Overlay */}
-							<div className="absolute inset-0 pointer-events-none opacity-[0.03] z-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
+							{/* Texture Overlay - Optimized opacity */}
+							<div className="absolute inset-0 pointer-events-none opacity-[0.02] z-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
 
 							{/* Header */}
 							<div className="relative z-10 p-6 md:p-8 pb-4 flex items-center justify-between">
@@ -221,58 +190,21 @@ export function CustomizationModal({
 								</button>
 							</div>
 
-							{/* Scrollable Content */}
-							<ScrollArea className="relative z-10 h-[50vh] md:h-[60vh] max-h-[600px] px-0 md:px-0 pb-8 md:pb-8">
-								<div className="flex flex-col md:flex-row md:items-start md:h-full">
-									{/* Left Col: Visuals (Variant + Colors) */}
-									<div className="flex-1 px-4 md:px-8 py-4 space-y-8 border-b md:border-b-0 md:border-r border-border/50">
-										<VariantSelector
-											current={currentVariant}
-											onChange={onVariantChange}
-										/>
-										<ColorSelector
-											active={accentColor}
-											onChange={onAccentChange}
-										/>
-									</div>
-
-									{/* Right Col: Settings */}
-									<div className="flex-1 px-4 md:px-8 py-4 space-y-3">
-										<h3 className="text-[11px] font-mono font-medium text-muted-foreground tracking-[0.15em] uppercase mb-4 ml-1">
-											System Controls
-										</h3>
-										<SettingCard
-											icon={Zap}
-											label="Animation Rate"
-											description="Adjust interpolation speed and easing"
-										/>
-										<SettingCard
-											icon={Volume2}
-											label="Sound Design"
-											description="Hover sounds and ambient tones"
-										/>
-										<SettingCard
-											icon={Vibrate}
-											label="Haptic Feedback"
-											description="Vibration patterns for mobile"
-										/>
-										<SettingCard
-											icon={Smile}
-											label="Emotion Presets"
-											description="Manage saved emotion scenes"
-										/>
-										<SettingCard
-											icon={Accessibility}
-											label="Accessibility"
-											description="Reduced motion and high contrast"
-										/>
-									</div>
-								</div>
-							</ScrollArea>
+							{/* Content */}
+							<div className="relative z-10 px-6 md:px-8 pb-8">
+								<VariantSelector
+									current={currentVariant}
+									onChange={onVariantChange}
+								/>
+								<ColorSelector
+									active={accentColor}
+									onChange={onAccentChange}
+								/>
+							</div>
 						</motion.div>
 					</div>
 				</>
 			)}
 		</AnimatePresence>
 	);
-}
+});

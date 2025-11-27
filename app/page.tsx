@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import type React from "react";
 import { motion, type PanInfo, AnimatePresence } from "motion/react";
 import Avatar from "./components/Avatar";
@@ -283,6 +283,10 @@ export default function Home() {
 		}
 	};
 
+	const handleCloseCustomization = useCallback(() => {
+		setIsCustomizationOpen(false);
+	}, []);
+
 	return (
 		<div
 			className={`min-h-dvh w-screen bg-background text-foreground flex items-center justify-center overflow-hidden relative selection:bg-primary selection:text-primary-foreground font-sans transition-colors duration-700 theme-${accentColor}`}
@@ -475,7 +479,7 @@ export default function Home() {
 
 			<CustomizationModal
 				isOpen={isCustomizationOpen}
-				onClose={() => setIsCustomizationOpen(false)}
+				onClose={handleCloseCustomization}
 				currentVariant={faceVariant}
 				onVariantChange={setFaceVariant}
 				accentColor={accentColor}
