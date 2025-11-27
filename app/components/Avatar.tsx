@@ -1105,7 +1105,6 @@ export default function Avatar({
 				onMouseLeave={handlePointerLeave}
 				onMouseDown={handlePointerDown}
 				onMouseUp={handlePointerUp}
-				onMouseCancel={handlePointerCancel}
 				onTouchStart={handlePointerDown}
 				onTouchEnd={handlePointerUp}
 				onTouchCancel={handlePointerCancel}

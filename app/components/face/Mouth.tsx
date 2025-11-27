@@ -2,9 +2,9 @@ import { RefObject, MutableRefObject } from "react";
 import { FaceVariant } from "./types";
 
 interface MouthProps {
-	mouthRef: RefObject<SVGPathElement | null>;
-	groupRef: RefObject<SVGGElement | null>;
-	spectrumGroupRef: RefObject<SVGGElement | null>;
+	mouthRef: RefObject<SVGPathElement>;
+	groupRef: RefObject<SVGGElement>;
+	spectrumGroupRef: RefObject<SVGGElement>;
 	spectrumBarsRef: MutableRefObject<SVGRectElement[]>;
 	onClick: () => void;
 	onHoverStart: () => void;
