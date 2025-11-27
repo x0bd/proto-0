@@ -45,6 +45,7 @@ export default function Avatar({
 			const y = curve / 2;
 			return `M ${-half} 0 L ${-half/2} 0 L ${-half/2} ${y} L ${half/2} ${y} L ${half/2} 0 L ${half} 0`;
 		}
+		// Analogue uses standard curve but will have filter applied
 		return `M ${-half} 0 Q 0 ${curve} ${half} 0`;
 	};
 
@@ -62,6 +63,10 @@ export default function Avatar({
 	const simTimeRef = useRef<number>(0);
 	const simAmpRef = useRef<number>(0);
 	const breathingTL = useRef<gsap.core.Timeline>();
+
+	// Analogue specific refs
+	const turbulenceRef = useRef<SVGFETurbulenceElement>(null);
+	const boilTickerRef = useRef<((time: number) => void) | null>(null);
 
 	// Long press logic
 	const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -141,6 +146,15 @@ export default function Avatar({
 				};
 				glitchLoop();
 
+			} else if (variant === "analogue") {
+				// Analogue: No breathing, just line boil (handled by boilTicker)
+				// Maybe very slow drift?
+				breathingTL.current = gsap.timeline({ repeat: -1, yoyo: true });
+				breathingTL.current.to(containerRef.current, {
+					rotation: 1, // very subtle tilt
+					duration: 4,
+					ease: "sine.inOut"
+				});
 			} else {
 				// Standard Organic Breathing
 				breathingTL.current = gsap.timeline({ repeat: -1 });
@@ -181,7 +195,13 @@ export default function Avatar({
 		
 		// Tron Override: Use stepped easing for robotic feel if not specified otherwise
 		// But allow overrides (like blink) to pass their own ease
-		const finalEase = variant === "tron" && ease.startsWith("power") ? "steps(5)" : ease;
+		let finalEase = ease;
+		if (variant === "tron" && ease.startsWith("power")) {
+			finalEase = "steps(5)";
+		} else if (variant === "analogue" && ease.startsWith("power")) {
+			// Stop-motion feel for Analogue
+			finalEase = "steps(12)"; 
+		}
 
 		if (variant === "tron") {
 			// Tron uses <rect>
@@ -211,7 +231,7 @@ export default function Avatar({
 				transformOrigin: "center center",
 			});
 		} else {
-			// Minimal uses <ellipse>
+			// Minimal & Analogue use <ellipse>
 			gsap.to(target, {
 				attr: {
 					rx: rx,
@@ -223,7 +243,7 @@ export default function Avatar({
 				rotation: tilt,
 				scale: scale,
 				duration: duration,
-				ease: ease,
+				ease: finalEase,
 				delay: delay,
 				transformOrigin: "center center",
 			});
@@ -960,11 +980,42 @@ export default function Avatar({
 		};
 		startGlance();
 		startIdleMouthWave();
+
+		// Analogue Line Boil Loop
+		if (variant === "analogue") {
+			const boilTicker = () => {
+				// Update turbulence seed every few frames (12fps approx)
+				if (turbulenceRef.current) {
+					// Just randomize baseFrequency slightly or seed if supported
+					// feTurbulence doesn't have a simple 'seed' attr we can animate easily without re-render in React usually,
+					// but we can manipulate DOM directly.
+					// Actually 'seed' is an attribute.
+					const newSeed = Math.floor(Math.random() * 100);
+					turbulenceRef.current.setAttribute("seed", newSeed.toString());
+				}
+			};
+			// Run at reduced rate? 
+			// GSAP ticker runs at raf. We can throttle.
+			let frameCount = 0;
+			const throttledTicker = () => {
+				frameCount++;
+				if (frameCount % 5 === 0) { // ~12fps
+					boilTicker();
+				}
+			};
+			boilTickerRef.current = throttledTicker;
+			gsap.ticker.add(throttledTicker);
+		}
+
 		return () => {
 			breathingTL.current?.kill();
 			blinkTimerRef.current?.kill();
 			glanceTimerRef.current?.kill();
 			idleMouthTweenRef.current?.kill();
+			if (boilTickerRef.current) {
+				gsap.ticker.remove(boilTickerRef.current);
+				boilTickerRef.current = null;
+			}
 		};
 	}, [variant]);
 
@@ -1052,32 +1103,54 @@ export default function Avatar({
 				className="relative group cursor-pointer w-full"
 				onMouseMove={handlePointerMove}
 				onMouseLeave={handlePointerLeave}
-				onTouchMove={handlePointerMove}
 				onMouseDown={handlePointerDown}
 				onMouseUp={handlePointerUp}
+				onMouseCancel={handlePointerCancel}
 				onTouchStart={handlePointerDown}
-				onTouchEnd={(e) => {
-					handlePointerUp(e);
-					handlePointerLeave();
-				}}
+				onTouchEnd={handlePointerUp}
 				onTouchCancel={handlePointerCancel}
-				// Remove onClick and onDoubleClick to prevent conflicts with custom handlers
-				// We handle "boop" in handlePointerUp now
-				// Double click logic for surprise is removed/superseded by long press or can be re-added if needed
+				onTouchMove={handlePointerMove}
 			>
 				<svg
-					viewBox="0 0 520 280"
-					className="relative w-full h-auto min-w-[280px] md:min-w-[auto] scale-[1.4] md:scale-100 origin-center"
+					ref={svgBoxRef}
+					viewBox="0 0 520 350"
+					className="w-full h-auto overflow-visible"
+					style={{
+						// Ensure touch actions don't scroll page while interacting
+						touchAction: "none",
+					}}
 				>
+					{/* Definitions for Filters */}
+					<defs>
+						{variant === "analogue" && (
+							<filter id="pencil">
+								<feTurbulence
+									ref={turbulenceRef}
+									type="fractalNoise"
+									baseFrequency="0.03"
+									numOctaves="3"
+									seed="0"
+									result="noise"
+								/>
+								<feDisplacementMap
+									in="SourceGraphic"
+									in2="noise"
+									scale="3"
+									xChannelSelector="R"
+									yChannelSelector="G"
+								/>
+							</filter>
+						)}
+					</defs>
+
 					<Eyes
 						leftRef={leftEyeRef}
 						rightRef={rightEyeRef}
 						onWink={performWink}
-						onHoverStart={handleEyeHover}
-						onHoverEnd={handleEyeHoverEnd}
+						onHoverStart={(eye) => handleEyeHover(eye)}
+						onHoverEnd={(eye) => handleEyeHoverEnd(eye)}
 						variant={variant}
 					/>
-
 					<Mouth
 						mouthRef={mouthRef}
 						groupRef={mouthGroupRef}

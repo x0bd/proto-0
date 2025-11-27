@@ -27,8 +27,8 @@ interface CustomizationModalProps {
 const VARIANTS: { id: FaceVariant; label: string; desc: string }[] = [
 	{ id: "minimal", label: "Minimal", desc: "The original elliptical purity" },
 	{ id: "tron", label: "Tron", desc: "Cybernetic neon rectangles" },
+	{ id: "analogue", label: "Analogue", desc: "Hand-drawn sketchy lines" },
 	// { id: "kawaii", label: "Kawaii", desc: "Soft round aesthetics" },
-	// { id: "analogue", label: "Analogue", desc: "Hand-drawn sketchy lines" },
 ];
 
 const COLORS = [

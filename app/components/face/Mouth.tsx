@@ -22,11 +22,6 @@ export function Mouth({
 	onHoverEnd,
 	variant = "minimal",
 }: MouthProps) {
-	// For Tron, maybe we use a different stroke style or shape?
-	// Currently sticking to the same bezier path but maybe we can add a filter or color change later.
-	// The "Stepped" look would require changing the 'd' attribute logic in Avatar.tsx which is complex.
-	// For Phase 2, we'll keep the geometry similar but maybe sharper stroke?
-
 	return (
 		<g ref={groupRef} transform="translate(260,175)">
 			<path
@@ -34,9 +29,10 @@ export function Mouth({
 				d="M -33 0 Q 0 0 33 0"
 				fill="none"
 				stroke="currentColor"
-				strokeWidth={variant === "tron" ? "4" : "4"}
+				strokeWidth={variant === "tron" ? "4" : variant === "analogue" ? "3" : "4"}
 				strokeLinecap={variant === "tron" ? "square" : "round"}
 				shapeRendering={variant === "tron" ? "crispEdges" : "auto"}
+				filter={variant === "analogue" ? "url(#pencil)" : undefined}
 				className={`text-black dark:text-white cursor-pointer transition-opacity hover:opacity-80 ${
 					variant === "tron"
 						? "drop-shadow-[0_0_5px_rgba(var(--primary-rgb),0.5)]"
