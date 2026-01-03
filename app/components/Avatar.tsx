@@ -1112,7 +1112,7 @@ export default function Avatar({
 			>
 				<svg
 					ref={svgBoxRef}
-					viewBox="0 0 520 350"
+					viewBox="0 -35 520 350"
 					className="w-full h-auto overflow-visible"
 					style={{
 						// Ensure touch actions don't scroll page while interacting
