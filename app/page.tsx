@@ -44,6 +44,20 @@ const presets: Record<string, EmotionState> = {
 };
 const presetKeys = Object.keys(presets);
 
+const themes: Record<string, React.CSSProperties> = {
+	neutral: {}, // Defaults from globals.css
+	rose: {
+		"--primary": "oklch(0.7 0.14 0)", // Deep Rose for readability
+		"--ring": "oklch(0.7 0.14 0)",
+        "--accent": "oklch(0.7 0.14 0)",
+	} as React.CSSProperties,
+	cyan: {
+		"--primary": "oklch(0.6 0.12 230)", // Deep Cyan
+		"--ring": "oklch(0.6 0.12 230)",
+        "--accent": "oklch(0.6 0.12 230)",
+	} as React.CSSProperties,
+};
+
 export default function Home() {
 	const [currentEmotion, setCurrentEmotion] = useState<EmotionState>(NEUTRAL_EMOTION);
 	const [baseEmotion, setBaseEmotion] = useState<EmotionState>(NEUTRAL_EMOTION);
@@ -157,6 +171,7 @@ export default function Home() {
 	return (
 		<div
 			className="min-h-dvh w-screen bg-background text-foreground flex flex-col items-center justify-center overflow-hidden relative font-sans"
+            style={themes[accentColor] || {}}
 			onMouseMove={handlePointerMove}
 			onMouseLeave={handlePointerLeave}
 		>

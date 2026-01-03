@@ -46,6 +46,20 @@ export default function Avatar({
 			return `M ${-half} 0 L ${-half/2} 0 L ${-half/2} ${y} L ${half/2} ${y} L ${half/2} 0 L ${half} 0`;
 		}
 		// Analogue uses standard curve but will have filter applied
+		if (variant === "neko") {
+            // 'w' shape: Two small quadratic curves
+			const h = width / 2; // total width is 'width', so half is width/2
+            const q = h / 2; // quarter point
+            // M left-most 0
+            // Q left-control-point bottom-y, mid-point 0
+            // Q right-control-point bottom-y, right-most 0
+            // We curve UP for happiness (positive curve), DOWN for sadness (negative curve)
+            // But typical neko mouth is 'w' shaped (curved up in center? No, usually 3-like)
+            // Let's do a simple 3 rotated 90deg?
+            // Actually, let's just make it a "w" shape
+            // M -h -5 Q -q curve 0 -5 Q q curve h -5
+            return `M ${-h} -5 Q ${-q} ${curve} 0 -5 Q ${q} ${curve} ${h} -5`;
+        }
 		return `M ${-half} 0 Q 0 ${curve} ${half} 0`;
 	};
 

@@ -109,6 +109,44 @@ export function Eyes({
 		);
 	}
 
+	if (variant === "neko") {
+		return (
+			<>
+				{/* Vertical Cat Slits */}
+				<ellipse
+					ref={leftRef as RefObject<SVGEllipseElement>}
+					cx="170"
+					cy="105"
+					rx="12"
+					ry="32"
+					fill="currentColor"
+					className={eyeClass}
+					onClick={(e) => {
+						e.stopPropagation();
+						onWink("left");
+					}}
+					onMouseEnter={() => onHoverStart("left")}
+					onMouseLeave={() => onHoverEnd("left")}
+				/>
+				<ellipse
+					ref={rightRef as RefObject<SVGEllipseElement>}
+					cx="350"
+					cy="105"
+					rx="12"
+					ry="32"
+					fill="currentColor"
+					className={eyeClass}
+					onClick={(e) => {
+						e.stopPropagation();
+						onWink("right");
+					}}
+					onMouseEnter={() => onHoverStart("right")}
+					onMouseLeave={() => onHoverEnd("right")}
+				/>
+			</>
+		);
+	}
+
 	return (
 		<>
 			<ellipse

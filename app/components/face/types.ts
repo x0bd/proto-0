@@ -1,1 +1,1 @@
-export type FaceVariant = "minimal" | "tron" | "kawaii" | "analogue";
+export type FaceVariant = "minimal" | "tron" | "analogue" | "neko";

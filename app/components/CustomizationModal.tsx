@@ -18,6 +18,7 @@ const VARIANTS: { id: FaceVariant; label: string }[] = [
 	{ id: "minimal", label: "Pure" },
 	{ id: "tron", label: "Digital" },
 	{ id: "analogue", label: "Sketch" },
+	{ id: "neko", label: "Neko" },
 ];
 
 const COLORS = [
