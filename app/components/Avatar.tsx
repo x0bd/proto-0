@@ -5,6 +5,7 @@ import { gsap } from "gsap";
 
 import { Eyes } from "./face/Eyes";
 import { Mouth } from "./face/Mouth";
+import { Ears } from "./face/Ears";
 import { FaceVariant } from "./face/types";
 
 interface EmotionState {
@@ -1156,6 +1157,7 @@ export default function Avatar({
 						)}
 					</defs>
 
+					<Ears variant={variant} emotion={emotion} />
 					<Eyes
 						leftRef={leftEyeRef}
 						rightRef={rightEyeRef}
