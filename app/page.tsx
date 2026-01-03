@@ -8,17 +8,14 @@ import { ChatWindow } from "./components/ChatWindow";
 import { CustomizationModal } from "./components/CustomizationModal";
 import {
 	Mic,
-	Sparkles,
-	History,
-	ChevronLeft,
-	ChevronRight,
 	Settings,
+	History,
+    MoreHorizontal
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { useTheme } from "next-themes";
-
 import { FaceVariant } from "./components/face/types";
 
+// --- Types & Helpers ---
 interface EmotionState {
 	joy: number;
 	sadness: number;
@@ -35,20 +32,9 @@ const NEUTRAL_EMOTION: EmotionState = {
 	curiosity: 0.2,
 };
 
-function clamp01(v: number) {
-	return Math.min(1, Math.max(0, v));
-}
-
-function smooth01(t: number) {
-	const x = clamp01(t);
-	return x * x * (3 - 2 * x);
-}
-
-function lerpEmotion(
-	a: EmotionState,
-	b: EmotionState,
-	alpha: number
-): EmotionState {
+function clamp01(v: number) { return Math.min(1, Math.max(0, v)); }
+function smooth01(t: number) { const x = clamp01(t); return x * x * (3 - 2 * x); }
+function lerpEmotion(a: EmotionState, b: EmotionState, alpha: number): EmotionState {
 	const t = clamp01(alpha);
 	return {
 		joy: a.joy + (b.joy - a.joy) * t,
@@ -60,63 +46,34 @@ function lerpEmotion(
 }
 
 export default function Home() {
-	const [currentEmotion, setCurrentEmotion] =
-		useState<EmotionState>(NEUTRAL_EMOTION);
-	const [baseEmotion, setBaseEmotion] =
-		useState<EmotionState>(NEUTRAL_EMOTION);
+	// --- State Logic ---
+	const [currentEmotion, setCurrentEmotion] = useState<EmotionState>(NEUTRAL_EMOTION);
+	const [baseEmotion, setBaseEmotion] = useState<EmotionState>(NEUTRAL_EMOTION);
 	const [activePreset, setActivePreset] = useState<string | null>("neutral");
 	const [isHistoryOpen, setIsHistoryOpen] = useState(false);
 	const [isCustomizationOpen, setIsCustomizationOpen] = useState(false);
-	const [showSwipeHints, setShowSwipeHints] = useState(true);
 	const [faceVariant, setFaceVariant] = useState<FaceVariant>("minimal");
 	const [accentColor, setAccentColor] = useState<string>("neutral");
-
 	const [voiceEnabled, setVoiceEnabled] = useState<boolean>(true);
 	const [voiceLevel, setVoiceLevel] = useState<number>(0);
-
-	// Cursor → Emotion mapping target (lives in a ref for smooth RAF-based interpolation)
 	const targetEmotionRef = useRef<EmotionState>(NEUTRAL_EMOTION);
 	const baseEmotionRef = useRef<EmotionState>(NEUTRAL_EMOTION);
-
 	const { theme, setTheme } = useTheme();
 	const [mounted, setMounted] = useState(false);
+    const [controlsVisible, setControlsVisible] = useState(false);
 
-	useEffect(() => {
-		setMounted(true);
-	}, []);
+	useEffect(() => { setMounted(true); }, []);
+	useEffect(() => { baseEmotionRef.current = baseEmotion; }, [baseEmotion]);
 
-	// Keep baseEmotionRef in sync with state
-	useEffect(() => {
-		baseEmotionRef.current = baseEmotion;
-	}, [baseEmotion]);
-
-	// Auto-hide hints after 5 seconds
-	useEffect(() => {
-		const timer = setTimeout(() => {
-			setShowSwipeHints(false);
-		}, 5000);
-		return () => clearTimeout(timer);
-	}, []);
-
-	// Smoothly interpolate currentEmotion toward targetEmotionRef
+	// Animation Loop
 	useEffect(() => {
 		let frameId: number;
 		const step = () => {
 			setCurrentEmotion((prev) => {
 				const next = lerpEmotion(prev, targetEmotionRef.current, 0.08);
-
-				// Emotion memory: gently pull the long-term base mood toward
-				// whatever Kokoro has actually been feeling recently.
-				const memoryLerp = 0.015; // smaller = longer "memory"
-				const newBase = lerpEmotion(
-					baseEmotionRef.current,
-					next,
-					memoryLerp
-				);
+				const newBase = lerpEmotion(baseEmotionRef.current, next, 0.015);
 				baseEmotionRef.current = newBase;
-				// Keep React state in sync so presets/tweaks reflect the evolving mood.
 				setBaseEmotion(newBase);
-
 				return next;
 			});
 			frameId = requestAnimationFrame(step);
@@ -125,264 +82,83 @@ export default function Home() {
 		return () => cancelAnimationFrame(frameId);
 	}, []);
 
-	// Simulated voice "loudness" driving the mic breath halo.
+	// Voice Visualizer Loop
 	useEffect(() => {
-		if (!voiceEnabled) {
-			setVoiceLevel(0);
-			return;
-		}
-
+		if (!voiceEnabled) { setVoiceLevel(0); return; }
 		let frameId: number;
 		const start = performance.now();
-
 		const loop = (time: number) => {
 			const t = (time - start) / 1000;
-			const composite =
-				0.55 * Math.sin(t * 6.2) +
-				0.35 * Math.sin(t * 9.1 + 0.7) +
-				0.2 * Math.sin(t * 13.4 + 1.9);
+			const composite = 0.55 * Math.sin(t * 6.2) + 0.35 * Math.sin(t * 9.1 + 0.7) + 0.2 * Math.sin(t * 13.4 + 1.9);
 			const level = Math.min(1, Math.max(0, 0.5 + 0.5 * composite));
 			setVoiceLevel(level);
 			frameId = requestAnimationFrame(loop);
 		};
-
 		frameId = requestAnimationFrame(loop);
-
 		return () => cancelAnimationFrame(frameId);
 	}, [voiceEnabled]);
-
-	const presets: Record<string, EmotionState> = {
-		neutral: {
-			joy: 0.3,
-			sadness: 0,
-			surprise: 0,
-			anger: 0,
-			curiosity: 0.2,
-		},
-		joy: { joy: 1, sadness: 0, surprise: 0.1, anger: 0, curiosity: 0.2 },
-		sad: { joy: 0, sadness: 1, surprise: 0, anger: 0, curiosity: 0.1 },
-		surprised: {
-			joy: 0.2,
-			sadness: 0,
-			surprise: 1,
-			anger: 0,
-			curiosity: 0.3,
-		},
-		angry: { joy: 0, sadness: 0.1, surprise: 0.1, anger: 1, curiosity: 0 },
-		curious: {
-			joy: 0.2,
-			sadness: 0,
-			surprise: 0.2,
-			anger: 0,
-			curiosity: 1,
-		},
-	};
-
-	const applyPreset = (key: keyof typeof presets) => {
-		const preset = presets[key];
-		setBaseEmotion(preset);
-		baseEmotionRef.current = preset;
-		targetEmotionRef.current = preset;
-		setCurrentEmotion(preset);
-		setActivePreset(key as string);
-	};
-
-	// Cursor → Emotion mapping
+    
+    // Emotion Logic
 	const handlePointerMove = (e: React.MouseEvent<HTMLDivElement>) => {
 		if (typeof window === "undefined") return;
+        setControlsVisible(true);
 		const { innerWidth, innerHeight } = window;
 		const centerX = innerWidth / 2;
 		const centerY = innerHeight / 2;
-
-		const clientX = e.clientX;
-		const clientY = e.clientY;
-
-		const mx = clientX - centerX;
-		const my = clientY - centerY;
-		const nx = Math.max(-1, Math.min(1, mx / (innerWidth * 0.25))); // -1..1
-		const ny = Math.max(-1, Math.min(1, my / (innerHeight * 0.25))); // -1..1
-
+		const nx = Math.max(-1, Math.min(1, (e.clientX - centerX) / (innerWidth * 0.25)));
+		const ny = Math.max(-1, Math.min(1, (e.clientY - centerY) / (innerHeight * 0.25)));
 		const r = Math.min(1, Math.hypot(nx, ny));
 		const deadZone = 0.18;
-		const intensity =
-			r <= deadZone ? 0 : smooth01((r - deadZone) / (1 - deadZone));
-
-		const joyBase = smooth01(-ny);
-		const sadnessBase = smooth01(ny);
-		const curiosityBase = smooth01(Math.abs(nx));
-		const angerBase =
-			smooth01(Math.max(0, Math.abs(nx) - 0.55) / 0.45) * 0.65;
-		const surpriseBase = smooth01(Math.abs(ny) * 0.6) * 0.7;
-
-		const joy = joyBase * intensity;
-		const sadness = sadnessBase * intensity;
-		const curiosity = curiosityBase * intensity;
-		const anger = angerBase * intensity;
-		const surprise = surpriseBase * intensity;
-
-		const pointerTarget: EmotionState = {
-			joy,
-			sadness,
-			surprise,
-			anger,
-			curiosity,
-		};
+		const intensity = r <= deadZone ? 0 : smooth01((r - deadZone) / (1 - deadZone));
+		
+		const pointerTarget: EmotionState = { 
+            joy: smooth01(-ny) * intensity, 
+            sadness: smooth01(ny) * intensity, 
+            surprise: smooth01(Math.abs(ny) * 0.6) * 0.7 * intensity, 
+            anger: smooth01(Math.max(0, Math.abs(nx) - 0.55) / 0.45) * 0.65 * intensity, 
+            curiosity: smooth01(Math.abs(nx)) * intensity 
+        };
 
 		const weightPointer = 0.6;
 		const weightBase = 1 - weightPointer;
 		const base = baseEmotionRef.current;
-
-		const blendedTarget: EmotionState = {
+        
+		targetEmotionRef.current = {
 			joy: base.joy * weightBase + pointerTarget.joy * weightPointer,
-			sadness:
-				base.sadness * weightBase +
-				pointerTarget.sadness * weightPointer,
-			surprise:
-				base.surprise * weightBase +
-				pointerTarget.surprise * weightPointer,
-			anger:
-				base.anger * weightBase + pointerTarget.anger * weightPointer,
-			curiosity:
-				base.curiosity * weightBase +
-				pointerTarget.curiosity * weightPointer,
+			sadness: base.sadness * weightBase + pointerTarget.sadness * weightPointer,
+			surprise: base.surprise * weightBase + pointerTarget.surprise * weightPointer,
+			anger: base.anger * weightBase + pointerTarget.anger * weightPointer,
+			curiosity: base.curiosity * weightBase + pointerTarget.curiosity * weightPointer,
 		};
-
-		targetEmotionRef.current = blendedTarget;
 	};
 
-	const handlePointerLeave = () => {
-		targetEmotionRef.current = baseEmotionRef.current;
-	};
-
-	const cyclePreset = (direction: number) => {
-		if (typeof navigator !== "undefined" && navigator.vibrate) {
-			navigator.vibrate(20); // Haptic feedback on swipe
-		}
-		const keys = Object.keys(presets);
-		const currentIndex = keys.indexOf(activePreset || "neutral");
-		let nextIndex = currentIndex + direction;
-		if (nextIndex >= keys.length) nextIndex = 0;
-		if (nextIndex < 0) nextIndex = keys.length - 1;
-		applyPreset(keys[nextIndex] as keyof typeof presets);
-
-		// Hide hints if user interacts
-		if (showSwipeHints) setShowSwipeHints(false);
-	};
-
-	const handleDragEnd = (
-		event: MouseEvent | TouchEvent | PointerEvent,
-		info: PanInfo
-	) => {
-		const threshold = 50;
-		if (info.offset.x < -threshold) {
-			// Swipe Left -> Next
-			cyclePreset(1);
-		} else if (info.offset.x > threshold) {
-			// Swipe Right -> Prev
-			cyclePreset(-1);
-		}
-	};
-
-	const handleCloseCustomization = useCallback(() => {
-		setIsCustomizationOpen(false);
-	}, []);
+	const handlePointerLeave = () => { 
+        targetEmotionRef.current = baseEmotionRef.current; 
+        setControlsVisible(false);
+    };
 
 	return (
 		<div
-			className={`min-h-dvh w-screen bg-background text-foreground flex items-center justify-center overflow-hidden relative selection:bg-primary selection:text-primary-foreground font-sans transition-colors duration-700 theme-${accentColor}`}
+			className="min-h-dvh w-screen bg-background text-foreground flex items-center justify-center overflow-hidden relative font-sans transition-colors duration-700"
 			onMouseMove={handlePointerMove}
 			onMouseLeave={handlePointerLeave}
 		>
-			{/* Washi Paper Texture Overlay */}
-			<div className="absolute inset-0 pointer-events-none opacity-[0.03] z-0 mix-blend-multiply dark:mix-blend-overlay bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
+            {/* The Wall (Background) - No texture, just matte finish */}
+            <div className="absolute inset-0 bg-background transition-colors duration-1000" />
+            
+            {/* Ambient Shadow (The "Device" presence) */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                 <div className="w-[80vw] h-[80vh] bg-foreground/5 rounded-full blur-[100px] opacity-50" />
+            </div>
 
-			{/* Header: Japanese Bureaucratic */}
-			<div className="absolute top-8 left-8 right-8 flex justify-between items-center z-50 select-none">
-				<div className="flex items-center gap-4 opacity-80">
-					<div className="w-3 h-3 rounded-full bg-primary animate-pulse-slow" />
-					<h1 className="text-2xl font-medium tracking-widest text-foreground uppercase font-[family-name:var(--font-cherry-bomb-one)]">
-						ココロ
-					</h1>
-				</div>
-
-				<button
-					onClick={() =>
-						setTheme(theme === "dark" ? "light" : "dark")
-					}
-					className="group flex items-center gap-3 px-5 py-2.5 bg-secondary/30 hover:bg-secondary/50 text-secondary-foreground rounded-full transition-all duration-500 hover:scale-105 active:scale-95 backdrop-blur-sm border border-transparent hover:border-border/50"
-				>
-					<span className="text-xs font-medium tracking-wide group-hover:text-primary transition-colors">
-						{mounted
-							? theme === "dark"
-								? "墨 (Sumi)"
-								: "和紙 (Washi)"
-							: "..."}
-					</span>
-					<div
-						className={`w-2 h-2 rounded-full transition-colors duration-500 ${
-							mounted
-								? theme === "dark"
-									? "bg-white"
-									: "bg-black"
-								: "bg-gray-400"
-						}`}
-					/>
-				</button>
-			</div>
-
-			<div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none overflow-visible">
+			{/* MAIN CONTENT AREA */}
+			<div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
 				<motion.div
-					className="relative cursor-grab active:cursor-grabbing touch-none w-screen max-w-none md:max-w-[800px] lg:max-w-[1000px] px-0 pointer-events-auto h-[50vh] md:h-auto flex items-center justify-center"
-					drag="x"
-					dragConstraints={{ left: 0, right: 0 }}
-					dragElastic={0.2}
-					onDragEnd={handleDragEnd}
+					className="relative cursor-default touch-none w-full max-w-[600px] aspect-square flex items-center justify-center pointer-events-auto"
 				>
-					{/* Swipe Hints Overlay */}
-					<AnimatePresence>
-						{showSwipeHints && (
-							<motion.div
-								initial={{ opacity: 0 }}
-								animate={{ opacity: 1 }}
-								exit={{ opacity: 0 }}
-								transition={{ duration: 1 }}
-								className="absolute inset-0 flex items-center justify-between px-4 md:px-8 pointer-events-none z-50"
-							>
-								<motion.div
-									initial={{ x: 10, opacity: 0 }}
-									animate={{ x: 0, opacity: 0.5 }}
-									transition={{
-										repeat: Infinity,
-										repeatType: "reverse",
-										duration: 1.5,
-									}}
-									className="flex items-center gap-2"
-								>
-									<ChevronLeft className="w-8 h-8 text-muted-foreground" />
-									<span className="text-xs font-mono tracking-widest uppercase text-muted-foreground hidden md:block">
-										Prev Mood
-									</span>
-								</motion.div>
-
-								<motion.div
-									initial={{ x: -10, opacity: 0 }}
-									animate={{ x: 0, opacity: 0.5 }}
-									transition={{
-										repeat: Infinity,
-										repeatType: "reverse",
-										duration: 1.5,
-									}}
-									className="flex items-center gap-2"
-								>
-									<span className="text-xs font-mono tracking-widest uppercase text-muted-foreground hidden md:block">
-										Next Mood
-									</span>
-									<ChevronRight className="w-8 h-8 text-muted-foreground" />
-								</motion.div>
-							</motion.div>
-						)}
-					</AnimatePresence>
-
+                    {/* The "Inset" Circle/Container - Subtle depth like a speaker grill or recessed display */}
+                    <div className="absolute inset-0 rounded-[48px] border border-foreground/5 inset-player opacity-50 scale-90 md:scale-100 transition-all duration-1000" />
+                    
 					<Avatar
 						emotion={currentEmotion}
 						voiceEnabled={voiceEnabled}
@@ -390,87 +166,65 @@ export default function Home() {
 					/>
 				</motion.div>
 			</div>
+            
+            {/* Floating Dock - Appears on Hover/Activity */}
+            <AnimatePresence>
+                {controlsVisible && (
+                    <motion.div 
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 20 }}
+                        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                        className="absolute bottom-8 z-50 flex items-center gap-2 p-2 rounded-full bg-background/80 backdrop-blur-xl border border-foreground/5 shadow-zen"
+                    >
+                         {/* Theme */}
+                         <button 
+                            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                            className="w-10 h-10 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-foreground/5 transition-colors"
+                         >
+                             <div className="w-3 h-3 rounded-full bg-current opacity-80" />
+                         </button>
 
-			{/* Bottom Controls: Marshmallow & Bento */}
-			<div className="absolute bottom-8 md:bottom-12 left-0 right-0 flex justify-center items-center gap-4 md:gap-8 z-50">
-				{/* History Toggle */}
-				<Button
-					variant="secondary"
-					className="h-14 w-14 rounded-[1.25rem] shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 active:scale-95 bg-white/80 dark:bg-white/5 border border-white/20 backdrop-blur-md"
-					onClick={() => setIsHistoryOpen(!isHistoryOpen)}
-				>
-					<History className="h-5 w-5 text-muted-foreground" />
-				</Button>
+                         <div className="w-px h-4 bg-foreground/10" />
 
-				{/* Voice Toggle: Soft Switch */}
-				<div className="relative">
-					{(() => {
-						const scale = 1 + voiceLevel * 0.1;
-						const activeStyle = voiceEnabled
-							? {
-									transform: `scale(${scale})`,
-									backgroundColor: "var(--primary)",
-									color: "var(--primary-foreground)",
-							  }
-							: undefined;
+                         {/* Mic */}
+                         <button 
+                            onClick={() => setVoiceEnabled(v => !v)}
+                            className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${voiceEnabled ? "text-foreground bg-foreground/5" : "text-muted-foreground hover:bg-foreground/5"}`}
+                         >
+                             <Mic className="w-4 h-4" />
+                         </button>
 
-						return (
-							<Button
-								variant="secondary"
-								className={`h-20 w-20 rounded-[1.75rem] shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-500 active:scale-95 border border-white/20 flex items-center justify-center ${
-									voiceEnabled
-										? ""
-										: "bg-white/80 dark:bg-white/5 text-muted-foreground backdrop-blur-md"
-								}`}
-								style={activeStyle}
-								onClick={() => setVoiceEnabled((v) => !v)}
-							>
-								<Mic className="h-7 w-7" />
-							</Button>
-						);
-					})()}
-				</div>
+                         {/* History */}
+                         <button 
+                            onClick={() => setIsHistoryOpen(true)}
+                            className="w-10 h-10 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-foreground/5 transition-colors"
+                         >
+                             <History className="w-4 h-4" />
+                         </button>
 
-				{/* Sparkles */}
-				<Button
-					variant="secondary"
-					className="h-14 w-14 rounded-[1.25rem] shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 active:scale-95 bg-white/80 dark:bg-white/5 border border-white/20 backdrop-blur-md"
-					onClick={() => setIsCustomizationOpen(true)}
-				>
-					<Sparkles className="h-5 w-5 text-muted-foreground" />
-				</Button>
-			</div>
+                          {/* Settings */}
+                         <button 
+                            onClick={() => setIsCustomizationOpen(true)}
+                            className="w-10 h-10 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-foreground/5 transition-colors"
+                         >
+                             <Settings className="w-4 h-4" />
+                         </button>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+            
+            {/* Minimal Status Indicator (Top Right) */}
+            <div className="absolute top-8 right-8 z-40 opacity-30 hover:opacity-100 transition-opacity cursor-default">
+                 <div className="flex items-center gap-2">
+                     <span className={`w-1.5 h-1.5 rounded-full ${voiceEnabled ? (voiceLevel > 0.1 ? "bg-green-500" : "bg-foreground") : "bg-muted-foreground"} transition-colors`} />
+                     <span className="text-[10px] font-medium tracking-wide">
+                         {voiceEnabled ? (voiceLevel > 0.1 ? "Listening" : "Ready") : "Standby"}
+                     </span>
+                 </div>
+            </div>
 
-			{/* Settings - Bottom Right (Desktop) / Top Right (Mobile) */}
-			<div className="absolute bottom-8 right-8 z-50 hidden md:block">
-				<Button
-					variant="ghost"
-					className="h-10 w-10 rounded-full opacity-40 hover:opacity-100 hover:bg-secondary/20 transition-all duration-500"
-				>
-					<Settings className="h-4 w-4 text-muted-foreground" />
-				</Button>
-			</div>
-			<div className="absolute top-8 right-4 z-50 md:hidden">
-				<Button
-					variant="ghost"
-					className="h-10 w-10 rounded-full opacity-40 hover:opacity-100 hover:bg-secondary/20 transition-all duration-500"
-				>
-					<Settings className="h-4 w-4 text-muted-foreground" />
-				</Button>
-			</div>
-
-			{/* Mood Info - Bottom Left (Desktop) / Top Left (Mobile) */}
-			<div className="absolute bottom-8 left-8 z-50 select-none opacity-60 hidden md:block">
-				<span className="text-[10px] text-muted-foreground tracking-widest font-mono uppercase">
-					MOOD // {activePreset || "NEUTRAL"}
-				</span>
-			</div>
-			<div className="absolute top-24 left-8 z-40 select-none opacity-60 md:hidden pointer-events-none">
-				<span className="text-[10px] text-muted-foreground tracking-widest font-mono uppercase">
-					MOOD // {activePreset || "NEUTRAL"}
-				</span>
-			</div>
-
+			{/* MODALS */}
 			<ChatWindow
 				isOpen={isHistoryOpen}
 				onClose={() => setIsHistoryOpen(false)}
@@ -479,7 +233,7 @@ export default function Home() {
 
 			<CustomizationModal
 				isOpen={isCustomizationOpen}
-				onClose={handleCloseCustomization}
+				onClose={() => setIsCustomizationOpen(false)}
 				currentVariant={faceVariant}
 				onVariantChange={setFaceVariant}
 				accentColor={accentColor}
