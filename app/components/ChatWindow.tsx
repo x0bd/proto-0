@@ -141,7 +141,7 @@ export function ChatWindow({ isOpen, onClose }: ChatWindowProps) {
                             stiffness: 300, 
                             mass: 0.8 
                         }}
-						className="pointer-events-auto w-full sm:w-[400px] h-[70vh] sm:h-[600px] bg-background/80 backdrop-blur-2xl shadow-zen rounded-t-[32px] sm:rounded-[32px] overflow-hidden flex flex-col relative border border-foreground/5 mb-0 sm:mb-8"
+						className="pointer-events-auto w-full sm:w-[400px] h-[70vh] sm:h-[600px] bg-background/95 backdrop-blur-3xl shadow-zen rounded-t-xl sm:rounded-xl overflow-hidden flex flex-col relative border border-border mb-0 sm:mb-8 ring-1 ring-white/5"
 						drag="y"
                         dragControls={dragControls}
                         dragListener={false}

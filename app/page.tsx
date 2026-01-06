@@ -211,22 +211,22 @@ export default function Home() {
 				</AnimatePresence>
 			</div>
 
-			{/* Floating Dock - Bottom */}
-			<div className="absolute bottom-6 md:bottom-8 z-50 flex items-center gap-2 p-2 rounded-full bg-background/80 backdrop-blur-xl border border-foreground/5 shadow-zen">
+			{/* Floating Dock - Bottom - Technical/Traf Style */}
+			<div className="absolute bottom-6 md:bottom-8 z-50 flex items-center gap-1 p-1.5 rounded-xl bg-background/90 backdrop-blur-md border border-border shadow-zen">
 				{/* Theme */}
 				<button
 					onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-					className="w-10 h-10 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-foreground/5 transition-colors"
+					className="w-9 h-9 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors active:scale-95"
 				>
-					<div className="w-3 h-3 rounded-full bg-current opacity-80" />
+					<div className="w-2.5 h-2.5 rounded-sm bg-current opacity-80" />
 				</button>
 
-				<div className="w-px h-4 bg-foreground/10" />
+				<div className="w-px h-4 bg-border mx-1" />
 
 				{/* Mic */}
 				<button
 					onClick={() => setVoiceEnabled((v) => !v)}
-					className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${voiceEnabled ? "text-foreground bg-foreground/5" : "text-muted-foreground hover:bg-foreground/5"}`}
+					className={`w-9 h-9 rounded-lg flex items-center justify-center transition-all active:scale-95 ${voiceEnabled ? "text-background bg-foreground shadow-sm" : "text-muted-foreground hover:bg-muted"}`}
 				>
 					<Mic className="w-4 h-4" />
 				</button>
@@ -234,7 +234,7 @@ export default function Home() {
 				{/* History */}
 				<button
 					onClick={() => setIsHistoryOpen(true)}
-					className="w-10 h-10 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-foreground/5 transition-colors"
+					className="w-9 h-9 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors active:scale-95"
 				>
 					<History className="w-4 h-4" />
 				</button>
@@ -242,7 +242,7 @@ export default function Home() {
 				{/* Settings */}
 				<button
 					onClick={() => setIsCustomizationOpen(true)}
-					className="w-10 h-10 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-foreground/5 transition-colors"
+					className="w-9 h-9 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors active:scale-95"
 				>
 					<Settings className="w-4 h-4" />
 				</button>

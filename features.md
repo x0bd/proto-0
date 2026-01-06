@@ -156,6 +156,38 @@ A minimal, expressive avatar whose entire soul is eyes + mouth. Built like the f
 -   [ ] **High contrast**: Support for high contrast display modes
 -   [ ] **Voice control**: Integration with browser voice commands
 
+## The Brain (AI Interconnect) 🧠 (New)
+
+-   [ ] **"The Director" Model**
+    -   [ ] Local/Cloud hybrid model that maps *conversation context* to *animation curves*.
+    -   [ ] Detects sarcasm, hesitation, and excitement in real-time.
+-   [ ] **Natural Language Emotion Engine**
+    -   [ ] `Input: "I'm heartbroken..."` -> `Output: { joy: 0, sadness: 0.9, gaze_down: true }`
+    -   [ ] Supports "emotional mixing" (e.g., "Angry Crying" or "Happy Tears").
+-   [ ] **Voice-to-Face Latency < 50ms**
+    -   [ ] Direct audio stream analysis for lip-sync (visemes) mixed with emotion.
+
+## Physics 2.0 (The "Soul") ⚛️ (New)
+
+-   [ ] **Soft-body Gaze**
+    -   [ ] Eyes don't just "track"; they simulate weight and inertia.
+    -   [ ] "Saccadic masking": Micro-movements that mimic human vision scanning.
+-   [ ] **Mood Momentum**
+    -   [ ] Emotions have mass. You can't snap from "Rage" to "Joy".
+    -   [ ] Transitions traverse the emotional spectrum naturally (Rage -> Annoyance -> Neutral -> Joy).
+-   [ ] **Environment Awareness**
+    -   [ ] Avatar tracks on-screen elements (notifications, typing indicators).
+    -   [ ] "Startled" reaction when mouse moves too fast.
+
+## Ecosystem (Build in Public Goal) 🌍 (New)
+
+-   [ ] **@kokoro/core**
+    -   [ ] Framework-agnostic math library (just numbers, no DOM).
+-   [ ] **@kokoro/react**
+    -   [ ] Headless hooks (`useKokoroFace`).
+-   [ ] **Skin Protocol**
+    -   [ ] Standard JSON/SVG spec for designers to build non-human faces (Robots, Animals, Abstract entities).
+
 —
 **kokoro (心)**: heart, mind, spirit. Minimal surface, maximal feeling.
 

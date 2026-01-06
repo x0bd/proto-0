@@ -1,33 +1,21 @@
 import type { Metadata } from "next";
-import {
-	Geist,
-	Geist_Mono,
-	Noto_Sans_JP,
-	Cherry_Bomb_One,
-} from "next/font/google";
+import localFont from "next/font/local";
+import { Doto } from "next/font/google"; // Doto for digital/matrix display headers
 import "./globals.css";
 import { ThemeProvider } from "./components/theme-provider";
 
-const geistSans = Geist({
-	variable: "--font-geist-sans",
-	subsets: ["latin"],
+// Departure Mono: The "Traf" / Terminal aesthetic backbone
+const departureMono = localFont({
+	src: "../public/fonts/DepartureMono-Regular.woff2",
+	variable: "--font-departure",
+	display: "swap",
 });
 
-const geistMono = Geist_Mono({
-	variable: "--font-geist-mono",
+// Doto: For digital/retro-futuristic headings
+const doto = Doto({
+	variable: "--font-doto",
 	subsets: ["latin"],
-});
-
-const notoSansJP = Noto_Sans_JP({
-	variable: "--font-noto-sans-jp",
-	subsets: ["latin"],
-	weight: ["200", "300", "400", "500", "600", "700"],
-});
-
-const cherryBombOne = Cherry_Bomb_One({
-	variable: "--font-cherry-bomb-one",
-	subsets: ["latin"],
-	weight: "400",
+	weight: ["400", "700"], // Normal and Bold for headers
 });
 
 export const metadata: Metadata = {
@@ -44,7 +32,7 @@ export default function RootLayout({
 	return (
 		<html lang="en" suppressHydrationWarning>
 			<body
-				className={`${geistSans.variable} ${geistMono.variable} ${notoSansJP.variable} ${cherryBombOne.variable} antialiased`}
+				className={`${departureMono.variable} ${doto.variable} antialiased bg-background text-foreground`}
 			>
 				<ThemeProvider
 					attribute="class"

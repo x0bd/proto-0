@@ -1,16 +1,17 @@
 @import "tailwindcss";
 @import "tw-animate-css";
-@import url("https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&display=swap");
 
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
 	--color-background: var(--background);
 	--color-foreground: var(--foreground);
-	--font-sans: "Geist", sans-serif;
-	--font-mono: var(--font-geist-mono);
+    /* Departure Mono for almost everything to give that technical feel */
+	--font-sans: var(--font-departure), monospace; 
+	--font-mono: var(--font-departure), monospace;
+    --font-display: var(--font-doto), sans-serif;
 	
-    /* UI Elements */
+	/* UI Elements */
 	--color-sidebar: var(--sidebar);
 	--color-sidebar-foreground: var(--sidebar-foreground);
     
@@ -26,68 +27,60 @@
 	--color-accent: var(--accent);
 	--color-accent-foreground: var(--accent-foreground);
     
-    /* Radius - Super Normal Squircles */
-	--radius-sm: 8px;
-	--radius-md: 16px;
-	--radius-lg: 24px;
-	--radius-xl: 32px;
-}
-
-@theme {
-    /* Zen Palette - Matte & Diffuse */
-    --color-matte-white: oklch(0.98 0 0);
-    --color-matte-black: oklch(0.12 0 0);
-    --color-soft-grey: oklch(0.95 0 0);
-    --color-deep-grey: oklch(0.2 0 0);
+    /* Radius - Technical, Precise */
+	--radius-sm: 4px;
+	--radius-md: 8px;
+	--radius-lg: 12px;
+	--radius-xl: 16px;
 }
 
 :root {
-	--radius: 24px; /* Soft Object Feel */
+	--radius: 12px;
     
-    /* Light Mode: Ceramic/plastic matte */
-	--background: var(--color-matte-white); 
-	--foreground: var(--color-matte-black);
+    /* Light Mode: stark, brutalist paper */
+	--background: #ffffff; 
+	--foreground: #000000;
 	
-    --primary: var(--color-matte-black);
-	--primary-foreground: var(--color-matte-white);
+    --primary: #000000;
+	--primary-foreground: #ffffff;
 	
-    --secondary: var(--color-soft-grey);
-	--secondary-foreground: var(--color-matte-black);
+    --secondary: #f4f4f5; /* Zinc 100 */
+	--secondary-foreground: #18181b; /* Zinc 900 */
 	
-    --muted: oklch(0.6 0 0);
-	--muted-foreground: oklch(0.5 0 0);
+    --muted: #f4f4f5;
+	--muted-foreground: #71717a; /* Zinc 500 */
 	
-    --accent: var(--color-matte-black);
-	--accent-foreground: var(--color-matte-white);
+    --accent: #f4f4f5;
+	--accent-foreground: #18181b;
 	
-    --border: oklch(0.92 0 0);
-	--input: oklch(0.92 0 0);
-	--ring: oklch(0.85 0 0);
+    --border: #e4e4e7; /* Zinc 200 */
+	--input: #e4e4e7;
+	--ring: #18181b;
     
     --sidebar: var(--background);
     --sidebar-foreground: var(--foreground);
 }
 
 .dark {
-    /* Dark Mode: Matte Graphite */
-	--background: var(--color-matte-black);
-	--foreground: oklch(0.9 0 0);
+    /* Dark Mode: Pure Vercel Black */
+	--background: #000000;
+	--foreground: #ededed;
 	
-    --primary: oklch(0.9 0 0);
-	--primary-foreground: var(--color-matte-black);
+    --primary: #ededed;
+	--primary-foreground: #000000;
 	
-    --secondary: var(--color-deep-grey);
-	--secondary-foreground: oklch(0.9 0 0);
+    --secondary: #111111; /* Almost black */
+	--secondary-foreground: #ededed;
 	
-    --muted: oklch(0.4 0 0);
-	--muted-foreground: oklch(0.6 0 0);
+    --muted: #111111;
+	--muted-foreground: #888888; /* Classic Vercel Muted */
 	
-    --accent: oklch(0.9 0 0);
-	--accent-foreground: var(--color-matte-black);
+    --accent: #111111;
+	--accent-foreground: #ededed;
 	
-    --border: oklch(0.2 0 0);
-	--input: oklch(0.2 0 0);
-	--ring: oklch(0.3 0 0);
+    --border: #333333; /* Crisp, visible border */
+	--input: #333333;
+	--ring: #ededed;
     
     --sidebar: var(--background);
     --sidebar-foreground: var(--foreground);
@@ -95,41 +88,40 @@
 
 @layer base {
 	* {
-		@apply border-border outline-border/20;
+		@apply border-border outline-ring/10;
 	}
 	body {
-		@apply bg-background text-foreground tracking-tight antialiased;
-        /* Smooth, weighty feel */
+		@apply bg-background text-foreground antialiased selection:bg-foreground selection:text-background;
+        font-feature-settings: "ss01", "ss02", "cv01", "cv02"; /* Enable technical alternates if available */
 	}
+    
+    /* Technical scrollbars */
+    ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+        @apply bg-border rounded-full hover:bg-muted-foreground/50 transition-colors;
+    }
 }
 
 /* Utilities */
 .shadow-zen {
+    /* Sharper shadow for technical feel */
     box-shadow: 
-        0 4px 6px -1px rgba(0, 0, 0, 0.02),
-        0 10px 15px -3px rgba(0, 0, 0, 0.04),
-        0 0 0 1px rgba(0,0,0,0.02);
+        0 0 0 1px var(--border),
+        0 2px 8px -2px rgba(0, 0, 0, 0.1);
 }
 .dark .shadow-zen {
     box-shadow: 
-        0 4px 6px -1px rgba(0, 0, 0, 0.3),
-        0 10px 15px -3px rgba(0, 0, 0, 0.3),
-        0 0 0 1px rgba(255,255,255,0.05);
+        0 0 0 1px var(--border),
+        0 4px 12px -4px rgba(0, 0, 0, 0.5);
 }
 
-/* The Muji Wall Player Effect - Subtle inset */
-.inset-player {
-    box-shadow: inset 0 2px 4px 0 rgba(0,0,0,0.05);
-}
-.dark .inset-player {
-    box-shadow: inset 0 2px 4px 0 rgba(0,0,0,0.5);
-}
-
-/* Fade In Animation */
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(4px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-.animate-enter {
-    animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+/* Glassmorphism - Technical/Frost */
+.glass-tech {
+    @apply backdrop-blur-md bg-background/80 border border-border;
 }
