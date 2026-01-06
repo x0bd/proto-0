@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
-import { Doto } from "next/font/google"; // Doto for digital/matrix display headers
 import "./globals.css";
 import { ThemeProvider } from "./components/theme-provider";
 
@@ -9,13 +8,6 @@ const departureMono = localFont({
 	src: "../public/fonts/DepartureMono-Regular.woff2",
 	variable: "--font-departure",
 	display: "swap",
-});
-
-// Doto: For digital/retro-futuristic headings
-const doto = Doto({
-	variable: "--font-doto",
-	subsets: ["latin"],
-	weight: ["400", "700"], // Normal and Bold for headers
 });
 
 export const metadata: Metadata = {
@@ -31,8 +23,13 @@ export default function RootLayout({
 }>) {
 	return (
 		<html lang="en" suppressHydrationWarning>
+			<head>
+				{/* Google Fonts Preconnect for Doto */}
+				<link rel="preconnect" href="https://fonts.googleapis.com" />
+				<link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+			</head>
 			<body
-				className={`${departureMono.variable} ${doto.variable} antialiased bg-background text-foreground`}
+				className={`${departureMono.variable} antialiased bg-background text-foreground`}
 			>
 				<ThemeProvider
 					attribute="class"

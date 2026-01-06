@@ -179,7 +179,12 @@ export default function Home() {
 			<div className="absolute top-6 left-6 z-40">
 				<span 
 					className="text-2xl font-bold tracking-tight opacity-60 hover:opacity-100 transition-opacity cursor-default select-none"
-					style={{ fontFamily: '"Doto", sans-serif' }}
+					style={{ 
+						fontFamily: '"Doto", sans-serif',
+						fontOpticalSizing: 'auto',
+						fontWeight: 700,
+						fontVariationSettings: '"ROND" 0'
+					}}
 				>
 					心
 				</span>
