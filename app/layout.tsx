@@ -10,6 +10,13 @@ const departureMono = localFont({
 	display: "swap",
 });
 
+// Doto: Digital/Matrix display font for branding
+const doto = localFont({
+	src: "../public/fonts/Doto-VariableFont_ROND,wght.ttf",
+	variable: "--font-doto",
+	display: "swap",
+});
+
 export const metadata: Metadata = {
 	title: "Kokoro | 心",
 	description:
@@ -23,13 +30,9 @@ export default function RootLayout({
 }>) {
 	return (
 		<html lang="en" suppressHydrationWarning>
-			<head>
-				{/* Google Fonts Preconnect for Doto */}
-				<link rel="preconnect" href="https://fonts.googleapis.com" />
-				<link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-			</head>
+			<head />
 			<body
-				className={`${departureMono.variable} antialiased bg-background text-foreground`}
+				className={`${departureMono.variable} ${doto.variable} antialiased bg-background text-foreground`}
 			>
 				<ThemeProvider
 					attribute="class"
