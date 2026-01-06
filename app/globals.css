@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import url('https://fonts.googleapis.com/css2?family=Doto:wght@400;700&display=swap');
 
 @custom-variant dark (&:is(.dark *));
 
@@ -9,7 +10,7 @@
     /* Departure Mono for almost everything to give that technical feel */
 	--font-sans: var(--font-departure), monospace; 
 	--font-mono: var(--font-departure), monospace;
-    --font-display: var(--font-doto), sans-serif;
+    --font-display: "Doto", sans-serif;
 	
 	/* UI Elements */
 	--color-sidebar: var(--sidebar);
@@ -88,7 +89,7 @@
 
 @layer base {
 	* {
-		@apply border-border outline-ring/10;
+		@apply border-border;
 	}
 	body {
 		@apply bg-background text-foreground antialiased selection:bg-foreground selection:text-background;

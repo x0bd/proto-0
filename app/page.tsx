@@ -175,6 +175,16 @@ export default function Home() {
 			onMouseMove={handlePointerMove}
 			onMouseLeave={handlePointerLeave}
 		>
+			{/* Brand Mark - Top Left */}
+			<div className="absolute top-6 left-6 z-40">
+				<span 
+					className="text-2xl font-bold tracking-tight opacity-60 hover:opacity-100 transition-opacity cursor-default select-none"
+					style={{ fontFamily: '"Doto", sans-serif' }}
+				>
+					心
+				</span>
+			</div>
+
 			{/* MAIN CONTENT AREA - Swipeable Avatar, Absolutely Centered */}
 			<motion.div
 				className="absolute inset-0 cursor-grab active:cursor-grabbing touch-none flex items-center justify-center z-10"
