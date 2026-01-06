@@ -9,7 +9,7 @@ import { CustomizationModal } from "./components/CustomizationModal";
 import { useTheme } from "next-themes";
 import { FaceVariant } from "./components/face/types";
 import { AppSidebar } from "@/components/app-sidebar";
-import { SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarTrigger, SidebarInset } from "@/components/ui/sidebar";
 
 // --- Types & Helpers ---
 interface EmotionState {
@@ -169,9 +169,10 @@ export default function Home() {
 		targetEmotionRef.current = baseEmotionRef.current;
 	};
 
+
+
 	return (
-        // Flex container to hold Sidebar + Main Content
-		<div className="flex h-dvh w-full">
+		<div className="flex h-dvh w-full overflow-hidden bg-background">
             <AppSidebar 
                 activePreset={activePreset}
                 onPresetChange={applyPreset}
@@ -181,29 +182,41 @@ export default function Home() {
                 onSettingsClick={() => setIsCustomizationOpen(true)}
             />
             
-            <main className="flex-1 relative overflow-hidden">
+            <SidebarInset className="relative flex flex-col items-center justify-center overflow-hidden">
                 <div
-                    className="h-full w-full bg-background text-foreground flex flex-col items-center justify-center font-sans"
+                    className="absolute inset-0 w-full h-full bg-background text-foreground flex flex-col items-center justify-center font-sans transition-colors duration-500"
                     style={themes[accentColor] || {}}
                     onMouseMove={handlePointerMove}
                     onMouseLeave={handlePointerLeave}
                 >
-                    {/* Sidebar Trigger - Top Left */}
-                    <div className="absolute top-4 left-4 z-50">
-                        <SidebarTrigger />
-                    </div>
-
-                    {/* Status Indicator (Top Right) */}
-                    <div className="absolute top-6 right-6 z-40 opacity-40 hover:opacity-100 transition-opacity">
-                        <div className="flex items-center gap-2">
-                            <span className={`w-1.5 h-1.5 rounded-full ${voiceEnabled ? (voiceLevel > 0.1 ? "bg-green-500" : "bg-foreground") : "bg-muted-foreground"} transition-colors`} />
-                            <span className="text-[10px] font-medium tracking-wide hidden md:inline">
-                                {voiceEnabled ? (voiceLevel > 0.1 ? "Listening" : "Ready") : "Standby"}
+                    {/* Technical Header / Status Line (Top Left) */}
+                    <div className="absolute top-6 left-6 z-50 flex items-center gap-4 text-sm font-mono tracking-tight mix-blend-difference text-foreground">
+                        <SidebarTrigger className="-ml-2" />
+                        <div className="flex items-center gap-3 select-none opacity-60 hover:opacity-100 transition-opacity">
+                            <span 
+                                className="font-bold text-lg"
+                                style={{ 
+                                    fontFamily: 'var(--font-doto), sans-serif',
+                                    fontWeight: 700,
+                                    fontVariationSettings: '"ROND" 0'
+                                }}
+                            >
+                                kokoro
                             </span>
+                            <span className="text-xs text-muted-foreground">/</span>
+                            <span className="uppercase text-xs tracking-wider">{activePreset}</span>
+                            {voiceEnabled && (
+                                <>
+                                    <span className="text-xs text-muted-foreground">/</span>
+                                    <span className={`text-[10px] ${voiceLevel > 0.05 ? "text-green-500" : "text-muted-foreground"}`}>
+                                        MIC_ON
+                                    </span>
+                                </>
+                            )}
                         </div>
                     </div>
 
-                    {/* MAIN CONTENT AREA - Swipeable Avatar, Absolutely Centered */}
+                    {/* MAIN CONTENT AREA - Swipeable Avatar */}
                     <motion.div
                         className="absolute inset-0 cursor-grab active:cursor-grabbing touch-none flex items-center justify-center z-10"
                         drag="x"
@@ -211,8 +224,7 @@ export default function Home() {
                         dragElastic={0.15}
                         onDragEnd={handleDragEnd}
                     >
-                        {/* Avatar - Even Bigger */}
-                        <div className="w-[95vw] md:w-[80vw] lg:w-[60vw] max-w-[800px] aspect-square flex items-center justify-center">
+                        <div className="w-[95vw] md:w-[80vw] lg:w-[60vw] max-w-[800px] aspect-square flex items-center justify-center pointer-events-none">
                             <Avatar
                                 emotion={currentEmotion}
                                 voiceEnabled={voiceEnabled}
@@ -221,22 +233,9 @@ export default function Home() {
                         </div>
                     </motion.div>
 
-                    {/* Current Preset Indicator - Bottom Center */}
-                    <div className="absolute bottom-12 left-1/2 -translate-x-1/2 z-40">
-                        <AnimatePresence mode="wait">
-                            <motion.div
-                                key={activePreset}
-                                initial={{ opacity: 0, y: 8 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -8 }}
-                                transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-                                className="px-5 py-2 rounded-full bg-foreground/5 backdrop-blur-md border border-foreground/5"
-                            >
-                                <span className="text-sm font-medium tracking-wide capitalize">
-                                    {activePreset}
-                                </span>
-                            </motion.div>
-                        </AnimatePresence>
+                    {/* Hint Text - Bottom Center (Replaces Bubble) */}
+                    <div className="absolute bottom-12 left-1/2 -translate-x-1/2 z-40 text-[10px] items-center gap-2 text-muted-foreground font-mono tracking-widest uppercase opacity-40 hidden md:flex">
+                         <span>DRAG L/R TO SHIFT MOOD</span>
                     </div>
 
                     {/* MODALS */}
@@ -255,7 +254,7 @@ export default function Home() {
                         onAccentChange={setAccentColor}
                     />
                 </div>
-            </main>
+            </SidebarInset>
 		</div>
 	);
 }

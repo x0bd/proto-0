@@ -43,9 +43,7 @@ export default function RootLayout({
 					disableTransitionOnChange
 				>
 					<SidebarProvider>
-						<SidebarInset>
-							{children}
-						</SidebarInset>
+						{children}
 					</SidebarProvider>
 				</ThemeProvider>
 			</body>
