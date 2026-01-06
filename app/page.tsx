@@ -6,9 +6,10 @@ import { motion, type PanInfo, AnimatePresence } from "motion/react";
 import Avatar from "./components/Avatar";
 import { ChatWindow } from "./components/ChatWindow";
 import { CustomizationModal } from "./components/CustomizationModal";
-import { Mic, Settings, History } from "lucide-react";
 import { useTheme } from "next-themes";
 import { FaceVariant } from "./components/face/types";
+import { AppSidebar } from "@/components/app-sidebar";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 
 // --- Types & Helpers ---
 interface EmotionState {
@@ -169,124 +170,92 @@ export default function Home() {
 	};
 
 	return (
-		<div
-			className="min-h-dvh w-screen bg-background text-foreground flex flex-col items-center justify-center overflow-hidden relative font-sans"
-            style={themes[accentColor] || {}}
-			onMouseMove={handlePointerMove}
-			onMouseLeave={handlePointerLeave}
-		>
-			{/* Brand Mark - Top Left */}
-			<div className="absolute top-6 left-6 z-40">
-				<span 
-					className="text-2xl font-bold tracking-tight opacity-60 hover:opacity-100 transition-opacity cursor-default select-none"
-					style={{ 
-						fontFamily: 'var(--font-doto), sans-serif',
-						fontWeight: 700,
-						fontVariationSettings: '"ROND" 0'
-					}}
-				>
-					kokoro
-				</span>
-			</div>
+        // Flex container to hold Sidebar + Main Content
+		<div className="flex h-dvh w-full">
+            <AppSidebar 
+                activePreset={activePreset}
+                onPresetChange={applyPreset}
+                voiceEnabled={voiceEnabled}
+                onVoiceToggle={() => setVoiceEnabled(v => !v)}
+                onHistoryClick={() => setIsHistoryOpen(true)}
+                onSettingsClick={() => setIsCustomizationOpen(true)}
+            />
+            
+            <main className="flex-1 relative overflow-hidden">
+                <div
+                    className="h-full w-full bg-background text-foreground flex flex-col items-center justify-center font-sans"
+                    style={themes[accentColor] || {}}
+                    onMouseMove={handlePointerMove}
+                    onMouseLeave={handlePointerLeave}
+                >
+                    {/* Sidebar Trigger - Top Left */}
+                    <div className="absolute top-4 left-4 z-50">
+                        <SidebarTrigger />
+                    </div>
 
-			{/* MAIN CONTENT AREA - Swipeable Avatar, Absolutely Centered */}
-			<motion.div
-				className="absolute inset-0 cursor-grab active:cursor-grabbing touch-none flex items-center justify-center z-10"
-				drag="x"
-				dragConstraints={{ left: 0, right: 0 }}
-				dragElastic={0.15}
-				onDragEnd={handleDragEnd}
-			>
-				{/* Avatar - Even Bigger */}
-				<div className="w-[95vw] md:w-[80vw] lg:w-[60vw] max-w-[800px] aspect-square flex items-center justify-center">
-					<Avatar
-						emotion={currentEmotion}
-						voiceEnabled={voiceEnabled}
-						variant={faceVariant}
-					/>
-				</div>
-			</motion.div>
+                    {/* Status Indicator (Top Right) */}
+                    <div className="absolute top-6 right-6 z-40 opacity-40 hover:opacity-100 transition-opacity">
+                        <div className="flex items-center gap-2">
+                            <span className={`w-1.5 h-1.5 rounded-full ${voiceEnabled ? (voiceLevel > 0.1 ? "bg-green-500" : "bg-foreground") : "bg-muted-foreground"} transition-colors`} />
+                            <span className="text-[10px] font-medium tracking-wide hidden md:inline">
+                                {voiceEnabled ? (voiceLevel > 0.1 ? "Listening" : "Ready") : "Standby"}
+                            </span>
+                        </div>
+                    </div>
 
-			{/* Current Preset Indicator - Bottom Center, Always Visible */}
-			<div className="absolute bottom-24 md:bottom-28 left-1/2 -translate-x-1/2 z-40">
-				<AnimatePresence mode="wait">
-					<motion.div
-						key={activePreset}
-						initial={{ opacity: 0, y: 8 }}
-						animate={{ opacity: 1, y: 0 }}
-						exit={{ opacity: 0, y: -8 }}
-						transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-						className="px-5 py-2 rounded-full bg-foreground/5 backdrop-blur-md border border-foreground/5"
-					>
-						<span className="text-sm font-medium tracking-wide capitalize">
-							{activePreset}
-						</span>
-					</motion.div>
-				</AnimatePresence>
-			</div>
+                    {/* MAIN CONTENT AREA - Swipeable Avatar, Absolutely Centered */}
+                    <motion.div
+                        className="absolute inset-0 cursor-grab active:cursor-grabbing touch-none flex items-center justify-center z-10"
+                        drag="x"
+                        dragConstraints={{ left: 0, right: 0 }}
+                        dragElastic={0.15}
+                        onDragEnd={handleDragEnd}
+                    >
+                        {/* Avatar - Even Bigger */}
+                        <div className="w-[95vw] md:w-[80vw] lg:w-[60vw] max-w-[800px] aspect-square flex items-center justify-center">
+                            <Avatar
+                                emotion={currentEmotion}
+                                voiceEnabled={voiceEnabled}
+                                variant={faceVariant}
+                            />
+                        </div>
+                    </motion.div>
 
-			{/* Floating Dock - Bottom - Technical/Traf Style */}
-			<div className="absolute bottom-6 md:bottom-8 z-50 flex items-center gap-1 p-1.5 rounded-xl bg-background/90 backdrop-blur-md border border-border shadow-zen">
-				{/* Theme */}
-				<button
-					onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-					className="w-9 h-9 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors active:scale-95"
-				>
-					<div className="w-2.5 h-2.5 rounded-sm bg-current opacity-80" />
-				</button>
+                    {/* Current Preset Indicator - Bottom Center */}
+                    <div className="absolute bottom-12 left-1/2 -translate-x-1/2 z-40">
+                        <AnimatePresence mode="wait">
+                            <motion.div
+                                key={activePreset}
+                                initial={{ opacity: 0, y: 8 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -8 }}
+                                transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                                className="px-5 py-2 rounded-full bg-foreground/5 backdrop-blur-md border border-foreground/5"
+                            >
+                                <span className="text-sm font-medium tracking-wide capitalize">
+                                    {activePreset}
+                                </span>
+                            </motion.div>
+                        </AnimatePresence>
+                    </div>
 
-				<div className="w-px h-4 bg-border mx-1" />
+                    {/* MODALS */}
+                    <ChatWindow
+                        isOpen={isHistoryOpen}
+                        onClose={() => setIsHistoryOpen(false)}
+                        isListening={voiceEnabled}
+                    />
 
-				{/* Mic */}
-				<button
-					onClick={() => setVoiceEnabled((v) => !v)}
-					className={`w-9 h-9 rounded-lg flex items-center justify-center transition-all active:scale-95 ${voiceEnabled ? "text-background bg-foreground shadow-sm" : "text-muted-foreground hover:bg-muted"}`}
-				>
-					<Mic className="w-4 h-4" />
-				</button>
-
-				{/* History */}
-				<button
-					onClick={() => setIsHistoryOpen(true)}
-					className="w-9 h-9 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors active:scale-95"
-				>
-					<History className="w-4 h-4" />
-				</button>
-
-				{/* Settings */}
-				<button
-					onClick={() => setIsCustomizationOpen(true)}
-					className="w-9 h-9 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors active:scale-95"
-				>
-					<Settings className="w-4 h-4" />
-				</button>
-			</div>
-
-			{/* Status Indicator (Top Right) */}
-			<div className="absolute top-6 right-6 z-40 opacity-40 hover:opacity-100 transition-opacity">
-				<div className="flex items-center gap-2">
-					<span className={`w-1.5 h-1.5 rounded-full ${voiceEnabled ? (voiceLevel > 0.1 ? "bg-green-500" : "bg-foreground") : "bg-muted-foreground"} transition-colors`} />
-					<span className="text-[10px] font-medium tracking-wide hidden md:inline">
-						{voiceEnabled ? (voiceLevel > 0.1 ? "Listening" : "Ready") : "Standby"}
-					</span>
-				</div>
-			</div>
-
-			{/* MODALS */}
-			<ChatWindow
-				isOpen={isHistoryOpen}
-				onClose={() => setIsHistoryOpen(false)}
-				isListening={voiceEnabled}
-			/>
-
-			<CustomizationModal
-				isOpen={isCustomizationOpen}
-				onClose={() => setIsCustomizationOpen(false)}
-				currentVariant={faceVariant}
-				onVariantChange={setFaceVariant}
-				accentColor={accentColor}
-				onAccentChange={setAccentColor}
-			/>
+                    <CustomizationModal
+                        isOpen={isCustomizationOpen}
+                        onClose={() => setIsCustomizationOpen(false)}
+                        currentVariant={faceVariant}
+                        onVariantChange={setFaceVariant}
+                        accentColor={accentColor}
+                        onAccentChange={setAccentColor}
+                    />
+                </div>
+            </main>
 		</div>
 	);
 }
