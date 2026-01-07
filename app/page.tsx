@@ -172,7 +172,7 @@ export default function Home() {
 
 
 	return (
-		<div className="flex h-dvh w-full overflow-hidden bg-background">
+		<div className="flex h-dvh w-full overflow-hidden bg-background font-sans selection:bg-foreground selection:text-background">
             <AppSidebar 
                 activePreset={activePreset}
                 onPresetChange={applyPreset}
@@ -182,37 +182,45 @@ export default function Home() {
                 onSettingsClick={() => setIsCustomizationOpen(true)}
             />
             
-            <SidebarInset className="relative flex flex-col items-center justify-center overflow-hidden">
+            <SidebarInset className="relative flex flex-col items-center justify-center overflow-hidden bg-grain">
                 <div
-                    className="absolute inset-0 w-full h-full bg-background text-foreground flex flex-col items-center justify-center font-sans transition-colors duration-500"
+                    className="absolute inset-0 w-full h-full text-foreground flex flex-col items-center justify-center transition-colors duration-500"
                     style={themes[accentColor] || {}}
                     onMouseMove={handlePointerMove}
                     onMouseLeave={handlePointerLeave}
                 >
+                    {/* Breathing Aura - Behind Everything */}
+                    <div className="absolute inset-0 flex items-center justify-center opacity-40 pointer-events-none">
+                         <div className="w-[80vw] h-[80vw] max-w-[800px] max-h-[800px] rounded-full bg-foreground/5 blur-3xl animate-breathe" />
+                    </div>
+
                     {/* Technical Header / Status Line (Top Left) */}
-                    <div className="absolute top-6 left-6 z-50 flex items-center gap-4 text-sm font-mono tracking-tight mix-blend-difference text-foreground">
-                        <SidebarTrigger className="-ml-2" />
-                        <div className="flex items-center gap-3 select-none opacity-60 hover:opacity-100 transition-opacity">
-                            <span 
-                                className="font-bold text-lg"
-                                style={{ 
-                                    fontFamily: 'var(--font-doto), sans-serif',
-                                    fontWeight: 700,
-                                    fontVariationSettings: '"ROND" 0'
-                                }}
-                            >
-                                kokoro
-                            </span>
-                            <span className="text-xs text-muted-foreground">/</span>
-                            <span className="uppercase text-xs tracking-wider">{activePreset}</span>
-                            {voiceEnabled && (
-                                <>
-                                    <span className="text-xs text-muted-foreground">/</span>
-                                    <span className={`text-[10px] ${voiceLevel > 0.05 ? "text-green-500" : "text-muted-foreground"}`}>
-                                        MIC_ON
-                                    </span>
-                                </>
-                            )}
+                    <div className="absolute top-6 left-6 z-50 flex items-start gap-6 text-sm font-mono text-foreground">
+                        <SidebarTrigger className="-ml-2 mt-1" />
+                        
+                        {/* Tategaki (Vertical) Branding */}
+                        <div className="flex flex-col gap-4 select-none opacity-80 hover:opacity-100 transition-opacity writing-vertical-rl py-2">
+                             <div className="flex items-center gap-2">
+                                <span 
+                                    className="font-bold text-2xl tracking-widest leading-none"
+                                    style={{ 
+                                        fontFamily: 'var(--font-doto), sans-serif',
+                                        fontWeight: 700,
+                                        fontVariationSettings: '"ROND" 0'
+                                    }}
+                                >
+                                    心
+                                </span>
+                                <span className="text-[10px] tracking-widest opacity-50">KOKORO</span>
+                             </div>
+
+                             {/* Vertical separator */}
+                             <div className="w-px h-8 bg-border my-2" />
+
+                             <div className="flex items-center gap-2 text-xs tracking-widest uppercase">
+                                <span>{activePreset}</span>
+                                {voiceEnabled && <span className="text-green-500">• ON</span>}
+                             </div>
                         </div>
                     </div>
 
@@ -224,7 +232,7 @@ export default function Home() {
                         dragElastic={0.15}
                         onDragEnd={handleDragEnd}
                     >
-                        <div className="w-[95vw] md:w-[80vw] lg:w-[60vw] max-w-[800px] aspect-square flex items-center justify-center pointer-events-none">
+                        <div className="w-[95vw] md:w-[80vw] lg:w-[60vw] max-w-[800px] aspect-square flex items-center justify-center pointer-events-none drop-shadow-2xl">
                             <Avatar
                                 emotion={currentEmotion}
                                 voiceEnabled={voiceEnabled}
@@ -233,9 +241,10 @@ export default function Home() {
                         </div>
                     </motion.div>
 
-                    {/* Hint Text - Bottom Center (Replaces Bubble) */}
-                    <div className="absolute bottom-12 left-1/2 -translate-x-1/2 z-40 text-[10px] items-center gap-2 text-muted-foreground font-mono tracking-widest uppercase opacity-40 hidden md:flex">
-                         <span>DRAG L/R TO SHIFT MOOD</span>
+                    {/* Hint Text - Bottom - Japanese/Cyberpunk style */}
+                    <div className="absolute bottom-12 z-40 flex flex-col items-center gap-1 text-[10px] text-muted-foreground font-mono uppercase tracking-[0.2em] opacity-30 select-none">
+                         <span>Drag to Feel</span>
+                         <span>感じるためにドラッグ</span>
                     </div>
 
                     {/* MODALS */}
