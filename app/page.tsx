@@ -4,11 +4,11 @@ import { useEffect, useRef, useState } from "react";
 import type React from "react";
 import { motion, type PanInfo, AnimatePresence } from "motion/react";
 import Avatar from "./components/Avatar";
-import { ChatWindow } from "./components/ChatWindow";
 import { CustomizationModal } from "./components/CustomizationModal";
 import { useTheme } from "next-themes";
 import { FaceVariant } from "./components/face/types";
 import { AppSidebar } from "@/components/app-sidebar";
+import { RightPanel } from "@/components/right-panel";
 import { SidebarTrigger, SidebarInset } from "@/components/ui/sidebar";
 
 // --- Types & Helpers ---
@@ -63,7 +63,7 @@ export default function Home() {
 	const [currentEmotion, setCurrentEmotion] = useState<EmotionState>(NEUTRAL_EMOTION);
 	const [baseEmotion, setBaseEmotion] = useState<EmotionState>(NEUTRAL_EMOTION);
 	const [activePreset, setActivePreset] = useState<string>("neutral");
-	const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+	const [isRightPanelOpen, setIsRightPanelOpen] = useState(true);
 	const [isCustomizationOpen, setIsCustomizationOpen] = useState(false);
 	const [faceVariant, setFaceVariant] = useState<FaceVariant>("minimal");
 	const [accentColor, setAccentColor] = useState<string>("neutral");
@@ -173,15 +173,16 @@ export default function Home() {
 
 	return (
 		<div className="flex h-dvh w-full overflow-hidden bg-background font-sans selection:bg-foreground selection:text-background">
+            {/* LEFT SIDEBAR (The Soul) */}
             <AppSidebar 
                 activePreset={activePreset}
                 onPresetChange={applyPreset}
                 voiceEnabled={voiceEnabled}
                 onVoiceToggle={() => setVoiceEnabled(v => !v)}
-                onHistoryClick={() => setIsHistoryOpen(true)}
                 onSettingsClick={() => setIsCustomizationOpen(true)}
             />
             
+            {/* CENTER STAGE (The Body) */}
             <SidebarInset className="relative flex flex-col items-center justify-center overflow-hidden bg-grain">
                 <div
                     className="absolute inset-0 w-full h-full text-foreground flex flex-col items-center justify-center transition-colors duration-500"
@@ -195,7 +196,7 @@ export default function Home() {
                     </div>
 
                     {/* Technical Header / Status Line (Top Left) */}
-                    <div className="absolute top-6 left-6 z-50 flex items-start gap-6 text-sm font-mono text-foreground">
+                    <div className="absolute top-6 left-6 z-10 flex items-start gap-6 text-sm font-mono text-foreground">
                         <SidebarTrigger className="-ml-2 mt-1" />
                         
                         {/* Tategaki (Vertical) Branding */}
@@ -213,20 +214,16 @@ export default function Home() {
                                 </span>
                                 <span className="text-[10px] tracking-widest opacity-50">KOKORO</span>
                              </div>
-
-                             {/* Vertical separator */}
                              <div className="w-px h-8 bg-border my-2" />
-
                              <div className="flex items-center gap-2 text-xs tracking-widest uppercase">
                                 <span>{activePreset}</span>
-                                {voiceEnabled && <span className="text-green-500">• ON</span>}
                              </div>
                         </div>
                     </div>
 
                     {/* MAIN CONTENT AREA - Swipeable Avatar */}
                     <motion.div
-                        className="absolute inset-0 cursor-grab active:cursor-grabbing touch-none flex items-center justify-center z-10"
+                        className="absolute inset-0 cursor-grab active:cursor-grabbing touch-none flex items-center justify-center z-0"
                         drag="x"
                         dragConstraints={{ left: 0, right: 0 }}
                         dragElastic={0.15}
@@ -242,18 +239,12 @@ export default function Home() {
                     </motion.div>
 
                     {/* Hint Text - Bottom - Japanese/Cyberpunk style */}
-                    <div className="absolute bottom-12 z-40 flex flex-col items-center gap-1 text-[10px] text-muted-foreground font-mono uppercase tracking-[0.2em] opacity-30 select-none">
+                    <div className="absolute bottom-12 z-10 flex flex-col items-center gap-1 text-[10px] text-muted-foreground font-mono uppercase tracking-[0.2em] opacity-30 select-none">
                          <span>Drag to Feel</span>
                          <span>感じるためにドラッグ</span>
                     </div>
 
                     {/* MODALS */}
-                    <ChatWindow
-                        isOpen={isHistoryOpen}
-                        onClose={() => setIsHistoryOpen(false)}
-                        isListening={voiceEnabled}
-                    />
-
                     <CustomizationModal
                         isOpen={isCustomizationOpen}
                         onClose={() => setIsCustomizationOpen(false)}
@@ -264,6 +255,18 @@ export default function Home() {
                     />
                 </div>
             </SidebarInset>
+
+            {/* RIGHT SIDEBAR (The Brain) */}
+            <RightPanel 
+                isOpen={isRightPanelOpen}
+                onToggle={() => setIsRightPanelOpen(v => !v)}
+                history={[
+                    { role: "system", content: "Kokoro System Online" },
+                    { role: "user", content: "Initialize emotion engine..." },
+                    { role: "system", content: "Emotion engine active." },
+                    { role: "kokoro", content: "Systems normal. Awaiting input." }
+                ]}
+            />
 		</div>
 	);
 }
