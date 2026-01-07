@@ -9,7 +9,10 @@ import { useTheme } from "next-themes";
 import { FaceVariant } from "./components/face/types";
 import { AppSidebar } from "@/components/app-sidebar";
 import { RightPanel } from "@/components/right-panel";
-import { SidebarTrigger, SidebarInset } from "@/components/ui/sidebar";
+import { SidebarInset, useSidebar } from "@/components/ui/sidebar";
+import { Button } from "@/components/ui/button";
+import { ChevronRight } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 // --- Types & Helpers ---
 interface EmotionState {
@@ -63,7 +66,6 @@ export default function Home() {
 	const [currentEmotion, setCurrentEmotion] = useState<EmotionState>(NEUTRAL_EMOTION);
 	const [baseEmotion, setBaseEmotion] = useState<EmotionState>(NEUTRAL_EMOTION);
 	const [activePreset, setActivePreset] = useState<string>("neutral");
-	const [isRightPanelOpen, setIsRightPanelOpen] = useState(true);
 	const [isCustomizationOpen, setIsCustomizationOpen] = useState(false);
 	const [faceVariant, setFaceVariant] = useState<FaceVariant>("minimal");
 	const [accentColor, setAccentColor] = useState<string>("neutral");
@@ -196,28 +198,32 @@ export default function Home() {
                     </div>
 
                     {/* Technical Header / Status Line (Top Left) */}
-                    <div className="absolute top-6 left-6 z-10 flex items-start gap-6 text-sm font-mono text-foreground">
-                        <SidebarTrigger className="-ml-2 mt-1" />
+                    <div className="absolute top-6 left-0 z-50 flex items-center gap-4">
+                        {/* Custom Left Sidebar Toggle (Matching Right Panel) */}
+                        <CustomSidebarTrigger />
                         
-                        {/* Tategaki (Vertical) Branding */}
-                        <div className="flex flex-col gap-4 select-none opacity-80 hover:opacity-100 transition-opacity writing-vertical-rl py-2">
-                             <div className="flex items-center gap-2">
+                        {/* Horizontal Branding - Digital Stamp Style */}
+                        <div className="flex items-center gap-3 select-none opacity-60 hover:opacity-100 transition-opacity pl-2">
+                             <div className="flex items-center gap-2 border border-border/40 bg-background/20 backdrop-blur-md rounded-full px-3 py-1.5">
                                 <span 
-                                    className="font-bold text-2xl tracking-widest leading-none"
+                                    className="font-bold text-lg leading-none mt-0.5"
                                     style={{ 
                                         fontFamily: 'var(--font-doto), sans-serif',
-                                        fontWeight: 700,
                                         fontVariationSettings: '"ROND" 0'
                                     }}
                                 >
                                     心
                                 </span>
-                                <span className="text-[10px] tracking-widest opacity-50">KOKORO</span>
+                                <span className="text-[10px] tracking-widest font-mono uppercase opacity-70">KOKORO</span>
                              </div>
-                             <div className="w-px h-8 bg-border my-2" />
-                             <div className="flex items-center gap-2 text-xs tracking-widest uppercase">
-                                <span>{activePreset}</span>
-                             </div>
+                             
+                             {/* Status Pill */}
+                             {activePreset !== 'neutral' && (
+                                <div className="flex items-center gap-1.5 text-[9px] font-mono tracking-wider uppercase text-muted-foreground/80 bg-background/20 backdrop-blur-sm rounded-full px-2 py-1">
+                                    <div className="size-1 rounded-full bg-cyan-500 animate-pulse" />
+                                    <span>{activePreset}</span>
+                                </div>
+                             )}
                         </div>
                     </div>
 
@@ -258,8 +264,6 @@ export default function Home() {
 
             {/* RIGHT SIDEBAR (The Brain) */}
             <RightPanel 
-                isOpen={isRightPanelOpen}
-                onToggle={() => setIsRightPanelOpen(v => !v)}
                 history={[
                     { role: "system", content: "Kokoro System Online" },
                     { role: "user", content: "Initialize emotion engine..." },
@@ -269,4 +273,21 @@ export default function Home() {
             />
 		</div>
 	);
+}
+
+function CustomSidebarTrigger() {
+    const { toggleSidebar, state } = useSidebar()
+    return (
+        <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={toggleSidebar}
+            className={cn(
+                "rounded-r-lg rounded-l-none bg-background/40 backdrop-blur-md border border-l-0 border-white/10 hover:bg-background/60 h-10 w-8 transition-all",
+                state === 'expanded' && "bg-transparent border-transparent hover:bg-white/5 opacity-0 group-hover/sidebar-wrapper:opacity-100"
+            )}
+        >
+            <ChevronRight className={cn("size-4 text-muted-foreground transition-transform", state === 'expanded' && "rotate-180")} />
+        </Button>
+    )
 }

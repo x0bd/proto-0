@@ -1,90 +1,84 @@
 "use client";
 
-import type React from "react";
+import * as React from "react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import {
+    Sidebar,
+    SidebarContent,
+    SidebarFooter,
+    SidebarGroup,
+    SidebarGroupContent,
+    SidebarGroupLabel,
+    SidebarHeader,
+    SidebarMenu,
+    SidebarMenuButton,
+    SidebarMenuItem,
+} from "@/components/ui/sidebar";
 import { 
-    X, 
     Settings2, 
     FileText, 
     Activity, 
     Cpu, 
-    Eye,
-    ChevronRight,
+    ChevronLeft,
     Terminal
 } from "lucide-react";
-import { AnimatePresence, motion } from "motion/react";
 
-interface RightPanelProps {
-    isOpen: boolean;
-    onToggle: () => void;
-    history: any[]; // Replace with proper type
+interface RightPanelProps extends React.ComponentProps<typeof Sidebar> {
+    history: { role: string; content: string }[];
 }
 
-export function RightPanel({ isOpen, onToggle, history }: RightPanelProps) {
+export function RightPanel({ history, ...props }: RightPanelProps) {
     const [activeTab, setActiveTab] = useState<"logs" | "sys">("logs");
 
     return (
-        <div 
-            className={cn(
-                "fixed right-0 top-0 h-[100dvh] z-30 transition-all duration-300 ease-in-out border-l border-border/40 font-mono",
-                isOpen ? "w-80 translate-x-0" : "w-12 translate-x-0 bg-transparent border-l-0"
-            )}
-        >
-            {/* Background Layers (Only visible when open) */}
-            <div className={cn("absolute inset-0 bg-background/60 backdrop-blur-3xl transition-opacity duration-300", isOpen ? "opacity-100" : "opacity-0")} />
-            <div className={cn("absolute inset-0 bg-grain opacity-10 pointer-events-none transition-opacity duration-300", isOpen ? "opacity-100" : "opacity-0")} />
+        <Sidebar side="right" collapsible="icon" className="border-l-0" {...props}>
+            {/* Background Layers */}
+            <div className="absolute inset-0 bg-background/60 backdrop-blur-3xl z-0" />
+            <div className="absolute inset-0 bg-grain opacity-10 z-0 pointer-events-none" />
 
-            {/* Toggle Handle (Visible when collapsed) */}
-            {!isOpen && (
-                <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    onClick={onToggle}
-                    className="absolute top-6 right-2 z-50 rounded-l-lg rounded-r-none bg-background/40 backdrop-blur-md border border-r-0 border-white/10 hover:bg-background/60 h-10 w-8"
-                >
-                    <ChevronRight className="size-4 text-muted-foreground rotate-180" />
-                </Button>
-            )}
+            {/* Header */}
+            <SidebarHeader className="relative z-10 pt-8 pr-6 pb-2 border-b border-white/5">
+                <SidebarMenu>
+                    <SidebarMenuItem>
+                        <div className="flex items-center gap-3 justify-end group-data-[collapsible=icon]:justify-center transition-all">
+                           <div className="flex flex-col items-end gap-0.5 group-data-[collapsible=icon]:hidden">
+                                <span className="font-bold text-sm tracking-[0.2em] font-mono">CONSOLE</span>
+                                <span className="text-[9px] text-muted-foreground/60 tracking-widest uppercase">ターミナル</span>
+                           </div>
+                           <div className="flex aspect-square size-10 items-center justify-center rounded-sm text-foreground bg-foreground/5 ring-1 ring-white/10">
+                               <Terminal className="size-4 opacity-70" />
+                           </div>
+                        </div>
+                    </SidebarMenuItem>
+                </SidebarMenu>
+            </SidebarHeader>
 
-            {/* Content Container */}
-            <div className={cn("relative z-10 flex flex-col h-full overflow-hidden transition-all duration-300", !isOpen && "opacity-0 pointer-events-none")}>
-                
-                {/* Header */}
-                <div className="flex items-center justify-between p-4 px-6 border-b border-white/5">
-                    <div className="flex items-center gap-2 text-foreground/80">
-                         <Terminal className="size-4 opacity-50" />
-                         <span className="text-xs font-bold tracking-[0.2em] font-mono uppercase">Console</span>
-                    </div>
-                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={onToggle}>
-                        <ChevronRight className="size-4 opacity-50" />
-                    </Button>
-                </div>
+            {/* Tabs (for expanded mode) */}
+            <div className="relative z-10 flex items-center gap-1 p-2 px-4 border-b border-white/5 bg-black/20 group-data-[collapsible=icon]:hidden">
+                <TabButton 
+                    active={activeTab === "logs"} 
+                    onClick={() => setActiveTab("logs")}
+                    icon={FileText}
+                    label="LOGS"
+                />
+                <TabButton 
+                    active={activeTab === "sys"} 
+                    onClick={() => setActiveTab("sys")}
+                    icon={Settings2}
+                    label="SYS"
+                />
+            </div>
 
-                {/* Tabs */}
-                <div className="flex items-center gap-1 p-2 px-4 border-b border-white/5 bg-black/20">
-                    <TabButton 
-                        active={activeTab === "logs"} 
-                        onClick={() => setActiveTab("logs")}
-                        icon={FileText}
-                        label="LOGS"
-                    />
-                    <TabButton 
-                        active={activeTab === "sys"} 
-                        onClick={() => setActiveTab("sys")}
-                        icon={Settings2}
-                        label="SYS"
-                    />
-                </div>
-
-                {/* Main Content Area */}
-                <div className="flex-1 overflow-hidden relative">
-                    {/* LOGS TAB */}
-                    {activeTab === "logs" && (
-                         <ScrollArea className="h-full w-full">
+            {/* Content */}
+            <SidebarContent className="relative z-10">
+                {/* LOGS TAB */}
+                {activeTab === "logs" && (
+                    <SidebarGroup className="p-0 group-data-[collapsible=icon]:hidden">
+                        <ScrollArea className="h-[calc(100vh-200px)] w-full">
                             <div className="p-4 space-y-3">
                                 <div className="text-[10px] text-muted-foreground uppercase tracking-widest mb-4 opacity-50">Session Logs</div>
                                 
@@ -108,12 +102,14 @@ export function RightPanel({ isOpen, onToggle, history }: RightPanelProps) {
                                     ))
                                 )}
                             </div>
-                         </ScrollArea>
-                    )}
+                        </ScrollArea>
+                    </SidebarGroup>
+                )}
 
-                    {/* SYS TAB */}
-                    {activeTab === "sys" && (
-                        <ScrollArea className="h-full w-full">
+                {/* SYS TAB */}
+                {activeTab === "sys" && (
+                    <SidebarGroup className="p-0 group-data-[collapsible=icon]:hidden">
+                        <ScrollArea className="h-[calc(100vh-200px)] w-full">
                              <div className="p-4 space-y-6">
                                 {/* Monitor Group */}
                                 <div className="space-y-3">
@@ -139,19 +135,38 @@ export function RightPanel({ isOpen, onToggle, history }: RightPanelProps) {
                                 </div>
                              </div>
                         </ScrollArea>
-                    )}
-                </div>
+                    </SidebarGroup>
+                )}
 
-                {/* Footer */}
-                <div className="p-2 border-t border-white/5 text-[9px] text-center text-muted-foreground/30 font-mono">
-                    TERMINAL_ACTIVE // {new Date().toLocaleTimeString()}
-                </div>
-            </div>
-        </div>
+                {/* Collapsed Icons */}
+                <SidebarGroup className="hidden group-data-[collapsible=icon]:block p-2">
+                    <SidebarMenu className="gap-2">
+                        <SidebarMenuItem>
+                            <SidebarMenuButton tooltip="Logs" onClick={() => setActiveTab("logs")} isActive={activeTab === "logs"}>
+                                <FileText className="size-4" />
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton tooltip="System" onClick={() => setActiveTab("sys")} isActive={activeTab === "sys"}>
+                                <Settings2 className="size-4" />
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                    </SidebarMenu>
+                </SidebarGroup>
+            </SidebarContent>
+
+            {/* Footer */}
+            <SidebarFooter className="relative z-10 pb-6 px-4 border-t border-white/5">
+                 <div className="flex items-center gap-2 justify-end group-data-[collapsible=icon]:justify-center opacity-30 hover:opacity-100 transition-opacity cursor-default">
+                    <span className="text-[9px] font-mono tracking-widest uppercase group-data-[collapsible=icon]:hidden">Terminal Active</span>
+                    <span className="size-1.5 bg-green-500 rounded-full animate-pulse" />
+                 </div>
+            </SidebarFooter>
+        </Sidebar>
     );
 }
 
-function TabButton({ active, onClick, icon: Icon, label }: { active: boolean, onClick: () => void, icon: any, label: string }) {
+function TabButton({ active, onClick, icon: Icon, label }: { active: boolean, onClick: () => void, icon: React.ElementType, label: string }) {
     return (
         <button 
             onClick={onClick}
@@ -166,7 +181,7 @@ function TabButton({ active, onClick, icon: Icon, label }: { active: boolean, on
     )
 }
 
-function MetricCard({ label, value, icon: Icon }: { label: string, value: string, icon: any }) {
+function MetricCard({ label, value, icon: Icon }: { label: string, value: string, icon: React.ElementType }) {
     return (
         <div className="bg-white/5 rounded-sm p-3 border border-white/5 flex flex-col gap-1 hover:bg-white/10 transition-colors cursor-default group">
             <div className="flex items-center justify-between text-muted-foreground/50 group-hover:text-muted-foreground transition-colors">
