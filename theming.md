@@ -1,67 +1,91 @@
-# Theming & Customization - Implementation Plan
+# Project Design System: "Glass & Air"
 
-A roadmap for transforming Kokoro from a single-face entity into a multi-persona platform. This involves a flexible theme engine, distinct face archetypes ("Variants"), and a dedicated customization studio.
+## 1. Core Philosophy
+This design system, nicknamed **"Glass & Air"**, is built on the principles of **Hyper-Minimalism**, **Organic Technology**, and **Premium Utility**. It draws heavy inspiration from the design ethos of **Apple (Big Sur/VisionOS)** and **Naoto Fukasawa** (super-normal design), utilizing high-quality whitespace and "washi" (paper) textures in light mode.
 
-## 1. Architecture Refactor 🏗️
+### Key Tenets
+*   **The Interface is Liquid**: Elements should feel like they are floating in a suspended medium. There are no hard "pages", only layers of depth.
+*   **Data as Art**: Numbers and metrics are not just information; they are the primary visual decoration. We avoid ornamental graphics in favor of beautiful typography and spacing.
+*   **Tactile Light**: Interaction is communicated through light and depth (glows, shadows, blurs) rather than flat color changes.
+*   **Premium functionality**: The tool must look expensive to build trust. A professional farmer manages millions in assets; their software should reflect that value.
 
--   [ ] **Theme Context**:
-    -   Create a `ThemeContext` or extend `next-themes` to support custom data attributes beyond just `dark/light`.
-    -   Attributes needed: `--color-eyes`, `--color-mouth`, `--color-bg-noise`, `--stroke-style`.
--   [ ] **Face Variant Prop**:
-    -   Update `Avatar.tsx` to accept a `variant` prop: `'minimal' | 'tron' | 'kawaii' | 'analogue'`.
-    -   Refactor internal rendering to switch between SVG geometries based on this prop.
+---
 
-## 2. Face Archetypes (Variants) 🎭
+## 2. Visual Language
 
-### **A. The "Tron" (Cyber)**
+### A. Color Palette (Semantic)
+We use a strictly curated semantic palette based on "Washi" (Paper) and "Sumi" (Ink).
 
--   **Visuals**:
-    -   Eyes: Squircular rectangles (rounded rects).
-    -   Mouth: Polyline/Stepped path (digital signal look).
-    -   Colors: Neon Cyan/Magenta on Void Black.
--   **Animation**:
-    -   Motion: `steps(5)` ease for robotic movement.
-    -   Idle: Scanline glitch effect instead of breathing.
-    -   Blink: Vertical CRT power-off compression.
+*   **Background**: `hsl(240 10% 3.9%)` (Dark) or `#f0f0f2` (Light - warm gray). Not pure black/white.
+*   **Glass**: `bg-card/40`, `bg-card/60`. We rarely use 100% opacity. The background must bleed through to establish context.
+*   **Accents (The "Nature" Tones)**:
+    *   **Success/Growth**: `Emerald` (Growth, Income, Health). *Not Green.* Emerald has a blue undertone that feels more premium and technical.
+    *   **Alert/Action**: `Rose` (Expense, Critical, Error). *Not Red.* Rose is softer, less aggressive, but equally urgent.
+    *   **Warning/Attention**: `Amber` (Pending, Harvest, Sun).
+    *   **Neutral/Structure**: `Indigo` (Net Profit, System Status). A "business" color.
 
-### **B. The "Kawaii" (Soft)**
+### B. Typography
+The font stack balances readability with character.
 
--   **Visuals**:
-    -   Eyes: Large perfect circles, wide set.
-    -   Mouth: "W" shape or cat-like curve.
-    -   Additions: SVG filter blushes (cheeks).
-    -   Colors: Pastels (Pink/Mint).
--   **Animation**:
-    -   Motion: High elasticity (`elastic.out(1, 0.3)`).
-    -   Reaction: "Squish" distortion on click.
+*   **Primary Sans**: `Inter` or `Geist Sans`.
+*   **Styling Rules**:
+    *   **Headers**: `uppercase tracking-widest text-[10px] or text-xs font-bold`. This "micro-header" style is a signature.
+    *   **Metrics**: `font-light` or `font-thin`. Large numbers look elegant when thin.
+    *   **Data Labels**: `text-muted-foreground`.
 
-### **C. The "Analogue" (Sketch)**
+### C. Depth & Texture (Glassmorphism)
+The grading is "Grade 2 Glass".
 
--   **Visuals**:
-    -   Style: Hand-drawn stroke (rough edges via `stroke-dasharray` or displacement map).
-    -   Eyes: Sketchy outlines, not solid fills.
-    -   Colors: Sepia/Charcoal (Paper & Ink).
--   **Animation**:
-    -   Framerate: Throttled updates (12fps) for stop-motion feel.
-    -   Drift: Eyes float slightly independently.
+*   **Blur**: `backdrop-blur-xl`.
+*   **Border**: `border-border/40`. Extremely subtle interaction with light.
+*   **Shadow**: `shadow-premium`.
+    ```css
+    box-shadow: 
+      0 1px 2px -1px rgb(0 0 0 / 0.08),
+      0 4px 6px -2px rgb(0 0 0 / 0.04),
+      0 12px 16px -4px rgb(0 0 0 / 0.04);
+    ```
 
-## 3. Customization Studio (UI) 🎛️
+### D. Radius & Spacing
+*   **Card Radius**: `rounded-[2rem]` (32px). Aggressive rounding.
+*   **Spacing**: Loose. "Air" is a component.
 
--   [ ] **Persona Selector**:
-    -   A horizontal carousel in the `CustomizationModal` to swipe between active archetypes.
--   [ ] **Palette Picker**:
-    -   Pre-defined color swatches per variant (e.g., "Neon Grid" for Tron, "Sakura" for Kawaii).
--   [ ] **Fine Tuning** (Future):
-    -   Sliders for "Bounciness" (Physics spring tension).
-    -   Toggle for "Eye Contact" intensity.
+---
 
-## 4. Implementation Phases 📅
+## 3. Component Patterns (React/Tailwind)
 
-1.  **Phase 1: Refactor** ✅: Extract geometry logic from `Avatar.tsx` into sub-components (`Eyes.tsx`, `Mouth.tsx`) to make swapping easier.
-2.  **Phase 2: The Engine** ✅: Implement the `variant` prop and one new face (e.g., Tron) to test the abstraction.
-3.  **Phase 3: The Studio** ✅: Build the UI controls in `CustomizationModal` to toggle these states live.
-4.  **Phase 4: Colors** ✅: Add color theme selection to global CSS.
-5.  **Phase 5: Polish** ✅: Add unique sound/haptics per variant.
-    -   [x] Tron Haptics (Sharp clicks)
-    -   [x] Minimal Haptics (Soft pulses)
-    -   [x] Tron Glow (CSS Drop Shadow)
+### The "Premium Card" Template
+```tsx
+<Card className="
+    border-border/40                // Subtle border
+    bg-card/40                      // Translucent base
+    backdrop-blur-xl                // Heavy glass effect
+    shadow-premium                  // Soft, deep shadow
+    rounded-[2rem]                  // aggressive rounding
+    overflow-hidden                 // Clip content
+    group                           // For hover states
+">
+    {/* Optional: Internal Glow */}
+    <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+    
+    <CardHeader>
+        <CardTitle className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+            <Icon className="w-4 h-4 text-emerald-500" />
+            Card Title
+        </CardTitle>
+    </CardHeader>
+    <CardContent>...</CardContent>
+</Card>
+```
+
+---
+
+## 4. Prompting Guide (for other projects)
+When asking an AI to generate UI in this style, use these instructions:
+
+> "Design a UI component using React and Tailwind CSS. The aesthetic is 'Functional Luxury' or 'Zen Tech'.
+>
+> 1.  **Container**: Use `bg-card/40`, `backdrop-blur-xl`, `border-border/40`, and `rounded-[2rem]`.
+> 2.  **Typography**: Use `text-xs uppercase tracking-widest font-bold text-muted-foreground` for all eyebrows/headers. Use `font-light tracking-tighter` for large data numbers.
+> 3.  **Colors**: Use `emerald` for positive, `rose` for negative, `amber` for warning. Avoid primary colors. Use `bg-{color}-500/10` and `text-{color}-500` for badges.
+> 4.  **Vibe**: It should look like a glass pane floating 10px above a clean surface. It should feel expensive."
