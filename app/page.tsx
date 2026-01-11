@@ -178,9 +178,9 @@ export default function Home() {
 				{/* HEADER UI */}
 				<div className="absolute top-8 left-8 z-50 flex items-center gap-3 select-none">
 					{/* Branding */}
-					<div className="flex items-center gap-2.5 bg-background/50 backdrop-blur-md border border-white/5 rounded-full px-4 py-2 opacity-60 hover:opacity-100 transition-opacity">
+					<div className="flex items-center gap-2.5 glass-card rounded-full px-5 h-12 opacity-60 hover:opacity-100 transition-opacity border border-white/10">
 						<span 
-							className="font-bold text-lg leading-none tracking-wider"
+							className="font-bold text-sm leading-none tracking-wider"
 							style={{ fontFamily: '"Doto", sans-serif' }}
 						>
 							心 KOKORO
