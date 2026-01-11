@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { X, Check } from "lucide-react";
+import { X, Check, Monitor, Edit3, Sparkles, Circle } from "lucide-react";
 import { FaceVariant } from "./face/types";
 
 interface CustomizationModalProps {
@@ -14,17 +14,17 @@ interface CustomizationModalProps {
 	onAccentChange: (color: string) => void;
 }
 
-const VARIANTS: { id: FaceVariant; label: string; description: string }[] = [
-	{ id: "minimal", label: "Pure", description: "Clean & simple" },
-	{ id: "tron", label: "Digital", description: "Tech aesthetic" },
-	{ id: "analogue", label: "Sketch", description: "Hand-drawn feel" },
-	{ id: "neko", label: "Neko", description: "Playful & cute" },
+const VARIANTS: { id: FaceVariant; label: string; description: string; icon: any }[] = [
+	{ id: "minimal", label: "PURE", description: "Essential form", icon: Circle },
+	{ id: "tron", label: "DIGITAL", description: "System aesthetics", icon: Monitor },
+	{ id: "analogue", label: "SKETCH", description: "Hand-drawn lines", icon: Edit3 },
+	{ id: "neko", label: "NEKO", description: "Playful spirit", icon: Sparkles },
 ];
 
 const COLORS = [
-	{ id: "neutral", label: "Sumi", class: "bg-foreground" },
-	{ id: "rose", label: "Sakura", class: "bg-rose-500" },
-	{ id: "cyan", label: "Ice", class: "bg-cyan-500" },
+	{ id: "neutral", label: "SUMI", class: "bg-foreground" },
+	{ id: "rose", label: "SAKURA", class: "bg-rose-500" },
+	{ id: "cyan", label: "ICE", class: "bg-cyan-500" },
 ];
 
 export const CustomizationModal = React.memo(function CustomizationModal({
@@ -39,68 +39,74 @@ export const CustomizationModal = React.memo(function CustomizationModal({
 		<AnimatePresence mode="wait">
 			{isOpen && (
 				<>
-					{/* Backdrop */}
+					{/* Backdrop: Soft matte blur */}
 					<motion.div
 						initial={{ opacity: 0 }}
 						animate={{ opacity: 1 }}
 						exit={{ opacity: 0 }}
 						transition={{ duration: 0.3 }}
-						className="fixed inset-0 z-[100] bg-background/60 backdrop-blur-xl"
+						className="fixed inset-0 z-[100] bg-background/40 backdrop-blur-3xl"
 						onClick={onClose}
 					/>
 
 					{/* Modal Container */}
 					<div className="fixed inset-0 z-[101] flex items-center justify-center p-6 pointer-events-none">
 						<motion.div
-							initial={{ opacity: 0, scale: 0.9, y: 20 }}
+							initial={{ opacity: 0, scale: 0.95, y: 10 }}
 							animate={{ opacity: 1, scale: 1, y: 0 }}
-							exit={{ opacity: 0, scale: 0.9, y: 20 }}
-							transition={{ type: "spring", damping: 25, stiffness: 300 }}
-							className="pointer-events-auto w-full max-w-[400px] bg-card/80 backdrop-blur-2xl shadow-premium rounded-[2rem] p-8 relative border border-border/40 glow-internal"
+							exit={{ opacity: 0, scale: 0.95, y: 10 }}
+							transition={{ type: "spring", damping: 30, stiffness: 350 }}
+							// Matte Glass Style: No border, just mass and shadow
+							className="pointer-events-auto w-full max-w-[420px] glass-card rounded-[2.5rem] p-10 relative shadow-premium flex flex-col gap-10"
 							onClick={(e) => e.stopPropagation()}
 						>
 							{/* Close Button */}
 							<button
 								onClick={onClose}
-								className="absolute top-6 right-6 size-10 rounded-xl flex items-center justify-center hover:bg-foreground/5 transition-all duration-300 text-muted-foreground hover:text-foreground"
+								className="absolute top-8 right-8 size-10 rounded-full flex items-center justify-center hover:bg-foreground/5 transition-all duration-300 click-tactic text-muted-foreground hover:text-foreground"
 							>
 								<X className="size-5" />
 							</button>
 							
-							{/* Header */}
-							<div className="mb-10">
-								<h2 className="text-xl font-semibold tracking-tight">Settings</h2>
-								<p className="text-muted-foreground text-sm mt-1">Customize your experience</p>
+							{/* Header: Fukasawa Minimal */}
+							<div>
+								<h2 className="text-2xl font-light tracking-tight text-foreground">Settings</h2>
+								<p className="font-mono text-[10px] tracking-widest text-muted-foreground uppercase opacity-60 mt-1">
+									SYSTEM_CONFIGURATION_V1.0
+								</p>
 							</div>
 
 							<div className="space-y-10">
 								{/* Appearance Selection */}
-								<div>
-									<label className="text-micro block mb-4">Appearance</label>
-									<div className="grid grid-cols-2 gap-2">
+								<div className="space-y-4">
+									<label className="text-[10px] font-mono tracking-widest text-muted-foreground uppercase block pl-1 opacity-70">
+										APPEARANCE_MODULE
+									</label>
+									<div className="grid grid-cols-2 gap-3">
 										{VARIANTS.map((v) => {
 											const isActive = currentVariant === v.id;
+											const Icon = v.icon;
 											return (
 												<button
 													key={v.id}
 													onClick={() => onVariantChange(v.id)}
-													className={`relative p-4 rounded-2xl border transition-all duration-300 text-left ${
+													className={`relative p-5 rounded-[1.5rem] transition-all duration-300 click-tactic text-left group overflow-hidden ${
 														isActive 
-															? "bg-foreground/10 border-foreground/20 shadow-zen" 
-															: "bg-foreground/5 border-transparent hover:bg-foreground/10"
+															? "bg-foreground text-background shadow-lg" 
+															: "bg-foreground/5 hover:bg-foreground/10 text-muted-foreground hover:text-foreground"
 													}`}
 												>
-													{isActive && (
-														<div className="absolute top-3 right-3">
-															<Check className="size-4 text-emerald-500" />
+													<div className="relative z-10 flex flex-col gap-3">
+														<Icon className="size-5" strokeWidth={1.5} />
+														<div>
+															<span className="text-[11px] font-bold tracking-widest uppercase block mb-0.5 font-mono">
+																{v.label}
+															</span>
+															<span className={`text-[10px] block opacity-70 ${isActive ? "text-background/80" : "text-muted-foreground"}`}>
+																{v.description}
+															</span>
 														</div>
-													)}
-													<span className={`text-sm font-medium block ${isActive ? "text-foreground" : "text-muted-foreground"}`}>
-														{v.label}
-													</span>
-													<span className="text-xs text-muted-foreground/60 mt-0.5 block">
-														{v.description}
-													</span>
+													</div>
 												</button>
 											);
 										})}
@@ -108,24 +114,26 @@ export const CustomizationModal = React.memo(function CustomizationModal({
 								</div>
 
 								{/* Accent Color Selection */}
-								<div>
-									<label className="text-micro block mb-4">Accent Color</label>
-									<div className="flex gap-3">
+								<div className="space-y-4">
+									<label className="text-[10px] font-mono tracking-widest text-muted-foreground uppercase block pl-1 opacity-70">
+										ACCENT_FREQUENCY
+									</label>
+									<div className="flex gap-4">
 										{COLORS.map((c) => {
 											const isActive = accentColor === c.id;
 											return (
 												<button
 													key={c.id}
 													onClick={() => onAccentChange(c.id)}
-													className="group flex flex-col items-center gap-2"
+													className="group flex flex-col items-center gap-3"
 												>
 													<div className={`
-														size-12 rounded-full flex items-center justify-center transition-all duration-300
-														${isActive ? "ring-2 ring-foreground ring-offset-2 ring-offset-card scale-110" : "hover:scale-105"}
+														size-14 rounded-full flex items-center justify-center transition-all duration-300 click-tactic
+														${isActive ? "ring-1 ring-foreground ring-offset-4 ring-offset-card shadow-lg" : "hover:scale-105 opacity-80 hover:opacity-100"}
 													`}>
-														<div className={`size-10 rounded-full ${c.class} shadow-inner`} />
+														<div className={`size-14 rounded-full ${c.class} shadow-inner bg-gradient-to-br from-white/20 to-transparent`} />
 													</div>
-													<span className={`text-xs transition-colors ${isActive ? "text-foreground" : "text-muted-foreground"}`}>
+													<span className={`text-[9px] font-mono tracking-widest uppercase transition-colors ${isActive ? "text-foreground font-bold" : "text-muted-foreground"}`}>
 														{c.label}
 													</span>
 												</button>
@@ -136,9 +144,9 @@ export const CustomizationModal = React.memo(function CustomizationModal({
 							</div>
 							
 							{/* Footer */}
-							<div className="mt-10 pt-6 border-t border-border/40 flex justify-center">
-								<span className="text-micro opacity-50">
-									Glass & Air • v0.9
+							<div className="pt-8 border-t border-foreground/5 flex justify-center">
+								<span className="font-mono text-[9px] tracking-[0.3em] text-muted-foreground/40 uppercase">
+									DESIGNED_BY_NAOTO_X_TRAF
 								</span>
 							</div>
 						</motion.div>
