@@ -18,7 +18,7 @@ export const metadata: Metadata = {
 		"Kokoro – a minimal, expressive avatar. Pure eyes and mouth, emotion through orientation. 心。",
 };
 
-import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
+
 
 export default function RootLayout({
 	children,
@@ -37,9 +37,7 @@ export default function RootLayout({
 					enableSystem
 					disableTransitionOnChange
 				>
-					<SidebarProvider>
-						{children}
-					</SidebarProvider>
+					{children}
 				</ThemeProvider>
 			</body>
 		</html>

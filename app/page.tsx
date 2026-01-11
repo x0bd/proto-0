@@ -2,16 +2,16 @@
 
 import { useEffect, useRef, useState } from "react";
 import type React from "react";
-import { motion, type PanInfo, AnimatePresence } from "motion/react";
+import { motion, type PanInfo } from "motion/react";
 import Avatar from "./components/Avatar";
 import { CustomizationModal } from "./components/CustomizationModal";
+import { FloatingDock } from "@/components/floating-dock";
+import { ConsoleOverlay } from "@/components/console-overlay";
+import { SystemMenu } from "@/components/system-menu";
 import { useTheme } from "next-themes";
 import { FaceVariant } from "./components/face/types";
-import { AppSidebar } from "@/components/app-sidebar";
-import { RightPanel } from "@/components/right-panel";
-import { SidebarInset, useSidebar } from "@/components/ui/sidebar";
-import { Button } from "@/components/ui/button";
-import { ChevronRight } from "lucide-react";
+import { SidebarProvider } from "@/components/ui/sidebar";
+import { Terminal } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // --- Types & Helpers ---
@@ -67,6 +67,7 @@ export default function Home() {
 	const [baseEmotion, setBaseEmotion] = useState<EmotionState>(NEUTRAL_EMOTION);
 	const [activePreset, setActivePreset] = useState<string>("neutral");
 	const [isCustomizationOpen, setIsCustomizationOpen] = useState(false);
+	const [isConsoleOpen, setIsConsoleOpen] = useState(false);
 	const [faceVariant, setFaceVariant] = useState<FaceVariant>("minimal");
 	const [accentColor, setAccentColor] = useState<string>("neutral");
 	const [voiceEnabled, setVoiceEnabled] = useState<boolean>(true);
@@ -172,121 +173,114 @@ export default function Home() {
 	};
 
 	return (
-		<div className="flex h-dvh w-full overflow-hidden bg-background font-sans selection:bg-foreground selection:text-background">
-			{/* LEFT SIDEBAR */}
-			<AppSidebar 
-				activePreset={activePreset}
-				onPresetChange={applyPreset}
-				voiceEnabled={voiceEnabled}
-				onVoiceToggle={() => setVoiceEnabled(v => !v)}
-				onSettingsClick={() => setIsCustomizationOpen(true)}
-			/>
-			
-			{/* CENTER STAGE */}
-			<SidebarInset className="relative flex flex-col items-center justify-center overflow-hidden">
-				<div
-					className="absolute inset-0 w-full h-full text-foreground flex flex-col items-center justify-center transition-colors duration-500"
-					style={themes[accentColor] || {}}
-					onMouseMove={handlePointerMove}
-					onMouseLeave={handlePointerLeave}
-				>
-					{/* Subtle Gradient Background */}
-					<div className="absolute inset-0 bg-gradient-to-br from-background via-background to-muted/20" />
+		<div className="flex h-dvh w-full overflow-hidden bg-background font-sans selection:bg-foreground selection:text-background relative">
+			{/* BACKGROUND & ATMOSPHERE */}
+			<div
+				className="absolute inset-0 w-full h-full text-foreground flex flex-col items-center justify-center transition-colors duration-500 bg-grain"
+				style={themes[accentColor] || {}}
+				onMouseMove={handlePointerMove}
+				onMouseLeave={handlePointerLeave}
+			>
+				{/* Background Gradient */}
+				<div className="absolute inset-0 bg-gradient-to-br from-background via-background to-muted/20" />
+				
+				{/* Breathing Aura */}
+				<div className="absolute inset-0 flex items-center justify-center opacity-30 pointer-events-none">
+					<div className="w-[80vw] h-[80vw] max-w-[800px] max-h-[800px] rounded-full bg-foreground/5 blur-3xl animate-breathe" />
+				</div>
+
+				{/* HEADER UI */}
+				<div className="absolute top-6 left-6 z-50 flex items-center gap-3 select-none">
+					{/* Branding */}
+					<div className="flex items-center gap-2.5 bg-card/40 backdrop-blur-xl border border-border/40 rounded-full px-4 py-2 shadow-premium glow-internal pointer-events-none">
+						<span 
+							className="font-bold text-lg leading-none"
+							style={{ fontFamily: 'var(--font-doto)' }}
+						>
+							心
+						</span>
+						<span className="text-micro font-bold">KOKORO</span>
+					</div>
 					
-					{/* Breathing Aura */}
-					<div className="absolute inset-0 flex items-center justify-center opacity-30 pointer-events-none">
-						<div className="w-[60vw] h-[60vw] max-w-[600px] max-h-[600px] rounded-full bg-foreground/5 blur-3xl animate-breathe" />
-					</div>
+					{/* Status Pill */}
+					{activePreset !== 'neutral' && (
+						<motion.div 
+							initial={{ opacity: 0, x: -10 }}
+							animate={{ opacity: 1, x: 0 }}
+							className="flex items-center gap-2 text-micro bg-card/40 backdrop-blur-xl border border-border/40 rounded-full px-3 py-1.5 shadow-sm"
+						>
+							<div className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
+							<span className="capitalize">{activePreset}</span>
+						</motion.div>
+					)}
+				</div>
 
-					{/* Top Status Bar */}
-					<div className="absolute top-6 left-0 z-50 flex items-center gap-3">
-						<CustomSidebarTrigger />
-						
-						{/* Branding Pill */}
-						<div className="flex items-center gap-3 select-none opacity-50 hover:opacity-100 transition-opacity duration-300">
-							<div className="flex items-center gap-2.5 bg-card/60 backdrop-blur-xl border border-border/40 rounded-full px-4 py-2 shadow-premium">
-								<span 
-									className="font-bold text-lg leading-none"
-									style={{ fontFamily: 'var(--font-doto)' }}
-								>
-									心
-								</span>
-								<span className="text-micro">KOKORO</span>
-							</div>
-							
-							{/* Status Indicator */}
-							{activePreset !== 'neutral' && (
-								<div className="flex items-center gap-2 text-micro bg-card/60 backdrop-blur-xl border border-border/40 rounded-full px-3 py-1.5">
-									<div className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
-									<span className="capitalize">{activePreset}</span>
-								</div>
-							)}
-						</div>
-					</div>
-
-					{/* MAIN AVATAR AREA */}
-					<motion.div
-						className="absolute inset-0 cursor-grab active:cursor-grabbing touch-none flex items-center justify-center z-0"
-						drag="x"
-						dragConstraints={{ left: 0, right: 0 }}
-						dragElastic={0.15}
-						onDragEnd={handleDragEnd}
+				<div className="absolute top-6 right-6 z-50 flex items-center gap-2">
+					{/* Console Toggle */}
+					<button
+						onClick={() => setIsConsoleOpen(!isConsoleOpen)}
+						className={cn(
+							"size-9 rounded-full flex items-center justify-center transition-all duration-300 border border-transparent",
+							isConsoleOpen 
+								? "bg-foreground/10 text-foreground border-foreground/10 shadow-zen" 
+								: "hover:bg-foreground/5 text-muted-foreground"
+						)}
 					>
-						<div className="w-[90vw] md:w-[70vw] lg:w-[50vw] max-w-[700px] aspect-square flex items-center justify-center pointer-events-none drop-shadow-2xl">
-							<Avatar
-								emotion={currentEmotion}
-								voiceEnabled={voiceEnabled}
-								variant={faceVariant}
-							/>
-						</div>
-					</motion.div>
+						<Terminal className="size-4" />
+					</button>
 
-					{/* Bottom Hint */}
-					<div className="absolute bottom-10 z-10 flex flex-col items-center gap-2 select-none">
-						<span className="text-micro opacity-40">Drag to feel</span>
-					</div>
-
-					{/* Settings Modal */}
-					<CustomizationModal
-						isOpen={isCustomizationOpen}
-						onClose={() => setIsCustomizationOpen(false)}
-						currentVariant={faceVariant}
-						onVariantChange={setFaceVariant}
-						accentColor={accentColor}
-						onAccentChange={setAccentColor}
+					{/* System Controls */}
+					<SystemMenu 
+						voiceEnabled={voiceEnabled}
+						onVoiceToggle={() => setVoiceEnabled(v => !v)}
+						onSettingsClick={() => setIsCustomizationOpen(true)}
 					/>
 				</div>
-			</SidebarInset>
 
-			{/* RIGHT SIDEBAR */}
-			<RightPanel 
-				history={[
-					{ role: "system", content: "Kokoro System Online" },
-					{ role: "user", content: "Initialize emotion engine..." },
-					{ role: "system", content: "Emotion engine active." },
-					{ role: "kokoro", content: "Systems normal. Awaiting input." }
-				]}
-			/>
+				{/* CENTER STAGE (Avatar) */}
+				<motion.div
+					className="absolute inset-0 cursor-grab active:cursor-grabbing touch-none flex items-center justify-center z-10"
+					drag="x"
+					dragConstraints={{ left: 0, right: 0 }}
+					dragElastic={0.15}
+					onDragEnd={handleDragEnd}
+				>
+					<div className="w-[90vw] md:w-[70vw] lg:w-[50vw] max-w-[700px] aspect-square flex items-center justify-center pointer-events-none drop-shadow-2xl">
+						<Avatar
+							emotion={currentEmotion}
+							voiceEnabled={voiceEnabled}
+							variant={faceVariant}
+						/>
+					</div>
+				</motion.div>
+
+				{/* BOTTOM UI (Floating Dock) */}
+				<FloatingDock 
+					activePreset={activePreset} 
+					onPresetChange={applyPreset} 
+				/>
+
+				{/* OVERLAYS */}
+				<ConsoleOverlay 
+					isOpen={isConsoleOpen} 
+					onClose={() => setIsConsoleOpen(false)}
+					history={[
+						{ role: "system", content: "Kokoro System Online" },
+						{ role: "user", content: "Initialize emotion engine..." },
+						{ role: "system", content: "Emotion engine active." },
+						{ role: "kokoro", content: "Systems normal. Awaiting input." }
+					]} 
+				/>
+
+				<CustomizationModal
+					isOpen={isCustomizationOpen}
+					onClose={() => setIsCustomizationOpen(false)}
+					currentVariant={faceVariant}
+					onVariantChange={setFaceVariant}
+					accentColor={accentColor}
+					onAccentChange={setAccentColor}
+				/>
+			</div>
 		</div>
-	);
-}
-
-function CustomSidebarTrigger() {
-	const { toggleSidebar, state } = useSidebar();
-	return (
-		<Button 
-			variant="ghost" 
-			size="icon" 
-			onClick={toggleSidebar}
-			className={cn(
-				"rounded-r-2xl rounded-l-none bg-card/60 backdrop-blur-xl border border-l-0 border-border/40 hover:bg-card/80 h-11 w-9 transition-all duration-300 shadow-premium",
-				state === 'expanded' && "bg-transparent border-transparent hover:bg-foreground/5 opacity-0 group-hover/sidebar-wrapper:opacity-100"
-			)}
-		>
-			<ChevronRight className={cn(
-				"size-4 text-muted-foreground transition-transform duration-300",
-				state === 'expanded' && "rotate-180"
-			)} />
-		</Button>
 	);
 }
