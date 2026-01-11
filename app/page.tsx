@@ -5,23 +5,14 @@ import type React from "react";
 import { motion, type PanInfo } from "motion/react";
 import Avatar from "./components/Avatar";
 import { CustomizationModal } from "./components/CustomizationModal";
+import { MemoryBank } from "./components/MemoryBank";
 import { FloatingDock } from "@/components/floating-dock";
 import { ConsoleOverlay } from "@/components/console-overlay";
 import { SystemMenu } from "@/components/system-menu";
 import { useTheme } from "next-themes";
-import { FaceVariant } from "./components/face/types";
-import { SidebarProvider } from "@/components/ui/sidebar";
 import { Terminal } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-// --- Types & Helpers ---
-interface EmotionState {
-	joy: number;
-	sadness: number;
-	surprise: number;
-	anger: number;
-	curiosity: number;
-}
+import { FaceVariant, EmotionState } from "./components/face/types";
 
 const NEUTRAL_EMOTION: EmotionState = { joy: 0.3, sadness: 0, surprise: 0, anger: 0, curiosity: 0.2 };
 
@@ -67,6 +58,7 @@ export default function Home() {
 	const [baseEmotion, setBaseEmotion] = useState<EmotionState>(NEUTRAL_EMOTION);
 	const [activePreset, setActivePreset] = useState<string>("neutral");
 	const [isCustomizationOpen, setIsCustomizationOpen] = useState(false);
+	const [isMemoryOpen, setIsMemoryOpen] = useState(false);
 	const [isConsoleOpen, setIsConsoleOpen] = useState(false);
 	const [faceVariant, setFaceVariant] = useState<FaceVariant>("minimal");
 	const [accentColor, setAccentColor] = useState<string>("neutral");
@@ -76,8 +68,7 @@ export default function Home() {
 	const baseEmotionRef = useRef<EmotionState>(NEUTRAL_EMOTION);
 	const { theme, setTheme } = useTheme();
 	const [mounted, setMounted] = useState(false);
-	const [controlsVisible, setControlsVisible] = useState(true);
-
+	
 	useEffect(() => { setMounted(true); }, []);
 	useEffect(() => { baseEmotionRef.current = baseEmotion; }, [baseEmotion]);
 
@@ -141,7 +132,7 @@ export default function Home() {
 
 	const handlePointerMove = (e: React.MouseEvent<HTMLDivElement>) => {
 		if (typeof window === "undefined") return;
-		setControlsVisible(true);
+		
 		const { innerWidth, innerHeight } = window;
 		const nx = Math.max(-1, Math.min(1, (e.clientX - innerWidth / 2) / (innerWidth * 0.25)));
 		const ny = Math.max(-1, Math.min(1, (e.clientY - innerHeight / 2) / (innerHeight * 0.25)));
@@ -184,49 +175,32 @@ export default function Home() {
 				{/* Background Gradient */}
 				<div className="absolute inset-0 bg-gradient-to-br from-background via-background to-muted/20" />
 				
-				{/* Breathing Aura */}
-				<div className="absolute inset-0 flex items-center justify-center opacity-30 pointer-events-none">
-					<div className="w-[80vw] h-[80vw] max-w-[800px] max-h-[800px] rounded-full bg-foreground/5 blur-3xl animate-breathe" />
-				</div>
-
 				{/* HEADER UI */}
-				<div className="absolute top-6 left-6 z-50 flex items-center gap-3 select-none">
+				<div className="absolute top-8 left-8 z-50 flex items-center gap-3 select-none">
 					{/* Branding */}
-					<div className="flex items-center gap-2.5 bg-card/40 backdrop-blur-xl border border-border/40 rounded-full px-4 py-2 shadow-premium glow-internal pointer-events-none">
+					<div className="flex items-center gap-2.5 bg-background/50 backdrop-blur-md border border-white/5 rounded-full px-4 py-2 opacity-60 hover:opacity-100 transition-opacity">
 						<span 
 							className="font-bold text-lg leading-none"
 							style={{ fontFamily: 'var(--font-doto)' }}
 						>
 							心
 						</span>
-						<span className="text-micro font-bold">KOKORO</span>
+						<span className="text-[10px] tracking-[0.3em] font-medium opacity-70">TOPOLOGY</span>
 					</div>
-					
-					{/* Status Pill */}
-					{activePreset !== 'neutral' && (
-						<motion.div 
-							initial={{ opacity: 0, x: -10 }}
-							animate={{ opacity: 1, x: 0 }}
-							className="flex items-center gap-2 text-micro bg-card/40 backdrop-blur-xl border border-border/40 rounded-full px-3 py-1.5 shadow-sm"
-						>
-							<div className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
-							<span className="capitalize">{activePreset}</span>
-						</motion.div>
-					)}
 				</div>
 
-				<div className="absolute top-6 right-6 z-50 flex items-center gap-2">
+				<div className="absolute top-8 right-8 z-50 flex items-center gap-2">
 					{/* Console Toggle */}
 					<button
 						onClick={() => setIsConsoleOpen(!isConsoleOpen)}
 						className={cn(
-							"size-9 rounded-full flex items-center justify-center transition-all duration-300 border border-transparent",
+							"size-9 rounded-full flex items-center justify-center transition-all duration-300 border border-transparent click-tactic",
 							isConsoleOpen 
-								? "bg-foreground/10 text-foreground border-foreground/10 shadow-zen" 
+								? "bg-foreground text-background shadow-lg" 
 								: "hover:bg-foreground/5 text-muted-foreground"
 						)}
 					>
-						<Terminal className="size-4" />
+						<Terminal className="size-4" strokeWidth={isConsoleOpen ? 2 : 1.5} />
 					</button>
 
 					{/* System Controls */}
@@ -239,13 +213,14 @@ export default function Home() {
 
 				{/* CENTER STAGE (Avatar) */}
 				<motion.div
-					className="absolute inset-0 cursor-grab active:cursor-grabbing touch-none flex items-center justify-center z-10"
+					className="absolute inset-0 cursor-grab active:cursor-grabbing touch-none flex items-center justify-center z-0" 
 					drag="x"
 					dragConstraints={{ left: 0, right: 0 }}
 					dragElastic={0.15}
 					onDragEnd={handleDragEnd}
+					style={{ zIndex: 0 }} // Explicit low z-index
 				>
-					<div className="w-[90vw] md:w-[70vw] lg:w-[50vw] max-w-[700px] aspect-square flex items-center justify-center pointer-events-none drop-shadow-2xl">
+					<div className="w-[90vw] md:w-[70vw] lg:w-[50vw] max-w-[700px] aspect-square flex items-center justify-center pointer-events-auto drop-shadow-2xl">
 						<Avatar
 							emotion={currentEmotion}
 							voiceEnabled={voiceEnabled}
@@ -258,6 +233,7 @@ export default function Home() {
 				<FloatingDock 
 					activePreset={activePreset} 
 					onPresetChange={applyPreset} 
+					onMemoryClick={() => setIsMemoryOpen(true)}
 				/>
 
 				{/* OVERLAYS */}
@@ -279,6 +255,18 @@ export default function Home() {
 					onVariantChange={setFaceVariant}
 					accentColor={accentColor}
 					onAccentChange={setAccentColor}
+				/>
+				
+				<MemoryBank
+					isOpen={isMemoryOpen}
+					onClose={() => setIsMemoryOpen(false)}
+					currentEmotion={currentEmotion}
+					onRestore={(emotion) => {
+						setBaseEmotion(emotion);
+						baseEmotionRef.current = emotion;
+						targetEmotionRef.current = emotion;
+						setActivePreset("custom"); // New state for restored emotions
+					}}
 				/>
 			</div>
 		</div>
