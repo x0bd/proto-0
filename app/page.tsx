@@ -49,16 +49,16 @@ const presets: Record<string, EmotionState> = {
 const presetKeys = Object.keys(presets);
 
 const themes: Record<string, React.CSSProperties> = {
-	neutral: {}, // Defaults from globals.css
+	neutral: {},
 	rose: {
-		"--primary": "oklch(0.7 0.14 0)", // Deep Rose for readability
+		"--primary": "oklch(0.7 0.14 0)",
 		"--ring": "oklch(0.7 0.14 0)",
-        "--accent": "oklch(0.7 0.14 0)",
+		"--accent": "oklch(0.7 0.14 0)",
 	} as React.CSSProperties,
 	cyan: {
-		"--primary": "oklch(0.6 0.12 230)", // Deep Cyan
+		"--primary": "oklch(0.6 0.12 230)",
 		"--ring": "oklch(0.6 0.12 230)",
-        "--accent": "oklch(0.6 0.12 230)",
+		"--accent": "oklch(0.6 0.12 230)",
 	} as React.CSSProperties,
 };
 
@@ -75,7 +75,7 @@ export default function Home() {
 	const baseEmotionRef = useRef<EmotionState>(NEUTRAL_EMOTION);
 	const { theme, setTheme } = useTheme();
 	const [mounted, setMounted] = useState(false);
-	const [controlsVisible, setControlsVisible] = useState(true); // Always visible on mobile
+	const [controlsVisible, setControlsVisible] = useState(true);
 
 	useEffect(() => { setMounted(true); }, []);
 	useEffect(() => { baseEmotionRef.current = baseEmotion; }, [baseEmotion]);
@@ -171,123 +171,122 @@ export default function Home() {
 		targetEmotionRef.current = baseEmotionRef.current;
 	};
 
-
-
 	return (
 		<div className="flex h-dvh w-full overflow-hidden bg-background font-sans selection:bg-foreground selection:text-background">
-            {/* LEFT SIDEBAR (The Soul) */}
-            <AppSidebar 
-                activePreset={activePreset}
-                onPresetChange={applyPreset}
-                voiceEnabled={voiceEnabled}
-                onVoiceToggle={() => setVoiceEnabled(v => !v)}
-                onSettingsClick={() => setIsCustomizationOpen(true)}
-            />
-            
-            {/* CENTER STAGE (The Body) */}
-            <SidebarInset className="relative flex flex-col items-center justify-center overflow-hidden bg-grain">
-                <div
-                    className="absolute inset-0 w-full h-full text-foreground flex flex-col items-center justify-center transition-colors duration-500"
-                    style={themes[accentColor] || {}}
-                    onMouseMove={handlePointerMove}
-                    onMouseLeave={handlePointerLeave}
-                >
-                    {/* Breathing Aura - Behind Everything */}
-                    <div className="absolute inset-0 flex items-center justify-center opacity-40 pointer-events-none">
-                         <div className="w-[80vw] h-[80vw] max-w-[800px] max-h-[800px] rounded-full bg-foreground/5 blur-3xl animate-breathe" />
-                    </div>
+			{/* LEFT SIDEBAR */}
+			<AppSidebar 
+				activePreset={activePreset}
+				onPresetChange={applyPreset}
+				voiceEnabled={voiceEnabled}
+				onVoiceToggle={() => setVoiceEnabled(v => !v)}
+				onSettingsClick={() => setIsCustomizationOpen(true)}
+			/>
+			
+			{/* CENTER STAGE */}
+			<SidebarInset className="relative flex flex-col items-center justify-center overflow-hidden">
+				<div
+					className="absolute inset-0 w-full h-full text-foreground flex flex-col items-center justify-center transition-colors duration-500"
+					style={themes[accentColor] || {}}
+					onMouseMove={handlePointerMove}
+					onMouseLeave={handlePointerLeave}
+				>
+					{/* Subtle Gradient Background */}
+					<div className="absolute inset-0 bg-gradient-to-br from-background via-background to-muted/20" />
+					
+					{/* Breathing Aura */}
+					<div className="absolute inset-0 flex items-center justify-center opacity-30 pointer-events-none">
+						<div className="w-[60vw] h-[60vw] max-w-[600px] max-h-[600px] rounded-full bg-foreground/5 blur-3xl animate-breathe" />
+					</div>
 
-                    {/* Technical Header / Status Line (Top Left) */}
-                    <div className="absolute top-6 left-0 z-50 flex items-center gap-4">
-                        {/* Custom Left Sidebar Toggle (Matching Right Panel) */}
-                        <CustomSidebarTrigger />
-                        
-                        {/* Horizontal Branding - Digital Stamp Style */}
-                        <div className="flex items-center gap-3 select-none opacity-60 hover:opacity-100 transition-opacity pl-2">
-                             <div className="flex items-center gap-2 border border-border/40 bg-background/20 backdrop-blur-md rounded-full px-3 py-1.5">
-                                <span 
-                                    className="font-bold text-lg leading-none mt-0.5"
-                                    style={{ 
-                                        fontFamily: 'var(--font-doto), sans-serif',
-                                        fontVariationSettings: '"ROND" 0'
-                                    }}
-                                >
-                                    心
-                                </span>
-                                <span className="text-[10px] tracking-widest font-mono uppercase opacity-70">KOKORO</span>
-                             </div>
-                             
-                             {/* Status Pill */}
-                             {activePreset !== 'neutral' && (
-                                <div className="flex items-center gap-1.5 text-[9px] font-mono tracking-wider uppercase text-muted-foreground/80 bg-background/20 backdrop-blur-sm rounded-full px-2 py-1">
-                                    <div className="size-1 rounded-full bg-cyan-500 animate-pulse" />
-                                    <span>{activePreset}</span>
-                                </div>
-                             )}
-                        </div>
-                    </div>
+					{/* Top Status Bar */}
+					<div className="absolute top-6 left-0 z-50 flex items-center gap-3">
+						<CustomSidebarTrigger />
+						
+						{/* Branding Pill */}
+						<div className="flex items-center gap-3 select-none opacity-50 hover:opacity-100 transition-opacity duration-300">
+							<div className="flex items-center gap-2.5 bg-card/60 backdrop-blur-xl border border-border/40 rounded-full px-4 py-2 shadow-premium">
+								<span 
+									className="font-bold text-lg leading-none"
+									style={{ fontFamily: 'var(--font-doto)' }}
+								>
+									心
+								</span>
+								<span className="text-micro">KOKORO</span>
+							</div>
+							
+							{/* Status Indicator */}
+							{activePreset !== 'neutral' && (
+								<div className="flex items-center gap-2 text-micro bg-card/60 backdrop-blur-xl border border-border/40 rounded-full px-3 py-1.5">
+									<div className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
+									<span className="capitalize">{activePreset}</span>
+								</div>
+							)}
+						</div>
+					</div>
 
-                    {/* MAIN CONTENT AREA - Swipeable Avatar */}
-                    <motion.div
-                        className="absolute inset-0 cursor-grab active:cursor-grabbing touch-none flex items-center justify-center z-0"
-                        drag="x"
-                        dragConstraints={{ left: 0, right: 0 }}
-                        dragElastic={0.15}
-                        onDragEnd={handleDragEnd}
-                    >
-                        <div className="w-[95vw] md:w-[80vw] lg:w-[60vw] max-w-[800px] aspect-square flex items-center justify-center pointer-events-none drop-shadow-2xl">
-                            <Avatar
-                                emotion={currentEmotion}
-                                voiceEnabled={voiceEnabled}
-                                variant={faceVariant}
-                            />
-                        </div>
-                    </motion.div>
+					{/* MAIN AVATAR AREA */}
+					<motion.div
+						className="absolute inset-0 cursor-grab active:cursor-grabbing touch-none flex items-center justify-center z-0"
+						drag="x"
+						dragConstraints={{ left: 0, right: 0 }}
+						dragElastic={0.15}
+						onDragEnd={handleDragEnd}
+					>
+						<div className="w-[90vw] md:w-[70vw] lg:w-[50vw] max-w-[700px] aspect-square flex items-center justify-center pointer-events-none drop-shadow-2xl">
+							<Avatar
+								emotion={currentEmotion}
+								voiceEnabled={voiceEnabled}
+								variant={faceVariant}
+							/>
+						</div>
+					</motion.div>
 
-                    {/* Hint Text - Bottom - Japanese/Cyberpunk style */}
-                    <div className="absolute bottom-12 z-10 flex flex-col items-center gap-1 text-[10px] text-muted-foreground font-mono uppercase tracking-[0.2em] opacity-30 select-none">
-                         <span>Drag to Feel</span>
-                         <span>感じるためにドラッグ</span>
-                    </div>
+					{/* Bottom Hint */}
+					<div className="absolute bottom-10 z-10 flex flex-col items-center gap-2 select-none">
+						<span className="text-micro opacity-40">Drag to feel</span>
+					</div>
 
-                    {/* MODALS */}
-                    <CustomizationModal
-                        isOpen={isCustomizationOpen}
-                        onClose={() => setIsCustomizationOpen(false)}
-                        currentVariant={faceVariant}
-                        onVariantChange={setFaceVariant}
-                        accentColor={accentColor}
-                        onAccentChange={setAccentColor}
-                    />
-                </div>
-            </SidebarInset>
+					{/* Settings Modal */}
+					<CustomizationModal
+						isOpen={isCustomizationOpen}
+						onClose={() => setIsCustomizationOpen(false)}
+						currentVariant={faceVariant}
+						onVariantChange={setFaceVariant}
+						accentColor={accentColor}
+						onAccentChange={setAccentColor}
+					/>
+				</div>
+			</SidebarInset>
 
-            {/* RIGHT SIDEBAR (The Brain) */}
-            <RightPanel 
-                history={[
-                    { role: "system", content: "Kokoro System Online" },
-                    { role: "user", content: "Initialize emotion engine..." },
-                    { role: "system", content: "Emotion engine active." },
-                    { role: "kokoro", content: "Systems normal. Awaiting input." }
-                ]}
-            />
+			{/* RIGHT SIDEBAR */}
+			<RightPanel 
+				history={[
+					{ role: "system", content: "Kokoro System Online" },
+					{ role: "user", content: "Initialize emotion engine..." },
+					{ role: "system", content: "Emotion engine active." },
+					{ role: "kokoro", content: "Systems normal. Awaiting input." }
+				]}
+			/>
 		</div>
 	);
 }
 
 function CustomSidebarTrigger() {
-    const { toggleSidebar, state } = useSidebar()
-    return (
-        <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={toggleSidebar}
-            className={cn(
-                "rounded-r-lg rounded-l-none bg-background/40 backdrop-blur-md border border-l-0 border-white/10 hover:bg-background/60 h-10 w-8 transition-all",
-                state === 'expanded' && "bg-transparent border-transparent hover:bg-white/5 opacity-0 group-hover/sidebar-wrapper:opacity-100"
-            )}
-        >
-            <ChevronRight className={cn("size-4 text-muted-foreground transition-transform", state === 'expanded' && "rotate-180")} />
-        </Button>
-    )
+	const { toggleSidebar, state } = useSidebar();
+	return (
+		<Button 
+			variant="ghost" 
+			size="icon" 
+			onClick={toggleSidebar}
+			className={cn(
+				"rounded-r-2xl rounded-l-none bg-card/60 backdrop-blur-xl border border-l-0 border-border/40 hover:bg-card/80 h-11 w-9 transition-all duration-300 shadow-premium",
+				state === 'expanded' && "bg-transparent border-transparent hover:bg-foreground/5 opacity-0 group-hover/sidebar-wrapper:opacity-100"
+			)}
+		>
+			<ChevronRight className={cn(
+				"size-4 text-muted-foreground transition-transform duration-300",
+				state === 'expanded' && "rotate-180"
+			)} />
+		</Button>
+	);
 }

@@ -7,14 +7,12 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
-  SidebarGroupAction,
   SidebarGroupContent,
   SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarSeparator,
 } from "@/components/ui/sidebar";
 import { 
   Smile, 
@@ -22,20 +20,16 @@ import {
   Meh, 
   Zap, 
   Angry, 
-  Search, // Curiosity
+  Search,
   Mic, 
   MicOff, 
-  History, 
-  Settings, 
   Moon, 
   Sun,
-  Plus
+  Settings,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { cn } from "@/lib/utils";
 
-// Define preset types locally or import from page.tsx (better to share, but local for now to avoid circular deps if page imports this)
-// We'll pass handlers as props
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
   activePreset?: string;
   onPresetChange?: (preset: string) => void;
@@ -56,147 +50,135 @@ export function AppSidebar({
 }: AppSidebarProps) {
   const { theme, setTheme } = useTheme();
 
-  const presets = [
-    { name: "neutral", icon: Meh, color: "text-zinc-500" },
-    { name: "joy", icon: Smile, color: "text-emerald-500" },
-    { name: "sad", icon: Frown, color: "text-blue-500" },
-    { name: "surprised", icon: Zap, color: "text-yellow-500" },
-    { name: "angry", icon: Angry, color: "text-red-500" },
-    { name: "curious", icon: Search, color: "text-purple-500" },
+  const emotions = [
+    { id: 'neutral', label: 'Neutral', icon: Meh, color: 'text-muted-foreground' },
+    { id: 'joy', label: 'Joy', icon: Smile, color: 'text-emerald-500' },
+    { id: 'sad', label: 'Sadness', icon: Frown, color: 'text-blue-500' },
+    { id: 'surprised', label: 'Surprise', icon: Zap, color: 'text-amber-500' },
+    { id: 'angry', label: 'Anger', icon: Angry, color: 'text-rose-500' },
+    { id: 'curious', label: 'Curiosity', icon: Search, color: 'text-indigo-500' },
   ];
 
   return (
     <Sidebar collapsible="icon" className="border-r-0" {...props}>
-      <div className="absolute inset-0 bg-background/60 backdrop-blur-3xl z-0" />
-      <div className="absolute inset-0 bg-grain opacity-10 z-0 pointer-events-none" />
+      {/* Glass Background */}
+      <div className="absolute inset-0 bg-card/40 backdrop-blur-xl z-0" />
+      <div className="absolute inset-0 bg-grain z-0 pointer-events-none" />
       
-      <SidebarHeader className="relative z-10 pt-8 pl-6 pb-2">
+      {/* Header */}
+      <SidebarHeader className="relative z-10 pt-10 pl-6 pb-4">
         <SidebarMenu>
           <SidebarMenuItem>
             <div className="flex items-center gap-4 transition-all group-data-[collapsible=icon]:justify-center">
-               <div className="flex aspect-square size-10 items-center justify-center rounded-sm text-foreground bg-foreground/5 ring-1 ring-white/10 shadow-[0_0_15px_-3px_rgba(255,255,255,0.1)]">
-                 <span className="text-xl font-bold mt-0.5" style={{ fontFamily: 'var(--font-doto)' }}>心</span>
-               </div>
-               <div className="flex flex-col gap-0.5 group-data-[collapsible=icon]:hidden">
-                 <span className="font-bold text-sm tracking-[0.3em] font-mono">KOKORO</span>
-                 <span className="text-[9px] text-muted-foreground/60 tracking-widest uppercase">Ver. 0.9</span>
-               </div>
+              {/* Logo Mark */}
+              <div className="flex aspect-square size-12 items-center justify-center rounded-2xl bg-foreground/5 ring-1 ring-border/40 shadow-premium glow-internal">
+                <span 
+                  className="text-2xl font-bold mt-0.5 text-foreground/80" 
+                  style={{ fontFamily: 'var(--font-doto)' }}
+                >
+                  心
+                </span>
+              </div>
+              {/* Wordmark */}
+              <div className="flex flex-col gap-1 group-data-[collapsible=icon]:hidden">
+                <span className="text-sm font-semibold tracking-[0.15em]">KOKORO</span>
+                <span className="text-micro">Version 0.9</span>
+              </div>
             </div>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
       
-      <SidebarContent className="relative z-10 px-4 py-4 gap-6">
+      <SidebarContent className="relative z-10 px-3 py-6 gap-8">
         
-        {/* EMOTIONS */}
-        <SidebarGroup className="group-data-[collapsible=icon]:p-0">
-          <SidebarGroupLabel className="text-[9px] tracking-[0.2em] font-mono text-muted-foreground/40 uppercase pl-2 mb-2 group-data-[collapsible=icon]:hidden">
-            Emotions / 感情
+        {/* EMOTIONS GROUP */}
+        <SidebarGroup>
+          <SidebarGroupLabel className="text-micro pl-3 mb-3">
+            Emotions
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu className="gap-1.5">
-              {[
-                { id: 'neutral', label: 'Neutral', sub: '中立', icon: 'M' },
-                { id: 'joy', label: 'Joy', sub: '喜び', icon: 'J' },
-                { id: 'sad', label: 'Sadness', sub: '悲しみ', icon: 'S' },
-                { id: 'surprised', label: 'Surprise', sub: '驚き', icon: '!' },
-                { id: 'angry', label: 'Anger', sub: '怒り', icon: 'A' },
-                { id: 'curious', label: 'Curiosity', sub: '好奇心', icon: '?' },
-              ].map((item) => (
-                <SidebarMenuItem key={item.id}>
-                  <SidebarMenuButton
-                    isActive={activePreset === item.id}
-                    onClick={() => onPresetChange?.(item.id)}
-                    tooltip={item.label}
-                    size="lg"
-                    className="h-10 justify-start transition-all group/btn px-3 hover:bg-white/5 data-[active=true]:bg-white/10 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0"
-                  >
-                     <div className={cn(
-                        "font-mono text-xs opacity-50 group-hover/btn:opacity-100 transition-opacity w-4 text-center",
-                        activePreset === item.id && "text-foreground opacity-100 font-bold shadow-white/20" 
-                     )}>
-                        {activePreset === item.id ? "●" : item.icon}
-                     </div>
-
-                    <div className="flex flex-col items-start ml-3 group-data-[collapsible=icon]:hidden">
-                        <span className={cn(
-                            "text-sm font-sans tracking-tight transition-colors leading-none",
-                            activePreset === item.id ? "text-foreground font-medium" : "text-muted-foreground group-hover/btn:text-foreground/80"
-                        )}>
-                            {item.label}
-                        </span>
-                        <span className="text-[9px] text-muted-foreground/30 font-sans mt-0.5">{item.sub}</span>
-                    </div>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+            <SidebarMenu className="gap-1">
+              {emotions.map((item) => {
+                const Icon = item.icon;
+                const isActive = activePreset === item.id;
+                return (
+                  <SidebarMenuItem key={item.id}>
+                    <SidebarMenuButton
+                      isActive={isActive}
+                      onClick={() => onPresetChange?.(item.id)}
+                      tooltip={item.label}
+                      size="lg"
+                      className={cn(
+                        "h-11 justify-start px-3 rounded-xl transition-all duration-300",
+                        "hover:bg-foreground/5",
+                        isActive && "bg-foreground/10 shadow-zen"
+                      )}
+                    >
+                      <Icon className={cn(
+                        "size-4 transition-colors",
+                        isActive ? item.color : "text-muted-foreground"
+                      )} />
+                      <span className={cn(
+                        "ml-3 text-sm transition-colors group-data-[collapsible=icon]:hidden",
+                        isActive ? "text-foreground font-medium" : "text-muted-foreground"
+                      )}>
+                        {item.label}
+                      </span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* SYSTEM */}
-        <SidebarGroup className="group-data-[collapsible=icon]:p-0">
-          <SidebarGroupLabel className="text-[9px] tracking-[0.2em] font-mono text-muted-foreground/40 uppercase pl-2 mb-2 group-data-[collapsible=icon]:hidden">
-            System / システム
+        {/* SYSTEM GROUP */}
+        <SidebarGroup>
+          <SidebarGroupLabel className="text-micro pl-3 mb-3">
+            System
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu className="gap-1.5">
-              {/* Voice */}
+            <SidebarMenu className="gap-1">
+              {/* Voice Toggle */}
               <SidebarMenuItem>
                 <SidebarMenuButton 
                   isActive={voiceEnabled}
                   onClick={onVoiceToggle}
-                  tooltip="Voice Input"
+                  tooltip="Voice"
                   size="lg"
-                  className="h-10 justify-start transition-all group/btn px-3 hover:bg-white/5 data-[active=true]:bg-white/10 group-data-[collapsible=icon]:justify-center"
+                  className={cn(
+                    "h-11 justify-start px-3 rounded-xl transition-all duration-300",
+                    "hover:bg-foreground/5",
+                    voiceEnabled && "bg-rose-500/10"
+                  )}
                 >
-                  <div className={cn("size-4 flex items-center justify-center", voiceEnabled ? "text-red-500" : "text-muted-foreground/50")}>
-                    {voiceEnabled ? <Mic className="size-3.5" /> : <MicOff className="size-3.5" />}
-                  </div>
-                  <div className="flex flex-col items-start ml-3 group-data-[collapsible=icon]:hidden">
-                      <span className="text-sm text-foreground/80 leading-none">Voice</span>
-                      <span className="text-[9px] text-muted-foreground/30 mt-0.5">音声入力</span>
-                  </div>
+                  {voiceEnabled ? (
+                    <Mic className="size-4 text-rose-500" />
+                  ) : (
+                    <MicOff className="size-4 text-muted-foreground" />
+                  )}
+                  <span className="ml-3 text-sm text-muted-foreground group-data-[collapsible=icon]:hidden">
+                    Voice
+                  </span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
 
-              {/* Theme */}
+              {/* Theme Toggle */}
               <SidebarMenuItem>
                 <SidebarMenuButton 
                   onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
                   tooltip="Theme"
                   size="lg"
-                  className="h-10 justify-start transition-all group/btn px-3 hover:bg-white/5 group-data-[collapsible=icon]:justify-center"
+                  className="h-11 justify-start px-3 rounded-xl transition-all duration-300 hover:bg-foreground/5"
                 >
-                  <div className="size-4 flex items-center justify-center text-muted-foreground/50 group-hover/btn:text-foreground">
-                    {theme === "dark" ? <Moon className="size-3.5" /> : <Sun className="size-3.5" />}
-                  </div>
-                   <div className="flex flex-col items-start ml-3 group-data-[collapsible=icon]:hidden">
-                      <span className="text-sm text-foreground/80 leading-none">Theme</span>
-                      <span className="text-[9px] text-muted-foreground/30 mt-0.5">テーマ</span>
-                  </div>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        {/* DATA */}
-        <SidebarGroup className="group-data-[collapsible=icon]:p-0">
-          <SidebarGroupLabel className="text-[9px] tracking-[0.2em] font-mono text-muted-foreground/40 uppercase pl-2 mb-2 group-data-[collapsible=icon]:hidden">
-            Data / ログ
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu className="gap-1.5">
-              <SidebarMenuItem>
-                <SidebarMenuButton onClick={onHistoryClick} tooltip="Logs" size="lg" className="h-10 justify-start transition-all group/btn px-3 hover:bg-white/5 group-data-[collapsible=icon]:justify-center">
-                  <div className="size-4 flex items-center justify-center text-muted-foreground/50 group-hover/btn:text-foreground">
-                    <History className="size-3.5" />
-                  </div>
-                  <div className="flex flex-col items-start ml-3 group-data-[collapsible=icon]:hidden">
-                      <span className="text-sm text-foreground/80 leading-none">Logs</span>
-                      <span className="text-[9px] text-muted-foreground/30 mt-0.5">履歴</span>
-                  </div>
+                  {theme === "dark" ? (
+                    <Moon className="size-4 text-indigo-400" />
+                  ) : (
+                    <Sun className="size-4 text-amber-500" />
+                  )}
+                  <span className="ml-3 text-sm text-muted-foreground group-data-[collapsible=icon]:hidden">
+                    Theme
+                  </span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
@@ -205,12 +187,20 @@ export function AppSidebar({
 
       </SidebarContent>
 
-      <SidebarFooter className="relative z-10 pb-6 px-4">
+      {/* Footer */}
+      <SidebarFooter className="relative z-10 pb-8 px-3">
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton onClick={onSettingsClick} tooltip="Config" size="lg" className="h-9 hover:bg-white/5 group-data-[collapsible=icon]:justify-center group/btn pl-3">
-               <Settings className="size-3.5 text-muted-foreground/50 group-hover/btn:text-foreground" />
-               <span className="text-[10px] tracking-widest text-muted-foreground uppercase opacity-50 ml-3 group-data-[collapsible=icon]:hidden">Config</span>
+            <SidebarMenuButton 
+              onClick={onSettingsClick} 
+              tooltip="Settings" 
+              size="lg" 
+              className="h-11 justify-start px-3 rounded-xl hover:bg-foreground/5"
+            >
+              <Settings className="size-4 text-muted-foreground" />
+              <span className="ml-3 text-sm text-muted-foreground group-data-[collapsible=icon]:hidden">
+                Settings
+              </span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

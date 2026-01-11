@@ -1,16 +1,11 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import { GeistSans } from "geist/font/sans";
+import { GeistMono } from "geist/font/mono";
 import "./globals.css";
 import { ThemeProvider } from "./components/theme-provider";
 
-// Departure Mono: The "Traf" / Terminal aesthetic backbone
-const departureMono = localFont({
-	src: "../public/fonts/DepartureMono-Regular.woff2",
-	variable: "--font-departure",
-	display: "swap",
-});
-
-// Doto: Digital/Matrix display font for branding
+// Doto: Digital/Matrix display font for branding elements (心)
 const doto = localFont({
 	src: "../public/fonts/Doto-VariableFont_ROND,wght.ttf",
 	variable: "--font-doto",
@@ -34,7 +29,7 @@ export default function RootLayout({
 		<html lang="en" suppressHydrationWarning>
 			<head />
 			<body
-				className={`${departureMono.variable} ${doto.variable} antialiased bg-background text-foreground`}
+				className={`${GeistSans.variable} ${GeistMono.variable} ${doto.variable} antialiased bg-background text-foreground`}
 			>
 				<ThemeProvider
 					attribute="class"
