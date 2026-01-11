@@ -18,7 +18,6 @@ const VARIANTS: { id: FaceVariant; label: string; description: string; icon: any
 	{ id: "minimal", label: "PURE", description: "Essential form", icon: Circle },
 	{ id: "tron", label: "DIGITAL", description: "System aesthetics", icon: Monitor },
 	{ id: "analogue", label: "SKETCH", description: "Hand-drawn lines", icon: Edit3 },
-	{ id: "neko", label: "NEKO", description: "Playful spirit", icon: Sparkles },
 ];
 
 const COLORS = [
@@ -56,8 +55,8 @@ export const CustomizationModal = React.memo(function CustomizationModal({
 							animate={{ opacity: 1, scale: 1, y: 0 }}
 							exit={{ opacity: 0, scale: 0.95, y: 10 }}
 							transition={{ type: "spring", damping: 30, stiffness: 350 }}
-							// Matte Glass Style: No border, just mass and shadow
-							className="pointer-events-auto w-full max-w-[420px] glass-card rounded-[2.5rem] p-10 relative shadow-premium flex flex-col gap-10"
+							// Matte Glass Style: Thicker border for substance
+							className="pointer-events-auto w-full max-w-[420px] glass-card rounded-[2.5rem] p-10 relative shadow-premium flex flex-col gap-10 border border-white/10 dark:border-white/10"
 							onClick={(e) => e.stopPropagation()}
 						>
 							{/* Close Button */}

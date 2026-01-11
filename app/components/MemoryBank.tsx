@@ -82,7 +82,7 @@ export function MemoryBank({ isOpen, onClose, currentEmotion, onRestore }: Memor
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: 10 }}
                             transition={{ type: "spring", damping: 30, stiffness: 350 }}
-                            className="pointer-events-auto w-full max-w-[500px] glass-card rounded-[2.5rem] p-8 relative shadow-premium flex flex-col max-h-[80vh]"
+                            className="pointer-events-auto w-full max-w-[500px] glass-card rounded-[2.5rem] p-8 relative shadow-premium flex flex-col max-h-[80vh] border border-white/10 dark:border-white/10"
                             onClick={(e) => e.stopPropagation()}
                         >
                             {/* Header */}

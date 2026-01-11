@@ -29,7 +29,7 @@ export function ConsoleOverlay({ isOpen, onClose, history }: ConsoleOverlayProps
                     exit={{ opacity: 0, x: 20, filter: "blur(10px)" }}
                     transition={{ type: "spring", damping: 30, stiffness: 350 }}
                     // Matte Glass style
-                    className="absolute top-6 right-6 z-50 w-[340px] glass-card rounded-[2rem] overflow-hidden flex flex-col shadow-premium"
+                    className="absolute top-6 right-6 z-50 w-[340px] glass-card rounded-[2rem] overflow-hidden flex flex-col shadow-premium border border-white/10 dark:border-white/10"
                 >
                     {/* Header: Minimal, Traf-style */}
                     <div className="flex items-center justify-between p-4 pl-6 border-b border-foreground/5 select-none bg-foreground/[0.02]">

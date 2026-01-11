@@ -1,24 +1,14 @@
 import type { Metadata } from "next";
-import localFont from "next/font/local";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import "./globals.css";
 import { ThemeProvider } from "./components/theme-provider";
-
-// Doto: Digital/Matrix display font for branding elements (心)
-const doto = localFont({
-	src: "../public/fonts/Doto-VariableFont_ROND,wght.ttf",
-	variable: "--font-doto",
-	display: "swap",
-});
 
 export const metadata: Metadata = {
 	title: "Kokoro | 心",
 	description:
 		"Kokoro – a minimal, expressive avatar. Pure eyes and mouth, emotion through orientation. 心。",
 };
-
-
 
 export default function RootLayout({
 	children,
@@ -27,9 +17,13 @@ export default function RootLayout({
 }>) {
 	return (
 		<html lang="en" suppressHydrationWarning>
-			<head />
+			<head>
+				<link rel="preconnect" href="https://fonts.googleapis.com" />
+				<link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+				<link href="https://fonts.googleapis.com/css2?family=Doto:wght@100..900&display=swap" rel="stylesheet" />
+			</head>
 			<body
-				className={`${GeistSans.variable} ${GeistMono.variable} ${doto.variable} antialiased bg-background text-foreground`}
+				className={`${GeistSans.variable} ${GeistMono.variable} antialiased bg-background text-foreground`}
 			>
 				<ThemeProvider
 					attribute="class"
