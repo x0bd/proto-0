@@ -62,142 +62,150 @@ export function MemoryBank({ isOpen, onClose, currentEmotion, onRestore }: Memor
         alert("Memory JSON copied to clipboard!");
     };
 
-    return (
-        <AnimatePresence>
-            {isOpen && (
-                <>
-                    {/* Backdrop */}
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-[100] bg-background/40 backdrop-blur-3xl"
-                        onClick={onClose}
-                    />
+	return (
+		<AnimatePresence mode="wait">
+			{isOpen && (
+				<>
+					{/* Backdrop */}
+					<motion.div
+						initial={{ opacity: 0 }}
+						animate={{ opacity: 1 }}
+						exit={{ opacity: 0 }}
+						transition={{ duration: 0.3 }}
+						className="fixed inset-0 z-[100] bg-background/20 backdrop-blur-md"
+						onClick={onClose}
+					/>
 
-                    {/* Modal */}
-                    <div className="fixed inset-0 z-[101] flex items-center justify-center p-6 pointer-events-none">
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.95, y: 10 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                            transition={{ type: "spring", damping: 30, stiffness: 350 }}
-                            className="pointer-events-auto w-full max-w-[500px] glass-card rounded-[2.5rem] p-8 relative shadow-premium flex flex-col max-h-[80vh] border border-white/10 dark:border-white/10"
-                            onClick={(e) => e.stopPropagation()}
-                        >
-                            {/* Header */}
-                            <div className="flex items-center justify-between mb-8">
-                                <div>
-                                    <h2 className="text-xl font-light tracking-tight text-foreground">Memory Bank</h2>
-                                    <p className="font-mono text-[10px] tracking-widest text-muted-foreground uppercase opacity-60 mt-1">
-                                        EMOTION_PERSISTENCE_LAYER
-                                    </p>
-                                </div>
-                                <button
-                                    onClick={onClose}
-                                    className="size-10 rounded-full flex items-center justify-center hover:bg-foreground/5 transition-colors text-muted-foreground hover:text-foreground"
-                                >
-                                    <X className="size-5" />
-                                </button>
-                            </div>
+					{/* Modal Container */}
+					<div className="fixed inset-0 z-[101] flex items-center justify-center p-6 pointer-events-none">
+						<motion.div
+							initial={{ opacity: 0, scale: 0.95, y: 10 }}
+							animate={{ opacity: 1, scale: 1, y: 0 }}
+							exit={{ opacity: 0, scale: 0.95, y: 10 }}
+							transition={{ type: "spring", damping: 30, stiffness: 350 }}
+							drag
+							dragConstraints={{ left: -200, right: 200, top: -200, bottom: 200 }}
+							dragMomentum={false}
+							className="pointer-events-auto w-full max-w-[400px] bg-background/80 backdrop-blur-xl rounded-[2rem] p-8 shadow-2xl border border-white/10 dark:border-white/5 flex flex-col gap-8"
+							onClick={(e) => e.stopPropagation()}
+						>
+							{/* Header */}
+							<div className="flex items-center justify-between cursor-grab active:cursor-grabbing">
+								<div>
+									<h2 className="text-xl font-medium tracking-tight text-foreground">Memory Bank</h2>
+									<p className="text-[10px] font-mono tracking-widest text-muted-foreground uppercase opacity-60">
+										EMOTION_PERSISTENCE
+									</p>
+								</div>
+								<button
+									onClick={onClose}
+									className="size-8 rounded-full flex items-center justify-center hover:bg-foreground/5 transition-colors text-muted-foreground hover:text-foreground"
+								>
+									<X className="size-4" />
+								</button>
+							</div>
 
-                            {/* Capture Action */}
-                            <div className="mb-8">
-                                <button
-                                    onClick={handleCapture}
-                                    className="w-full glass-card rounded-[1.5rem] p-4 flex items-center justify-center gap-3 hover:bg-foreground/5 transition-all active:scale-[0.98] group border border-border/40"
-                                >
-                                    <div className="size-10 rounded-full bg-foreground/5 flex items-center justify-center group-hover:bg-foreground/10 transition-colors">
-                                        <Camera className="size-5 text-emerald-500" />
-                                    </div>
-                                    <div className="text-left">
-                                        <span className="block text-sm font-medium">Capture Current State</span>
-                                        <span className="text-[10px] text-muted-foreground uppercase tracking-wider">
-                                            SAVE_SNAPSHOT
-                                        </span>
-                                    </div>
-                                </button>
-                            </div>
+							<div className="space-y-6">
+								{/* Capture Action */}
+								<button
+									onClick={handleCapture}
+									className="w-full bg-foreground/5 rounded-2xl p-4 flex items-center justify-between hover:bg-foreground/10 transition-all active:scale-[0.98] group relative overflow-hidden"
+								>
+                                    <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+									<div className="flex items-center gap-4 relative z-10">
+										<div className="size-10 rounded-xl bg-background shadow-sm flex items-center justify-center text-emerald-500">
+											<Camera className="size-5" />
+										</div>
+										<div className="text-left">
+											<span className="block text-sm font-bold tracking-wide">SNAPSHOT</span>
+											<span className="text-[10px] text-muted-foreground font-mono">
+												SAVE_CURRENT_STATE
+											</span>
+										</div>
+									</div>
+									<Plus className="size-4 text-muted-foreground group-hover:text-foreground transition-colors relative z-10" />
+								</button>
 
-                            {/* Memory Grid */}
-                            <div className="flex-1 overflow-y-auto pr-2 -mr-2 space-y-3">
-                                {memories.length === 0 ? (
-                                    <div className="flex flex-col items-center justify-center py-12 text-muted-foreground/30 gap-3 border-2 border-dashed border-foreground/5 rounded-[1.5rem]">
-                                        <Save className="size-6 opacity-40" />
-                                        <span className="text-xs uppercase tracking-widest">No Memories Found</span>
-                                    </div>
-                                ) : (
-                                    memories.map((memory) => (
-                                        <motion.div
-                                            layout
-                                            initial={{ opacity: 0, y: 10 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            key={memory.id}
-                                            onClick={() => {
-                                                onRestore(memory.emotion);
-                                                onClose();
-                                            }}
-                                            className="group flex items-center gap-4 p-3 rounded-2xl hover:bg-foreground/5 transition-colors cursor-pointer border border-transparent hover:border-foreground/5"
+                                {/* Export Options */}
+                                <div className="grid grid-cols-3 gap-2">
+                                    {['PNG', 'GIF', 'MP4'].map((format) => (
+                                        <button 
+                                            key={format}
+                                            className="px-3 py-2 rounded-xl bg-foreground/5 hover:bg-foreground/10 transition-colors flex flex-col items-center justify-center gap-1 group"
+                                            onClick={() => alert(`Export to ${format} coming soon!`)}
                                         >
-                                            {/* Mini Viz */}
-                                            <div className="size-12 rounded-xl bg-foreground/5 flex items-center justify-center relative overflow-hidden">
-                                                <div 
-                                                    className="absolute inset-0 opacity-20"
-                                                    style={{
-                                                        background: `conic-gradient(from 0deg, 
-                                                            ${memory.emotion.joy > 0.5 ? 'emerald' : 'transparent'}, 
-                                                            ${memory.emotion.anger > 0.5 ? 'rose' : 'transparent'},
-                                                            ${memory.emotion.curiosity > 0.5 ? 'indigo' : 'transparent'}
-                                                        )`
-                                                    }}
-                                                />
-                                                <span className="font-mono text-[10px] opacity-50">
-                                                    {(memory.emotion.joy * 100).toFixed(0)}%
-                                                </span>
-                                            </div>
+                                            <span className="text-[9px] font-mono font-medium text-muted-foreground group-hover:text-foreground transition-colors">{format}</span>
+                                        </button>
+                                    ))}
+                                </div>
 
-                                            <div className="flex-1 min-w-0">
-                                                <div className="flex items-center gap-2 mb-0.5">
-                                                    <span className="font-medium text-sm truncate">{memory.label}</span>
-                                                    <span className="text-[9px] font-mono text-muted-foreground/50">
-                                                        {new Date(memory.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                                    </span>
-                                                </div>
-                                                <div className="flex gap-2">
-                                                    {Object.entries(memory.emotion).map(([k, v]) => (
-                                                        v > 0.3 && (
-                                                            <span key={k} className="text-[9px] uppercase tracking-wider text-muted-foreground/70 bg-foreground/5 px-1.5 py-0.5 rounded-md">
-                                                                {k}
-                                                            </span>
-                                                        )
-                                                    ))}
-                                                </div>
-                                            </div>
+								{/* Memory Grid */}
+								<div className="flex flex-col gap-2 max-h-[200px] overflow-y-auto pr-2 -mr-2 scrollbar-hide">
+									{memories.length === 0 ? (
+										<div className="flex flex-col items-center justify-center py-8 text-muted-foreground/30 gap-2 border-2 border-dashed border-foreground/5 rounded-2xl">
+											<Save className="size-5 opacity-40" />
+											<span className="text-[10px] uppercase tracking-widest">Empty Bank</span>
+										</div>
+									) : (
+										memories.map((memory) => (
+											<motion.div
+												layout
+												initial={{ opacity: 0, x: -10 }}
+												animate={{ opacity: 1, x: 0 }}
+												key={memory.id}
+												onClick={() => {
+													onRestore(memory.emotion);
+												}}
+												className="group flex items-center gap-3 p-2 rounded-xl hover:bg-foreground/5 transition-colors cursor-pointer"
+											>
+												<div className="size-8 rounded-lg bg-foreground/5 flex items-center justify-center relative overflow-hidden shrink-0">
+                                                    <div 
+                                                        className="absolute inset-0 opacity-20"
+                                                        style={{
+                                                            background: `conic-gradient(from 0deg, 
+                                                                ${memory.emotion.joy > 0.5 ? 'var(--emerald-500)' : 'transparent'}, 
+                                                                ${memory.emotion.anger > 0.5 ? 'var(--rose-500)' : 'transparent'},
+                                                                transparent
+                                                            )`
+                                                        }}
+                                                    />
+													<span className="font-mono text-[9px] opacity-50">
+														#{(memories.indexOf(memory) + 1).toString().padStart(2, '0')}
+													</span>
+												</div>
 
-                                            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <button
-                                                    onClick={(e) => handleShare(memory, e)}
-                                                    className="p-2 rounded-lg hover:bg-foreground/10 text-muted-foreground hover:text-foreground transition-colors"
-                                                    title="Copy JSON"
-                                                >
-                                                    <Share2 className="size-4" />
-                                                </button>
-                                                <button
-                                                    onClick={(e) => handleDelete(memory.id, e)}
-                                                    className="p-2 rounded-lg hover:bg-rose-500/10 text-muted-foreground hover:text-rose-500 transition-colors"
-                                                    title="Delete"
-                                                >
-                                                    <Trash2 className="size-4" />
-                                                </button>
-                                            </div>
-                                        </motion.div>
-                                    ))
-                                )}
-                            </div>
-                        </motion.div>
-                    </div>
-                </>
-            )}
-        </AnimatePresence>
-    );
+												<div className="flex-1 min-w-0">
+													<div className="flex items-center justify-between">
+														<span className="font-medium text-xs truncate">{memory.label}</span>
+														<span className="text-[9px] font-mono text-muted-foreground/50">
+															{new Date(memory.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+														</span>
+													</div>
+												</div>
+
+												<div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+													<button
+														onClick={(e) => handleShare(memory, e)}
+														className="size-6 flex items-center justify-center rounded-md hover:bg-foreground/10 text-muted-foreground hover:text-foreground transition-colors"
+													>
+														<Share2 className="size-3" />
+													</button>
+													<button
+														onClick={(e) => handleDelete(memory.id, e)}
+														className="size-6 flex items-center justify-center rounded-md hover:bg-rose-500/10 text-muted-foreground hover:text-rose-500 transition-colors"
+													>
+														<Trash2 className="size-3" />
+													</button>
+												</div>
+											</motion.div>
+										))
+									)}
+								</div>
+							</div>
+						</motion.div>
+					</div>
+				</>
+			)}
+		</AnimatePresence>
+	);
 }
