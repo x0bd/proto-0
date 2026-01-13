@@ -1101,11 +1101,7 @@ export default function Avatar({
 		<div className={`flex items-center justify-center w-full ${className}`}>
 			<div
 				ref={containerRef}
-				className={`relative group cursor-pointer w-full transition-all duration-500 ${
-                    variant === "electric" 
-                        ? "electric-border rounded-[1.5em] border-2 bg-black/5 dark:bg-white/5" 
-                        : ""
-                }`}
+				className="relative group cursor-pointer w-full"
 				onMouseMove={handlePointerMove}
 				onMouseLeave={handlePointerLeave}
 				onMouseDown={handlePointerDown}
@@ -1115,10 +1111,6 @@ export default function Avatar({
 				onTouchCancel={handlePointerCancel}
 				onTouchMove={handlePointerMove}
 			>
-                {/* Electric Hue Overlay */}
-                {variant === "electric" && (
-                    <div className="absolute inset-0 electric-hue opacity-50 pointer-events-none rounded-[1.5em] z-10" />
-                )}
 
 				<svg
 					ref={svgBoxRef}

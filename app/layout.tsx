@@ -3,7 +3,6 @@ import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import "./globals.css";
 import { ThemeProvider } from "./components/theme-provider";
-import { ElectricFilters } from "./components/ElectricFilters";
 
 export const metadata: Metadata = {
 	title: "Kokoro | 心",
@@ -26,13 +25,12 @@ export default function RootLayout({
 			<body
 				className={`${GeistSans.variable} ${GeistMono.variable} antialiased bg-background text-foreground`}
 			>
-				<ThemeProvider
+			<ThemeProvider
 					attribute="class"
 					defaultTheme="system"
 					enableSystem
 					disableTransitionOnChange
 				>
-					<ElectricFilters />
 					{children}
 				</ThemeProvider>
 			</body>

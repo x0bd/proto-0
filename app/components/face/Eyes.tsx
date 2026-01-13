@@ -109,57 +109,6 @@ export function Eyes({
 		);
 	}
 
-	if (variant === "electric") {
-		// Electric eyes: Stroke-based with turbulence filter for distortion
-		const electricColor = "#dd8448"; // Orange electric
-		return (
-			<>
-				<ellipse
-					ref={leftRef as RefObject<SVGEllipseElement>}
-					cx="170"
-					cy="105"
-					rx="32"
-					ry="18"
-					fill="none"
-					stroke={electricColor}
-					strokeWidth="3"
-					filter="url(#electric-filter)"
-					className="cursor-pointer transition-opacity hover:opacity-80"
-					style={{ 
-						filter: "url(#electric-filter) drop-shadow(0 0 8px #dd8448) drop-shadow(0 0 16px #dd844880)",
-					}}
-					onClick={(e) => {
-						e.stopPropagation();
-						onWink("left");
-					}}
-					onMouseEnter={() => onHoverStart("left")}
-					onMouseLeave={() => onHoverEnd("left")}
-				/>
-				<ellipse
-					ref={rightRef as RefObject<SVGEllipseElement>}
-					cx="350"
-					cy="105"
-					rx="32"
-					ry="18"
-					fill="none"
-					stroke={electricColor}
-					strokeWidth="3"
-					filter="url(#electric-filter)"
-					className="cursor-pointer transition-opacity hover:opacity-80"
-					style={{ 
-						filter: "url(#electric-filter) drop-shadow(0 0 8px #dd8448) drop-shadow(0 0 16px #dd844880)",
-					}}
-					onClick={(e) => {
-						e.stopPropagation();
-						onWink("right");
-					}}
-					onMouseEnter={() => onHoverStart("right")}
-					onMouseLeave={() => onHoverEnd("right")}
-				/>
-			</>
-		);
-	}
-
 	return (
 		<>
 			<ellipse

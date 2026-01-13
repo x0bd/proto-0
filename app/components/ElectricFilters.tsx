@@ -2,8 +2,8 @@ export const ElectricFilters = () => {
     return (
         <svg className="fixed size-0 pointer-events-none" aria-hidden="true">
             <defs>
-                {/* Electric Turbulence Filter (🌀↖️) */}
-                <filter id="electric-turbulence" colorInterpolationFilters="sRGB" x="-20%" y="-20%" width="140%" height="140%">
+                {/* Electric Turbulence Filter */}
+                <filter id="electric-filter" colorInterpolationFilters="sRGB" x="-20%" y="-20%" width="140%" height="140%">
                     <feTurbulence type="turbulence" baseFrequency="0.02" numOctaves="10" result="noise1" seed="1" />
                     <feOffset in="noise1" dx="0" dy="0" result="offsetNoise1">
                         <animate attributeName="dy" values="700; 0" dur="6s" repeatCount="indefinite" calcMode="linear" />
