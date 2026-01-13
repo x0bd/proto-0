@@ -218,3 +218,15 @@
 .text-metric {
 	@apply text-4xl font-light tracking-tight text-foreground;
 }
+
+/* === ELECTRIC PRESET UTILITIES === */
+@layer utilities {
+    .electric-border {
+        filter: url(#electric-turbulence);
+        border-color: #dd8448; /* Fallback/Base */
+    }
+    
+    .electric-hue {
+        filter: url(#electric-hue);
+    }
+}

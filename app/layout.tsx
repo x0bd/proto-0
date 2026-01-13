@@ -3,6 +3,7 @@ import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import "./globals.css";
 import { ThemeProvider } from "./components/theme-provider";
+import { ElectricFilters } from "./components/ElectricFilters";
 
 export const metadata: Metadata = {
 	title: "Kokoro | 心",
@@ -31,6 +32,7 @@ export default function RootLayout({
 					enableSystem
 					disableTransitionOnChange
 				>
+					<ElectricFilters />
 					{children}
 				</ThemeProvider>
 			</body>

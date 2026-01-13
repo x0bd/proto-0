@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { X, Check, Monitor, Edit3, Sparkles, Circle } from "lucide-react";
+import { X, Check, Monitor, Edit3, Sparkles, Circle, Zap } from "lucide-react";
 import { FaceVariant } from "./face/types";
 
 interface CustomizationModalProps {
@@ -18,6 +18,7 @@ const VARIANTS: { id: FaceVariant; label: string; description: string; icon: any
 	{ id: "minimal", label: "PURE", description: "Essential form", icon: Circle },
 	{ id: "tron", label: "DIGITAL", description: "System aesthetics", icon: Monitor },
 	{ id: "analogue", label: "SKETCH", description: "Hand-drawn lines", icon: Edit3 },
+    { id: "electric", label: "VOLT", description: "High voltage distortion", icon: Zap },
 ];
 
 const COLORS = [

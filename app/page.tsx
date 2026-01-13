@@ -219,7 +219,7 @@ export default function Home() {
 					onDragEnd={handleDragEnd}
 					style={{ zIndex: 0 }} // Explicit low z-index
 				>
-					<div className="w-[90vw] md:w-[70vw] lg:w-[50vw] max-w-[700px] aspect-square flex items-center justify-center pointer-events-auto drop-shadow-2xl">
+				<div className="w-[90vw] md:w-[70vw] lg:w-[50vw] max-w-[700px] aspect-square flex items-center justify-center pointer-events-auto drop-shadow-2xl">
 						<Avatar
 							emotion={currentEmotion}
 							voiceEnabled={voiceEnabled}

@@ -28,11 +28,20 @@ export function Mouth({
 				ref={mouthRef}
 				d="M -33 0 Q 0 0 33 0"
 				fill="none"
-				stroke="currentColor"
+				stroke={variant === "electric" ? "#dd8448" : "currentColor"}
 				strokeWidth={variant === "tron" ? "4" : variant === "analogue" ? "3" : "4"}
 				strokeLinecap={variant === "tron" ? "square" : "round"}
 				shapeRendering={variant === "tron" ? "crispEdges" : "auto"}
-				filter={variant === "analogue" ? "url(#pencil)" : undefined}
+				filter={
+					variant === "electric" 
+						? "url(#electric-filter)" 
+						: variant === "analogue" 
+							? "url(#pencil)" 
+							: undefined
+				}
+				style={variant === "electric" ? { 
+					filter: "url(#electric-filter) drop-shadow(0 0 8px #dd8448) drop-shadow(0 0 16px #dd844880)",
+				} : undefined}
 				className={`text-black dark:text-white cursor-pointer transition-opacity hover:opacity-80 ${
 					variant === "tron"
 						? "drop-shadow-[0_0_5px_rgba(var(--primary-rgb),0.5)]"
