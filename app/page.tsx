@@ -69,6 +69,11 @@ export default function Home() {
 	const baseEmotionRef = useRef<EmotionState>(NEUTRAL_EMOTION);
 	const { theme, setTheme } = useTheme();
 	const [mounted, setMounted] = useState(false);
+    const [history, setHistory] = useState<{ role: string; content: string }[]>([
+        { role: "system", content: "Kokoro System Online" },
+        { role: "system", content: "Emotion engine active." },
+        { role: "kokoro", content: "Systems normal. Awaiting input." }
+    ]);
 	
 	useEffect(() => { setMounted(true); }, []);
 	useEffect(() => { baseEmotionRef.current = baseEmotion; }, [baseEmotion]);
@@ -250,12 +255,15 @@ export default function Home() {
 				<ConsoleOverlay 
 					isOpen={isConsoleOpen} 
 					onClose={() => setIsConsoleOpen(false)}
-					history={[
-						{ role: "system", content: "Kokoro System Online" },
-						{ role: "user", content: "Initialize emotion engine..." },
-						{ role: "system", content: "Emotion engine active." },
-						{ role: "kokoro", content: "Systems normal. Awaiting input." }
-					]} 
+                    history={history}
+                    onSendMessage={(message: string) => {
+                        setHistory(prev => [...prev, { role: "user", content: message }]);
+                        // Simulate system response
+                        setTimeout(() => {
+                            setHistory(prev => [...prev, { role: "system", content: "Command received. Processing..." }]);
+                        }, 500);
+                    }}
+                    onClear={() => setHistory([])}
 				/>
 
 				<CustomizationModal
