@@ -21,6 +21,7 @@ interface AvatarProps {
 	className?: string;
 	voiceEnabled?: boolean;
 	variant?: FaceVariant;
+    color?: string;
 }
 
 const DEFAULT_EMOTION: EmotionState = {
@@ -36,6 +37,7 @@ export default function Avatar({
 	className = "",
 	voiceEnabled = false,
 	variant = "minimal",
+    color,
 }: AvatarProps) {
 	// Helper for mouth geometry
 	const generateMouthPath = (width: number, curve: number) => {
@@ -1144,7 +1146,7 @@ export default function Avatar({
 						)}
 					</defs>
 
-					<Ears variant={variant} emotion={emotion} />
+					<Ears variant={variant} emotion={emotion} color={color} />
 					<Eyes
 						leftRef={leftEyeRef}
 						rightRef={rightEyeRef}
@@ -1152,6 +1154,7 @@ export default function Avatar({
 						onHoverStart={(eye) => handleEyeHover(eye)}
 						onHoverEnd={(eye) => handleEyeHoverEnd(eye)}
 						variant={variant}
+                        color={color}
 					/>
 					<Mouth
 						mouthRef={mouthRef}
@@ -1162,6 +1165,7 @@ export default function Avatar({
 						onHoverStart={handleMouthHover}
 						onHoverEnd={handleMouthHoverEnd}
 						variant={variant}
+                        color={color}
 					/>
 				</svg>
 			</div>

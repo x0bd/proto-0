@@ -10,6 +10,7 @@ interface MouthProps {
 	onHoverStart: () => void;
 	onHoverEnd: () => void;
 	variant?: FaceVariant;
+    color?: string;
 }
 
 export function Mouth({
@@ -21,9 +22,10 @@ export function Mouth({
 	onHoverStart,
 	onHoverEnd,
 	variant = "minimal",
+    color,
 }: MouthProps) {
 	return (
-		<g ref={groupRef} transform="translate(260,175)">
+		<g ref={groupRef} transform="translate(260,175)" style={{ color: color || 'currentColor' }}>
 			<path
 				ref={mouthRef}
 				d="M -33 0 Q 0 0 33 0"
@@ -33,7 +35,7 @@ export function Mouth({
 				strokeLinecap={variant === "tron" ? "square" : "round"}
 				shapeRendering={variant === "tron" ? "crispEdges" : "auto"}
 				filter={variant === "analogue" ? "url(#pencil)" : undefined}
-				className={`text-black dark:text-white cursor-pointer transition-opacity hover:opacity-80 ${
+				className={`cursor-pointer transition-opacity hover:opacity-80 transition-colors duration-300 ${
 					variant === "tron"
 						? "drop-shadow-[0_0_5px_rgba(var(--primary-rgb),0.5)]"
 						: ""
@@ -59,7 +61,7 @@ export function Mouth({
 						height="30"
 						rx={variant === "tron" ? "0" : "4"}
 						fill="currentColor"
-						className="text-black dark:text-white origin-bottom"
+						className="origin-bottom transition-colors duration-300"
 						style={{ transformOrigin: "center bottom" }}
 					/>
 				))}
