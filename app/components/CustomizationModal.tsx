@@ -12,8 +12,6 @@ interface CustomizationModalProps {
 	onVariantChange: (variant: FaceVariant) => void;
 	accentColor: string;
 	onAccentChange: (color: string) => void;
-    avatarColor: string | null;
-    onAvatarColorChange: (color: string) => void;
 }
 
 const VARIANTS: { id: FaceVariant; label: string; description: string; icon: any }[] = [
@@ -27,8 +25,6 @@ export const CustomizationModal = React.memo(function CustomizationModal({
 	onClose,
 	currentVariant,
 	onVariantChange,
-	avatarColor,
-    onAvatarColorChange,
 }: CustomizationModalProps) {
 	return (
 		<AnimatePresence mode="wait">
@@ -110,30 +106,11 @@ export const CustomizationModal = React.memo(function CustomizationModal({
 									</div>
 								</div>
 
-								{/* Color Section */}
-								<div className="space-y-4">
-									<label className="text-[10px] font-mono tracking-widest text-muted-foreground uppercase pl-1 opacity-70">
-										COLOR_SIGNATURE
-									</label>
-                                    <div className="bg-foreground/5 rounded-2xl p-4 flex items-center gap-4">
-                                        <div className="relative size-12 rounded-full overflow-hidden shadow-inner ring-1 ring-black/10 dark:ring-white/10">
-                                            <input 
-                                                type="color" 
-                                                value={avatarColor ?? '#000000'} 
-                                                onChange={(e) => onAvatarColorChange(e.target.value)}
-                                                className="absolute inset-[-50%] size-[200%] p-0 border-0 cursor-pointer"
-                                            />
-                                        </div>
-                                        <div className="flex-1">
-                                            <div className="text-xs font-mono font-medium uppercase mb-1">
-                                                {(avatarColor ?? '#000000').toUpperCase()}
-                                            </div>
-                                            <div className="text-[10px] text-muted-foreground">
-                                                Tap circle to edit hex code
-                                            </div>
-                                        </div>
-                                        <Palette className="size-4 text-muted-foreground opacity-50" />
-                                    </div>
+								{/* Color Section Removed - Theme Aware Only */}
+								<div className="pt-2">
+									<p className="text-[10px] text-muted-foreground/40 text-center font-mono uppercase tracking-widest">
+										Color Adapts to System Theme
+									</p>
 								</div>
 							</div>
 						</motion.div>

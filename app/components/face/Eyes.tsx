@@ -8,7 +8,6 @@ interface EyesProps {
 	onHoverStart: (eye: "left" | "right") => void;
 	onHoverEnd: (eye: "left" | "right") => void;
 	variant?: FaceVariant;
-    color?: string;
 }
 
 export function Eyes({
@@ -18,7 +17,6 @@ export function Eyes({
 	onHoverStart,
 	onHoverEnd,
 	variant = "minimal",
-    color,
 }: EyesProps) {
 	// Shared classes
 	const eyeClass =
@@ -26,9 +24,6 @@ export function Eyes({
 	// Tron specific classes
 	const tronEyeClass =
 		"cursor-pointer transition-opacity hover:opacity-80 drop-shadow-[0_0_8px_rgba(var(--primary-rgb),0.5)] transition-colors duration-300";
-
-    // Style object for dynamic color
-    const style = { color: color || 'currentColor' };
 
 	if (variant === "tron") {
 		return (
@@ -43,7 +38,7 @@ export function Eyes({
 					ry="4"
 					fill="currentColor"
 					className={tronEyeClass}
-                    style={style}
+
 					onClick={(e) => {
 						e.stopPropagation();
 						onWink("left");
@@ -61,7 +56,7 @@ export function Eyes({
 					ry="4"
 					fill="currentColor"
 					className={tronEyeClass}
-                    style={style}
+
 					onClick={(e) => {
 						e.stopPropagation();
 						onWink("right");
@@ -87,7 +82,7 @@ export function Eyes({
 					strokeWidth="3"
 					filter="url(#pencil)"
 					className={eyeClass}
-                    style={style}
+
 					onClick={(e) => {
 						e.stopPropagation();
 						onWink("left");
@@ -106,7 +101,7 @@ export function Eyes({
 					strokeWidth="3"
 					filter="url(#pencil)"
 					className={eyeClass}
-                    style={style}
+
 					onClick={(e) => {
 						e.stopPropagation();
 						onWink("right");

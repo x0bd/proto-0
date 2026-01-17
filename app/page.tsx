@@ -61,7 +61,6 @@ export default function Home() {
 	const [isMemoryOpen, setIsMemoryOpen] = useState(false);
 	const [isConsoleOpen, setIsConsoleOpen] = useState(false);
 	const [faceVariant, setFaceVariant] = useState<FaceVariant>("minimal");
-	const [avatarColor, setAvatarColor] = useState<string | null>(null); // null = use theme default
 	const [accentColor, setAccentColor] = useState<string>("neutral");
 	const [voiceEnabled, setVoiceEnabled] = useState<boolean>(true);
 	const [voiceLevel, setVoiceLevel] = useState<number>(0);
@@ -77,15 +76,6 @@ export default function Home() {
 	
 	useEffect(() => { setMounted(true); }, []);
 	useEffect(() => { baseEmotionRef.current = baseEmotion; }, [baseEmotion]);
-
-    // Set theme-aware avatar color on mount
-    useEffect(() => {
-        if (mounted && avatarColor === null) {
-            // If no custom color set, use theme default
-            const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-            setAvatarColor(isDark ? '#ffffff' : '#000000');
-        }
-    }, [mounted, theme, avatarColor]);
 
 	// Animation Loop
 	useEffect(() => {
@@ -239,7 +229,6 @@ export default function Home() {
 							emotion={currentEmotion}
 							voiceEnabled={voiceEnabled}
 							variant={faceVariant}
-                            color={avatarColor ?? undefined}
 						/>
 					</div>
 				</motion.div>
@@ -273,8 +262,6 @@ export default function Home() {
 					onVariantChange={setFaceVariant}
 					accentColor={accentColor}
 					onAccentChange={setAccentColor}
-                    avatarColor={avatarColor}
-                    onAvatarColorChange={setAvatarColor}
 				/>
 				
 				<MemoryBank
