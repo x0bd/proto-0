@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { X, Monitor, Edit3, Circle, Palette } from "lucide-react";
+import { Cancel01Icon, ComputerIcon, PencilEdit02Icon, CircleIcon } from "@hugeicons/react";
 import { FaceVariant } from "./face/types";
 
 interface CustomizationModalProps {
@@ -15,9 +15,9 @@ interface CustomizationModalProps {
 }
 
 const VARIANTS: { id: FaceVariant; label: string; description: string; icon: any }[] = [
-	{ id: "minimal", label: "PURE", description: "Essential form", icon: Circle },
-	{ id: "tron", label: "DIGITAL", description: "System aesthetics", icon: Monitor },
-	{ id: "analogue", label: "SKETCH", description: "Hand-drawn lines", icon: Edit3 },
+	{ id: "minimal", label: "PURE", description: "Essential form", icon: CircleIcon },
+	{ id: "tron", label: "DIGITAL", description: "System aesthetics", icon: ComputerIcon },
+	{ id: "analogue", label: "SKETCH", description: "Hand-drawn lines", icon: PencilEdit02Icon },
 ];
 
 export const CustomizationModal = React.memo(function CustomizationModal({
@@ -62,7 +62,7 @@ export const CustomizationModal = React.memo(function CustomizationModal({
                                     onClick={onClose}
                                     className="size-8 rounded-full flex items-center justify-center hover:bg-foreground/5 transition-colors text-muted-foreground hover:text-foreground"
                                 >
-                                    <X className="size-4" />
+                                    <Cancel01Icon className="size-4" />
                                 </button>
 							</div>
 

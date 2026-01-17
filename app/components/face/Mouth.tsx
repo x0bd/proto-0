@@ -10,7 +10,6 @@ interface MouthProps {
 	onHoverStart: () => void;
 	onHoverEnd: () => void;
 	variant?: FaceVariant;
-    color?: string;
 }
 
 export function Mouth({
@@ -22,10 +21,9 @@ export function Mouth({
 	onHoverStart,
 	onHoverEnd,
 	variant = "minimal",
-    color,
 }: MouthProps) {
 	return (
-		<g ref={groupRef} transform="translate(260,175)" style={{ color: color || 'currentColor' }}>
+		<g ref={groupRef} transform="translate(260,175)">
 			<path
 				ref={mouthRef}
 				d="M -33 0 Q 0 0 33 0"

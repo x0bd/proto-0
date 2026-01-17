@@ -123,7 +123,7 @@ export function Eyes({
 				ry="18"
 				fill="currentColor"
 				className={eyeClass}
-                style={style}
+
 				onClick={(e) => {
 					e.stopPropagation();
 					onWink("left");
@@ -140,7 +140,7 @@ export function Eyes({
 				ry="18"
 				fill="currentColor"
 				className={eyeClass}
-                style={style}
+
 				onClick={(e) => {
 					e.stopPropagation();
 					onWink("right");
