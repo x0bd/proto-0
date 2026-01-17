@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { X, Save, Share2, Trash2, Camera, Plus } from "lucide-react";
+import { IoCloseOutline, IoSaveOutline, IoShareSocialOutline, IoTrashOutline, IoCameraOutline, IoAddOutline } from "react-icons/io5";
 import { EmotionState } from "./face/types";
 import { cn } from "@/lib/utils";
 
@@ -101,7 +101,7 @@ export function MemoryBank({ isOpen, onClose, currentEmotion, onRestore }: Memor
 									onClick={onClose}
 									className="size-8 rounded-full flex items-center justify-center hover:bg-foreground/5 transition-colors text-muted-foreground hover:text-foreground"
 								>
-									<X className="size-4" />
+									<IoCloseOutline className="size-4" />
 								</button>
 							</div>
 
@@ -114,7 +114,7 @@ export function MemoryBank({ isOpen, onClose, currentEmotion, onRestore }: Memor
                                     <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
 									<div className="flex items-center gap-4 relative z-10">
 										<div className="size-10 rounded-xl bg-background shadow-sm flex items-center justify-center text-emerald-500">
-											<Camera className="size-5" />
+											<IoCameraOutline className="size-5" />
 										</div>
 										<div className="text-left">
 											<span className="block text-sm font-bold tracking-wide">SNAPSHOT</span>
@@ -123,7 +123,7 @@ export function MemoryBank({ isOpen, onClose, currentEmotion, onRestore }: Memor
 											</span>
 										</div>
 									</div>
-									<Plus className="size-4 text-muted-foreground group-hover:text-foreground transition-colors relative z-10" />
+									<IoAddOutline className="size-4 text-muted-foreground group-hover:text-foreground transition-colors relative z-10" />
 								</button>
 
                                 {/* Export Options */}
@@ -143,7 +143,7 @@ export function MemoryBank({ isOpen, onClose, currentEmotion, onRestore }: Memor
 								<div className="flex flex-col gap-2 max-h-[200px] overflow-y-auto pr-2 -mr-2 scrollbar-hide">
 									{memories.length === 0 ? (
 										<div className="flex flex-col items-center justify-center py-8 text-muted-foreground/30 gap-2 border-2 border-dashed border-foreground/5 rounded-2xl">
-											<Save className="size-5 opacity-40" />
+											<IoSaveOutline className="size-5 opacity-40" />
 											<span className="text-[10px] uppercase tracking-widest">Empty Bank</span>
 										</div>
 									) : (
@@ -188,13 +188,13 @@ export function MemoryBank({ isOpen, onClose, currentEmotion, onRestore }: Memor
 														onClick={(e) => handleShare(memory, e)}
 														className="size-6 flex items-center justify-center rounded-md hover:bg-foreground/10 text-muted-foreground hover:text-foreground transition-colors"
 													>
-														<Share2 className="size-3" />
+														<IoShareSocialOutline className="size-3" />
 													</button>
 													<button
 														onClick={(e) => handleDelete(memory.id, e)}
 														className="size-6 flex items-center justify-center rounded-md hover:bg-rose-500/10 text-muted-foreground hover:text-rose-500 transition-colors"
 													>
-														<Trash2 className="size-3" />
+														<IoTrashOutline className="size-3" />
 													</button>
 												</div>
 											</motion.div>

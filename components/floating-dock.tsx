@@ -3,14 +3,14 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 import { 
-    Smile, 
-    Frown, 
-    Meh, 
-    Zap, 
-    Angry, 
-    Search,
-    BrainCircuit
-} from "lucide-react";
+    IoHappyOutline, 
+    IoSadOutline, 
+    IoHelpOutline, 
+    IoFlashOutline, 
+    IoFlameOutline, 
+    IoSearchOutline,
+    IoDiscOutline
+} from "react-icons/io5";
 import { motion } from "motion/react";
 
 interface FloatingDockProps {
@@ -20,12 +20,12 @@ interface FloatingDockProps {
 }
 
 const emotions = [
-    { id: 'neutral', label: 'NEUTRAL', icon: Meh, color: 'text-muted-foreground' },
-    { id: 'joy', label: 'JOY', icon: Smile, color: 'text-emerald-500' },
-    { id: 'sad', label: 'SORROW', icon: Frown, color: 'text-blue-500' },
-    { id: 'surprised', label: 'SHOCK', icon: Zap, color: 'text-amber-500' },
-    { id: 'angry', label: 'RAGE', icon: Angry, color: 'text-rose-500' },
-    { id: 'curious', label: 'QUERY', icon: Search, color: 'text-indigo-500' },
+    { id: 'neutral', label: 'NEUTRAL', icon: IoHelpOutline, color: 'text-muted-foreground' },
+    { id: 'joy', label: 'JOY', icon: IoHappyOutline, color: 'text-emerald-500' },
+    { id: 'sad', label: 'SORROW', icon: IoSadOutline, color: 'text-blue-500' },
+    { id: 'surprised', label: 'SHOCK', icon: IoFlashOutline, color: 'text-amber-500' },
+    { id: 'angry', label: 'RAGE', icon: IoFlameOutline, color: 'text-rose-500' },
+    { id: 'curious', label: 'QUERY', icon: IoSearchOutline, color: 'text-indigo-500' },
 ];
 
 export function FloatingDock({ activePreset, onMemoryClick }: FloatingDockProps) {
@@ -71,7 +71,7 @@ export function FloatingDock({ activePreset, onMemoryClick }: FloatingDockProps)
                     className="size-9 rounded-full flex items-center justify-center hover:bg-foreground/5 text-muted-foreground hover:text-foreground transition-all duration-300 click-tactic relative group"
                     title="Open Memory Bank"
                 >
-                    <BrainCircuit className="size-4" strokeWidth={1.5} />
+                    <IoDiscOutline className="size-4" />
                     {/* Tooltip */}
                     <span className="absolute -top-10 left-1/2 -translate-x-1/2 px-2 py-1 bg-card/80 backdrop-blur-sm rounded-md border border-border/20 text-[9px] font-mono uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
                         Memory

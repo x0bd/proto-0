@@ -10,7 +10,7 @@ import { FloatingDock } from "@/components/floating-dock";
 import { ConsoleOverlay } from "@/components/console-overlay";
 import { SystemMenu } from "@/components/system-menu";
 import { useTheme } from "next-themes";
-import { Terminal } from "lucide-react";
+import { IoTerminalOutline } from "react-icons/io5";
 import { cn } from "@/lib/utils";
 import { FaceVariant, EmotionState } from "./components/face/types";
 
@@ -204,7 +204,7 @@ export default function Home() {
 								: "hover:bg-foreground/5 text-muted-foreground"
 						)}
 					>
-						<Terminal className="size-4" strokeWidth={isConsoleOpen ? 2 : 1.5} />
+						<IoTerminalOutline className="size-4" strokeWidth={isConsoleOpen ? 2 : 1.5} />
 					</button>
 
 					{/* System Controls */}

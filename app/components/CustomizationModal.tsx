@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Cancel01Icon, ComputerIcon, PencilEdit02Icon, CircleIcon } from "@hugeicons/react";
+import { IoCloseOutline, IoDesktopOutline, IoPencilOutline, IoEllipseOutline } from "react-icons/io5";
 import { FaceVariant } from "./face/types";
 
 interface CustomizationModalProps {
@@ -15,9 +15,9 @@ interface CustomizationModalProps {
 }
 
 const VARIANTS: { id: FaceVariant; label: string; description: string; icon: any }[] = [
-	{ id: "minimal", label: "PURE", description: "Essential form", icon: CircleIcon },
-	{ id: "tron", label: "DIGITAL", description: "System aesthetics", icon: ComputerIcon },
-	{ id: "analogue", label: "SKETCH", description: "Hand-drawn lines", icon: PencilEdit02Icon },
+	{ id: "minimal", label: "PURE", description: "Essential form", icon: IoEllipseOutline },
+	{ id: "tron", label: "DIGITAL", description: "System aesthetics", icon: IoDesktopOutline },
+	{ id: "analogue", label: "SKETCH", description: "Hand-drawn lines", icon: IoPencilOutline },
 ];
 
 export const CustomizationModal = React.memo(function CustomizationModal({
@@ -62,7 +62,7 @@ export const CustomizationModal = React.memo(function CustomizationModal({
                                     onClick={onClose}
                                     className="size-8 rounded-full flex items-center justify-center hover:bg-foreground/5 transition-colors text-muted-foreground hover:text-foreground"
                                 >
-                                    <Cancel01Icon className="size-4" />
+                                    <IoCloseOutline className="size-4" />
                                 </button>
 							</div>
 
@@ -87,7 +87,7 @@ export const CustomizationModal = React.memo(function CustomizationModal({
 														}`}
 												>
 													<div className={`p-2 rounded-xl ${isActive ? "bg-foreground text-background" : "bg-foreground/5"}`}>
-														<Icon className="size-4" strokeWidth={2} />
+														<Icon className="size-4" />
 													</div>
 													<div className="flex-1">
 														<span className="text-xs font-bold tracking-wide uppercase block">

@@ -3,7 +3,16 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Terminal, X, Activity, Minimize2, Maximize2, Trash2, Send } from "lucide-react";
+// Lucide icons replaced by React Icons
+import { 
+    IoTerminalOutline, 
+    IoCloseOutline, 
+    IoPulseOutline, 
+    IoRemoveOutline, 
+    IoExpandOutline, 
+    IoTrashOutline, 
+    IoSendOutline 
+} from "react-icons/io5";
 import { motion, AnimatePresence } from "motion/react";
 
 interface ConsoleOverlayProps {
@@ -77,20 +86,20 @@ export function ConsoleOverlay({ isOpen, onClose, history, onSendMessage, onClea
 								onClick={() => setIsMinimized(!isMinimized)}
 								className="size-8 rounded-full flex items-center justify-center hover:bg-foreground/5 transition-all text-muted-foreground hover:text-foreground"
 							>
-								{isMinimized ? <Maximize2 className="size-3" /> : <Minimize2 className="size-3" />}
+								{isMinimized ? <IoExpandOutline className="size-3" /> : <IoRemoveOutline className="size-3" />}
 							</button>
                             <button 
 								onClick={onClear}
 								className="size-8 rounded-full flex items-center justify-center hover:bg-foreground/5 transition-all text-muted-foreground hover:text-foreground"
                                 title="Clear Chat"
 							>
-								<Trash2 className="size-3" />
+								<IoTrashOutline className="size-3" />
 							</button>
 							<button 
 								onClick={onClose}
 								className="size-8 rounded-full flex items-center justify-center hover:bg-foreground/5 transition-all text-muted-foreground hover:text-foreground"
 							>
-								<X className="size-3" />
+								<IoCloseOutline className="size-3" />
 							</button>
 						</div>
 					</div>
@@ -168,7 +177,7 @@ export function ConsoleOverlay({ isOpen, onClose, history, onSendMessage, onClea
                                         disabled={!inputValue.trim()}
                                         className="size-10 rounded-full bg-emerald-500 text-white flex items-center justify-center disabled:opacity-50 disabled:bg-muted disabled:text-muted-foreground transition-all hover:scale-105 active:scale-95 shadow-md shadow-emerald-500/20"
                                     >
-                                        <Send className="size-4 ml-0.5" />
+                                        <IoSendOutline className="size-4 ml-0.5" />
                                     </button>
                                 </div>
                             </form>
