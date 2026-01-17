@@ -9,7 +9,7 @@ import {
     IoFlashOutline, 
     IoFlameOutline, 
     IoSearchOutline,
-    IoDiscOutline
+    IoFingerPrintOutline
 } from "react-icons/io5";
 import { motion } from "motion/react";
 
@@ -71,10 +71,10 @@ export function FloatingDock({ activePreset, onMemoryClick }: FloatingDockProps)
                     className="size-9 rounded-full flex items-center justify-center hover:bg-foreground/5 text-muted-foreground hover:text-foreground transition-all duration-300 click-tactic relative group"
                     title="Open Memory Bank"
                 >
-                    <IoDiscOutline className="size-4" />
+                    <IoFingerPrintOutline className="size-5" />
                     {/* Tooltip */}
                     <span className="absolute -top-10 left-1/2 -translate-x-1/2 px-2 py-1 bg-card/80 backdrop-blur-sm rounded-md border border-border/20 text-[9px] font-mono uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
-                        Memory
+                        IDENTITY
                     </span>
                 </button>
             </motion.div>
