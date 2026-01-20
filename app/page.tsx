@@ -185,8 +185,7 @@ export default function Home() {
 					{/* Branding */}
 					<div className="flex items-center gap-2.5 glass-card rounded-full px-5 h-12 opacity-60 hover:opacity-100 transition-opacity border border-white/10">
 						<span 
-							className="font-bold text-sm leading-none tracking-wider"
-							style={{ fontFamily: '"Doto", sans-serif' }}
+							className="logo-font font-bold text-sm leading-none tracking-[0.3em]"
 						>
 							心 KOKORO
 						</span>

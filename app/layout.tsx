@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import { GeistSans } from "geist/font/sans";
+import { GeistMono } from "geist/font/mono";
 import "./globals.css";
 import { ThemeProvider } from "./components/theme-provider";
 
@@ -27,7 +29,7 @@ export default function RootLayout({
 				<link href="https://fonts.googleapis.com/css2?family=Doto:wght@100..900&display=swap" rel="stylesheet" />
 			</head>
 			<body
-				className={`${carbon.variable} antialiased bg-background text-foreground`}
+				className={`${GeistSans.variable} ${GeistMono.variable} ${carbon.variable} antialiased bg-background text-foreground`}
 			>
 			<ThemeProvider
 					attribute="class"
