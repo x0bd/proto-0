@@ -1,8 +1,14 @@
 import type { Metadata } from "next";
+import localFont from "next/font/local";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import "./globals.css";
 import { ThemeProvider } from "./components/theme-provider";
+
+const carbon = localFont({
+	src: "../public/fonts/carbon/Carbon Regular.woff2",
+	variable: "--font-carbon",
+});
 
 export const metadata: Metadata = {
 	title: "Kokoro | 心",
@@ -23,7 +29,7 @@ export default function RootLayout({
 				<link href="https://fonts.googleapis.com/css2?family=Doto:wght@100..900&display=swap" rel="stylesheet" />
 			</head>
 			<body
-				className={`${GeistSans.variable} ${GeistMono.variable} antialiased bg-background text-foreground`}
+				className={`${GeistSans.variable} ${GeistMono.variable} ${carbon.variable} antialiased bg-background text-foreground`}
 			>
 			<ThemeProvider
 					attribute="class"
