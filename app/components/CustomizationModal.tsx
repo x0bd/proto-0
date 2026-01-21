@@ -2,8 +2,24 @@
 
 import * as React from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { IoCloseOutline, IoDesktopOutline, IoPencilOutline, IoEllipseOutline, IoHardwareChipOutline, IoColorPaletteOutline, IoKeyOutline, IoGlobeOutline, IoCubeOutline, IoFlashOutline, IoSparklesOutline, IoVolumeHighOutline, IoPulseOutline } from "react-icons/io5";
+import { 
+    IoCloseOutline, 
+    IoDesktopOutline, 
+    IoPencilOutline, 
+    IoEllipseOutline, 
+    IoHardwareChipOutline, 
+    IoColorPaletteOutline, 
+    IoKeyOutline, 
+    IoGlobeOutline, 
+    IoCubeOutline, 
+    IoFlashOutline, 
+    IoSparklesOutline, 
+    IoVolumeHighOutline, 
+    IoPulseOutline,
+    IoCheckmarkOutline
+} from "react-icons/io5";
 import { FaceVariant } from "./face/types";
+import { cn } from "@/lib/utils";
 
 export interface AIConfig {
     baseUrl: string;
@@ -12,164 +28,133 @@ export interface AIConfig {
 }
 
 interface CustomizationModalProps {
-	isOpen: boolean;
-	onClose: () => void;
-	currentVariant: FaceVariant;
-	onVariantChange: (variant: FaceVariant) => void;
-	accentColor: string;
-	onAccentChange: (color: string) => void;
+    isOpen: boolean;
+    onClose: () => void;
+    currentVariant: FaceVariant;
+    onVariantChange: (variant: FaceVariant) => void;
+    accentColor: string;
+    onAccentChange: (color: string) => void;
     aiConfig: AIConfig;
     onAiConfigChange: (config: AIConfig) => void;
 }
 
-const VARIANTS: { id: FaceVariant; label: string; description: string; icon: any }[] = [
-	{ id: "minimal", label: "PURE", description: "Essential form", icon: IoEllipseOutline },
-	{ id: "tron", label: "DIGITAL", description: "System aesthetics", icon: IoDesktopOutline },
-	{ id: "analogue", label: "SKETCH", description: "Hand-drawn lines", icon: IoPencilOutline },
+const VARIANTS: { id: FaceVariant; label: string; description: string; icon: React.ElementType }[] = [
+    { id: "minimal", label: "Pure", description: "Essential form", icon: IoEllipseOutline },
+    { id: "tron", label: "Digital", description: "System aesthetics", icon: IoDesktopOutline },
+    { id: "analogue", label: "Sketch", description: "Hand-drawn lines", icon: IoPencilOutline },
 ];
 
-function LabToggle({
-	active,
-	onClick,
-	icon,
-	title,
-	desc,
-	chip,
-}: {
-	active: boolean;
-	onClick: () => void;
-	icon: React.ReactNode;
-	title: string;
-	desc: string;
-	chip?: string;
-}) {
-	return (
-		<button
-			type="button"
-			onClick={onClick}
-			className={`w-full text-left flex items-start gap-3 rounded-2xl border px-3 py-3 transition-all ${
-				active
-					? "border-foreground/20 bg-foreground/5 text-foreground"
-					: "border-foreground/5 hover:border-foreground/10 bg-transparent text-muted-foreground hover:text-foreground"
-			}`}
-		>
-			<div className={`mt-0.5 size-9 rounded-xl flex items-center justify-center ${active ? "bg-foreground text-background" : "bg-foreground/5 text-foreground"}`}>
-				{icon}
-			</div>
-			<div className="flex-1 space-y-1">
-				<div className="flex items-center gap-2">
-					<span className="text-sm font-semibold tracking-tight">{title}</span>
-					{chip && (
-						<span className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted-foreground/70">
-							{chip}
-						</span>
-					)}
-				</div>
-				<p className="text-xs text-muted-foreground leading-relaxed">{desc}</p>
-			</div>
-			<div
-				className={`mt-1 size-5 rounded-full border flex items-center justify-center ${
-					active ? "border-foreground bg-foreground text-background" : "border-foreground/30"
-				}`}
-			>
-				<div className={`size-2 rounded-full ${active ? "bg-background" : "bg-transparent"}`} />
-			</div>
-		</button>
-	);
+interface LabFeature {
+    id: string;
+    icon: React.ElementType;
+    title: string;
+    desc: string;
+    chip?: string;
 }
 
+const LAB_FEATURES: LabFeature[] = [
+    { id: "emotionAi", icon: IoFlashOutline, title: "Emotion AI", desc: "LLM-driven emotion choreography.", chip: "Soon" },
+    { id: "sentimentHeuristics", icon: IoPulseOutline, title: "Sentiment Heuristics", desc: "Client-side valence mapping.", chip: "Active" },
+    { id: "softBodyGaze", icon: IoSparklesOutline, title: "Soft-Body Gaze", desc: "Saccades, inertia for eyes.", chip: "Physics" },
+    { id: "soundDesign", icon: IoVolumeHighOutline, title: "Sound Design", desc: "Ambient tones tied to emotion.", chip: "Audio" },
+    { id: "reducedMotion", icon: IoPulseOutline, title: "Reduced Motion", desc: "Accessibility-first animation.", chip: "A11y" },
+];
+
 export const CustomizationModal = React.memo(function CustomizationModal({
-	isOpen,
-	onClose,
-	currentVariant,
-	onVariantChange,
+    isOpen,
+    onClose,
+    currentVariant,
+    onVariantChange,
     aiConfig,
     onAiConfigChange,
 }: CustomizationModalProps) {
     const [activeTab, setActiveTab] = React.useState<"identity" | "intelligence">("identity");
-	const [labs, setLabs] = React.useState({
-		emotionAi: false,
-		sentimentHeuristics: true,
-		softBodyGaze: false,
-		soundDesign: false,
-		reducedMotion: false,
-	});
+    const [labs, setLabs] = React.useState<Record<string, boolean>>({
+        emotionAi: false,
+        sentimentHeuristics: true,
+        softBodyGaze: false,
+        soundDesign: false,
+        reducedMotion: false,
+    });
 
-	// hydrate labs from localStorage
-	React.useEffect(() => {
-		try {
-			const saved = localStorage.getItem("dot_labs_settings");
-			if (saved) {
-				setLabs((prev) => ({ ...prev, ...JSON.parse(saved) }));
-			}
-		} catch {
-			// ignore
-		}
-	}, []);
+    React.useEffect(() => {
+        try {
+            const saved = localStorage.getItem("dot_labs_settings");
+            if (saved) setLabs((prev) => ({ ...prev, ...JSON.parse(saved) }));
+        } catch { /* ignore */ }
+    }, []);
 
-	// persist labs
-	React.useEffect(() => {
-		try {
-			localStorage.setItem("dot_labs_settings", JSON.stringify(labs));
-		} catch {
-			// ignore
-		}
-	}, [labs]);
+    React.useEffect(() => {
+        try {
+            localStorage.setItem("dot_labs_settings", JSON.stringify(labs));
+        } catch { /* ignore */ }
+    }, [labs]);
 
-	const toggleLab = (key: keyof typeof labs) => {
-		setLabs((prev) => ({ ...prev, [key]: !prev[key] }));
-	};
+    const toggleLab = (id: string) => setLabs((prev) => ({ ...prev, [id]: !prev[id] }));
 
-	return (
-		<AnimatePresence mode="wait">
-			{isOpen && (
-				<>
-					{/* Backdrop */}
-					<motion.div
-						initial={{ opacity: 0 }}
-						animate={{ opacity: 1 }}
-						exit={{ opacity: 0 }}
-						transition={{ duration: 0.3 }}
-						className="fixed inset-0 z-[100] bg-background/20 backdrop-blur-md"
-						onClick={onClose}
-					/>
+    return (
+        <AnimatePresence mode="wait">
+            {isOpen && (
+                <>
+                    {/* Backdrop */}
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.25 }}
+                        className="fixed inset-0 z-[100] bg-black/20 backdrop-blur-xl"
+                        onClick={onClose}
+                    />
 
-					{/* Modal Container */}
-					<div className="fixed inset-0 z-[101] flex items-center justify-center p-6 pointer-events-none">
-						<motion.div
-							initial={{ opacity: 0, scale: 0.95, y: 10 }}
-							animate={{ opacity: 1, scale: 1, y: 0 }}
-							exit={{ opacity: 0, scale: 0.95, y: 10 }}
-							transition={{ type: "spring", damping: 30, stiffness: 350 }}
-							className="pointer-events-auto w-full max-w-[560px] bg-background/80 backdrop-blur-xl rounded-[2.5rem] p-8 shadow-2xl border border-white/10 dark:border-white/5 flex flex-col gap-6 overflow-hidden"
-							onClick={(e) => e.stopPropagation()}
-						>
-							{/* Header */}
-							<div className="flex items-center justify-between">
-								<div className="flex items-center gap-4">
+                    {/* Modal */}
+                    <div className="fixed inset-0 z-[101] flex items-center justify-center p-6 pointer-events-none">
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.96, y: 20, filter: "blur(10px)" }}
+                            animate={{ opacity: 1, scale: 1, y: 0, filter: "blur(0px)" }}
+                            exit={{ opacity: 0, scale: 0.96, y: 20, filter: "blur(10px)" }}
+                            transition={{ type: "spring", damping: 32, stiffness: 300, mass: 0.8 }}
+                            className="pointer-events-auto w-full max-w-[520px] bg-background/90 backdrop-blur-3xl rounded-[32px] shadow-premium border border-white/10 dark:border-white/5 ring-1 ring-black/5 dark:ring-white/5 overflow-hidden flex flex-col"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            {/* Grain */}
+                            <div className="absolute inset-0 bg-grain opacity-20 pointer-events-none z-[-1]" />
+
+                            {/* Header */}
+                            <div className="flex items-center justify-between px-7 py-5 border-b border-white/5">
+                                <div className="flex items-center gap-1 p-1 bg-foreground/5 rounded-full">
                                     <button 
                                         onClick={() => setActiveTab("identity")}
-                                        className={`text-lg font-medium tracking-tight transition-colors ${activeTab === "identity" ? "text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+                                        className={cn(
+                                            "px-4 py-1.5 rounded-full text-[12px] font-medium tracking-wide transition-all",
+                                            activeTab === "identity" 
+                                                ? "bg-foreground text-background shadow-sm" 
+                                                : "text-muted-foreground hover:text-foreground"
+                                        )}
                                     >
                                         Identity
                                     </button>
-                                    <div className="h-4 w-px bg-border/50" />
                                     <button 
                                         onClick={() => setActiveTab("intelligence")}
-                                        className={`text-lg font-medium tracking-tight transition-colors ${activeTab === "intelligence" ? "text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+                                        className={cn(
+                                            "px-4 py-1.5 rounded-full text-[12px] font-medium tracking-wide transition-all",
+                                            activeTab === "intelligence" 
+                                                ? "bg-foreground text-background shadow-sm" 
+                                                : "text-muted-foreground hover:text-foreground"
+                                        )}
                                     >
                                         Intelligence
                                     </button>
-								</div>
+                                </div>
                                 <button
                                     onClick={onClose}
-                                    className="size-8 rounded-full flex items-center justify-center hover:bg-foreground/5 transition-colors text-muted-foreground hover:text-foreground"
+                                    className="size-9 rounded-full flex items-center justify-center hover:bg-rose-500/10 text-muted-foreground hover:text-rose-500 transition-all active:scale-95"
                                 >
                                     <IoCloseOutline className="size-5" />
                                 </button>
-							</div>
+                            </div>
 
-							<div className="relative">
+                            {/* Content */}
+                            <div className="p-6 overflow-y-auto max-h-[65vh]">
                                 <AnimatePresence mode="wait">
                                     {activeTab === "identity" ? (
                                         <motion.div
@@ -177,52 +162,62 @@ export const CustomizationModal = React.memo(function CustomizationModal({
                                             initial={{ opacity: 0, x: -20 }}
                                             animate={{ opacity: 1, x: 0 }}
                                             exit={{ opacity: 0, x: 20 }}
-                                            transition={{ duration: 0.2 }}
-                                            className="space-y-6"
+                                            transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
+                                            className="space-y-5"
                                         >
-                                            <div className="space-y-4">
-                                                <label className="text-[10px] font-mono tracking-widest text-muted-foreground uppercase pl-1 opacity-70 flex items-center gap-2">
-                                                    <IoColorPaletteOutline /> STYLE PRESET
-                                                </label>
-                                                <div className="grid grid-cols-1 gap-2">
-                                                    {VARIANTS.map((v) => {
-                                                        const isActive = currentVariant === v.id;
-                                                        const Icon = v.icon;
-                                                        return (
-                                                            <button
-                                                                key={v.id}
-                                                                onClick={() => onVariantChange(v.id)}
-                                                                className={`relative p-4 rounded-2xl transition-all duration-300 flex items-center gap-4 text-left group
-                                                                    ${isActive 
-                                                                        ? "bg-foreground/10 text-foreground" 
-                                                                        : "hover:bg-foreground/5 text-muted-foreground hover:text-foreground"
-                                                                    }`}
-                                                            >
-                                                                <div className={`p-2 rounded-xl ${isActive ? "bg-foreground text-background" : "bg-foreground/5"}`}>
-                                                                    <Icon className="size-4" />
-                                                                </div>
-                                                                <div className="flex-1">
-                                                                    <span className="text-xs font-bold tracking-wide uppercase block">
-                                                                        {v.label}
-                                                                    </span>
-                                                                    <span className="text-[10px] opacity-60 block">
-                                                                        {v.description}
-                                                                    </span>
-                                                                </div>
-                                                                {isActive && (
-                                                                    <motion.div layoutId="active-indicator" className="size-1.5 rounded-full bg-foreground mr-2" />
-                                                                )}
-                                                            </button>
-                                                        );
-                                                    })}
-                                                </div>
+                                            {/* Section Header */}
+                                            <div className="flex items-center gap-2 text-micro opacity-60">
+                                                <IoColorPaletteOutline className="size-3.5" />
+                                                <span>Style Preset</span>
                                             </div>
 
-                                            <div className="pt-2">
-                                                <p className="text-[10px] text-muted-foreground/40 text-center font-mono uppercase tracking-widest">
-                                                    Color Adapts to System Theme
-                                                </p>
+                                            {/* Variant Cards */}
+                                            <div className="grid grid-cols-3 gap-3">
+                                                {VARIANTS.map((v) => {
+                                                    const isActive = currentVariant === v.id;
+                                                    const Icon = v.icon;
+                                                    return (
+                                                        <button
+                                                            key={v.id}
+                                                            onClick={() => onVariantChange(v.id)}
+                                                            className={cn(
+                                                                "relative p-4 rounded-2xl transition-all duration-300 flex flex-col items-center gap-3 text-center group border",
+                                                                isActive 
+                                                                    ? "bg-foreground text-background border-transparent shadow-lg" 
+                                                                    : "bg-white/30 dark:bg-white/5 border-white/10 dark:border-white/5 hover:bg-white/50 dark:hover:bg-white/10 text-foreground"
+                                                            )}
+                                                        >
+                                                            <div className={cn(
+                                                                "size-10 rounded-xl flex items-center justify-center transition-all",
+                                                                isActive ? "bg-background/20" : "bg-foreground/5"
+                                                            )}>
+                                                                <Icon className="size-5" />
+                                                            </div>
+                                                            <div>
+                                                                <span className="text-[11px] font-bold tracking-widest uppercase block">
+                                                                    {v.label}
+                                                                </span>
+                                                                <span className="text-[9px] opacity-50 block mt-0.5">
+                                                                    {v.description}
+                                                                </span>
+                                                            </div>
+                                                            {isActive && (
+                                                                <motion.div 
+                                                                    layoutId="variant-check"
+                                                                    className="absolute top-2 right-2 size-4 bg-background/30 rounded-full flex items-center justify-center"
+                                                                >
+                                                                    <IoCheckmarkOutline className="size-3" />
+                                                                </motion.div>
+                                                            )}
+                                                        </button>
+                                                    );
+                                                })}
                                             </div>
+
+                                            {/* Footer Note */}
+                                            <p className="text-[10px] text-muted-foreground/40 text-center font-mono uppercase tracking-widest pt-2">
+                                                Color Adapts to System Theme
+                                            </p>
                                         </motion.div>
                                     ) : (
                                         <motion.div
@@ -230,17 +225,20 @@ export const CustomizationModal = React.memo(function CustomizationModal({
                                             initial={{ opacity: 0, x: 20 }}
                                             animate={{ opacity: 1, x: 0 }}
                                             exit={{ opacity: 0, x: -20 }}
-                                            transition={{ duration: 0.2 }}
+                                            transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
                                             className="space-y-6"
                                         >
+                                            {/* API Configuration */}
                                             <div className="space-y-4">
-                                                 <label className="text-[10px] font-mono tracking-widest text-muted-foreground uppercase pl-1 opacity-70 flex items-center gap-2">
-                                                    <IoHardwareChipOutline /> API CONFIGURATION
-                                                </label>
+                                                <div className="flex items-center gap-2 text-micro opacity-60">
+                                                    <IoHardwareChipOutline className="size-3.5" />
+                                                    <span>API Configuration</span>
+                                                </div>
 
                                                 <div className="space-y-3">
+                                                    {/* Base URL */}
                                                     <div className="space-y-1.5">
-                                                        <label className="text-[10px] text-muted-foreground uppercase ml-1 flex items-center gap-1.5">
+                                                        <label className="text-[10px] text-muted-foreground/60 uppercase ml-1 flex items-center gap-1.5">
                                                             <IoGlobeOutline className="size-3" /> Base URL
                                                         </label>
                                                         <input 
@@ -248,12 +246,13 @@ export const CustomizationModal = React.memo(function CustomizationModal({
                                                             value={aiConfig.baseUrl}
                                                             onChange={(e) => onAiConfigChange({ ...aiConfig, baseUrl: e.target.value })}
                                                             placeholder="https://api.openai.com/v1"
-                                                            className="w-full bg-foreground/5 border border-transparent focus:border-foreground/20 rounded-xl px-4 py-2.5 text-xs font-mono text-foreground placeholder:text-muted-foreground/30 outline-none transition-all"
+                                                            className="w-full bg-white/40 dark:bg-white/5 border border-white/10 focus:border-foreground/20 rounded-xl px-4 py-2.5 text-[13px] font-mono text-foreground placeholder:text-muted-foreground/30 outline-none transition-all focus:ring-1 focus:ring-foreground/10"
                                                         />
                                                     </div>
 
+                                                    {/* API Key */}
                                                     <div className="space-y-1.5">
-                                                        <label className="text-[10px] text-muted-foreground uppercase ml-1 flex items-center gap-1.5">
+                                                        <label className="text-[10px] text-muted-foreground/60 uppercase ml-1 flex items-center gap-1.5">
                                                             <IoKeyOutline className="size-3" /> API Key
                                                         </label>
                                                         <input 
@@ -261,12 +260,13 @@ export const CustomizationModal = React.memo(function CustomizationModal({
                                                             value={aiConfig.apiKey}
                                                             onChange={(e) => onAiConfigChange({ ...aiConfig, apiKey: e.target.value })}
                                                             placeholder="sk-..."
-                                                            className="w-full bg-foreground/5 border border-transparent focus:border-foreground/20 rounded-xl px-4 py-2.5 text-xs font-mono text-foreground placeholder:text-muted-foreground/30 outline-none transition-all"
+                                                            className="w-full bg-white/40 dark:bg-white/5 border border-white/10 focus:border-foreground/20 rounded-xl px-4 py-2.5 text-[13px] font-mono text-foreground placeholder:text-muted-foreground/30 outline-none transition-all focus:ring-1 focus:ring-foreground/10"
                                                         />
                                                     </div>
 
+                                                    {/* Model */}
                                                     <div className="space-y-1.5">
-                                                        <label className="text-[10px] text-muted-foreground uppercase ml-1 flex items-center gap-1.5">
+                                                        <label className="text-[10px] text-muted-foreground/60 uppercase ml-1 flex items-center gap-1.5">
                                                             <IoCubeOutline className="size-3" /> Model ID
                                                         </label>
                                                         <input 
@@ -274,79 +274,76 @@ export const CustomizationModal = React.memo(function CustomizationModal({
                                                             value={aiConfig.model}
                                                             onChange={(e) => onAiConfigChange({ ...aiConfig, model: e.target.value })}
                                                             placeholder="gpt-4o-mini"
-                                                            className="w-full bg-foreground/5 border border-transparent focus:border-foreground/20 rounded-xl px-4 py-2.5 text-xs font-mono text-foreground placeholder:text-muted-foreground/30 outline-none transition-all"
+                                                            className="w-full bg-white/40 dark:bg-white/5 border border-white/10 focus:border-foreground/20 rounded-xl px-4 py-2.5 text-[13px] font-mono text-foreground placeholder:text-muted-foreground/30 outline-none transition-all focus:ring-1 focus:ring-foreground/10"
                                                         />
                                                     </div>
                                                 </div>
 
-                                                <div className="pt-2">
-                                                    <p className="text-[10px] text-muted-foreground/40 text-center font-mono uppercase tracking-widest max-w-[200px] mx-auto leading-relaxed">
-                                                        Keys are stored locally on your device.
-                                                    </p>
-                                                </div>
+                                                <p className="text-[9px] text-muted-foreground/40 text-center font-mono uppercase tracking-widest">
+                                                    Keys stored locally on your device
+                                                </p>
                                             </div>
 
-											{/* Labs backbone (from cool.md vision) */}
-											<div className="space-y-3 rounded-2xl border border-white/10 bg-foreground/3 p-4">
-												<div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-[0.25em] text-muted-foreground">
-													<IoSparklesOutline className="size-4" />
-													Labs Backbone
-												</div>
-												<p className="text-[12px] text-muted-foreground leading-relaxed">
-													Feature flags to align with the roadmap in <span className="font-mono">cool.md</span>. Stored locally so we can wire them later.
-												</p>
+                                            {/* Labs Section */}
+                                            <div className="space-y-4 pt-2">
+                                                <div className="flex items-center gap-2 text-micro opacity-60">
+                                                    <IoSparklesOutline className="size-3.5" />
+                                                    <span>Labs</span>
+                                                    <span className="text-[8px] bg-foreground/10 px-1.5 py-0.5 rounded-full ml-auto">Experimental</span>
+                                                </div>
 
-												<div className="space-y-2">
-													<LabToggle
-														active={labs.emotionAi}
-														onClick={() => toggleLab("emotionAi")}
-														icon={<IoFlashOutline className="size-4" />}
-														title="Emotion AI (LLM-driven)"
-														desc="Use LLM intent/sentiment to drive emotion choreography."
-														chip="Next: plug Vercel AI SDK"
-													/>
-													<LabToggle
-														active={labs.sentimentHeuristics}
-														onClick={() => toggleLab("sentimentHeuristics")}
-														icon={<IoPulseOutline className="size-4" />}
-														title="Sentiment Heuristics"
-														desc="Client-side valence/keyword mapping to emotions."
-														chip="Fast layer"
-													/>
-													<LabToggle
-														active={labs.softBodyGaze}
-														onClick={() => toggleLab("softBodyGaze")}
-														icon={<IoSparklesOutline className="size-4" />}
-														title="Soft-Body Gaze"
-														desc="Saccades, inertia, and mood momentum for eyes/head."
-														chip="Physics 2.0"
-													/>
-													<LabToggle
-														active={labs.soundDesign}
-														onClick={() => toggleLab("soundDesign")}
-														icon={<IoVolumeHighOutline className="size-4" />}
-														title="Sound Design"
-														desc="Hover/boop/ambient tones tied to emotion."
-														chip="Audio"
-													/>
-													<LabToggle
-														active={labs.reducedMotion}
-														onClick={() => toggleLab("reducedMotion")}
-														icon={<IoPulseOutline className="size-4 rotate-90" />}
-														title="Respect Reduced Motion"
-														desc="Tone down animation amplitude/duration for accessibility."
-														chip="A11y"
-													/>
-												</div>
-											</div>
+                                                <div className="space-y-2">
+                                                    {LAB_FEATURES.map((feature) => {
+                                                        const isActive = labs[feature.id];
+                                                        const Icon = feature.icon;
+                                                        return (
+                                                            <button
+                                                                key={feature.id}
+                                                                type="button"
+                                                                onClick={() => toggleLab(feature.id)}
+                                                                className={cn(
+                                                                    "w-full text-left flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all border",
+                                                                    isActive
+                                                                        ? "border-foreground/20 bg-foreground/5"
+                                                                        : "border-transparent hover:bg-foreground/5"
+                                                                )}
+                                                            >
+                                                                <div className={cn(
+                                                                    "size-8 rounded-lg flex items-center justify-center shrink-0 transition-all",
+                                                                    isActive ? "bg-foreground text-background" : "bg-foreground/5 text-muted-foreground"
+                                                                )}>
+                                                                    <Icon className="size-4" />
+                                                                </div>
+                                                                <div className="flex-1 min-w-0">
+                                                                    <div className="flex items-center gap-2">
+                                                                        <span className="text-[12px] font-medium tracking-tight truncate">{feature.title}</span>
+                                                                        {feature.chip && (
+                                                                            <span className="text-[8px] font-mono uppercase tracking-wider text-muted-foreground/50 bg-foreground/5 px-1.5 py-0.5 rounded shrink-0">
+                                                                                {feature.chip}
+                                                                            </span>
+                                                                        )}
+                                                                    </div>
+                                                                    <p className="text-[10px] text-muted-foreground/60 truncate">{feature.desc}</p>
+                                                                </div>
+                                                                <div className={cn(
+                                                                    "size-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all",
+                                                                    isActive ? "border-foreground bg-foreground" : "border-muted-foreground/30"
+                                                                )}>
+                                                                    {isActive && <IoCheckmarkOutline className="size-3 text-background" />}
+                                                                </div>
+                                                            </button>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </div>
                                         </motion.div>
                                     )}
                                 </AnimatePresence>
                             </div>
-						</motion.div>
-					</div>
-				</>
-			)}
-		</AnimatePresence>
-	);
+                        </motion.div>
+                    </div>
+                </>
+            )}
+        </AnimatePresence>
+    );
 });
