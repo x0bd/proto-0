@@ -316,15 +316,7 @@ export function MemoryBank({ isOpen, onClose, currentEmotion, avatarStageRef, on
         <AnimatePresence mode="wait">
             {isOpen && (
                 <>
-                    {/* Backdrop */}
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.3, ease: "easeInOut" }}
-                        className="fixed inset-0 z-[100] bg-background/40 backdrop-blur-xl"
-                        onClick={onClose}
-                    />
+
 
                     {/* Modal */}
                     <div className="fixed inset-0 z-[101] flex items-center justify-center pointer-events-none p-6">
