@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { IoCloseOutline, IoDesktopOutline, IoPencilOutline, IoEllipseOutline, IoHardwareChipOutline, IoColorPaletteOutline, IoKeyOutline, IoGlobeOutline, IoCubeOutline } from "react-icons/io5";
+import { IoCloseOutline, IoDesktopOutline, IoPencilOutline, IoEllipseOutline, IoHardwareChipOutline, IoColorPaletteOutline, IoKeyOutline, IoGlobeOutline, IoCubeOutline, IoFlashOutline, IoSparklesOutline, IoVolumeHighOutline, IoPulseOutline } from "react-icons/io5";
 import { FaceVariant } from "./face/types";
 
 export interface AIConfig {
@@ -28,6 +28,56 @@ const VARIANTS: { id: FaceVariant; label: string; description: string; icon: any
 	{ id: "analogue", label: "SKETCH", description: "Hand-drawn lines", icon: IoPencilOutline },
 ];
 
+function LabToggle({
+	active,
+	onClick,
+	icon,
+	title,
+	desc,
+	chip,
+}: {
+	active: boolean;
+	onClick: () => void;
+	icon: React.ReactNode;
+	title: string;
+	desc: string;
+	chip?: string;
+}) {
+	return (
+		<button
+			type="button"
+			onClick={onClick}
+			className={`w-full text-left flex items-start gap-3 rounded-2xl border px-3 py-3 transition-all ${
+				active
+					? "border-foreground/20 bg-foreground/5 text-foreground"
+					: "border-foreground/5 hover:border-foreground/10 bg-transparent text-muted-foreground hover:text-foreground"
+			}`}
+		>
+			<div className={`mt-0.5 size-9 rounded-xl flex items-center justify-center ${active ? "bg-foreground text-background" : "bg-foreground/5 text-foreground"}`}>
+				{icon}
+			</div>
+			<div className="flex-1 space-y-1">
+				<div className="flex items-center gap-2">
+					<span className="text-sm font-semibold tracking-tight">{title}</span>
+					{chip && (
+						<span className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted-foreground/70">
+							{chip}
+						</span>
+					)}
+				</div>
+				<p className="text-xs text-muted-foreground leading-relaxed">{desc}</p>
+			</div>
+			<div
+				className={`mt-1 size-5 rounded-full border flex items-center justify-center ${
+					active ? "border-foreground bg-foreground text-background" : "border-foreground/30"
+				}`}
+			>
+				<div className={`size-2 rounded-full ${active ? "bg-background" : "bg-transparent"}`} />
+			</div>
+		</button>
+	);
+}
+
 export const CustomizationModal = React.memo(function CustomizationModal({
 	isOpen,
 	onClose,
@@ -37,6 +87,38 @@ export const CustomizationModal = React.memo(function CustomizationModal({
     onAiConfigChange,
 }: CustomizationModalProps) {
     const [activeTab, setActiveTab] = React.useState<"identity" | "intelligence">("identity");
+	const [labs, setLabs] = React.useState({
+		emotionAi: false,
+		sentimentHeuristics: true,
+		softBodyGaze: false,
+		soundDesign: false,
+		reducedMotion: false,
+	});
+
+	// hydrate labs from localStorage
+	React.useEffect(() => {
+		try {
+			const saved = localStorage.getItem("dot_labs_settings");
+			if (saved) {
+				setLabs((prev) => ({ ...prev, ...JSON.parse(saved) }));
+			}
+		} catch {
+			// ignore
+		}
+	}, []);
+
+	// persist labs
+	React.useEffect(() => {
+		try {
+			localStorage.setItem("dot_labs_settings", JSON.stringify(labs));
+		} catch {
+			// ignore
+		}
+	}, [labs]);
+
+	const toggleLab = (key: keyof typeof labs) => {
+		setLabs((prev) => ({ ...prev, [key]: !prev[key] }));
+	};
 
 	return (
 		<AnimatePresence mode="wait">
@@ -59,7 +141,7 @@ export const CustomizationModal = React.memo(function CustomizationModal({
 							animate={{ opacity: 1, scale: 1, y: 0 }}
 							exit={{ opacity: 0, scale: 0.95, y: 10 }}
 							transition={{ type: "spring", damping: 30, stiffness: 350 }}
-							className="pointer-events-auto w-full max-w-[420px] bg-background/80 backdrop-blur-xl rounded-[2.5rem] p-8 shadow-2xl border border-white/10 dark:border-white/5 flex flex-col gap-6 overflow-hidden"
+							className="pointer-events-auto w-full max-w-[560px] bg-background/80 backdrop-blur-xl rounded-[2.5rem] p-8 shadow-2xl border border-white/10 dark:border-white/5 flex flex-col gap-6 overflow-hidden"
 							onClick={(e) => e.stopPropagation()}
 						>
 							{/* Header */}
@@ -203,6 +285,60 @@ export const CustomizationModal = React.memo(function CustomizationModal({
                                                     </p>
                                                 </div>
                                             </div>
+
+											{/* Labs backbone (from cool.md vision) */}
+											<div className="space-y-3 rounded-2xl border border-white/10 bg-foreground/3 p-4">
+												<div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-[0.25em] text-muted-foreground">
+													<IoSparklesOutline className="size-4" />
+													Labs Backbone
+												</div>
+												<p className="text-[12px] text-muted-foreground leading-relaxed">
+													Feature flags to align with the roadmap in <span className="font-mono">cool.md</span>. Stored locally so we can wire them later.
+												</p>
+
+												<div className="space-y-2">
+													<LabToggle
+														active={labs.emotionAi}
+														onClick={() => toggleLab("emotionAi")}
+														icon={<IoFlashOutline className="size-4" />}
+														title="Emotion AI (LLM-driven)"
+														desc="Use LLM intent/sentiment to drive emotion choreography."
+														chip="Next: plug Vercel AI SDK"
+													/>
+													<LabToggle
+														active={labs.sentimentHeuristics}
+														onClick={() => toggleLab("sentimentHeuristics")}
+														icon={<IoPulseOutline className="size-4" />}
+														title="Sentiment Heuristics"
+														desc="Client-side valence/keyword mapping to emotions."
+														chip="Fast layer"
+													/>
+													<LabToggle
+														active={labs.softBodyGaze}
+														onClick={() => toggleLab("softBodyGaze")}
+														icon={<IoSparklesOutline className="size-4" />}
+														title="Soft-Body Gaze"
+														desc="Saccades, inertia, and mood momentum for eyes/head."
+														chip="Physics 2.0"
+													/>
+													<LabToggle
+														active={labs.soundDesign}
+														onClick={() => toggleLab("soundDesign")}
+														icon={<IoVolumeHighOutline className="size-4" />}
+														title="Sound Design"
+														desc="Hover/boop/ambient tones tied to emotion."
+														chip="Audio"
+													/>
+													<LabToggle
+														active={labs.reducedMotion}
+														onClick={() => toggleLab("reducedMotion")}
+														icon={<IoPulseOutline className="size-4 rotate-90" />}
+														title="Respect Reduced Motion"
+														desc="Tone down animation amplitude/duration for accessibility."
+														chip="A11y"
+													/>
+												</div>
+											</div>
                                         </motion.div>
                                     )}
                                 </AnimatePresence>
