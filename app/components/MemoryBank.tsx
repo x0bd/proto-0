@@ -34,7 +34,7 @@ export function MemoryBank({ isOpen, onClose, currentEmotion, onRestore }: Memor
 
     // Load from local storage
     React.useEffect(() => {
-        const saved = localStorage.getItem("kokoro_memories");
+        const saved = localStorage.getItem("dot_memories");
         if (saved) {
             try {
                 setMemories(JSON.parse(saved));
@@ -46,7 +46,7 @@ export function MemoryBank({ isOpen, onClose, currentEmotion, onRestore }: Memor
 
     // Save to local storage
     React.useEffect(() => {
-        localStorage.setItem("kokoro_memories", JSON.stringify(memories));
+        localStorage.setItem("dot_memories", JSON.stringify(memories));
     }, [memories]);
 
     const handleCapture = () => {

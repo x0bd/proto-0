@@ -11,9 +11,9 @@ const carbon = localFont({
 });
 
 export const metadata: Metadata = {
-	title: "Kokoro | 心",
+	title: "Dot | .",
 	description:
-		"Kokoro – a minimal, expressive avatar. Pure eyes and mouth, emotion through orientation. 心。",
+		"Dot – a minimal, expressive avatar. Pure eyes and mouth, emotion through orientation. .",
 };
 
 export default function RootLayout({

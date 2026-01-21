@@ -95,7 +95,7 @@ export function RightPanel({ history, ...props }: RightPanelProps) {
                                                 <span className={cn(
                                                     "size-2 rounded-full",
                                                     msg.role === 'user' ? "bg-emerald-500" : 
-                                                    msg.role === 'kokoro' ? "bg-indigo-500" : "bg-amber-500"
+                                                    msg.role === 'dot' ? "bg-indigo-500" : "bg-amber-500"
                                                 )} />
                                                 <span className="text-xs font-medium text-foreground/70 capitalize">
                                                     {msg.role}

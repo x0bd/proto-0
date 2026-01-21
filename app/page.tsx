@@ -76,15 +76,15 @@ export default function Home() {
 	const { theme, setTheme } = useTheme();
 	const [mounted, setMounted] = useState(false);
     const [history, setHistory] = useState<{ role: string; content: string }[]>([
-        { role: "system", content: "Kokoro System Online" },
+        { role: "system", content: "Dot System Online" },
         { role: "system", content: "Emotion engine active." },
-        { role: "kokoro", content: "Systems normal. Awaiting input." }
+        { role: "dot", content: "Systems normal. Awaiting input." }
     ]);
 	
 	useEffect(() => { 
         setMounted(true); 
         // Load AI Config from localStorage
-        const savedConfig = localStorage.getItem("kokoro_ai_config");
+        const savedConfig = localStorage.getItem("dot_ai_config");
         if (savedConfig) {
             try {
                 setAiConfig(JSON.parse(savedConfig));
@@ -97,7 +97,7 @@ export default function Home() {
     // Save AI Config to localStorage whenever it changes
     useEffect(() => {
         if (mounted) {
-            localStorage.setItem("kokoro_ai_config", JSON.stringify(aiConfig));
+            localStorage.setItem("dot_ai_config", JSON.stringify(aiConfig));
         }
     }, [aiConfig, mounted]);
 
@@ -213,7 +213,7 @@ export default function Home() {
 						<span 
 							className="logo-font font-bold text-sm leading-none tracking-[0.3em]"
 						>
-							心 KOKORO
+							DOT
 						</span>
 					</div>
 				</div>
@@ -293,9 +293,9 @@ export default function Home() {
                                 body: JSON.stringify({
                                     model: aiConfig.model,
                                     messages: [
-                                        { role: "system", content: "You are Kokoro, a minimal expressive avatar. You are helpful, concise, and slightly poetic. If the user asks for an emotion, you can output JSON in the format { \"joy\": 0.5, \"sadness\": 0, ... } at the end of your message to change your face." },
-                                        ...history.filter(h => h.role === 'user' || h.role === 'kokoro' || h.role === 'system').map(h => ({
-                                            role: h.role === 'kokoro' ? 'assistant' : h.role,
+                                        { role: "system", content: "You are Dot, a minimal expressive avatar. You are helpful, concise, and slightly poetic. If the user asks for an emotion, you can output JSON in the format { \"joy\": 0.5, \"sadness\": 0, ... } at the end of your message to change your face." },
+                                        ...history.filter(h => h.role === 'user' || h.role === 'dot' || h.role === 'system').map(h => ({
+                                            role: h.role === 'dot' ? 'assistant' : h.role,
                                             content: h.content
                                         })),
                                         { role: "user", content: message }
@@ -312,7 +312,7 @@ export default function Home() {
                             const data = await response.json();
                             const reply = data.choices[0]?.message?.content || "(No response)";
                             
-                            setHistory(prev => [...prev, { role: "kokoro", content: reply }]);
+                            setHistory(prev => [...prev, { role: "dot", content: reply }]);
 
                             // Basic emotion parsing (JSON extraction)
                             const jsonMatch = reply.match(/\{[\s\S]*?\}/);

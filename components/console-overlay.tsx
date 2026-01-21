@@ -74,7 +74,7 @@ export function ConsoleOverlay({ isOpen, onClose, history, onSendMessage, onClea
                                 ))}
                             </div>
 							<div>
-								<h2 className="text-sm font-medium tracking-tight text-foreground">Kokoro</h2>
+								<h2 className="text-sm font-medium tracking-tight text-foreground">Dot</h2>
 								<p className="text-[10px] text-muted-foreground flex items-center gap-1">
                                     <span className="size-1 rounded-full bg-emerald-500 animate-pulse" />
                                     Listening
