@@ -97,7 +97,7 @@ export function ConsoleOverlay({ isOpen, onClose, history, isThinking = false, o
                         y: 0, 
                         scale: 1, 
                         filter: "blur(0px)",
-                        height: isMinimized ? "auto" : "620px"
+                        height: isMinimized ? "60px" : "620px"
                     }}
                     exit={{ opacity: 0, y: 20, scale: 0.98, filter: "blur(10px)" }}
                     transition={{ type: "spring", damping: 32, stiffness: 280, mass: 0.8 }}
@@ -109,44 +109,48 @@ export function ConsoleOverlay({ isOpen, onClose, history, isThinking = false, o
                     <div className="absolute inset-0 bg-grain opacity-30 pointer-events-none z-[-1]" />
 
                     {/* Integrated Header */}
-                    <div className="absolute top-4 right-4 z-20 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                             <button 
-                                onClick={() => setIsMinimized(!isMinimized)}
-                                className="size-6 rounded-full flex items-center justify-center hover:bg-foreground/5 text-muted-foreground transition-all active:scale-95"
-                                title={isMinimized ? "Expand" : "Minimize"}
-                            >
-                                {isMinimized ? <IoExpandOutline className="size-3" /> : <IoRemoveOutline className="size-3" />}
-                            </button>
-                            <button 
-                                onClick={onClear}
-                                className="size-6 rounded-full flex items-center justify-center hover:bg-foreground/5 text-muted-foreground transition-all active:scale-95"
-                                title="Clear History"
-                            >
-                                <IoTrashOutline className="size-3" />
-                            </button>
-                            <button 
-                                onClick={onClose}
-                                className="size-6 rounded-full flex items-center justify-center hover:bg-rose-500/10 text-muted-foreground hover:text-rose-500 transition-all active:scale-95"
-                                title="Close"
-                            >
-                                <IoCloseOutline className="size-3.5" />
-                            </button>
-                    </div>
-
-                    {!isMinimized && (
-                         <div className="absolute top-5 left-6 z-10 select-none pointer-events-none flex items-center gap-2">
-                            <span className="text-[10px] font-mono font-medium tracking-widest text-muted-foreground/60 uppercase">
-                                Neural Link
+                    {/* Integrated Header Row - Always Visible & Aligned */}
+                    <div className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between px-5 py-4 pointer-events-none">
+                        {/* Chat Label */}
+                        <div className="flex items-center gap-2 select-none pointer-events-auto">
+                            <span className="text-[11px] font-bold tracking-[0.2em] text-foreground/80 uppercase font-mono">
+                                Chat
                             </span>
-                            <span className="size-1 rounded-full bg-emerald-500/80 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.4)]" />
+                            <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.3)]" />
                         </div>
-                    )}
+
+                        {/* Controls Pill */}
+                        <div className="flex items-center gap-1 bg-background/40 backdrop-blur-md rounded-full p-1.5 border border-white/10 dark:border-white/5 shadow-sm pointer-events-auto">
+                           <button 
+                               onClick={() => setIsMinimized(!isMinimized)}
+                               className="size-6 rounded-full flex items-center justify-center hover:bg-foreground/10 text-muted-foreground transition-colors active:scale-90"
+                               title={isMinimized ? "Expand" : "Minimize"}
+                           >
+                               {isMinimized ? <IoExpandOutline className="size-3" /> : <IoRemoveOutline className="size-3" />}
+                           </button>
+                           <button 
+                               onClick={onClear}
+                               className="size-6 rounded-full flex items-center justify-center hover:bg-foreground/10 text-muted-foreground transition-colors active:scale-90"
+                               title="Clear History"
+                           >
+                               <IoTrashOutline className="size-3" />
+                           </button>
+                           <div className="w-px h-3 bg-foreground/10 mx-0.5" />
+                           <button 
+                               onClick={onClose}
+                               className="size-6 rounded-full flex items-center justify-center hover:bg-rose-500/10 text-muted-foreground hover:text-rose-500 transition-colors active:scale-90"
+                               title="Close"
+                           >
+                               <IoCloseOutline className="size-3.5" />
+                           </button>
+                        </div>
+                    </div>
 
                     {!isMinimized && (
                         <div className="flex-1 w-full flex flex-col min-h-0 relative bg-gradient-to-b from-transparent to-background/20">
                             {/* Chat Area */}
                             <ScrollArea className="flex-1">
-                                <div className="px-5 py-4 space-y-5">
+                                <div className="px-5 pb-4 pt-14 space-y-5">
                                     {history.length === 0 ? (
                                         <div className="h-[380px] flex items-center justify-center">
 											<span className="text-[10px] font-mono uppercase tracking-[0.25em] text-muted-foreground/40">
@@ -232,10 +236,10 @@ export function ConsoleOverlay({ isOpen, onClose, history, isThinking = false, o
                                                             // Standard Text Bubble (Compact & Premium)
 															<div className="flex flex-col gap-1">
 																<div className={cn(
-																	"px-5 py-3 text-[13px] font-medium leading-relaxed shadow-zen backdrop-blur-md border",
+																	"px-5 py-3.5 text-[14px] font-medium leading-relaxed shadow-sm backdrop-blur-md border transition-all",
 																	isUser
-																		? "bg-foreground text-background rounded-[24px] rounded-tr-sm border-transparent"
-																		: "bg-card/50 dark:bg-white/5 border-white/10 text-foreground rounded-[24px] rounded-tl-sm"
+																		? "bg-foreground text-background rounded-[26px] rounded-tr-md border-transparent hover:shadow-md"
+																		: "bg-background/40 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground rounded-[26px] rounded-tl-md hover:bg-background/60"
 																)}>
 																	{msg.content}
 																</div>
@@ -280,9 +284,9 @@ export function ConsoleOverlay({ isOpen, onClose, history, isThinking = false, o
                                     className="relative group"
                                 >
                                     {/* Ambient Glow */}
-                                    <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500/20 via-blue-500/20 to-purple-500/20 rounded-full blur-xl opacity-0 group-focus-within:opacity-100 transition-opacity duration-700" />
+                                    {/* Ambient Glow Removed for cleaner aesthetic */}
                                     
-                                    <div className="relative bg-white/60 dark:bg-black/40 backdrop-blur-2xl border border-white/40 dark:border-white/10 shadow-lg rounded-full px-2 py-1.5 flex items-center gap-2 transition-all hover:bg-white/80 dark:hover:bg-black/60 focus-within:ring-1 focus-within:ring-white/20">
+                                    <div className="relative bg-white/40 dark:bg-zinc-900/40 backdrop-blur-xl border border-black/5 dark:border-white/10 rounded-full px-2 py-1.5 flex items-center gap-2 transition-all hover:bg-white/60 dark:hover:bg-zinc-900/60 focus-within:bg-white/80 dark:focus-within:bg-zinc-900/80 shadow-sm focus-within:shadow-md focus-within:scale-[1.01]">
                                         {/* Mic Button */}
                                         <button
                                             type="button"
