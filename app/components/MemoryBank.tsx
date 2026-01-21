@@ -222,10 +222,10 @@ export function MemoryBank({ isOpen, onClose, currentEmotion, avatarStageRef, on
                      {/* Backdrop */}
                     <motion.div
                         initial={{ opacity: 0 }}
-                         animate={{ opacity: 1 }}
+                        animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        transition={{ duration: 0.4, ease: [0.32, 0.72, 0, 1] }}
-                         className="fixed inset-0 z-[100] bg-background/60 backdrop-blur-2xl"
+                        transition={{ duration: 0.25, ease: [0.32, 0.72, 0, 1] }}
+                        className="fixed inset-0 z-[100] bg-transparent"
                         onClick={onClose}
                     />
 
