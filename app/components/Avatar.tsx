@@ -20,6 +20,7 @@ interface AvatarProps {
 	emotion?: EmotionState;
 	className?: string;
 	voiceEnabled?: boolean;
+	voiceLevel?: number;
 	variant?: FaceVariant;
 }
 
@@ -35,6 +36,7 @@ export default function Avatar({
 	emotion = DEFAULT_EMOTION,
 	className = "",
 	voiceEnabled = false,
+	voiceLevel = 0,
 	variant = "minimal",
 }: AvatarProps) {
 	// Helper for mouth geometry
@@ -173,6 +175,41 @@ export default function Avatar({
 			}
 		}
 	}
+
+    // Voice Reactivity: Direct modulation of mouth curve
+    useEffect(() => {
+        if (!mouthRef.current) return;
+        
+        // If voice is enabled and getting signal, or if we want to reset to idle
+        // Calculate the base state from the current logical emotion (stored in latestMouthRef)
+        const base = latestMouthRef.current;
+        
+        // If speaking, we add opening
+        let targetCurve = base.curve;
+        let targetWidth = base.width;
+        
+        if (voiceEnabled && voiceLevel > 0.01) {
+            // Modulate curve (opening) based on level
+            targetCurve += voiceLevel * 60; 
+            // Slight width reduction for "O" shape on loud sounds?
+            // targetWidth -= voiceLevel * 10;
+        }
+
+        const pathData = generateMouthPath(targetWidth, targetCurve);
+        
+        // Use a quick tween or set for responsiveness
+        // If voice is active, we want immediate response (frames).
+        // If returning to rest, maybe slightly smoother.
+        const isSpeaking = voiceEnabled && voiceLevel > 0.01;
+        
+        gsap.to(mouthRef.current, {
+            attr: { d: pathData },
+            duration: isSpeaking ? 0.05 : 0.2,
+            ease: isSpeaking ? "none" : "power2.out",
+            overwrite: "auto"
+        });
+
+    }, [voiceLevel, voiceEnabled, generateMouthPath]);
 
 	// Animation Helper to bridge Ellipse (Minimal) vs Rect (Tron) geometry
 	function animateEye(

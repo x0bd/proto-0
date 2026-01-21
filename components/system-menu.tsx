@@ -7,8 +7,10 @@ import {
     Moon, 
     Sun,
     Settings,
-    MoreHorizontal
+    MoreHorizontal,
+    Palette
 } from "lucide-react";
+
 import { useTheme } from "next-themes";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -23,9 +25,10 @@ interface SystemMenuProps {
     voiceEnabled: boolean;
     onVoiceToggle: () => void;
     onSettingsClick: () => void;
+    onStudioClick: () => void;
 }
 
-export function SystemMenu({ voiceEnabled, onVoiceToggle, onSettingsClick }: SystemMenuProps) {
+export function SystemMenu({ voiceEnabled, onVoiceToggle, onSettingsClick, onStudioClick }: SystemMenuProps) {
     const { theme, setTheme } = useTheme();
 
     return (
@@ -70,6 +73,10 @@ export function SystemMenu({ voiceEnabled, onVoiceToggle, onSettingsClick }: Sys
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48 glass-card rounded-[1.5rem] p-2 animate-in fade-in zoom-in-95 duration-200 border-0 shadow-premium">
+                    <DropdownMenuItem onClick={onStudioClick} className="rounded-xl cursor-pointer p-3 hover:bg-foreground/5 focus:bg-foreground/5 focus:text-foreground mb-1">
+                        <Palette className="mr-3 size-4 opacity-50" />
+                        <span className="font-mono text-xs tracking-wide">STUDIO</span>
+                    </DropdownMenuItem>
                     <DropdownMenuItem onClick={onSettingsClick} className="rounded-xl cursor-pointer p-3 hover:bg-foreground/5 focus:bg-foreground/5 focus:text-foreground">
                         <Settings className="mr-3 size-4 opacity-50" />
                         <span className="font-mono text-xs tracking-wide">SETTINGS</span>

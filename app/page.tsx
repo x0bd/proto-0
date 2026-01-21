@@ -68,6 +68,7 @@ export default function Home() {
 	const [isCustomizationOpen, setIsCustomizationOpen] = useState(false);
 	const [isMemoryOpen, setIsMemoryOpen] = useState(false);
 	const [isConsoleOpen, setIsConsoleOpen] = useState(false);
+	const [isStudioOpen, setIsStudioOpen] = useState(false);
 	const [isDotThinking, setIsDotThinking] = useState(false);
 	const avatarStageRef = useRef<HTMLDivElement>(null);
 	const [faceVariant, setFaceVariant] = useState<FaceVariant>("minimal");
@@ -237,6 +238,7 @@ export default function Home() {
 						voiceEnabled={voiceEnabled}
 						onVoiceToggle={() => setVoiceEnabled(v => !v)}
 						onSettingsClick={() => setIsCustomizationOpen(true)}
+						onStudioClick={() => setIsStudioOpen(true)}
 					/>
 				</div>
 
@@ -256,6 +258,7 @@ export default function Home() {
 						<Avatar
 							emotion={currentEmotion}
 							voiceEnabled={voiceEnabled}
+                            voiceLevel={voiceLevel}
 							variant={faceVariant}
 						/>
 					</div>
@@ -371,6 +374,19 @@ export default function Home() {
 						setActivePreset("custom"); // New state for restored emotions
 					}}
 				/>
+
+                {/* Studio Placeholder */}
+                {isStudioOpen && (
+                    <div className="fixed inset-0 z-[200] bg-background/80 backdrop-blur-xl flex items-center justify-center p-8" onClick={() => setIsStudioOpen(false)}>
+                        <div className="max-w-md text-center space-y-4">
+                            <h2 className="text-2xl font-bold tracking-tight">Studio Mode</h2>
+                            <p className="text-muted-foreground">Audio reactivity and advanced face customization tools are coming soon.</p>
+                            <button className="px-4 py-2 rounded-full bg-foreground text-background text-sm font-medium hover:opacity-90 transition-opacity">
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                )}
 			</div>
 		</div>
 	);
