@@ -103,70 +103,44 @@ export function ConsoleOverlay({ isOpen, onClose, history, isThinking = false, o
                     transition={{ type: "spring", damping: 32, stiffness: 280, mass: 0.8 }}
                     drag
                     dragMomentum={false}
-                    className="fixed top-8 right-8 z-50 w-[420px] bg-background/80 backdrop-blur-3xl rounded-[32px] overflow-hidden flex flex-col shadow-premium border border-white/10 dark:border-white/5 ring-1 ring-black/5 dark:ring-white/5"
+                    className="group fixed top-8 right-8 z-50 w-[420px] bg-background/80 backdrop-blur-3xl rounded-[32px] overflow-hidden flex flex-col shadow-premium border border-white/10 dark:border-white/5 ring-1 ring-black/5 dark:ring-white/5"
                 >
                     {/* Grain Texture Overlay */}
                     <div className="absolute inset-0 bg-grain opacity-30 pointer-events-none z-[-1]" />
 
-                    {/* Header: Audio Spectrum & Controls */}
-                    <div className="flex items-center justify-between px-6 py-5 cursor-grab active:cursor-grabbing select-none relative z-10 border-b border-white/5">
-                        <div className="flex items-center gap-4">
-                            {/* Organic Voice Spectrum */}
-                            <div className="flex items-center gap-0.5 h-6 w-20 opacity-60 mix-blend-overlay">
-                                {[...Array(16)].map((_, i) => (
-                                    <motion.div
-                                        key={i}
-                                        animate={{ 
-                                            height: [4, Math.random() * 20 + 4, 4],
-                                            opacity: [0.3, 0.7, 0.3] 
-                                        }}
-                                        transition={{ 
-                                            duration: 1.5 + Math.random(), 
-                                            repeat: Infinity, 
-                                            delay: i * 0.05,
-                                            ease: "easeInOut" 
-                                        }}
-                                        className="w-1 bg-foreground rounded-full origin-center"
-                                    />
-                                ))}
-                            </div>
-                            
-                            <div className="flex flex-col gap-0.5">
-                                <span className="text-micro text-foreground/80 tracking-[0.25em]">
-                                    Dot
-                                </span>
-                                <span className="text-[10px] text-emerald-500/80 tracking-wider font-medium flex items-center gap-1.5">
-                                    <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                                    ONLINE
-                                </span>
-                            </div>
-                        </div>
-                        
-                        {/* Refined Window Controls */}
-                        <div className="flex items-center gap-2">
+                    {/* Integrated Header */}
+                    <div className="absolute top-4 right-4 z-20 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                              <button 
                                 onClick={() => setIsMinimized(!isMinimized)}
-                                className="size-8 rounded-full flex items-center justify-center hover:bg-foreground/5 text-muted-foreground transition-all active:scale-95"
+                                className="size-6 rounded-full flex items-center justify-center hover:bg-foreground/5 text-muted-foreground transition-all active:scale-95"
                                 title={isMinimized ? "Expand" : "Minimize"}
                             >
-                                {isMinimized ? <IoExpandOutline className="size-3.5" /> : <IoRemoveOutline className="size-3.5" />}
+                                {isMinimized ? <IoExpandOutline className="size-3" /> : <IoRemoveOutline className="size-3" />}
                             </button>
                             <button 
                                 onClick={onClear}
-                                className="size-8 rounded-full flex items-center justify-center hover:bg-foreground/5 text-muted-foreground transition-all active:scale-95"
+                                className="size-6 rounded-full flex items-center justify-center hover:bg-foreground/5 text-muted-foreground transition-all active:scale-95"
                                 title="Clear History"
                             >
-                                <IoTrashOutline className="size-3.5" />
+                                <IoTrashOutline className="size-3" />
                             </button>
                             <button 
                                 onClick={onClose}
-                                className="size-8 rounded-full flex items-center justify-center hover:bg-rose-500/10 text-muted-foreground hover:text-rose-500 transition-all active:scale-95"
+                                className="size-6 rounded-full flex items-center justify-center hover:bg-rose-500/10 text-muted-foreground hover:text-rose-500 transition-all active:scale-95"
                                 title="Close"
                             >
-                                <IoCloseOutline className="size-4" />
+                                <IoCloseOutline className="size-3.5" />
                             </button>
-                        </div>
                     </div>
+
+                    {!isMinimized && (
+                         <div className="absolute top-5 left-6 z-10 select-none pointer-events-none flex items-center gap-2">
+                            <span className="text-[10px] font-mono font-medium tracking-widest text-muted-foreground/60 uppercase">
+                                Neural Link
+                            </span>
+                            <span className="size-1 rounded-full bg-emerald-500/80 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.4)]" />
+                        </div>
+                    )}
 
                     {!isMinimized && (
                         <div className="flex-1 w-full flex flex-col min-h-0 relative bg-gradient-to-b from-transparent to-background/20">

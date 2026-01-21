@@ -10,7 +10,7 @@ import { FloatingDock } from "@/components/floating-dock";
 import { ConsoleOverlay } from "@/components/console-overlay";
 import { SystemMenu } from "@/components/system-menu";
 import { useTheme } from "next-themes";
-import { IoTerminalOutline } from "react-icons/io5";
+import { IoSparklesOutline } from "react-icons/io5";
 import { cn } from "@/lib/utils";
 import { FaceVariant, EmotionState } from "./components/face/types";
 
@@ -28,6 +28,7 @@ function clamp01(v: number) { return Math.min(1, Math.max(0, v)); }
 function smooth01(t: number) { const x = clamp01(t); return x * x * (3 - 2 * x); }
 function lerpEmotion(a: EmotionState, b: EmotionState, alpha: number): EmotionState {
 	const t = clamp01(alpha);
+
 	return {
 		joy: a.joy + (b.joy - a.joy) * t,
 		sadness: a.sadness + (b.sadness - a.sadness) * t,
@@ -230,7 +231,7 @@ export default function Home() {
 								: "hover:bg-foreground/5 text-muted-foreground"
 						)}
 					>
-						<IoTerminalOutline className="size-4" strokeWidth={isConsoleOpen ? 2 : 1.5} />
+						<IoSparklesOutline className="size-4" strokeWidth={isConsoleOpen ? 2 : 1.5} />
 					</button>
 
 					{/* System Controls */}
