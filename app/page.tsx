@@ -84,7 +84,7 @@ export default function Home() {
 	useEffect(() => { 
         setMounted(true); 
         // Load AI Config from localStorage
-        const savedConfig = localStorage.getItem("dot_ai_config");
+        const savedConfig = localStorage.getItem("dot_ai_config_v2");
         if (savedConfig) {
             try {
                 setAiConfig(JSON.parse(savedConfig));
@@ -97,7 +97,7 @@ export default function Home() {
     // Save AI Config to localStorage whenever it changes
     useEffect(() => {
         if (mounted) {
-            localStorage.setItem("dot_ai_config", JSON.stringify(aiConfig));
+            localStorage.setItem("dot_ai_config_v2", JSON.stringify(aiConfig));
         }
     }, [aiConfig, mounted]);
 

@@ -275,7 +275,7 @@ export const CustomizationModal = React.memo(function CustomizationModal({
                                                                 type="text" 
                                                                 value={aiConfig.baseUrl}
                                                                 onChange={(e) => onAiConfigChange({ ...aiConfig, baseUrl: e.target.value })}
-                                                                placeholder="https://api.openai.com/v1"
+                                                                placeholder="https://generativelanguage.googleapis.com/v1beta/openai/"
                                                                 className="w-full bg-background/50 border-none rounded-xl pl-9 pr-4 py-2.5 text-[12px] font-mono text-foreground placeholder:text-muted-foreground/30 outline-none focus:ring-1 focus:ring-foreground/20 transition-all shadow-sm"
                                                             />
                                                         </div>
@@ -309,7 +309,7 @@ export const CustomizationModal = React.memo(function CustomizationModal({
                                                                 type="text" 
                                                                 value={aiConfig.model}
                                                                 onChange={(e) => onAiConfigChange({ ...aiConfig, model: e.target.value })}
-                                                                placeholder="gpt-4o-mini"
+                                                                placeholder="gemini-2.0-flash-exp"
                                                                 className="w-full bg-background/50 border-none rounded-xl pl-9 pr-4 py-2.5 text-[12px] font-mono text-foreground placeholder:text-muted-foreground/30 outline-none focus:ring-1 focus:ring-foreground/20 transition-all shadow-sm"
                                                             />
                                                         </div>
