@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { motion, AnimatePresence } from "motion/react";
+import { motion, AnimatePresence, useDragControls } from "motion/react";
 import { 
     IoCloseOutline, 
     IoTrashOutline, 
@@ -38,8 +38,14 @@ type RecordingState =
     | { status: "idle" }
     | { status: "recording"; startedAt: number; elapsedMs: number }
     | { status: "processing" }
-    | { status: "ready"; url: string; createdAt: number; durationMs: number }
     | { status: "error"; message: string };
+
+interface SessionRecording {
+    id: string;
+    url: string;
+    createdAt: number;
+    durationMs: number;
+}
 
 function formatMs(ms: number) {
     const total = Math.max(0, Math.floor(ms / 1000));
@@ -50,7 +56,11 @@ function formatMs(ms: number) {
 
 export function MemoryBank({ isOpen, onClose, currentEmotion, avatarStageRef, onRestore }: MemoryBankProps) {
     const [memories, setMemories] = React.useState<Memory[]>([]);
+    const [sessionRecordings, setSessionRecordings] = React.useState<SessionRecording[]>([]);
     const [recording, setRecording] = React.useState<RecordingState>({ status: "idle" });
+    
+    // Drag controls
+    const dragControls = useDragControls();
     
     // Recording refs
     const recorderRef = React.useRef<MediaRecorder | null>(null);
@@ -208,7 +218,16 @@ export function MemoryBank({ isOpen, onClose, currentEmotion, avatarStageRef, on
                 
                 const url = URL.createObjectURL(blob);
                 console.log("[Recording] Created blob URL, size:", blob.size, "bytes");
-                setRecording({ status: "ready", url, createdAt: Date.now(), durationMs });
+                
+                // Add to session recordings
+                setSessionRecordings(prev => [{
+                    id: crypto.randomUUID(),
+                    url,
+                    createdAt: Date.now(),
+                    durationMs
+                }, ...prev]);
+                
+                setRecording({ status: "idle" });
                 chunksRef.current = [];
             };
             
@@ -310,6 +329,10 @@ export function MemoryBank({ isOpen, onClose, currentEmotion, avatarStageRef, on
                     {/* Modal */}
                     <div className="fixed inset-0 z-[101] flex items-center justify-center pointer-events-none p-6">
                         <motion.div
+                            drag
+                            dragListener={false}
+                            dragControls={dragControls}
+                            dragMomentum={false}
                             initial={{ opacity: 0, scale: 0.96, y: 20, filter: "blur(10px)" }}
                             animate={{ opacity: 1, scale: 1, y: 0, filter: "blur(0px)" }}
                             exit={{ opacity: 0, scale: 0.96, y: 20, filter: "blur(10px)" }}
@@ -321,7 +344,10 @@ export function MemoryBank({ isOpen, onClose, currentEmotion, avatarStageRef, on
                             <div className="absolute inset-0 bg-grain opacity-30 pointer-events-none z-[-1]" />
 
                             {/* Header */}
-                            <div className="px-6 py-5 flex items-center justify-between shrink-0 border-b border-foreground/5 relative z-10">
+                            <div 
+                                onPointerDown={(e) => dragControls.start(e)}
+                                className="px-6 py-5 flex items-center justify-between shrink-0 border-b border-foreground/5 relative z-10 cursor-grab active:cursor-grabbing touch-none select-none"
+                            >
                                 <div className="flex items-center gap-2.5 text-foreground/80">
                                     <div className="size-8 rounded-full bg-foreground/5 flex items-center justify-center border border-white/5">
                                         <IoInfiniteOutline className="size-4 opacity-70" />
@@ -394,7 +420,7 @@ export function MemoryBank({ isOpen, onClose, currentEmotion, avatarStageRef, on
 
                                     {/* Recording Status / Result / Error */}
                                     <AnimatePresence>
-                                        {(recording.status === "recording" || recording.status === "ready" || recording.status === "error" || recording.status === "processing") && (
+                                        {(recording.status === "recording" || recording.status === "error" || recording.status === "processing") && (
                                             <motion.div
                                                 initial={{ height: 0, opacity: 0, marginTop: 0 }}
                                                 animate={{ height: "auto", opacity: 1, marginTop: 8 }}
@@ -424,33 +450,6 @@ export function MemoryBank({ isOpen, onClose, currentEmotion, avatarStageRef, on
                                                     </div>
                                                 )}
 
-                                                {recording.status === "ready" && (
-                                                    <div className="flex items-center justify-between rounded-[20px] bg-emerald-500/5 border border-emerald-500/10 px-4 py-2 relative overflow-hidden group">
-                                                        <div className="absolute inset-0 bg-emerald-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                                                        <div className="flex items-center gap-3 relative z-10">
-                                                            <div className="size-8 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-500">
-                                                                <IoTimeOutline className="size-4" />
-                                                            </div>
-                                                            <div className="flex flex-col">
-                                                                <span className="text-[11px] font-medium text-foreground/90">
-                                                                    Clip Ready
-                                                                </span>
-                                                                <span className="text-[9px] text-muted-foreground">
-                                                                    {formatMs(recording.durationMs)} • WebM
-                                                                </span>
-                                                            </div>
-                                                        </div>
-                                                        <a
-                                                            href={recording.url}
-                                                            download={`dot_moment_${new Date(recording.createdAt).toISOString().replaceAll(":", "-")}.webm`}
-                                                            className="size-8 rounded-full bg-background/50 hover:bg-background border border-white/5 flex items-center justify-center text-foreground transition-all shadow-sm z-10"
-                                                            title="Download"
-                                                        >
-                                                            <IoDownloadOutline className="size-4" />
-                                                        </a>
-                                                    </div>
-                                                )}
-
                                                 {recording.status === "error" && (
                                                     <div 
                                                         onClick={dismissError}
@@ -472,6 +471,51 @@ export function MemoryBank({ isOpen, onClose, currentEmotion, avatarStageRef, on
 
                                 {/* Memory Stream */}
                                 <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-2 scrollbar-none">
+                                    {/* Session Recordings List */}
+                                    {sessionRecordings.length > 0 && (
+                                        <div className="grid grid-cols-1 gap-2 mb-4">
+                                            <div className="px-1 py-1 flex items-center justify-between">
+                                                <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground/60">
+                                                    Session Recordings
+                                                </span>
+                                                <span className="text-[9px] bg-white/5 px-1.5 py-0.5 rounded text-muted-foreground/50">
+                                                    {sessionRecordings.length}
+                                                </span>
+                                            </div>
+                                            {sessionRecordings.map((rec, i) => (
+                                                <motion.div
+                                                    layout
+                                                    initial={{ opacity: 0, y: -10 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    key={rec.id}
+                                                    className="flex items-center justify-between rounded-[20px] bg-emerald-500/5 border border-emerald-500/10 px-4 py-2 relative overflow-hidden group hover:bg-emerald-500/10 transition-colors"
+                                                >
+                                                    <div className="flex items-center gap-3 relative z-10">
+                                                        <div className="size-8 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-500 shadow-sm">
+                                                            <IoVideocamOutline className="size-4" />
+                                                        </div>
+                                                        <div className="flex flex-col">
+                                                            <span className="text-[11px] font-medium text-foreground/90">
+                                                                Recording {sessionRecordings.length - i}
+                                                            </span>
+                                                            <span className="text-[9px] text-muted-foreground">
+                                                                {formatMs(rec.durationMs)} • {new Date(rec.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <a
+                                                        href={rec.url}
+                                                        download={`dot_moment session_${new Date(rec.createdAt).toISOString().replaceAll(":", "-")}.webm`}
+                                                        className="size-8 rounded-full bg-background/50 hover:bg-background border border-white/5 flex items-center justify-center text-foreground transition-all shadow-sm z-10 hover:scale-105 active:scale-95"
+                                                        title="Download"
+                                                    >
+                                                        <IoDownloadOutline className="size-4" />
+                                                    </a>
+                                                </motion.div>
+                                            ))}
+                                        </div>
+                                    )}
+
                                     {memories.length === 0 ? (
                                         <div className="h-full flex flex-col items-center justify-center text-muted-foreground/30 space-y-4 min-h-[200px]">
                                             <div className="size-16 rounded-[24px] border border-dashed border-foreground/10 flex items-center justify-center">
