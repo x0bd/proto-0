@@ -11,7 +11,8 @@ import {
     IoArrowUpOutline,
     IoMicOutline,
     IoPlay,
-    IoPause
+    IoPause,
+	IoTextOutline
 } from "react-icons/io5";
 import { motion, AnimatePresence } from "motion/react";
 
@@ -19,14 +20,65 @@ interface ConsoleOverlayProps {
     isOpen: boolean;
     onClose: () => void;
     history: { role: string; content: string }[];
+	isThinking?: boolean;
     onSendMessage: (message: string) => void;
     onClear: () => void;
 }
 
-export function ConsoleOverlay({ isOpen, onClose, history, onSendMessage, onClear }: ConsoleOverlayProps) {
+type ChatRole = "user" | "dot" | "system" | "assistant";
+
+function normalizeRole(role: string): ChatRole {
+	if (role === "user" || role === "dot" || role === "system" || role === "assistant") return role;
+	return "assistant";
+}
+
+function ThinkingDots() {
+	return (
+		<div className="flex items-center gap-1.5 h-4 select-none">
+			{Array.from({ length: 3 }).map((_, i) => (
+				<motion.div
+					// eslint-disable-next-line react/no-array-index-key
+					key={i}
+					className="size-1.5 rounded-full bg-foreground/60"
+					animate={{ y: [0, -4, 0], opacity: [0.35, 0.9, 0.35] }}
+					transition={{ duration: 1.1, repeat: Infinity, delay: i * 0.12, ease: "easeInOut" }}
+				/>
+			))}
+		</div>
+	);
+}
+
+function AudioBars({ isPlaying }: { isPlaying: boolean }) {
+	const heights = [0.22, 0.45, 0.78, 0.4, 0.92, 0.58, 0.3, 0.7, 0.5, 0.88, 0.36, 0.62, 0.8, 0.28];
+	return (
+		<div className="flex items-center gap-[3px] h-5">
+			{heights.map((h, i) => (
+				<motion.div
+					key={i}
+					className="w-[3px] rounded-full bg-current/70 origin-bottom"
+					style={{ height: `${Math.max(14, h * 100)}%` }}
+					animate={
+						isPlaying
+							? { scaleY: [1, 1.5, 1], opacity: [0.45, 0.9, 0.45] }
+							: { scaleY: 1, opacity: 0.55 }
+					}
+					transition={
+						isPlaying
+							? { duration: 1.2, repeat: Infinity, delay: i * 0.04, ease: "easeInOut" }
+							: { duration: 0.2 }
+					}
+				/>
+			))}
+		</div>
+	);
+}
+
+export function ConsoleOverlay({ isOpen, onClose, history, isThinking = false, onSendMessage, onClear }: ConsoleOverlayProps) {
     const [isMinimized, setIsMinimized] = React.useState(false);
     const [inputValue, setInputValue] = React.useState("");
     const [isRecording, setIsRecording] = React.useState(false);
+	const [playingKey, setPlayingKey] = React.useState<string | null>(null);
+	const [expandedKey, setExpandedKey] = React.useState<string | null>(null);
     const scrollRef = React.useRef<HTMLDivElement>(null);
 
     React.useEffect(() => {
@@ -122,26 +174,23 @@ export function ConsoleOverlay({ isOpen, onClose, history, onSendMessage, onClea
                             <ScrollArea className="flex-1">
                                 <div className="px-5 py-4 space-y-5">
                                     {history.length === 0 ? (
-                                        <div className="flex flex-col items-center justify-center h-[380px] text-muted-foreground/30 gap-8">
-                                            <div className="relative size-24 flex items-center justify-center">
-                                                <div className="absolute inset-0 bg-foreground/5 rounded-full animate-ping opacity-20 duration-3000" />
-                                                <div className="size-24 rounded-full border border-foreground/10 flex items-center justify-center bg-foreground/5 backdrop-blur-sm">
-                                                    <IoMicOutline className="size-8 opacity-40" />
-                                                </div>
-                                            </div>
-                                            <div className="text-center space-y-2">
-                                                <span className="text-micro block opacity-60">Awaiting Input</span>
-                                                <p className="text-xs text-muted-foreground/50 max-w-[200px] leading-relaxed">
-                                                    Start a conversation with Dot. Voice mode active.
-                                                </p>
-                                            </div>
-                                        </div>
+                                        <div className="h-[380px] flex items-center justify-center">
+											<span className="text-[10px] font-mono uppercase tracking-[0.25em] text-muted-foreground/40">
+												Message Dot
+											</span>
+										</div>
                                     ) : (
                                         <div className="flex flex-col gap-2 relative">
                                             {history.map((msg, idx) => {
-                                                // Simulation Logic: 
-                                                // Longer responses get "Voice Note" treatment
-                                                const isVoiceNote = msg.content.length > 60 || idx === 0;
+												const role = normalizeRole(msg.role);
+												const isUser = role === "user";
+												const isDot = role === "dot" || role === "assistant";
+												const key = `${idx}-${role}`;
+                                                // Longer Dot responses get "Voice Note" treatment (audio + transcript)
+                                                const isVoiceNote = isDot && msg.content.length > 80;
+												const isPlaying = playingKey === key;
+												const isExpanded = expandedKey === key;
+												const duration = `0:${Math.min(59, Math.floor(msg.content.length / 6)).toString().padStart(2, "0")}`;
 
                                                 return (
                                                     <motion.div 
@@ -150,69 +199,93 @@ export function ConsoleOverlay({ isOpen, onClose, history, onSendMessage, onClea
                                                         animate={{ opacity: 1, y: 0 }}
                                                         transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
                                                         className={cn(
-                                                            "flex flex-col max-w-[90%]",
-                                                            msg.role === 'user' ? "self-end items-end" : "self-start items-start"
+                                                            "flex flex-col max-w-[92%]",
+															isUser ? "self-end items-end" : "self-start items-start"
                                                         )}
                                                     >
-                                                        {isVoiceNote ? (
+														{isVoiceNote ? (
                                                             // Voice Note Style
                                                             <div className="flex flex-col gap-1.5 group">
                                                                 <div className={cn(
-                                                                    "flex items-center gap-3 pl-2.5 pr-4 py-2 rounded-[24px] shadow-sm backdrop-blur-md transition-all hover:shadow-md cursor-pointer border",
-                                                                    msg.role === 'user' 
-                                                                        ? "bg-foreground text-background border-transparent" 
-                                                                        : "bg-white/40 dark:bg-white/5 border-white/20 dark:border-white/10 text-foreground"
+                                                                    "flex items-center gap-3 pl-2.5 pr-3 py-2 rounded-[24px] shadow-zen backdrop-blur-md transition-all cursor-pointer border",
+                                                                    "bg-card/50 dark:bg-white/5 border-white/10 text-foreground"
                                                                 )}>
-                                                                    <button className={cn(
-                                                                        "size-8 rounded-full flex items-center justify-center shrink-0 transition-transform active:scale-95 shadow-sm",
-                                                                        msg.role === 'user'
-                                                                            ? "bg-white text-black"
-                                                                            : "bg-foreground/10 hover:bg-foreground/20 text-foreground"
-                                                                    )}>
-                                                                        <IoPlay className="size-3 ml-0.5" />
+                                                                    <button
+																		type="button"
+																		onClick={() => setPlayingKey((prev) => (prev === key ? null : key))}
+																		className="size-8 rounded-full flex items-center justify-center shrink-0 transition-transform active:scale-95 bg-foreground/10 hover:bg-foreground/15 text-foreground"
+																	>
+																		{isPlaying ? <IoPause className="size-3.5" /> : <IoPlay className="size-3 ml-0.5" />}
                                                                     </button>
 
-                                                                    {/* Static Waveform (Refined) */}
-                                                                    <div className="flex items-center gap-[3px] h-5 opacity-80">
-                                                                        {[0.3, 0.5, 0.8, 0.4, 0.9, 0.6, 0.3, 0.7, 0.5, 0.9, 0.4, 0.6, 0.8, 0.3, 0.5, 0.7].map((h, i) => (
-                                                                            <div
-                                                                                key={i}
-                                                                                className={cn(
-                                                                                    "w-[3px] rounded-full transition-all group-hover:h-full",
-                                                                                    msg.role === 'user' ? "bg-background/80" : "bg-foreground/60"
-                                                                                )}
-                                                                                style={{ height: `${h * 100}%` }}
-                                                                            />
-                                                                        ))}
-                                                                    </div>
+                                                                    {/* Audio Bars */}
+																	<div className="text-foreground/80">
+																		<AudioBars isPlaying={isPlaying} />
+																	</div>
                                                                     
-                                                                    <span className={cn(
-                                                                        "text-[10px] font-mono opacity-50 ml-2 tracking-wide",
-                                                                        msg.role === 'user' ? "text-background" : "text-foreground"
-                                                                    )}>
-                                                                        0:{Math.min(59, Math.floor(msg.content.length / 5)).toString().padStart(2, '0')}
+                                                                    <span className="text-[10px] font-mono opacity-45 ml-1 tracking-wide tabular-nums">
+                                                                        {duration}
                                                                     </span>
+
+																	<button
+																		type="button"
+																		onClick={() => setExpandedKey((prev) => (prev === key ? null : key))}
+																		className="ml-1 size-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-foreground/5 transition-colors"
+																		title={isExpanded ? "Hide transcript" : "Show transcript"}
+																	>
+																		<IoTextOutline className="size-4" />
+																	</button>
                                                                 </div>
                                                                 
-                                                                {/* Transcript */}
-                                                                <div className="px-3 text-[13px] leading-relaxed text-foreground/80 font-medium tracking-tight">
-                                                                    {msg.content}
-                                                                </div>
+                                                                {/* Transcript (expand/collapse) */}
+																<AnimatePresence initial={false}>
+																	{isExpanded && (
+																		<motion.div
+																			initial={{ height: 0, opacity: 0 }}
+																			animate={{ height: "auto", opacity: 1 }}
+																			exit={{ height: 0, opacity: 0 }}
+																			transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
+																			className="overflow-hidden"
+																		>
+																			<div className="px-3 text-[13px] leading-relaxed text-foreground/75 font-medium tracking-tight">
+																				{msg.content}
+																			</div>
+																		</motion.div>
+																	)}
+																</AnimatePresence>
                                                             </div>
                                                         ) : (
                                                             // Standard Text Bubble (Compact & Premium)
-                                                            <div className={cn(
-                                                                "px-5 py-2.5 text-[13px] font-medium leading-relaxed shadow-sm backdrop-blur-md border",
-                                                                msg.role === 'user' 
-                                                                    ? "bg-foreground text-background rounded-[24px] rounded-tr-sm border-transparent" 
-                                                                    : "bg-white/50 dark:bg-white/5 border-white/20 dark:border-white/10 text-foreground rounded-[24px] rounded-tl-sm"
-                                                            )}>
-                                                                {msg.content}
-                                                            </div>
+															<div className="flex flex-col gap-1">
+																<div className={cn(
+																	"px-5 py-3 text-[13px] font-medium leading-relaxed shadow-zen backdrop-blur-md border",
+																	isUser
+																		? "bg-foreground text-background rounded-[24px] rounded-tr-sm border-transparent"
+																		: "bg-card/50 dark:bg-white/5 border-white/10 text-foreground rounded-[24px] rounded-tl-sm"
+																)}>
+																	{msg.content}
+																</div>
+															</div>
                                                         )}
                                                     </motion.div>
                                                 );
                                             })}
+											{isThinking && (
+												<motion.div
+													initial={{ opacity: 0, y: 8 }}
+													animate={{ opacity: 1, y: 0 }}
+													className="self-start items-start flex flex-col max-w-[92%]"
+												>
+													<div className="px-1">
+														<span className="text-[9px] font-mono uppercase tracking-[0.22em] text-muted-foreground/60">
+															DOT
+														</span>
+													</div>
+													<div className="px-5 py-3 rounded-[24px] rounded-tl-sm bg-card/50 dark:bg-white/5 border border-white/10 shadow-zen backdrop-blur-md">
+														<ThinkingDots />
+													</div>
+												</motion.div>
+											)}
                                         </div>
                                     )}
                                     <div ref={scrollRef} className="h-6" />
@@ -224,8 +297,9 @@ export function ConsoleOverlay({ isOpen, onClose, history, onSendMessage, onClea
                                 <form 
                                     onSubmit={(e) => {
                                         e.preventDefault();
-                                        if (inputValue.trim()) {
-                                            onSendMessage(inputValue);
+                                        const trimmed = inputValue.trim();
+                                        if (trimmed) {
+                                            onSendMessage(trimmed);
                                             setInputValue("");
                                         }
                                     }}
@@ -256,12 +330,12 @@ export function ConsoleOverlay({ isOpen, onClose, history, onSendMessage, onClea
                                             placeholder={isRecording ? "Listening..." : "Message Dot..."}
                                             className="flex-1 bg-transparent border-none outline-none text-[14px] placeholder:text-muted-foreground/50 text-foreground h-10 font-medium px-2 tracking-tight"
                                             autoFocus
-                                            disabled={isRecording}
+                                            disabled={isRecording || isThinking}
                                         />
                                         
                                         <button 
                                             type="submit"
-                                            disabled={!inputValue.trim()}
+                                            disabled={!inputValue.trim() || isThinking}
                                             className="size-10 rounded-full bg-foreground text-background flex items-center justify-center disabled:opacity-0 disabled:scale-75 transition-all duration-300 hover:scale-105 active:scale-95 shadow-md"
                                         >
                                             <IoArrowUpOutline className="size-5" />

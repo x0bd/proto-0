@@ -22,6 +22,8 @@ const DEFAULT_AI_CONFIG: AIConfig = {
     model: "gpt-4o-mini",
 };
 
+const INITIAL_HISTORY: { role: string; content: string }[] = [];
+
 function clamp01(v: number) { return Math.min(1, Math.max(0, v)); }
 function smooth01(t: number) { const x = clamp01(t); return x * x * (3 - 2 * x); }
 function lerpEmotion(a: EmotionState, b: EmotionState, alpha: number): EmotionState {
@@ -66,6 +68,8 @@ export default function Home() {
 	const [isCustomizationOpen, setIsCustomizationOpen] = useState(false);
 	const [isMemoryOpen, setIsMemoryOpen] = useState(false);
 	const [isConsoleOpen, setIsConsoleOpen] = useState(false);
+	const [isDotThinking, setIsDotThinking] = useState(false);
+	const avatarStageRef = useRef<HTMLDivElement>(null);
 	const [faceVariant, setFaceVariant] = useState<FaceVariant>("minimal");
 	const [accentColor, setAccentColor] = useState<string>("neutral");
 	const [voiceEnabled, setVoiceEnabled] = useState<boolean>(true);
@@ -75,11 +79,7 @@ export default function Home() {
 	const baseEmotionRef = useRef<EmotionState>(NEUTRAL_EMOTION);
 	const { theme, setTheme } = useTheme();
 	const [mounted, setMounted] = useState(false);
-    const [history, setHistory] = useState<{ role: string; content: string }[]>([
-        { role: "system", content: "Dot System Online" },
-        { role: "system", content: "Emotion engine active." },
-        { role: "dot", content: "Systems normal. Awaiting input." }
-    ]);
+    const [history, setHistory] = useState<{ role: string; content: string }[]>(INITIAL_HISTORY);
 	
 	useEffect(() => { 
         setMounted(true); 
@@ -249,7 +249,10 @@ export default function Home() {
 					onDragEnd={handleDragEnd}
 					style={{ zIndex: 0 }} // Explicit low z-index
 				>
-				<div className="w-[90vw] md:w-[70vw] lg:w-[50vw] max-w-[700px] aspect-square flex items-center justify-center pointer-events-auto drop-shadow-2xl">
+				<div
+					ref={avatarStageRef}
+					className="w-[90vw] md:w-[70vw] lg:w-[50vw] max-w-[700px] aspect-square flex items-center justify-center pointer-events-auto drop-shadow-2xl"
+				>
 						<Avatar
 							emotion={currentEmotion}
 							voiceEnabled={voiceEnabled}
@@ -270,20 +273,22 @@ export default function Home() {
 					isOpen={isConsoleOpen} 
 					onClose={() => setIsConsoleOpen(false)}
                     history={history}
+					isThinking={isDotThinking}
                     onSendMessage={async (message: string) => {
-                        setHistory(prev => [...prev, { role: "user", content: message }]);
+						const trimmed = message.trim();
+						if (!trimmed) return;
+
+						// optimistic append for UI
+						const nextHistory = [...history, { role: "user", content: trimmed }];
+                        setHistory(nextHistory);
                         
                         if (!aiConfig.apiKey) {
                             setHistory(prev => [...prev, { role: "system", content: "Error: No API Key configured. Check Intelligence Settings." }]);
                             return;
                         }
 
-                        // Add temporary thinking state
-                        const thinkingId = Date.now().toString();
-                         // We won't add a thinking message to history to keep it clean, but we could.
-                         // For now, let's just trigger the fetch.
-
                         try {
+							setIsDotThinking(true);
                              const response = await fetch(`${aiConfig.baseUrl}/chat/completions`, {
                                 method: 'POST',
                                 headers: {
@@ -294,11 +299,10 @@ export default function Home() {
                                     model: aiConfig.model,
                                     messages: [
                                         { role: "system", content: "You are Dot, a minimal expressive avatar. You are helpful, concise, and slightly poetic. If the user asks for an emotion, you can output JSON in the format { \"joy\": 0.5, \"sadness\": 0, ... } at the end of your message to change your face." },
-                                        ...history.filter(h => h.role === 'user' || h.role === 'dot' || h.role === 'system').map(h => ({
+                                        ...nextHistory.filter(h => h.role === 'user' || h.role === 'dot' || h.role === 'system').map(h => ({
                                             role: h.role === 'dot' ? 'assistant' : h.role,
                                             content: h.content
                                         })),
-                                        { role: "user", content: message }
                                     ],
                                     temperature: 0.7,
                                     max_tokens: 150
@@ -334,9 +338,14 @@ export default function Home() {
                         } catch (error) {
                             console.error(error);
                              setHistory(prev => [...prev, { role: "system", content: `Connection Failed: ${error instanceof Error ? error.message : "Unknown error"}` }]);
+                        } finally {
+							setIsDotThinking(false);
                         }
                     }}
-                    onClear={() => setHistory([])}
+                    onClear={() => {
+						setIsDotThinking(false);
+						setHistory([]);
+					}}
 				/>
 
 				<CustomizationModal
@@ -354,6 +363,7 @@ export default function Home() {
 					isOpen={isMemoryOpen}
 					onClose={() => setIsMemoryOpen(false)}
 					currentEmotion={currentEmotion}
+					avatarStageRef={avatarStageRef}
 					onRestore={(emotion) => {
 						setBaseEmotion(emotion);
 						baseEmotionRef.current = emotion;
