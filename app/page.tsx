@@ -17,9 +17,9 @@ import { FaceVariant, EmotionState } from "./components/face/types";
 const NEUTRAL_EMOTION: EmotionState = { joy: 0.3, sadness: 0, surprise: 0, anger: 0, curiosity: 0.2 };
 
 const DEFAULT_AI_CONFIG: AIConfig = {
-    baseUrl: "https://api.openai.com/v1",
+    baseUrl: "https://generativelanguage.googleapis.com/v1beta/openai/",
     apiKey: "",
-    model: "gpt-4o-mini",
+    model: "gemini-2.0-flash-exp",
 };
 
 const INITIAL_HISTORY: { role: string; content: string }[] = [];
