@@ -168,7 +168,7 @@ export function MemoryBank({ isOpen, onClose, currentEmotion, avatarStageRef, on
             }
 
             // Setup MediaRecorder
-            const fps = 12; // Lower FPS for stability
+            const fps = 24; // Higher FPS for smoother video
             const stream = canvas.captureStream(fps);
             
             const mimeType = MediaRecorder.isTypeSupported("video/webm;codecs=vp9")
@@ -222,6 +222,10 @@ export function MemoryBank({ isOpen, onClose, currentEmotion, avatarStageRef, on
                 if (!isRecordingRef.current) return;
                 
                 try {
+                    // Get computed background color from the document
+                    const isDarkMode = document.documentElement.classList.contains("dark");
+                    const bgColor = isDarkMode ? "#09090b" : "#fafafa"; // Match your theme colors
+                    
                     // Use html-to-image to capture the DOM element
                     const dataUrl = await htmlToImage.toPng(stage, {
                         width: rect.width,
@@ -229,7 +233,7 @@ export function MemoryBank({ isOpen, onClose, currentEmotion, avatarStageRef, on
                         pixelRatio: dpr,
                         cacheBust: true,
                         skipAutoScale: true,
-                        backgroundColor: "transparent",
+                        backgroundColor: bgColor, // Use theme-aware background
                         skipFonts: true, // Skip font embedding to avoid cross-origin errors
                         includeQueryParams: true,
                     });
@@ -237,7 +241,9 @@ export function MemoryBank({ isOpen, onClose, currentEmotion, avatarStageRef, on
                     // Draw to canvas
                     const img = new Image();
                     img.onload = () => {
-                        ctx.clearRect(0, 0, w, h);
+                        // Fill with background color first
+                        ctx.fillStyle = bgColor;
+                        ctx.fillRect(0, 0, w, h);
                         ctx.drawImage(img, 0, 0, w, h);
                     };
                     img.src = dataUrl;
