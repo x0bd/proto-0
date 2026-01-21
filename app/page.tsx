@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import type React from "react";
 import { motion, type PanInfo } from "motion/react";
 import Avatar from "./components/Avatar";
-import { CustomizationModal } from "./components/CustomizationModal";
+import { CustomizationModal, type AIConfig } from "./components/CustomizationModal";
 import { MemoryBank } from "./components/MemoryBank";
 import { FloatingDock } from "@/components/floating-dock";
 import { ConsoleOverlay } from "@/components/console-overlay";
@@ -15,6 +15,12 @@ import { cn } from "@/lib/utils";
 import { FaceVariant, EmotionState } from "./components/face/types";
 
 const NEUTRAL_EMOTION: EmotionState = { joy: 0.3, sadness: 0, surprise: 0, anger: 0, curiosity: 0.2 };
+
+const DEFAULT_AI_CONFIG: AIConfig = {
+    baseUrl: "https://api.openai.com/v1",
+    apiKey: "",
+    model: "gpt-4o-mini",
+};
 
 function clamp01(v: number) { return Math.min(1, Math.max(0, v)); }
 function smooth01(t: number) { const x = clamp01(t); return x * x * (3 - 2 * x); }
@@ -64,6 +70,7 @@ export default function Home() {
 	const [accentColor, setAccentColor] = useState<string>("neutral");
 	const [voiceEnabled, setVoiceEnabled] = useState<boolean>(true);
 	const [voiceLevel, setVoiceLevel] = useState<number>(0);
+    const [aiConfig, setAiConfig] = useState<AIConfig>(DEFAULT_AI_CONFIG);
 	const targetEmotionRef = useRef<EmotionState>(NEUTRAL_EMOTION);
 	const baseEmotionRef = useRef<EmotionState>(NEUTRAL_EMOTION);
 	const { theme, setTheme } = useTheme();
@@ -74,7 +81,26 @@ export default function Home() {
         { role: "kokoro", content: "Systems normal. Awaiting input." }
     ]);
 	
-	useEffect(() => { setMounted(true); }, []);
+	useEffect(() => { 
+        setMounted(true); 
+        // Load AI Config from localStorage
+        const savedConfig = localStorage.getItem("kokoro_ai_config");
+        if (savedConfig) {
+            try {
+                setAiConfig(JSON.parse(savedConfig));
+            } catch (e) {
+                console.error("Failed to parse AI config", e);
+            }
+        }
+    }, []);
+
+    // Save AI Config to localStorage whenever it changes
+    useEffect(() => {
+        if (mounted) {
+            localStorage.setItem("kokoro_ai_config", JSON.stringify(aiConfig));
+        }
+    }, [aiConfig, mounted]);
+
 	useEffect(() => { baseEmotionRef.current = baseEmotion; }, [baseEmotion]);
 
 	// Animation Loop
@@ -244,12 +270,71 @@ export default function Home() {
 					isOpen={isConsoleOpen} 
 					onClose={() => setIsConsoleOpen(false)}
                     history={history}
-                    onSendMessage={(message: string) => {
+                    onSendMessage={async (message: string) => {
                         setHistory(prev => [...prev, { role: "user", content: message }]);
-                        // Simulate system response
-                        setTimeout(() => {
-                            setHistory(prev => [...prev, { role: "system", content: "Command received. Processing..." }]);
-                        }, 500);
+                        
+                        if (!aiConfig.apiKey) {
+                            setHistory(prev => [...prev, { role: "system", content: "Error: No API Key configured. Check Intelligence Settings." }]);
+                            return;
+                        }
+
+                        // Add temporary thinking state
+                        const thinkingId = Date.now().toString();
+                         // We won't add a thinking message to history to keep it clean, but we could.
+                         // For now, let's just trigger the fetch.
+
+                        try {
+                             const response = await fetch(`${aiConfig.baseUrl}/chat/completions`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': `Bearer ${aiConfig.apiKey}`
+                                },
+                                body: JSON.stringify({
+                                    model: aiConfig.model,
+                                    messages: [
+                                        { role: "system", content: "You are Kokoro, a minimal expressive avatar. You are helpful, concise, and slightly poetic. If the user asks for an emotion, you can output JSON in the format { \"joy\": 0.5, \"sadness\": 0, ... } at the end of your message to change your face." },
+                                        ...history.filter(h => h.role === 'user' || h.role === 'kokoro' || h.role === 'system').map(h => ({
+                                            role: h.role === 'kokoro' ? 'assistant' : h.role,
+                                            content: h.content
+                                        })),
+                                        { role: "user", content: message }
+                                    ],
+                                    temperature: 0.7,
+                                    max_tokens: 150
+                                })
+                            });
+
+                            if (!response.ok) {
+                                throw new Error(`API Error: ${response.status}`);
+                            }
+
+                            const data = await response.json();
+                            const reply = data.choices[0]?.message?.content || "(No response)";
+                            
+                            setHistory(prev => [...prev, { role: "kokoro", content: reply }]);
+
+                            // Basic emotion parsing (JSON extraction)
+                            const jsonMatch = reply.match(/\{[\s\S]*?\}/);
+                            if (jsonMatch) {
+                                try {
+                                    const parsedEmotion = JSON.parse(jsonMatch[0]);
+                                    if (typeof parsedEmotion.joy === 'number') {
+                                        const newEmotion = { ...baseEmotionRef.current, ...parsedEmotion };
+                                         setBaseEmotion(newEmotion);
+                                         baseEmotionRef.current = newEmotion;
+                                         targetEmotionRef.current = newEmotion;
+                                         // Clean up the message if it's just JSON? No, keep it for debug context or style.
+                                    }
+                                } catch (e) {
+                                    // Ignore json parse error
+                                }
+                            }
+
+                        } catch (error) {
+                            console.error(error);
+                             setHistory(prev => [...prev, { role: "system", content: `Connection Failed: ${error instanceof Error ? error.message : "Unknown error"}` }]);
+                        }
                     }}
                     onClear={() => setHistory([])}
 				/>
@@ -261,6 +346,8 @@ export default function Home() {
 					onVariantChange={setFaceVariant}
 					accentColor={accentColor}
 					onAccentChange={setAccentColor}
+                    aiConfig={aiConfig}
+                    onAiConfigChange={setAiConfig}
 				/>
 				
 				<MemoryBank
