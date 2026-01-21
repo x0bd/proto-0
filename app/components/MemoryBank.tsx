@@ -7,19 +7,22 @@ import {
     IoTrashOutline, 
     IoQrCodeOutline,
     IoScanOutline,
-	IoVideocamOutline,
-	IoStopCircleOutline,
- 	IoDownloadOutline,
-	IoTimeOutline
+    IoVideocamOutline,
+    IoStopCircleOutline,
+    IoDownloadOutline,
+    IoTimeOutline,
+    IoInfiniteOutline,
+    IoAlertCircleOutline
 } from "react-icons/io5";
 import { EmotionState } from "./face/types";
 import { cn } from "@/lib/utils";
+import * as htmlToImage from "html-to-image";
 
 interface MemoryBankProps {
     isOpen: boolean;
     onClose: () => void;
     currentEmotion: EmotionState;
-	avatarStageRef: React.RefObject<HTMLDivElement | null>;
+    avatarStageRef: React.RefObject<HTMLDivElement | null>;
     onRestore: (emotion: EmotionState) => void;
 }
 
@@ -28,29 +31,34 @@ interface Memory {
     timestamp: number;
     emotion: EmotionState;
     label?: string;
-    signature?: string; // Hex signature for flavor
+    signature?: string;
 }
 
 type RecordingState =
-	| { status: "idle" }
-	| { status: "recording"; startedAt: number; elapsedMs: number }
-	| { status: "ready"; url: string; createdAt: number; durationMs: number };
+    | { status: "idle" }
+    | { status: "recording"; startedAt: number; elapsedMs: number }
+    | { status: "processing" }
+    | { status: "ready"; url: string; createdAt: number; durationMs: number }
+    | { status: "error"; message: string };
 
 function formatMs(ms: number) {
-	const total = Math.max(0, Math.floor(ms / 1000));
-	const m = Math.floor(total / 60);
-	const s = total % 60;
-	return `${m}:${s.toString().padStart(2, "0")}`;
+    const total = Math.max(0, Math.floor(ms / 1000));
+    const m = Math.floor(total / 60);
+    const s = total % 60;
+    return `${m}:${s.toString().padStart(2, "0")}`;
 }
 
 export function MemoryBank({ isOpen, onClose, currentEmotion, avatarStageRef, onRestore }: MemoryBankProps) {
     const [memories, setMemories] = React.useState<Memory[]>([]);
-	const [recording, setRecording] = React.useState<RecordingState>({ status: "idle" });
-	const recorderRef = React.useRef<MediaRecorder | null>(null);
-	const chunksRef = React.useRef<BlobPart[]>([]);
-	const drawTimerRef = React.useRef<number | null>(null);
-	const tickTimerRef = React.useRef<number | null>(null);
-	const canvasRef = React.useRef<HTMLCanvasElement | null>(null);
+    const [recording, setRecording] = React.useState<RecordingState>({ status: "idle" });
+    
+    // Recording refs
+    const recorderRef = React.useRef<MediaRecorder | null>(null);
+    const chunksRef = React.useRef<BlobPart[]>([]);
+    const drawTimerRef = React.useRef<number | null>(null);
+    const tickTimerRef = React.useRef<number | null>(null);
+    const canvasRef = React.useRef<HTMLCanvasElement | null>(null);
+    const isRecordingRef = React.useRef(false);
 
     // Load from local storage
     React.useEffect(() => {
@@ -69,19 +77,20 @@ export function MemoryBank({ isOpen, onClose, currentEmotion, avatarStageRef, on
         localStorage.setItem("dot_memories", JSON.stringify(memories));
     }, [memories]);
 
-	React.useEffect(() => {
-		// cleanup on unmount
-		return () => {
-			if (drawTimerRef.current) window.clearInterval(drawTimerRef.current);
-			if (tickTimerRef.current) window.clearInterval(tickTimerRef.current);
-			try {
-				recorderRef.current?.stop();
-			} catch {
-				// ignore
-			}
-			recorderRef.current = null;
-		};
-	}, []);
+    // Cleanup on unmount
+    React.useEffect(() => {
+        return () => {
+            if (drawTimerRef.current) window.clearInterval(drawTimerRef.current);
+            if (tickTimerRef.current) window.clearInterval(tickTimerRef.current);
+            try {
+                recorderRef.current?.stop();
+            } catch {
+                // ignore
+            }
+            recorderRef.current = null;
+            isRecordingRef.current = false;
+        };
+    }, []);
 
     const handleCapture = () => {
         const id = crypto.randomUUID();
@@ -95,113 +104,173 @@ export function MemoryBank({ isOpen, onClose, currentEmotion, avatarStageRef, on
         setMemories([newMemory, ...memories]);
     };
 
-	const stopRecording = React.useCallback(() => {
-		if (drawTimerRef.current) window.clearInterval(drawTimerRef.current);
-		if (tickTimerRef.current) window.clearInterval(tickTimerRef.current);
-		drawTimerRef.current = null;
-		tickTimerRef.current = null;
-		try {
-			recorderRef.current?.stop();
-		} catch {
-			// ignore
-		}
-	}, []);
+    const stopRecording = React.useCallback(() => {
+        console.log("[Recording] Stopping...");
+        isRecordingRef.current = false;
+        
+        if (drawTimerRef.current) {
+            window.clearInterval(drawTimerRef.current);
+            drawTimerRef.current = null;
+        }
+        if (tickTimerRef.current) {
+            window.clearInterval(tickTimerRef.current);
+            tickTimerRef.current = null;
+        }
+        
+        try {
+            if (recorderRef.current && recorderRef.current.state === "recording") {
+                recorderRef.current.stop();
+            }
+        } catch (e) {
+            console.error("[Recording] Error stopping recorder:", e);
+        }
+    }, []);
 
-	const startRecording = React.useCallback(async () => {
-		if (recording.status === "recording") return;
-		if (!("MediaRecorder" in window)) {
-			console.warn("MediaRecorder not supported in this browser.");
-			return;
-		}
+    const startRecording = React.useCallback(async () => {
+        if (recording.status === "recording") return;
+        
+        console.log("[Recording] Starting...");
+        
+        // Check browser support
+        if (!("MediaRecorder" in window)) {
+            setRecording({ status: "error", message: "MediaRecorder not supported in this browser." });
+            return;
+        }
 
-		const stage = avatarStageRef.current;
-		const svg = stage?.querySelector("svg") as SVGSVGElement | null;
-		if (!stage || !svg) {
-			console.warn("Avatar SVG not found for recording.");
-			return;
-		}
+        // Get the avatar container
+        const stage = avatarStageRef.current;
+        if (!stage) {
+            setRecording({ status: "error", message: "Avatar element not found." });
+            console.error("[Recording] avatarStageRef.current is null");
+            return;
+        }
 
-		// Setup canvas
-		const rect = svg.getBoundingClientRect();
-		const dpr = Math.min(2, window.devicePixelRatio || 1);
-		const w = Math.max(1, Math.floor(rect.width * dpr));
-		const h = Math.max(1, Math.floor(rect.height * dpr));
-		const canvas = canvasRef.current ?? document.createElement("canvas");
-		canvasRef.current = canvas;
-		canvas.width = w;
-		canvas.height = h;
-		const ctx = canvas.getContext("2d");
-		if (!ctx) return;
-		ctx.setTransform(1, 0, 0, 1, 0, 0);
-		ctx.scale(dpr, dpr);
+        console.log("[Recording] Found stage element:", stage);
 
-		// Start stream + recorder
-		const fps = 15;
-		const stream = canvas.captureStream(fps);
-		const mimeType =
-			MediaRecorder.isTypeSupported("video/webm;codecs=vp9")
-				? "video/webm;codecs=vp9"
-				: MediaRecorder.isTypeSupported("video/webm;codecs=vp8")
-					? "video/webm;codecs=vp8"
-					: "video/webm";
+        try {
+            // Get dimensions
+            const rect = stage.getBoundingClientRect();
+            const dpr = Math.min(2, window.devicePixelRatio || 1);
+            const w = Math.max(1, Math.floor(rect.width * dpr));
+            const h = Math.max(1, Math.floor(rect.height * dpr));
+            
+            console.log("[Recording] Canvas size:", w, "x", h);
 
-		const recorder = new MediaRecorder(stream, { mimeType });
-		recorderRef.current = recorder;
-		chunksRef.current = [];
-		const startedAt = Date.now();
-		setRecording({ status: "recording", startedAt, elapsedMs: 0 });
+            // Create or reuse canvas
+            const canvas = canvasRef.current ?? document.createElement("canvas");
+            canvasRef.current = canvas;
+            canvas.width = w;
+            canvas.height = h;
+            const ctx = canvas.getContext("2d");
+            if (!ctx) {
+                setRecording({ status: "error", message: "Failed to get canvas context." });
+                return;
+            }
 
-		recorder.ondataavailable = (e) => {
-			if (e.data && e.data.size > 0) chunksRef.current.push(e.data);
-		};
-		recorder.onstop = () => {
-			const durationMs =
-				recording.status === "recording" ? Date.now() - recording.startedAt : Date.now() - startedAt;
-			const blob = new Blob(chunksRef.current, { type: mimeType });
-			const url = URL.createObjectURL(blob);
-			setRecording({ status: "ready", url, createdAt: Date.now(), durationMs });
-			chunksRef.current = [];
-		};
+            // Setup MediaRecorder
+            const fps = 12; // Lower FPS for stability
+            const stream = canvas.captureStream(fps);
+            
+            const mimeType = MediaRecorder.isTypeSupported("video/webm;codecs=vp9")
+                ? "video/webm;codecs=vp9"
+                : MediaRecorder.isTypeSupported("video/webm;codecs=vp8")
+                    ? "video/webm;codecs=vp8"
+                    : "video/webm";
+            
+            console.log("[Recording] Using MIME type:", mimeType);
 
-		// Draw loop: serialize current SVG → <img> → canvas
-		const serializer = new XMLSerializer();
-		const drawFrame = async () => {
-			try {
-				const clone = svg.cloneNode(true) as SVGSVGElement;
-				// ensure namespace
-				if (!clone.getAttribute("xmlns")) clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
-				// ensure explicit size for rasterization
-				clone.setAttribute("width", `${rect.width}`);
-				clone.setAttribute("height", `${rect.height}`);
-				const svgText = serializer.serializeToString(clone);
-				const blob = new Blob([svgText], { type: "image/svg+xml;charset=utf-8" });
-				const imgUrl = URL.createObjectURL(blob);
-				const img = new Image();
-				img.decoding = "async";
-				img.src = imgUrl;
-				await img.decode();
-				URL.revokeObjectURL(imgUrl);
-				ctx.clearRect(0, 0, rect.width, rect.height);
-				ctx.drawImage(img, 0, 0, rect.width, rect.height);
-			} catch {
-				// ignore frame errors
-			}
-		};
+            const recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 2500000 });
+            recorderRef.current = recorder;
+            chunksRef.current = [];
+            isRecordingRef.current = true;
+            
+            const startedAt = Date.now();
+            setRecording({ status: "recording", startedAt, elapsedMs: 0 });
 
-		// initial draw to avoid a black first frame
-		await drawFrame();
-		drawTimerRef.current = window.setInterval(() => {
-			void drawFrame();
-		}, 1000 / fps);
-		tickTimerRef.current = window.setInterval(() => {
-			setRecording((prev) => {
-				if (prev.status !== "recording") return prev;
-				return { ...prev, elapsedMs: Date.now() - prev.startedAt };
-			});
-		}, 250);
+            recorder.ondataavailable = (e) => {
+                if (e.data && e.data.size > 0) {
+                    chunksRef.current.push(e.data);
+                    console.log("[Recording] Chunk received:", e.data.size, "bytes");
+                }
+            };
+            
+            recorder.onstop = () => {
+                console.log("[Recording] Recorder stopped. Total chunks:", chunksRef.current.length);
+                setRecording({ status: "processing" });
+                
+                const durationMs = Date.now() - startedAt;
+                const blob = new Blob(chunksRef.current, { type: mimeType });
+                
+                if (blob.size < 1000) {
+                    setRecording({ status: "error", message: "Recording failed - video too small." });
+                    return;
+                }
+                
+                const url = URL.createObjectURL(blob);
+                console.log("[Recording] Created blob URL, size:", blob.size, "bytes");
+                setRecording({ status: "ready", url, createdAt: Date.now(), durationMs });
+                chunksRef.current = [];
+            };
+            
+            recorder.onerror = (e) => {
+                console.error("[Recording] Recorder error:", e);
+                setRecording({ status: "error", message: "Recording failed." });
+            };
 
-		recorder.start(250);
-	}, [avatarStageRef, recording.status, recording]);
+            // Frame capture function using html-to-image
+            const captureFrame = async () => {
+                if (!isRecordingRef.current) return;
+                
+                try {
+                    // Use html-to-image to capture the DOM element
+                    const dataUrl = await htmlToImage.toPng(stage, {
+                        width: rect.width,
+                        height: rect.height,
+                        pixelRatio: dpr,
+                        cacheBust: true,
+                        skipAutoScale: true,
+                        backgroundColor: "transparent",
+                        skipFonts: true, // Skip font embedding to avoid cross-origin errors
+                        includeQueryParams: true,
+                    });
+                    
+                    // Draw to canvas
+                    const img = new Image();
+                    img.onload = () => {
+                        ctx.clearRect(0, 0, w, h);
+                        ctx.drawImage(img, 0, 0, w, h);
+                    };
+                    img.src = dataUrl;
+                } catch (err) {
+                    console.warn("[Recording] Frame capture failed:", err);
+                }
+            };
+
+            // Initial frame
+            await captureFrame();
+            
+            // Start frame capture loop
+            drawTimerRef.current = window.setInterval(() => {
+                void captureFrame();
+            }, 1000 / fps);
+            
+            // Start elapsed time ticker
+            tickTimerRef.current = window.setInterval(() => {
+                setRecording((prev) => {
+                    if (prev.status !== "recording") return prev;
+                    return { ...prev, elapsedMs: Date.now() - prev.startedAt };
+                });
+            }, 100);
+
+            // Start recording
+            recorder.start(500); // Capture data every 500ms
+            console.log("[Recording] Recorder started");
+            
+        } catch (error) {
+            console.error("[Recording] Failed to start:", error);
+            setRecording({ status: "error", message: `Failed to start: ${error instanceof Error ? error.message : "Unknown error"}` });
+        }
+    }, [avatarStageRef, recording.status]);
 
     const handleDelete = (id: string, e: React.MouseEvent) => {
         e.stopPropagation();
@@ -212,204 +281,273 @@ export function MemoryBank({ isOpen, onClose, currentEmotion, avatarStageRef, on
         e.stopPropagation();
         const data = JSON.stringify(memory.emotion);
         navigator.clipboard.writeText(data);
-        // Could enable a toast here
+    };
+
+    const dismissError = () => {
+        setRecording({ status: "idle" });
     };
 
     return (
         <AnimatePresence mode="wait">
             {isOpen && (
                 <>
-                     {/* Backdrop */}
+                    {/* Backdrop */}
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        transition={{ duration: 0.25, ease: [0.32, 0.72, 0, 1] }}
-                        className="fixed inset-0 z-[100] bg-transparent"
+                        transition={{ duration: 0.3, ease: "easeInOut" }}
+                        className="fixed inset-0 z-[100] bg-background/40 backdrop-blur-xl"
                         onClick={onClose}
                     />
 
                     {/* Modal */}
-                     <div className="fixed inset-0 z-[101] flex items-center justify-center pointer-events-none p-6">
+                    <div className="fixed inset-0 z-[101] flex items-center justify-center pointer-events-none p-6">
                         <motion.div
-                            initial={{ opacity: 0, scale: 0.9, rotateX: 10 }}
-                            animate={{ opacity: 1, scale: 1, rotateX: 0 }}
-                            exit={{ opacity: 0, scale: 0.9, rotateX: 10 }}
-                            transition={{ type: "spring", damping: 30, stiffness: 350 }}
-                             drag
-							 dragMomentum={false}
-							 dragElastic={0.16}
-                             className="pointer-events-auto w-full max-w-[360px] h-[600px] glass-card rounded-[2.5rem] shadow-premium overflow-hidden flex flex-col relative cursor-grab active:cursor-grabbing"
+                            initial={{ opacity: 0, scale: 0.96, y: 20, filter: "blur(10px)" }}
+                            animate={{ opacity: 1, scale: 1, y: 0, filter: "blur(0px)" }}
+                            exit={{ opacity: 0, scale: 0.96, y: 20, filter: "blur(10px)" }}
+                            transition={{ type: "spring", damping: 32, stiffness: 300, mass: 0.8 }}
+                            className="pointer-events-auto w-full max-w-[400px] h-[640px] bg-background/80 backdrop-blur-3xl rounded-[32px] shadow-premium border border-white/10 dark:border-white/5 ring-1 ring-black/5 dark:ring-white/5 overflow-hidden flex flex-col relative"
                             onClick={(e) => e.stopPropagation()}
                         >
+                            {/* Grain Texture */}
+                            <div className="absolute inset-0 bg-grain opacity-30 pointer-events-none z-[-1]" />
+
                             {/* Header */}
-                            <div className="p-6 pb-2 flex items-center justify-between shrink-0">
-                                <div className="flex items-center gap-3 text-foreground/80">
-                                     <IoTimeOutline className="size-5" />
-                                    <span className="text-[10px] uppercase tracking-[0.25em] font-medium font-mono pt-0.5">
-                                         Moments
-                                    </span>
+                            <div className="px-6 py-5 flex items-center justify-between shrink-0 border-b border-foreground/5 relative z-10">
+                                <div className="flex items-center gap-2.5 text-foreground/80">
+                                    <div className="size-8 rounded-full bg-foreground/5 flex items-center justify-center border border-white/5">
+                                        <IoInfiniteOutline className="size-4 opacity-70" />
+                                    </div>
+                                    <div>
+                                        <span className="text-[13px] font-semibold tracking-tight block leading-tight">
+                                            Moments
+                                        </span>
+                                        <span className="text-[10px] text-muted-foreground/60 block leading-tight">
+                                            Time Capsule
+                                        </span>
+                                    </div>
                                 </div>
                                 <button
                                     onClick={onClose}
-                                    className="size-8 rounded-full flex items-center justify-center hover:bg-foreground/5 transition-colors text-muted-foreground hover:text-foreground active:scale-95"
+                                    className="size-8 rounded-full flex items-center justify-center hover:bg-rose-500/10 transition-colors text-muted-foreground hover:text-rose-500 active:scale-95"
                                 >
                                     <IoCloseOutline className="size-5" />
                                 </button>
                             </div>
 
-                             {/* Main Content */}
-                            <div className="flex-1 overflow-hidden flex flex-col">
+                            {/* Main Content */}
+                            <div className="flex-1 overflow-hidden flex flex-col relative">
                                 {/* Capture Area */}
-                                <div className="px-6 py-4 shrink-0">
-									<div className="w-full rounded-3xl border border-dashed border-foreground/10 bg-foreground/[0.02] overflow-hidden">
-										<div className="p-4 flex items-center gap-3">
-											<button
-												onClick={handleCapture}
-												className="flex-1 h-14 rounded-2xl hover:bg-foreground/[0.03] transition-all group flex items-center gap-3 px-4"
-											>
-												<div className="size-10 rounded-full bg-background shadow-zen flex items-center justify-center text-foreground group-active:scale-90 transition-transform">
-													<IoScanOutline className="size-5 opacity-70" />
-												</div>
-												<div className="flex-1 text-left leading-none">
-													<span className="text-xs font-medium tracking-wide block opacity-80">
-														Capture State
-													</span>
-													<span className="text-[9px] font-mono text-muted-foreground uppercase tracking-widest block opacity-50 mt-2">
-														Write to Memory
-													</span>
-												</div>
-											</button>
+                                <div className="p-4 shrink-0">
+                                    <div className="w-full rounded-[24px] border border-white/10 bg-white/5 backdrop-blur-sm overflow-hidden p-1.5 flex gap-1.5 shadow-sm">
+                                        <button
+                                            onClick={handleCapture}
+                                            className="flex-1 h-14 rounded-[20px] bg-background/50 hover:bg-background/80 border border-white/5 transition-all group flex items-center justify-center gap-3 relative overflow-hidden"
+                                        >
+                                            <div className="absolute inset-0 bg-gradient-to-br from-foreground/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                                            <div className="size-8 rounded-full bg-foreground flex items-center justify-center text-background shadow-sm shrink-0">
+                                                <IoScanOutline className="size-4" />
+                                            </div>
+                                            <div className="text-left py-1">
+                                                <span className="text-[11px] font-semibold tracking-wide block leading-none">
+                                                    Capture
+                                                </span>
+                                                <span className="text-[9px] text-muted-foreground/70 block mt-0.5 leading-none">
+                                                    Save State
+                                                </span>
+                                            </div>
+                                        </button>
 
-											<button
-												onClick={() => {
-													if (recording.status === "recording") stopRecording();
-													else void startRecording();
-												}}
-												className={cn(
-													"size-14 rounded-2xl border border-white/5 flex items-center justify-center transition-all active:scale-[0.98]",
-													recording.status === "recording"
-														? "bg-rose-500/15 text-rose-500"
-														: "hover:bg-foreground/[0.03] text-muted-foreground hover:text-foreground"
-												)}
-												title={recording.status === "recording" ? "Stop recording" : "Record avatar"}
-											>
-												{recording.status === "recording" ? (
-													<IoStopCircleOutline className="size-6" />
-												) : (
-													<IoVideocamOutline className="size-6" />
-												)}
-											</button>
-										</div>
+                                        <div className="w-px bg-white/5 my-2" />
 
-										<div className="px-4 pb-4">
-											{recording.status === "recording" && (
-												<div className="flex items-center justify-between rounded-2xl bg-card/40 border border-white/5 px-4 py-3">
-													<div className="flex items-center gap-2">
-														<span className="size-1.5 rounded-full bg-rose-500 animate-pulse" />
-														<span className="text-[10px] font-mono uppercase tracking-[0.25em] text-muted-foreground/70">
-															REC
-														</span>
-													</div>
-													<span className="text-[10px] font-mono tabular-nums tracking-wide text-foreground/70">
-														{formatMs(recording.elapsedMs)}
-													</span>
-												</div>
-											)}
+                                        <button
+                                            onClick={() => {
+                                                if (recording.status === "recording") stopRecording();
+                                                else void startRecording();
+                                            }}
+                                            disabled={recording.status === "processing"}
+                                            className={cn(
+                                                "w-14 h-14 rounded-[20px] flex items-center justify-center transition-all active:scale-95 border disabled:opacity-50",
+                                                recording.status === "recording"
+                                                    ? "bg-rose-500/10 border-rose-500/20 text-rose-500"
+                                                    : "bg-background/30 hover:bg-background/50 border-white/5 text-muted-foreground hover:text-foreground"
+                                            )}
+                                            title={recording.status === "recording" ? "Stop recording" : "Record avatar"}
+                                        >
+                                            {recording.status === "recording" ? (
+                                                <IoStopCircleOutline className="size-6 animate-pulse" />
+                                            ) : recording.status === "processing" ? (
+                                                <div className="size-5 border-2 border-foreground/20 border-t-foreground rounded-full animate-spin" />
+                                            ) : (
+                                                <IoVideocamOutline className="size-5" />
+                                            )}
+                                        </button>
+                                    </div>
 
-											{recording.status === "ready" && (
-												<div className="flex items-center justify-between rounded-2xl bg-card/40 border border-white/5 px-4 py-3">
-													<div className="flex flex-col">
-														<span className="text-[10px] font-mono uppercase tracking-[0.25em] text-muted-foreground/70">
-															Last capture
-														</span>
-														<span className="text-xs font-medium text-foreground/80 mt-1">
-															{formatMs(recording.durationMs)}
-														</span>
-													</div>
-													<a
-														href={recording.url}
-														download={`identity_${new Date(recording.createdAt).toISOString().replaceAll(":", "-")}.webm`}
-														className="size-10 rounded-xl hover:bg-foreground/5 text-muted-foreground hover:text-foreground transition-colors flex items-center justify-center"
-														title="Download WebM"
-													>
-														<IoDownloadOutline className="size-5" />
-													</a>
-												</div>
-											)}
-										</div>
-									</div>
+                                    {/* Recording Status / Result / Error */}
+                                    <AnimatePresence>
+                                        {(recording.status === "recording" || recording.status === "ready" || recording.status === "error" || recording.status === "processing") && (
+                                            <motion.div
+                                                initial={{ height: 0, opacity: 0, marginTop: 0 }}
+                                                animate={{ height: "auto", opacity: 1, marginTop: 8 }}
+                                                exit={{ height: 0, opacity: 0, marginTop: 0 }}
+                                                className="overflow-hidden"
+                                            >
+                                                {recording.status === "recording" && (
+                                                    <div className="flex items-center justify-between rounded-[20px] bg-background/40 border border-white/5 px-4 py-3">
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="size-1.5 rounded-full bg-rose-500 animate-pulse shadow-[0_0_8px_rgba(244,63,94,0.5)]" />
+                                                            <span className="text-[10px] font-mono uppercase tracking-[0.1em] text-foreground/70">
+                                                                Recording
+                                                            </span>
+                                                        </div>
+                                                        <span className="text-[10px] font-mono tabular-nums tracking-wide text-foreground">
+                                                            {formatMs(recording.elapsedMs)}
+                                                        </span>
+                                                    </div>
+                                                )}
+
+                                                {recording.status === "processing" && (
+                                                    <div className="flex items-center justify-center gap-2 rounded-[20px] bg-background/40 border border-white/5 px-4 py-3">
+                                                        <div className="size-4 border-2 border-foreground/20 border-t-foreground rounded-full animate-spin" />
+                                                        <span className="text-[10px] font-mono uppercase tracking-[0.1em] text-foreground/70">
+                                                            Processing...
+                                                        </span>
+                                                    </div>
+                                                )}
+
+                                                {recording.status === "ready" && (
+                                                    <div className="flex items-center justify-between rounded-[20px] bg-emerald-500/5 border border-emerald-500/10 px-4 py-2 relative overflow-hidden group">
+                                                        <div className="absolute inset-0 bg-emerald-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                        <div className="flex items-center gap-3 relative z-10">
+                                                            <div className="size-8 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-500">
+                                                                <IoTimeOutline className="size-4" />
+                                                            </div>
+                                                            <div className="flex flex-col">
+                                                                <span className="text-[11px] font-medium text-foreground/90">
+                                                                    Clip Ready
+                                                                </span>
+                                                                <span className="text-[9px] text-muted-foreground">
+                                                                    {formatMs(recording.durationMs)} • WebM
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                        <a
+                                                            href={recording.url}
+                                                            download={`dot_moment_${new Date(recording.createdAt).toISOString().replaceAll(":", "-")}.webm`}
+                                                            className="size-8 rounded-full bg-background/50 hover:bg-background border border-white/5 flex items-center justify-center text-foreground transition-all shadow-sm z-10"
+                                                            title="Download"
+                                                        >
+                                                            <IoDownloadOutline className="size-4" />
+                                                        </a>
+                                                    </div>
+                                                )}
+
+                                                {recording.status === "error" && (
+                                                    <div 
+                                                        onClick={dismissError}
+                                                        className="flex items-center gap-3 rounded-[20px] bg-rose-500/5 border border-rose-500/10 px-4 py-3 cursor-pointer hover:bg-rose-500/10 transition-colors"
+                                                    >
+                                                        <IoAlertCircleOutline className="size-5 text-rose-500 shrink-0" />
+                                                        <span className="text-[11px] text-rose-500/90 flex-1">
+                                                            {recording.message}
+                                                        </span>
+                                                        <span className="text-[9px] text-rose-500/50 uppercase">
+                                                            Tap to dismiss
+                                                        </span>
+                                                    </div>
+                                                )}
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
                                 </div>
 
                                 {/* Memory Stream */}
-                                <div className="flex-1 overflow-y-auto px-6 pb-6 space-y-3 scrollbar-hide">
+                                <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-2 scrollbar-none">
                                     {memories.length === 0 ? (
-                                        <div className="h-full flex flex-col items-center justify-center text-muted-foreground/30 space-y-4">
-                                             <IoTimeOutline className="size-12 opacity-20" />
+                                        <div className="h-full flex flex-col items-center justify-center text-muted-foreground/30 space-y-4 min-h-[200px]">
+                                            <div className="size-16 rounded-[24px] border border-dashed border-foreground/10 flex items-center justify-center">
+                                                <IoTimeOutline className="size-6 opacity-50" />
+                                            </div>
                                             <p className="text-[10px] font-mono uppercase tracking-widest opacity-60">
-                                                 No Moments Captured
+                                                No Moments Captured
                                             </p>
                                         </div>
                                     ) : (
-                                        memories.map((memory, i) => (
-                                            <motion.div
-                                                layout
-                                                initial={{ opacity: 0, y: 20 }}
-                                                animate={{ opacity: 1, y: 0 }}
-                                                transition={{ delay: i * 0.05 }}
-                                                key={memory.id}
-                                                onClick={() => onRestore(memory.emotion)}
-                                                className="group aspect-[4/1] bg-card/40 hover:bg-card/80 border border-white/5 hover:border-white/10 rounded-2xl p-4 flex items-center gap-4 cursor-pointer transition-all active:scale-[0.98] relative overflow-hidden"
-                                            >
-                                                {/* Emotion Gradient Line */}
-                                                <div 
-                                                    className="absolute left-0 top-0 bottom-0 w-1 opacity-60"
-                                                    style={{
-                                                        background: `linear-gradient(to bottom, 
-                                                            ${memory.emotion.joy > 0.5 ? 'var(--emerald-500)' : 'transparent'}, 
-                                                            ${memory.emotion.anger > 0.5 ? 'var(--rose-500)' : 'transparent'}
-                                                        )`
-                                                    }}
-                                                />
+                                        <div className="grid grid-cols-1 gap-2">
+                                            {memories.map((memory, i) => (
+                                                <motion.div
+                                                    layout
+                                                    initial={{ opacity: 0, scale: 0.95 }}
+                                                    animate={{ opacity: 1, scale: 1 }}
+                                                    transition={{ delay: i * 0.05 }}
+                                                    key={memory.id}
+                                                    onClick={() => onRestore(memory.emotion)}
+                                                    className="group relative p-3 rounded-[24px] bg-white/5 dark:bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/10 transition-all cursor-pointer overflow-hidden backdrop-blur-sm"
+                                                >
+                                                    <div className="flex items-start justify-between gap-3">
+                                                        <div className="flex gap-3 min-w-0">
+                                                            {/* Emotion Visualization */}
+                                                            <div 
+                                                                className="size-10 rounded-2xl shrink-0 opacity-80 shadow-inner"
+                                                                style={{
+                                                                    background: `linear-gradient(135deg, 
+                                                                        ${memory.emotion.joy > 0.5 ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255,255,255,0.05)'}, 
+                                                                        ${memory.emotion.anger > 0.5 ? 'rgba(244, 63, 94, 0.2)' : 'rgba(255,255,255,0.05)'}
+                                                                    )`
+                                                                }}
+                                                            >
+                                                                <div className="w-full h-full flex items-center justify-center">
+                                                                    <span className="text-[10px] font-mono opacity-50">
+                                                                        TS
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                            
+                                                            <div className="min-w-0 py-0.5">
+                                                                <div className="flex items-center gap-2">
+                                                                    <span className="text-[12px] font-semibold tracking-tight text-foreground/90 truncate">
+                                                                        {memory.label}
+                                                                    </span>
+                                                                    <span className="text-[8px] font-mono bg-foreground/5 px-1.5 py-0.5 rounded text-muted-foreground/70 uppercase tracking-wider">
+                                                                        {memory.signature}
+                                                                    </span>
+                                                                </div>
+                                                                <span className="text-[10px] text-muted-foreground/60 block mt-0.5 font-mono">
+                                                                    {new Date(memory.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                                </span>
+                                                            </div>
+                                                        </div>
 
-                                                {/* Info */}
-                                                <div className="flex-1 min-w-0 flex flex-col justify-center">
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="text-xs font-semibold tracking-wide text-foreground/90">
-                                                            {memory.label}
-                                                        </span>
-                                                        <span className="text-[8px] font-mono bg-foreground/5 px-1.5 py-0.5 rounded text-muted-foreground/70">
-                                                            {memory.signature}
-                                                        </span>
+                                                        {/* Actions */}
+                                                        <div className="flex items-center gap-1">
+                                                            <button
+                                                                onClick={(e) => handleShare(memory, e)}
+                                                                className="size-8 rounded-full hover:bg-foreground/10 text-muted-foreground hover:text-foreground transition-all flex items-center justify-center opacity-0 group-hover:opacity-100 scale-90 group-hover:scale-100"
+                                                                title="Copy Data"
+                                                            >
+                                                                <IoQrCodeOutline className="size-3.5" />
+                                                            </button>
+                                                            <button
+                                                                onClick={(e) => handleDelete(memory.id, e)}
+                                                                className="size-8 rounded-full hover:bg-rose-500/10 text-muted-foreground hover:text-rose-500 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100 scale-90 group-hover:scale-100"
+                                                                title="Delete"
+                                                            >
+                                                                <IoTrashOutline className="size-3.5" />
+                                                            </button>
+                                                        </div>
                                                     </div>
-                                                    <span className="text-[9px] font-mono text-muted-foreground mt-1">
-                                                        {new Date(memory.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                                                    </span>
-                                                </div>
-
-                                                {/* Actions */}
-                                                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <button
-                                                        onClick={(e) => handleShare(memory, e)}
-                                                        className="size-7 flex items-center justify-center rounded-lg hover:bg-foreground/10 text-muted-foreground hover:text-foreground transition-colors"
-                                                    >
-                                                        <IoQrCodeOutline className="size-3.5" />
-                                                    </button>
-                                                    <button
-                                                        onClick={(e) => handleDelete(memory.id, e)}
-                                                        className="size-7 flex items-center justify-center rounded-lg hover:bg-rose-500/10 text-muted-foreground hover:text-rose-500 transition-colors"
-                                                    >
-                                                        <IoTrashOutline className="size-3.5" />
-                                                    </button>
-                                                </div>
-                                            </motion.div>
-                                        ))
+                                                </motion.div>
+                                            ))}
+                                        </div>
                                     )}
                                 </div>
                             </div>
                             
                             {/* Footer Gradient Fade */}
-                            <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-background/20 to-transparent pointer-events-none" />
+                            <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-background/80 to-transparent pointer-events-none rounded-b-[32px]" />
                         </motion.div>
                     </div>
                 </>
