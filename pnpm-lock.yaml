@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@ai-sdk/google':
+        specifier: ^3.0.13
+        version: 3.0.13(zod@4.1.12)
       '@ai-sdk/openai':
         specifier: ^3.0.18
         version: 3.0.18(zod@4.1.12)
@@ -209,6 +212,12 @@ packages:
 
   '@ai-sdk/gateway@3.0.22':
     resolution: {integrity: sha512-NgnlY73JNuooACHqUIz5uMOEWvqR1MMVbb2soGLMozLY1fgwEIF5iJFDAGa5/YArlzw2ATVU7zQu7HkR/FUjgA==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      zod: ^3.25.76 || ^4.1.8
+
+  '@ai-sdk/google@3.0.13':
+    resolution: {integrity: sha512-HYCh8miS4FLxOIpjo/BmoFVMO5BuxNpHVVDQkoJotoH8ZSFftkJJGGayIxQT/Lwx9GGvVVCOQ+lCdBBAnkl1sA==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
@@ -2998,6 +3007,12 @@ snapshots:
       '@ai-sdk/provider': 3.0.5
       '@ai-sdk/provider-utils': 4.0.9(zod@4.1.12)
       '@vercel/oidc': 3.1.0
+      zod: 4.1.12
+
+  '@ai-sdk/google@3.0.13(zod@4.1.12)':
+    dependencies:
+      '@ai-sdk/provider': 3.0.5
+      '@ai-sdk/provider-utils': 4.0.9(zod@4.1.12)
       zod: 4.1.12
 
   '@ai-sdk/openai@3.0.18(zod@4.1.12)':
