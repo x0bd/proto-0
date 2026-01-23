@@ -7,6 +7,7 @@ import { Eyes } from "./face/Eyes";
 import { Mouth } from "./face/Mouth";
 import { Ears } from "./face/Ears";
 import { FaceVariant } from "./face/types";
+import type { AudioLevels } from "@/hooks/useAudioAnalysis";
 
 interface EmotionState {
 	joy: number;
@@ -20,7 +21,10 @@ interface AvatarProps {
 	emotion?: EmotionState;
 	className?: string;
 	voiceEnabled?: boolean;
+	/** @deprecated Use audioLevels instead */
 	voiceLevel?: number;
+	/** Multi-band audio levels from useAudioAnalysis hook */
+	audioLevels?: AudioLevels;
 	variant?: FaceVariant;
 }
 
@@ -37,6 +41,7 @@ export default function Avatar({
 	className = "",
 	voiceEnabled = false,
 	voiceLevel = 0,
+	audioLevels,
 	variant = "minimal",
 }: AvatarProps) {
 	// Helper for mouth geometry
@@ -176,40 +181,121 @@ export default function Avatar({
 		}
 	}
 
-    // Voice Reactivity: Direct modulation of mouth curve
+    // Voice Reactivity: Multi-band audio-driven animation
     useEffect(() => {
         if (!mouthRef.current) return;
         
-        // If voice is enabled and getting signal, or if we want to reset to idle
-        // Calculate the base state from the current logical emotion (stored in latestMouthRef)
+        // Determine effective audio levels
+        // Priority: audioLevels > voiceLevel (legacy fallback)
+        const hasAudioLevels = audioLevels && audioLevels.overall > 0.01;
+        const hasVoiceLevel = voiceEnabled && voiceLevel > 0.01;
+        const isSpeaking = hasAudioLevels || hasVoiceLevel;
+        
+        if (!isSpeaking) return; // Let emotion-driven animation take over
+        
         const base = latestMouthRef.current;
         
-        // If speaking, we add opening
+        // Calculate target values from audio bands
         let targetCurve = base.curve;
         let targetWidth = base.width;
+        let mouthJitter = 0;
         
-        if (voiceEnabled && voiceLevel > 0.01) {
-            // Modulate curve (opening) based on level
-            targetCurve += voiceLevel * 60; 
-            // Slight width reduction for "O" shape on loud sounds?
-            // targetWidth -= voiceLevel * 10;
+        if (hasAudioLevels) {
+            // Multi-band mouth modulation
+            const { bass, lowMid, mid, highMid } = audioLevels;
+            
+            // Primary opening from low-mid (vowels, speech fundamentals)
+            targetCurve += lowMid * 55 + bass * 15;
+            
+            // Width variation from mid (consonants, formants)
+            targetWidth += mid * 12 - lowMid * 8;
+            
+            // Subtle rotation jitter from high-mid (adds organic feel)
+            mouthJitter = (highMid - 0.3) * 3;
+        } else {
+            // Legacy fallback: simple voiceLevel modulation
+            targetCurve += voiceLevel * 60;
         }
 
         const pathData = generateMouthPath(targetWidth, targetCurve);
         
-        // Use a quick tween or set for responsiveness
-        // If voice is active, we want immediate response (frames).
-        // If returning to rest, maybe slightly smoother.
-        const isSpeaking = voiceEnabled && voiceLevel > 0.01;
-        
+        // Fast tween for responsiveness
         gsap.to(mouthRef.current, {
             attr: { d: pathData },
-            duration: isSpeaking ? 0.05 : 0.2,
-            ease: isSpeaking ? "none" : "power2.out",
+            duration: 0.04,
+            ease: "none",
             overwrite: "auto"
         });
+        
+        // Apply jitter to mouth group if we have multi-band data
+        if (mouthGroupRef.current && hasAudioLevels && Math.abs(mouthJitter) > 0.1) {
+            gsap.to(mouthGroupRef.current, {
+                rotation: base.tilt + mouthJitter,
+                duration: 0.06,
+                ease: "none",
+                overwrite: "auto"
+            });
+        }
 
-    }, [voiceLevel, voiceEnabled, generateMouthPath]);
+    }, [voiceLevel, voiceEnabled, audioLevels, generateMouthPath]);
+
+    // Eye Reactivity: Subtle pulse from bass, micro-glances from presence
+    useEffect(() => {
+        if (!audioLevels || audioLevels.overall < 0.05) return;
+        if (!leftEyeRef.current || !rightEyeRef.current) return;
+        
+        const { bass, highMid, presence } = audioLevels;
+        const target = latestEyeTargetsRef.current;
+        
+        // Subtle scale pulse from bass (0.98 - 1.02 range)
+        const scalePulse = 1 + (bass - 0.3) * 0.03;
+        
+        // Very subtle vertical movement from high frequencies
+        const yPulse = highMid * 1.5;
+
+        // Apply to both eyes
+        [{ ref: leftEyeRef, cx: 170, tiltSign: -1 }, { ref: rightEyeRef, cx: 350, tiltSign: 1 }].forEach(({ ref, cx, tiltSign }) => {
+            if (!ref.current) return;
+            
+            animateEye(
+                ref.current,
+                {
+                    rx: target.rx,
+                    ry: target.ry,
+                    cy: target.cy - yPulse,
+                    tilt: target.tilt * tiltSign,
+                    scale: scalePulse,
+                },
+                0.05,
+                "none",
+                0,
+                cx
+            );
+        });
+        
+        // Trigger micro-glance on presence spikes (randomly)
+        if (presence > 0.6 && Math.random() < 0.02) {
+            performGlance();
+        }
+    }, [audioLevels]);
+
+    // Container Reactivity: Bass-modulated breathing depth
+    useEffect(() => {
+        if (!audioLevels || !containerRef.current) return;
+        if (audioLevels.overall < 0.1) return;
+        
+        const { bass } = audioLevels;
+        
+        // Subtle scale modulation from bass
+        const scaleOffset = bass * 0.008;
+        
+        gsap.to(containerRef.current, {
+            scale: 1 + scaleOffset,
+            duration: 0.08,
+            ease: "none",
+            overwrite: "auto"
+        });
+    }, [audioLevels]);
 
 	// Animation Helper to bridge Ellipse (Minimal) vs Rect (Tron) geometry
 	function animateEye(

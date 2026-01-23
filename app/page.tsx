@@ -13,6 +13,8 @@ import { useTheme } from "next-themes";
 import { IoTerminalOutline } from "react-icons/io5";
 import { cn } from "@/lib/utils";
 import { FaceVariant, EmotionState } from "./components/face/types";
+import { AudioPanel } from "@/components/audio-panel";
+import type { AudioLevels } from "@/hooks/useAudioAnalysis";
 
 const NEUTRAL_EMOTION: EmotionState = { joy: 0.3, sadness: 0, surprise: 0, anger: 0, curiosity: 0.2 };
 
@@ -76,6 +78,7 @@ export default function Home() {
 	const [accentColor, setAccentColor] = useState<string>("neutral");
 	const [voiceEnabled, setVoiceEnabled] = useState<boolean>(true);
 	const [voiceLevel, setVoiceLevel] = useState<number>(0);
+	const [audioLevels, setAudioLevels] = useState<AudioLevels | undefined>(undefined);
     const [aiConfig, setAiConfig] = useState<AIConfig>(DEFAULT_AI_CONFIG);
 	const targetEmotionRef = useRef<EmotionState>(NEUTRAL_EMOTION);
 	const baseEmotionRef = useRef<EmotionState>(NEUTRAL_EMOTION);
@@ -260,6 +263,7 @@ export default function Home() {
 							emotion={currentEmotion}
 							voiceEnabled={voiceEnabled}
                             voiceLevel={voiceLevel}
+							audioLevels={audioLevels}
 							variant={faceVariant}
 						/>
 					</div>
@@ -376,15 +380,17 @@ export default function Home() {
 					}}
 				/>
 
-                {/* Studio Placeholder */}
+                {/* Studio - Audio Testing Panel */}
                 {isStudioOpen && (
-                    <div className="fixed inset-0 z-[200] bg-background/80 backdrop-blur-xl flex items-center justify-center p-8" onClick={() => setIsStudioOpen(false)}>
-                        <div className="max-w-md text-center space-y-4">
-                            <h2 className="text-2xl font-bold tracking-tight">Studio Mode</h2>
-                            <p className="text-muted-foreground">Audio reactivity and advanced face customization tools are coming soon.</p>
-                            <button className="px-4 py-2 rounded-full bg-foreground text-background text-sm font-medium hover:opacity-90 transition-opacity">
-                                Close
-                            </button>
+                    <div 
+                        className="fixed inset-0 z-[200] bg-background/60 backdrop-blur-lg flex items-start justify-end p-8 pt-24"
+                        onClick={() => setIsStudioOpen(false)}
+                    >
+                        <div onClick={(e) => e.stopPropagation()}>
+                            <AudioPanel 
+                                onLevelsChange={setAudioLevels}
+                                className="w-[280px]"
+                            />
                         </div>
                     </div>
                 )}
