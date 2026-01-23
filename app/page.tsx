@@ -14,8 +14,9 @@ import { IoTerminalOutline } from "react-icons/io5";
 import { cn } from "@/lib/utils";
 import { FaceVariant, EmotionState } from "./components/face/types";
 import { AudioPanel } from "@/components/audio-panel";
-import type { AudioLevels } from "@/hooks/useAudioAnalysis";
 import { useDotChat } from "@/hooks/useDotChat";
+import { useVoiceSynthesis } from "@/hooks/useVoiceSynthesis";
+import { useAudioAnalysis, type AudioLevels } from "@/hooks/useAudioAnalysis";
 
 const NEUTRAL_EMOTION: EmotionState = { joy: 0.3, sadness: 0, surprise: 0, anger: 0, curiosity: 0.2 };
 
@@ -96,6 +97,27 @@ export default function Home() {
 			targetEmotionRef.current = emotion;
 		},
 	});
+
+    const { 
+        levels, 
+        connectMicrophone, 
+        connectExternalAnalyser,
+        disconnect: disconnectAudio 
+    } = useAudioAnalysis();
+    
+    const { speak, isSpeaking, stop: stopSpeaking, analyserRef: ttsAnalyserRef } = useVoiceSynthesis({
+        onAudioStart: () => {
+            // When TTS starts, connect its analyser to our visualizer
+            if (ttsAnalyserRef.current) {
+                connectExternalAnalyser(ttsAnalyserRef.current);
+            }
+        },
+    });
+
+    // Pass levels to avatar (prioritize our analysis levels)
+    useEffect(() => {
+        setAudioLevels(levels);
+    }, [levels]);
 	
 	useEffect(() => { 
         setMounted(true); 
@@ -297,6 +319,9 @@ export default function Home() {
 						const trimmed = message.trim();
 						if (!trimmed) return;
 
+                        // Stop any current speech
+                        stopSpeaking();
+
 						// optimistic append for UI
 						const nextHistory = [...history, { role: "user", content: trimmed }];
                         setHistory(nextHistory);
@@ -308,49 +333,29 @@ export default function Home() {
 
                         try {
 							setIsDotThinking(true);
-                             const response = await fetch(`${aiConfig.baseUrl}/chat/completions`, {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'Authorization': `Bearer ${aiConfig.apiKey}`
-                                },
-                                body: JSON.stringify({
-                                    model: aiConfig.model,
-                                    messages: [
-                                        { role: "system", content: "You are Dot, a minimal expressive avatar. You are helpful, concise, and slightly poetic. If the user asks for an emotion, you can output JSON in the format { \"joy\": 0.5, \"sadness\": 0, ... } at the end of your message to change your face." },
-                                        ...nextHistory.filter(h => h.role === 'user' || h.role === 'dot' || h.role === 'system').map(h => ({
-                                            role: h.role === 'dot' ? 'assistant' : h.role,
-                                            content: h.content
-                                        })),
-                                    ],
-                                    temperature: 0.7,
-                                    max_tokens: 150
-                                })
-                            });
-
-                            if (!response.ok) {
-                                throw new Error(`API Error: ${response.status}`);
-                            }
-
-                            const data = await response.json();
-                            const reply = data.choices[0]?.message?.content || "(No response)";
                             
-                            setHistory(prev => [...prev, { role: "dot", content: reply }]);
-
-                            // Basic emotion parsing (JSON extraction)
-                            const jsonMatch = reply.match(/\{[\s\S]*?\}/);
-                            if (jsonMatch) {
-                                try {
-                                    const parsedEmotion = JSON.parse(jsonMatch[0]);
-                                    if (typeof parsedEmotion.joy === 'number') {
-                                        const newEmotion = { ...baseEmotionRef.current, ...parsedEmotion };
-                                         setBaseEmotion(newEmotion);
-                                         baseEmotionRef.current = newEmotion;
-                                         targetEmotionRef.current = newEmotion;
-                                         // Clean up the message if it's just JSON? No, keep it for debug context or style.
+                            let fullReply = "";
+                            const stream = sendMessage(nextHistory);
+                            
+                            for await (const part of stream) {
+                                if (part.type === 'text') {
+                                    fullReply += part.content;
+                                    setHistory(prev => {
+                                        const last = prev[prev.length - 1];
+                                        if (last.role === "dot") {
+                                            return [...prev.slice(0, -1), { role: "dot", content: fullReply }];
+                                        } else {
+                                            return [...prev, { role: "dot", content: fullReply }];
+                                        }
+                                    });
+                                } else if (part.type === 'done') {
+                                    // Finished generating text. Now speak it!
+                                    if (voiceEnabled) {
+                                        speak(fullReply);
                                     }
-                                } catch (e) {
-                                    // Ignore json parse error
+                                } else if (part.type === 'error') {
+                                    console.error(part.content);
+                                    setHistory(prev => [...prev, { role: "system", content: `Error: ${part.content}` }]);
                                 }
                             }
 
@@ -391,7 +396,6 @@ export default function Home() {
 					}}
 				/>
 
-                {/* Studio - Audio Testing Panel */}
                 {/* Studio - Audio Testing Panel */}
                 {isStudioOpen && (
                     <div className="fixed top-24 right-8 z-[200]">

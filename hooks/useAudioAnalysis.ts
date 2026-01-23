@@ -105,7 +105,7 @@ export function useAudioAnalysis(options: UseAudioAnalysisOptions = {}) {
     const frequencyData = frequencyDataRef.current;
     if (!analyser || !frequencyData) return ZERO_LEVELS;
     
-    analyser.getByteFrequencyData(frequencyData);
+    analyser.getByteFrequencyData(frequencyData as Uint8Array);
     
     const binCount = analyser.frequencyBinCount;
     const sampleRate = audioContextRef.current?.sampleRate || 44100;
@@ -296,6 +296,23 @@ export function useAudioAnalysis(options: UseAudioAnalysisOptions = {}) {
     };
   }, [isAnalyzing, analysisLoop]);
   
+  /**
+   * Connect an external AnalyserNode (e.g. from TTS hook)
+   */
+  const connectExternalAnalyser = useCallback((externalAnalyser: AnalyserNode) => {
+      // If we already have a context/analyser, we might want to discard them or link them?
+      // Actually, simplest is to just use the external analyser as our source of truth.
+      // But our hook manages its own context.
+      // Better: Copy options from external analyser or just read from it.
+      
+      analyserRef.current = externalAnalyser;
+      audioContextRef.current = externalAnalyser.context as AudioContext;
+      
+      // Assume the external source is already connected to this analyser
+      if (opts.autoStart) startAnalysis();
+      return true;
+  }, [opts.autoStart, startAnalysis]);
+
   return {
     // State
     levels,
@@ -306,6 +323,7 @@ export function useAudioAnalysis(options: UseAudioAnalysisOptions = {}) {
     connectMicrophone,
     connectElement,
     connectFile,
+    connectExternalAnalyser, // Export this
     disconnect,
     startAnalysis,
     stopAnalysis,
