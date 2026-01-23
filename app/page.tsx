@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 import { FaceVariant, EmotionState } from "./components/face/types";
 import { AudioPanel } from "@/components/audio-panel";
 import type { AudioLevels } from "@/hooks/useAudioAnalysis";
+import { useDotChat } from "@/hooks/useDotChat";
 
 const NEUTRAL_EMOTION: EmotionState = { joy: 0.3, sadness: 0, surprise: 0, anger: 0, curiosity: 0.2 };
 
@@ -85,6 +86,16 @@ export default function Home() {
 	const { theme, setTheme } = useTheme();
 	const [mounted, setMounted] = useState(false);
     const [history, setHistory] = useState<{ role: string; content: string }[]>(INITIAL_HISTORY);
+
+	// Initialize Dot chat hook
+	const { sendMessage } = useDotChat({
+		aiConfig,
+		onEmotionChange: (emotion) => {
+			setBaseEmotion(emotion);
+			baseEmotionRef.current = emotion;
+			targetEmotionRef.current = emotion;
+		},
+	});
 	
 	useEffect(() => { 
         setMounted(true); 
