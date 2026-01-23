@@ -47,10 +47,12 @@ export function useDotChat({ aiConfig, onEmotionChange }: UseChatOpt) {
             content:
               "You are Dot, a minimal expressive avatar. You are helpful, concise, and slightly poetic. Use the setEmotion tool to express your emotional state as you respond. This allows your avatar to react naturally to the conversation.",
           },
-          ...messages.map((m) => ({
-            role: (m.role === "dot" ? "assistant" : m.role) as "user" | "assistant" | "system",
-            content: m.content,
-          })),
+          ...messages
+            .filter((m) => m.role !== "system") // Filter out UI system messages (errors, etc)
+            .map((m) => ({
+              role: (m.role === "dot" ? "assistant" : m.role) as "user" | "assistant",
+              content: m.content,
+            })),
         ],
         tools: {
           setEmotion: {

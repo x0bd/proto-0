@@ -23,7 +23,7 @@ const NEUTRAL_EMOTION: EmotionState = { joy: 0.3, sadness: 0, surprise: 0, anger
 const DEFAULT_AI_CONFIG: AIConfig = {
     baseUrl: "https://generativelanguage.googleapis.com/v1beta/openai/",
     apiKey: "",
-    model: "gemini-2.0-flash-exp",
+    model: "gemini-1.5-flash",
 };
 
 const INITIAL_HISTORY: { role: string; content: string }[] = [];
