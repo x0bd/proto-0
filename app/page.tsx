@@ -381,17 +381,14 @@ export default function Home() {
 				/>
 
                 {/* Studio - Audio Testing Panel */}
+                {/* Studio - Audio Testing Panel */}
                 {isStudioOpen && (
-                    <div 
-                        className="fixed inset-0 z-[200] bg-background/60 backdrop-blur-lg flex items-start justify-end p-8 pt-24"
-                        onClick={() => setIsStudioOpen(false)}
-                    >
-                        <div onClick={(e) => e.stopPropagation()}>
-                            <AudioPanel 
-                                onLevelsChange={setAudioLevels}
-                                className="w-[280px]"
-                            />
-                        </div>
+                    <div className="fixed top-24 right-8 z-[200]">
+                         <AudioPanel 
+                            onLevelsChange={setAudioLevels}
+                            onClose={() => setIsStudioOpen(false)}
+                            className="w-[300px]"
+                        />
                     </div>
                 )}
 			</div>
