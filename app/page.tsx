@@ -75,7 +75,9 @@ export default function Home() {
 
     const { 
         levels, 
+        connectMicrophone,
         connectExternalAnalyser,
+        disconnect: disconnectAudio,
     } = useAudioAnalysis();
     
     const { speak, stop: stopSpeaking, analyserRef: ttsAnalyserRef } = useVoiceSynthesis({
@@ -90,6 +92,15 @@ export default function Home() {
     useEffect(() => {
         setAudioLevels(levels);
     }, [levels]);
+
+    // Connect/disconnect mic when voice is toggled
+    useEffect(() => {
+        if (voiceEnabled) {
+            connectMicrophone();
+        } else {
+            disconnectAudio();
+        }
+    }, [voiceEnabled, connectMicrophone, disconnectAudio]);
 	
 	useEffect(() => { 
         setMounted(true); 
@@ -114,21 +125,14 @@ export default function Home() {
 		return () => cancelAnimationFrame(frameId);
 	}, []);
 
-	// Voice Visualizer Loop
+	// Voice level from real audio analysis
 	useEffect(() => {
-		if (!voiceEnabled) { setVoiceLevel(0); return; }
-		let frameId: number;
-		const start = performance.now();
-		const loop = (time: number) => {
-			const t = (time - start) / 1000;
-			const composite = 0.55 * Math.sin(t * 6.2) + 0.35 * Math.sin(t * 9.1 + 0.7) + 0.2 * Math.sin(t * 13.4 + 1.9);
-			const level = Math.min(1, Math.max(0, 0.5 + 0.5 * composite));
-			setVoiceLevel(level);
-			frameId = requestAnimationFrame(loop);
-		};
-		frameId = requestAnimationFrame(loop);
-		return () => cancelAnimationFrame(frameId);
-	}, [voiceEnabled]);
+		if (levels?.overall) {
+			setVoiceLevel(levels.overall);
+		} else {
+			setVoiceLevel(0);
+		}
+	}, [levels]);
 
 	const handlePointerMove = (e: React.MouseEvent<HTMLDivElement>) => {
 		if (typeof window === "undefined") return;
