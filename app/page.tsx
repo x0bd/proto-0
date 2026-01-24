@@ -5,15 +5,11 @@ import type React from "react";
 import { motion, type PanInfo } from "motion/react";
 import Avatar from "./components/Avatar";
 import { CustomizationModal, type AIConfig } from "./components/CustomizationModal";
-import { MemoryBank } from "./components/MemoryBank";
 import { FloatingDock } from "@/components/floating-dock";
 import { ConsoleOverlay } from "@/components/console-overlay";
-import { SystemMenu } from "@/components/system-menu";
-import { useTheme } from "next-themes";
-import { IoTerminalOutline } from "react-icons/io5";
+import { IoSettingsOutline } from "react-icons/io5";
 import { cn } from "@/lib/utils";
 import { FaceVariant, EmotionState } from "./components/face/types";
-import { AudioPanel } from "@/components/audio-panel";
 import { useVoiceSynthesis } from "@/hooks/useVoiceSynthesis";
 import { useAudioAnalysis, type AudioLevels } from "@/hooks/useAudioAnalysis";
 
@@ -51,7 +47,6 @@ function clamp01(v: number) { return Math.min(1, Math.max(0, v)); }
 function smooth01(t: number) { const x = clamp01(t); return x * x * (3 - 2 * x); }
 function lerpEmotion(a: EmotionState, b: EmotionState, alpha: number): EmotionState {
 	const t = clamp01(alpha);
-
 	return {
 		joy: a.joy + (b.joy - a.joy) * t,
 		sadness: a.sadness + (b.sadness - a.sadness) * t,
@@ -61,49 +56,20 @@ function lerpEmotion(a: EmotionState, b: EmotionState, alpha: number): EmotionSt
 	};
 }
 
-const presets: Record<string, EmotionState> = {
-	neutral: { joy: 0.3, sadness: 0, surprise: 0, anger: 0, curiosity: 0.2 },
-	joy: { joy: 1, sadness: 0, surprise: 0.1, anger: 0, curiosity: 0.2 },
-	sad: { joy: 0, sadness: 1, surprise: 0, anger: 0, curiosity: 0.1 },
-	surprised: { joy: 0.2, sadness: 0, surprise: 1, anger: 0, curiosity: 0.3 },
-	angry: { joy: 0, sadness: 0.1, surprise: 0.1, anger: 1, curiosity: 0 },
-	curious: { joy: 0.2, sadness: 0, surprise: 0.2, anger: 0, curiosity: 1 },
-};
-const presetKeys = Object.keys(presets);
-
-const themes: Record<string, React.CSSProperties> = {
-	neutral: {},
-	rose: {
-		"--primary": "oklch(0.7 0.14 0)",
-		"--ring": "oklch(0.7 0.14 0)",
-		"--accent": "oklch(0.7 0.14 0)",
-	} as React.CSSProperties,
-	cyan: {
-		"--primary": "oklch(0.6 0.12 230)",
-		"--ring": "oklch(0.6 0.12 230)",
-		"--accent": "oklch(0.6 0.12 230)",
-	} as React.CSSProperties,
-};
-
 export default function Home() {
 	const [currentEmotion, setCurrentEmotion] = useState<EmotionState>(NEUTRAL_EMOTION);
 	const [baseEmotion, setBaseEmotion] = useState<EmotionState>(NEUTRAL_EMOTION);
-	const [activePreset, setActivePreset] = useState<string>("neutral");
 	const [isCustomizationOpen, setIsCustomizationOpen] = useState(false);
-	const [isMemoryOpen, setIsMemoryOpen] = useState(false);
-	const [isConsoleOpen, setIsConsoleOpen] = useState(false);
-	const [isStudioOpen, setIsStudioOpen] = useState(false);
+	const [isTranscriptOpen, setIsTranscriptOpen] = useState(false);
 	const [isDotThinking, setIsDotThinking] = useState(false);
 	const avatarStageRef = useRef<HTMLDivElement>(null);
 	const [faceVariant, setFaceVariant] = useState<FaceVariant>("minimal");
-	const [accentColor, setAccentColor] = useState<string>("neutral");
 	const [voiceEnabled, setVoiceEnabled] = useState<boolean>(true);
 	const [voiceLevel, setVoiceLevel] = useState<number>(0);
 	const [audioLevels, setAudioLevels] = useState<AudioLevels | undefined>(undefined);
     const [aiConfig, setAiConfig] = useState<AIConfig>(DEFAULT_AI_CONFIG);
 	const targetEmotionRef = useRef<EmotionState>(NEUTRAL_EMOTION);
 	const baseEmotionRef = useRef<EmotionState>(NEUTRAL_EMOTION);
-	const { theme, setTheme } = useTheme();
 	const [mounted, setMounted] = useState(false);
     const [history, setHistory] = useState<{ role: string; content: string }[]>(INITIAL_HISTORY);
 
@@ -163,31 +129,6 @@ export default function Home() {
 		frameId = requestAnimationFrame(loop);
 		return () => cancelAnimationFrame(frameId);
 	}, [voiceEnabled]);
-
-	const applyPreset = (key: string) => {
-		const preset = presets[key];
-		if (!preset) return;
-		setBaseEmotion(preset);
-		baseEmotionRef.current = preset;
-		targetEmotionRef.current = preset;
-		setCurrentEmotion(preset);
-		setActivePreset(key);
-		if (typeof navigator !== "undefined" && navigator.vibrate) navigator.vibrate(15);
-	};
-
-	const cyclePreset = (direction: number) => {
-		const currentIndex = presetKeys.indexOf(activePreset);
-		let nextIndex = currentIndex + direction;
-		if (nextIndex >= presetKeys.length) nextIndex = 0;
-		if (nextIndex < 0) nextIndex = presetKeys.length - 1;
-		applyPreset(presetKeys[nextIndex]);
-	};
-
-	const handleDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-		const threshold = 50;
-		if (info.offset.x < -threshold) cyclePreset(1);
-		else if (info.offset.x > threshold) cyclePreset(-1);
-	};
 
 	const handlePointerMove = (e: React.MouseEvent<HTMLDivElement>) => {
 		if (typeof window === "undefined") return;
@@ -281,7 +222,6 @@ export default function Home() {
 			{/* BACKGROUND & ATMOSPHERE */}
 			<div
 				className="absolute inset-0 w-full h-full text-foreground flex flex-col items-center justify-center transition-colors duration-500 bg-grain"
-				style={themes[accentColor] || {}}
 				onMouseMove={handlePointerMove}
 				onMouseLeave={handlePointerLeave}
 			>
@@ -292,44 +232,26 @@ export default function Home() {
 				<div className="absolute top-8 left-8 z-50 flex items-center gap-3 select-none">
 					{/* Branding */}
 					<div className="flex items-center gap-2.5 glass-card rounded-full px-5 h-12 opacity-60 hover:opacity-100 transition-opacity border border-white/10">
-						<span 
-							className="logo-font font-bold text-sm leading-none tracking-[0.3em]"
-						>
+						<span className="logo-font font-bold text-sm leading-none tracking-[0.3em]">
 							DOT
 						</span>
 					</div>
 				</div>
 
 				<div className="absolute top-8 right-8 z-50 flex items-center gap-2">
-					{/* Console Toggle */}
+					{/* Settings Button */}
 					<button
-						onClick={() => setIsConsoleOpen(!isConsoleOpen)}
-						className={cn(
-							"size-9 rounded-full flex items-center justify-center transition-all duration-300 border border-transparent click-tactic",
-							isConsoleOpen 
-								? "bg-foreground text-background shadow-lg" 
-								: "hover:bg-foreground/5 text-muted-foreground"
-						)}
+						onClick={() => setIsCustomizationOpen(true)}
+						className="size-9 rounded-full flex items-center justify-center hover:bg-foreground/5 text-muted-foreground hover:text-foreground transition-all duration-300 click-tactic"
+						title="Settings"
 					>
-						<IoTerminalOutline className="size-4" strokeWidth={isConsoleOpen ? 2 : 1.5} />
+						<IoSettingsOutline className="size-4" />
 					</button>
-
-					{/* System Controls */}
-					<SystemMenu 
-						voiceEnabled={voiceEnabled}
-						onVoiceToggle={() => setVoiceEnabled(v => !v)}
-						onSettingsClick={() => setIsCustomizationOpen(true)}
-						onStudioClick={() => setIsStudioOpen(true)}
-					/>
 				</div>
 
 				{/* CENTER STAGE (Avatar) */}
 				<motion.div
-					className="absolute inset-0 cursor-grab active:cursor-grabbing touch-none flex items-center justify-center z-0" 
-					drag="x"
-					dragConstraints={{ left: 0, right: 0 }}
-					dragElastic={0.15}
-					onDragEnd={handleDragEnd}
+					className="absolute inset-0 touch-none flex items-center justify-center z-0"
 					style={{ zIndex: 0 }}
 				>
 				<div
@@ -346,17 +268,17 @@ export default function Home() {
 					</div>
 				</motion.div>
 
-				{/* BOTTOM UI (Floating Dock) */}
+				{/* BOTTOM UI (Minimal Dock) */}
 				<FloatingDock 
-					activePreset={activePreset} 
-					onPresetChange={applyPreset} 
-					onMemoryClick={() => setIsMemoryOpen(true)}
+					voiceEnabled={voiceEnabled}
+					onVoiceToggle={() => setVoiceEnabled(v => !v)}
+					onHistoryClick={() => setIsTranscriptOpen(true)}
 				/>
 
-				{/* OVERLAYS */}
+				{/* Transcript Overlay */}
 				<ConsoleOverlay 
-					isOpen={isConsoleOpen} 
-					onClose={() => setIsConsoleOpen(false)}
+					isOpen={isTranscriptOpen} 
+					onClose={() => setIsTranscriptOpen(false)}
                     history={history}
 					isThinking={isDotThinking}
                     onSendMessage={handleSendMessage}
@@ -366,40 +288,17 @@ export default function Home() {
 					}}
 				/>
 
+				{/* Settings Modal */}
 				<CustomizationModal
 					isOpen={isCustomizationOpen}
 					onClose={() => setIsCustomizationOpen(false)}
 					currentVariant={faceVariant}
 					onVariantChange={setFaceVariant}
-					accentColor={accentColor}
-					onAccentChange={setAccentColor}
+					accentColor={"neutral"}
+					onAccentChange={() => {}}
                     aiConfig={aiConfig}
                     onAiConfigChange={setAiConfig}
 				/>
-				
-				<MemoryBank
-					isOpen={isMemoryOpen}
-					onClose={() => setIsMemoryOpen(false)}
-					currentEmotion={currentEmotion}
-					avatarStageRef={avatarStageRef}
-					onRestore={(emotion) => {
-						setBaseEmotion(emotion);
-						baseEmotionRef.current = emotion;
-						targetEmotionRef.current = emotion;
-						setActivePreset("custom");
-					}}
-				/>
-
-                {/* Studio - Audio Testing Panel */}
-                {isStudioOpen && (
-                    <div className="fixed top-24 right-8 z-[200]">
-                         <AudioPanel 
-                            onLevelsChange={setAudioLevels}
-                            onClose={() => setIsStudioOpen(false)}
-                            className="w-[300px]"
-                        />
-                    </div>
-                )}
 			</div>
 		</div>
 	);

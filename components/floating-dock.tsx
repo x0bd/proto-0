@@ -2,87 +2,61 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
-import { 
-    IoHappyOutline, 
-    IoSadOutline, 
-    IoHelpOutline, 
-    IoFlashOutline, 
-    IoFlameOutline, 
-    IoSearchOutline,
-    IoTimeOutline
-} from "react-icons/io5";
+import { IoVolumeHighOutline, IoVolumeMuteOutline, IoChatbubblesOutline } from "react-icons/io5";
 import { motion } from "motion/react";
 
 interface FloatingDockProps {
-    activePreset: string;
-    onPresetChange: (preset: string) => void;
-    onMemoryClick: () => void;
+    voiceEnabled: boolean;
+    onVoiceToggle: () => void;
+    onHistoryClick: () => void;
 }
 
-const emotions = [
-    { id: 'neutral', label: 'NEUTRAL', icon: IoHelpOutline, color: 'text-muted-foreground' },
-    { id: 'joy', label: 'JOY', icon: IoHappyOutline, color: 'text-emerald-500' },
-    { id: 'sad', label: 'SORROW', icon: IoSadOutline, color: 'text-blue-500' },
-    { id: 'surprised', label: 'SHOCK', icon: IoFlashOutline, color: 'text-amber-500' },
-    { id: 'angry', label: 'RAGE', icon: IoFlameOutline, color: 'text-rose-500' },
-    { id: 'curious', label: 'QUERY', icon: IoSearchOutline, color: 'text-indigo-500' },
-];
-
-export function FloatingDock({ activePreset, onMemoryClick }: FloatingDockProps) {
-    const activeItem = emotions.find(e => e.id === activePreset) || emotions[0];
-    const Icon = activeItem.icon;
-
+export function FloatingDock({ voiceEnabled, onVoiceToggle, onHistoryClick }: FloatingDockProps) {
     return (
         <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-[60]">
-            {/* Minimal Pill: Matching SystemMenu style */}
+            {/* Minimal Pill */}
             <motion.div 
                 layout
-                className="glass-card rounded-full p-1.5 pl-4 flex items-center gap-3 shadow-premium backdrop-blur-2xl bg-card/60 border-0"
+                className="glass-card rounded-full p-1.5 flex items-center gap-1 shadow-premium backdrop-blur-2xl bg-card/60 border-0"
             >
-                {/* Active State Display */}
-                <div className="flex items-center gap-2.5 select-none">
-                    <motion.div
-                        key={activeItem.id}
-                        initial={{ scale: 0.8, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                    >
-                        <Icon 
-                            className={cn("size-4", activeItem.color)} 
-                            strokeWidth={2}
-                        />
-                    </motion.div>
-                    <motion.span 
-                        key={`${activeItem.id}-text`}
-                        initial={{ y: 5, opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        className="text-[10px] font-mono tracking-[0.2em] font-bold text-muted-foreground uppercase min-w-[60px]"
-                    >
-                        {activeItem.label}
-                    </motion.span>
-                </div>
-
-                {/* Separator */}
-                <div className="w-px h-4 bg-foreground/10" />
-
-                {/* Memory Button */}
+                {/* Voice Toggle */}
                 <button
-                    onClick={onMemoryClick}
-                    className="size-9 rounded-full flex items-center justify-center hover:bg-foreground/5 text-muted-foreground hover:text-foreground transition-all duration-300 click-tactic relative group"
-                    title="Open Moments"
+                    onClick={onVoiceToggle}
+                    className={cn(
+                        "size-10 rounded-full flex items-center justify-center transition-all duration-300 click-tactic relative group",
+                        voiceEnabled 
+                            ? "bg-foreground text-background" 
+                            : "hover:bg-foreground/5 text-muted-foreground"
+                    )}
+                    title={voiceEnabled ? "Mute Voice" : "Enable Voice"}
                 >
-                    <IoTimeOutline className="size-5" />
+                    {voiceEnabled ? (
+                        <IoVolumeHighOutline className="size-5" />
+                    ) : (
+                        <IoVolumeMuteOutline className="size-5" />
+                    )}
                     {/* Tooltip */}
                     <span className="absolute -top-10 left-1/2 -translate-x-1/2 px-2 py-1 bg-card/80 backdrop-blur-sm rounded-md border border-border/20 text-[9px] font-mono uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
-                        MOMENTS
+                        {voiceEnabled ? "VOICE ON" : "VOICE OFF"}
+                    </span>
+                </button>
+
+                {/* Separator */}
+                <div className="w-px h-5 bg-foreground/10" />
+
+                {/* Chat History Button */}
+                <button
+                    onClick={onHistoryClick}
+                    className="size-10 rounded-full flex items-center justify-center hover:bg-foreground/5 text-muted-foreground hover:text-foreground transition-all duration-300 click-tactic relative group"
+                    title="View Transcript"
+                >
+                    <IoChatbubblesOutline className="size-5" />
+                    {/* Tooltip */}
+                    <span className="absolute -top-10 left-1/2 -translate-x-1/2 px-2 py-1 bg-card/80 backdrop-blur-sm rounded-md border border-border/20 text-[9px] font-mono uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
+                        TRANSCRIPT
                     </span>
                 </button>
             </motion.div>
-            
-            {/* Gesture Hint */}
-            <div className="absolute top-16 left-1/2 -translate-x-1/2 text-[9px] font-mono text-muted-foreground/30 whitespace-nowrap tracking-widest animate-pulse pointer-events-none">
-                SWIPE_TO_CYCLE
-            </div>
         </div>
     );
 }
