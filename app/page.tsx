@@ -14,14 +14,33 @@ import { IoTerminalOutline } from "react-icons/io5";
 import { cn } from "@/lib/utils";
 import { FaceVariant, EmotionState } from "./components/face/types";
 import { AudioPanel } from "@/components/audio-panel";
-import { useDotChat } from "@/hooks/useDotChat";
 import { useVoiceSynthesis } from "@/hooks/useVoiceSynthesis";
 import { useAudioAnalysis, type AudioLevels } from "@/hooks/useAudioAnalysis";
 
 const NEUTRAL_EMOTION: EmotionState = { joy: 0.3, sadness: 0, surprise: 0, anger: 0, curiosity: 0.2 };
 
+// Simple emotion detection from text
+function detectEmotion(text: string): EmotionState {
+	const lower = text.toLowerCase();
+	
+	if (lower.includes("happy") || lower.includes("glad") || lower.includes("wonderful") || lower.includes("great") || lower.includes("love")) {
+		return { joy: 0.9, sadness: 0, surprise: 0.1, anger: 0, curiosity: 0.2 };
+	}
+	if (lower.includes("sad") || lower.includes("sorry") || lower.includes("unfortunate") || lower.includes("miss")) {
+		return { joy: 0, sadness: 0.8, surprise: 0, anger: 0, curiosity: 0.1 };
+	}
+	if (lower.includes("wow") || lower.includes("amazing") || lower.includes("incredible") || lower.includes("!")) {
+		return { joy: 0.3, sadness: 0, surprise: 0.9, anger: 0, curiosity: 0.4 };
+	}
+	if (lower.includes("curious") || lower.includes("wonder") || lower.includes("interesting") || lower.includes("?")) {
+		return { joy: 0.2, sadness: 0, surprise: 0.2, anger: 0, curiosity: 0.9 };
+	}
+	
+	return NEUTRAL_EMOTION;
+}
+
 const DEFAULT_AI_CONFIG: AIConfig = {
-    baseUrl: "https://generativelanguage.googleapis.com/v1beta/openai/",
+    baseUrl: "",
     apiKey: "",
     model: "gemini-1.5-flash",
 };
@@ -88,56 +107,27 @@ export default function Home() {
 	const [mounted, setMounted] = useState(false);
     const [history, setHistory] = useState<{ role: string; content: string }[]>(INITIAL_HISTORY);
 
-	// Initialize Dot chat hook
-	const { sendMessage } = useDotChat({
-		aiConfig,
-		onEmotionChange: (emotion) => {
-			setBaseEmotion(emotion);
-			baseEmotionRef.current = emotion;
-			targetEmotionRef.current = emotion;
-		},
-	});
-
     const { 
         levels, 
-        connectMicrophone, 
         connectExternalAnalyser,
-        disconnect: disconnectAudio 
     } = useAudioAnalysis();
     
-    const { speak, isSpeaking, stop: stopSpeaking, analyserRef: ttsAnalyserRef } = useVoiceSynthesis({
+    const { speak, stop: stopSpeaking, analyserRef: ttsAnalyserRef } = useVoiceSynthesis({
         onAudioStart: () => {
-            // When TTS starts, connect its analyser to our visualizer
             if (ttsAnalyserRef.current) {
                 connectExternalAnalyser(ttsAnalyserRef.current);
             }
         },
     });
 
-    // Pass levels to avatar (prioritize our analysis levels)
+    // Pass levels to avatar
     useEffect(() => {
         setAudioLevels(levels);
     }, [levels]);
 	
 	useEffect(() => { 
         setMounted(true); 
-        // Load AI Config from localStorage
-        const savedConfig = localStorage.getItem("dot_ai_config_v2");
-        if (savedConfig) {
-            try {
-                setAiConfig(JSON.parse(savedConfig));
-            } catch (e) {
-                console.error("Failed to parse AI config", e);
-            }
-        }
     }, []);
-
-    // Save AI Config to localStorage whenever it changes
-    useEffect(() => {
-        if (mounted) {
-            localStorage.setItem("dot_ai_config_v2", JSON.stringify(aiConfig));
-        }
-    }, [aiConfig, mounted]);
 
 	useEffect(() => { baseEmotionRef.current = baseEmotion; }, [baseEmotion]);
 
@@ -232,6 +222,60 @@ export default function Home() {
 		targetEmotionRef.current = baseEmotionRef.current;
 	};
 
+	// Simple chat handler using /api/chat
+	const handleSendMessage = async (message: string) => {
+		const trimmed = message.trim();
+		if (!trimmed) return;
+
+		stopSpeaking();
+
+		const nextHistory = [...history, { role: "user", content: trimmed }];
+		setHistory(nextHistory);
+
+		try {
+			setIsDotThinking(true);
+
+			const response = await fetch("/api/chat", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({
+					messages: nextHistory.filter(m => m.role !== "system").map(m => ({
+						role: m.role === "dot" ? "assistant" : m.role,
+						content: m.content,
+					})),
+				}),
+			});
+
+			if (!response.ok) {
+				const err = await response.json();
+				throw new Error(err.error || "AI Error");
+			}
+
+			const data = await response.json();
+			const reply = data.text || "...";
+
+			// Add Dot's response
+			setHistory(prev => [...prev, { role: "dot", content: reply }]);
+
+			// Detect emotion from response
+			const emotion = detectEmotion(reply);
+			setBaseEmotion(emotion);
+			baseEmotionRef.current = emotion;
+			targetEmotionRef.current = emotion;
+
+			// Speak the response
+			if (voiceEnabled) {
+				speak(reply);
+			}
+
+		} catch (error) {
+			console.error(error);
+			setHistory(prev => [...prev, { role: "system", content: `Error: ${error instanceof Error ? error.message : "Unknown error"}` }]);
+		} finally {
+			setIsDotThinking(false);
+		}
+	};
+
 	return (
 		<div className="flex h-dvh w-full overflow-hidden bg-background font-sans selection:bg-foreground selection:text-background relative">
 			{/* BACKGROUND & ATMOSPHERE */}
@@ -286,7 +330,7 @@ export default function Home() {
 					dragConstraints={{ left: 0, right: 0 }}
 					dragElastic={0.15}
 					onDragEnd={handleDragEnd}
-					style={{ zIndex: 0 }} // Explicit low z-index
+					style={{ zIndex: 0 }}
 				>
 				<div
 					ref={avatarStageRef}
@@ -315,57 +359,7 @@ export default function Home() {
 					onClose={() => setIsConsoleOpen(false)}
                     history={history}
 					isThinking={isDotThinking}
-                    onSendMessage={async (message: string) => {
-						const trimmed = message.trim();
-						if (!trimmed) return;
-
-                        // Stop any current speech
-                        stopSpeaking();
-
-						// optimistic append for UI
-						const nextHistory = [...history, { role: "user", content: trimmed }];
-                        setHistory(nextHistory);
-                        
-                        if (!aiConfig.apiKey) {
-                            setHistory(prev => [...prev, { role: "system", content: "Error: No API Key configured. Check Intelligence Settings." }]);
-                            return;
-                        }
-
-                        try {
-							setIsDotThinking(true);
-                            
-                            let fullReply = "";
-                            const stream = sendMessage(nextHistory);
-                            
-                            for await (const part of stream) {
-                                if (part.type === 'text') {
-                                    fullReply += part.content;
-                                    setHistory(prev => {
-                                        const last = prev[prev.length - 1];
-                                        if (last.role === "dot") {
-                                            return [...prev.slice(0, -1), { role: "dot", content: fullReply }];
-                                        } else {
-                                            return [...prev, { role: "dot", content: fullReply }];
-                                        }
-                                    });
-                                } else if (part.type === 'done') {
-                                    // Finished generating text. Now speak it!
-                                    if (voiceEnabled) {
-                                        speak(fullReply);
-                                    }
-                                } else if (part.type === 'error') {
-                                    console.error(part.content);
-                                    setHistory(prev => [...prev, { role: "system", content: `Error: ${part.content}` }]);
-                                }
-                            }
-
-                        } catch (error) {
-                            console.error(error);
-                             setHistory(prev => [...prev, { role: "system", content: `Connection Failed: ${error instanceof Error ? error.message : "Unknown error"}` }]);
-                        } finally {
-							setIsDotThinking(false);
-                        }
-                    }}
+                    onSendMessage={handleSendMessage}
                     onClear={() => {
 						setIsDotThinking(false);
 						setHistory([]);
@@ -392,7 +386,7 @@ export default function Home() {
 						setBaseEmotion(emotion);
 						baseEmotionRef.current = emotion;
 						targetEmotionRef.current = emotion;
-						setActivePreset("custom"); // New state for restored emotions
+						setActivePreset("custom");
 					}}
 				/>
 
