@@ -12,23 +12,11 @@ import {
 import { FaceVariant } from "./face/types";
 import { cn } from "@/lib/utils";
 
-// Keep export for backwards compatibility but unused
-export interface AIConfig {
-    baseUrl: string;
-    apiKey: string;
-    model: string;
-}
-
 interface CustomizationModalProps {
     isOpen: boolean;
     onClose: () => void;
     currentVariant: FaceVariant;
     onVariantChange: (variant: FaceVariant) => void;
-    // These are kept for API compat but unused
-    accentColor?: string;
-    onAccentChange?: (color: string) => void;
-    aiConfig?: AIConfig;
-    onAiConfigChange?: (config: AIConfig) => void;
 }
 
 const VARIANTS: { id: FaceVariant; label: string; description: string; icon: React.ElementType }[] = [

@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import type React from "react";
 import { motion, type PanInfo } from "motion/react";
 import Avatar from "./components/Avatar";
-import { CustomizationModal, type AIConfig } from "./components/CustomizationModal";
+import { CustomizationModal } from "./components/CustomizationModal";
 import { FloatingDock } from "@/components/floating-dock";
 import { ConsoleOverlay } from "@/components/console-overlay";
 import { IoSettingsOutline } from "react-icons/io5";
@@ -35,12 +35,6 @@ function detectEmotion(text: string): EmotionState {
 	return NEUTRAL_EMOTION;
 }
 
-const DEFAULT_AI_CONFIG: AIConfig = {
-    baseUrl: "",
-    apiKey: "",
-    model: "gemini-1.5-flash",
-};
-
 const INITIAL_HISTORY: { role: string; content: string }[] = [];
 
 function clamp01(v: number) { return Math.min(1, Math.max(0, v)); }
@@ -67,7 +61,6 @@ export default function Home() {
 	const [voiceEnabled, setVoiceEnabled] = useState<boolean>(true);
 	const [voiceLevel, setVoiceLevel] = useState<number>(0);
 	const [audioLevels, setAudioLevels] = useState<AudioLevels | undefined>(undefined);
-    const [aiConfig, setAiConfig] = useState<AIConfig>(DEFAULT_AI_CONFIG);
 	const targetEmotionRef = useRef<EmotionState>(NEUTRAL_EMOTION);
 	const baseEmotionRef = useRef<EmotionState>(NEUTRAL_EMOTION);
 	const [mounted, setMounted] = useState(false);
@@ -167,7 +160,7 @@ export default function Home() {
 		targetEmotionRef.current = baseEmotionRef.current;
 	};
 
-	// Simple chat handler using /api/chat
+	// Conceptual chat: local "Dot" responses (no network, no AI)
 	const handleSendMessage = async (message: string) => {
 		const trimmed = message.trim();
 		if (!trimmed) return;
@@ -179,25 +172,17 @@ export default function Home() {
 
 		try {
 			setIsDotThinking(true);
+			// tiny delay to preserve the "presence" without pretending
+			await new Promise((r) => setTimeout(r, 450));
 
-			const response = await fetch("/api/chat", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({
-					messages: nextHistory.filter(m => m.role !== "system").map(m => ({
-						role: m.role === "dot" ? "assistant" : m.role,
-						content: m.content,
-					})),
-				}),
-			});
-
-			if (!response.ok) {
-				const err = await response.json();
-				throw new Error(err.error || "AI Error");
-			}
-
-			const data = await response.json();
-			const reply = data.text || "...";
+			const reply = (() => {
+				const e = detectEmotion(trimmed);
+				if (e.sadness > 0.6) return "I’m here. Want to sit with it for a second?";
+				if (e.joy > 0.6) return "That’s a good signal. Let it land.";
+				if (e.surprise > 0.6) return "Interesting. What changed?";
+				if (e.curiosity > 0.6) return "Tell me more. What are you exploring?";
+				return "Mm. Keep going.";
+			})();
 
 			// Add Dot's response
 			setHistory(prev => [...prev, { role: "dot", content: reply }]);
@@ -215,7 +200,7 @@ export default function Home() {
 
 		} catch (error) {
 			console.error(error);
-			setHistory(prev => [...prev, { role: "system", content: `Error: ${error instanceof Error ? error.message : "Unknown error"}` }]);
+			// No network errors in conceptual mode; keep it silent
 		} finally {
 			setIsDotThinking(false);
 		}
@@ -298,10 +283,6 @@ export default function Home() {
 					onClose={() => setIsCustomizationOpen(false)}
 					currentVariant={faceVariant}
 					onVariantChange={setFaceVariant}
-					accentColor={"neutral"}
-					onAccentChange={() => {}}
-                    aiConfig={aiConfig}
-                    onAiConfigChange={setAiConfig}
 				/>
 			</div>
 		</div>
