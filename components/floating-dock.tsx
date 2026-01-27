@@ -2,24 +2,23 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
-import { IoVolumeHighOutline, IoVolumeMuteOutline, IoChatbubblesOutline } from "react-icons/io5";
+import { IoVolumeHighOutline, IoVolumeMuteOutline } from "react-icons/io5";
 import { motion } from "motion/react";
 
 interface FloatingDockProps {
     voiceEnabled: boolean;
     onVoiceToggle: () => void;
-    onHistoryClick: () => void;
 	presetLabel: string;
 }
 
-export function FloatingDock({ voiceEnabled, onVoiceToggle, onHistoryClick, presetLabel }: FloatingDockProps) {
+export function FloatingDock({ voiceEnabled, onVoiceToggle, presetLabel }: FloatingDockProps) {
     return (
         <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-[60]">
             {/* Minimal Pill */}
-            <motion.div 
-                layout
+			<motion.div 
+				layout
 				className="glass-card rounded-full px-2 py-1.5 flex items-center gap-2 shadow-premium backdrop-blur-2xl bg-card/60 border-0"
-            >
+			>
                 {/* Voice Toggle */}
                 <button
                     onClick={onVoiceToggle}
@@ -49,19 +48,6 @@ export function FloatingDock({ voiceEnabled, onVoiceToggle, onHistoryClick, pres
 						{presetLabel}
 					</span>
 				</div>
-
-                {/* Chat History Button */}
-                <button
-                    onClick={onHistoryClick}
-                    className="size-10 rounded-full flex items-center justify-center hover:bg-foreground/5 text-muted-foreground hover:text-foreground transition-all duration-300 click-tactic relative group"
-                    title="View Transcript"
-                >
-                    <IoChatbubblesOutline className="size-5" />
-                    {/* Tooltip */}
-                    <span className="absolute -top-10 left-1/2 -translate-x-1/2 px-2 py-1 bg-card/80 backdrop-blur-sm rounded-md border border-border/20 text-[9px] font-mono uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
-                        TRANSCRIPT
-                    </span>
-                </button>
             </motion.div>
         </div>
     );

@@ -6,12 +6,11 @@ import { motion, type PanInfo } from "motion/react";
 import Avatar from "./components/Avatar";
 import { CustomizationModal } from "./components/CustomizationModal";
 import { FloatingDock } from "@/components/floating-dock";
-import { ConsoleOverlay } from "@/components/console-overlay";
-import { IoSettingsOutline } from "react-icons/io5";
+import { IoMoonOutline, IoSettingsOutline, IoSunnyOutline } from "react-icons/io5";
 import { cn } from "@/lib/utils";
 import { FaceVariant, EmotionState } from "./components/face/types";
-import { useVoiceSynthesis } from "@/hooks/useVoiceSynthesis";
 import { useAudioAnalysis, type AudioLevels } from "@/hooks/useAudioAnalysis";
+import { useTheme } from "next-themes";
 
 const NEUTRAL_EMOTION: EmotionState = { joy: 0.3, sadness: 0, surprise: 0, anger: 0, curiosity: 0.2 };
 
@@ -23,28 +22,6 @@ const EMOTION_PRESETS: { id: string; label: string; state: EmotionState }[] = [
 	{ id: "angry", label: "RAGE", state: { joy: 0, sadness: 0.1, surprise: 0.2, anger: 1, curiosity: 0 } },
 	{ id: "curious", label: "QUERY", state: { joy: 0.3, sadness: 0, surprise: 0.3, anger: 0, curiosity: 1 } },
 ];
-
-// Simple emotion detection from text
-function detectEmotion(text: string): EmotionState {
-	const lower = text.toLowerCase();
-	
-	if (lower.includes("happy") || lower.includes("glad") || lower.includes("wonderful") || lower.includes("great") || lower.includes("love")) {
-		return { joy: 0.9, sadness: 0, surprise: 0.1, anger: 0, curiosity: 0.2 };
-	}
-	if (lower.includes("sad") || lower.includes("sorry") || lower.includes("unfortunate") || lower.includes("miss")) {
-		return { joy: 0, sadness: 0.8, surprise: 0, anger: 0, curiosity: 0.1 };
-	}
-	if (lower.includes("wow") || lower.includes("amazing") || lower.includes("incredible") || lower.includes("!")) {
-		return { joy: 0.3, sadness: 0, surprise: 0.9, anger: 0, curiosity: 0.4 };
-	}
-	if (lower.includes("curious") || lower.includes("wonder") || lower.includes("interesting") || lower.includes("?")) {
-		return { joy: 0.2, sadness: 0, surprise: 0.2, anger: 0, curiosity: 0.9 };
-	}
-	
-	return NEUTRAL_EMOTION;
-}
-
-const INITIAL_HISTORY: { role: string; content: string }[] = [];
 
 function clamp01(v: number) { return Math.min(1, Math.max(0, v)); }
 function smooth01(t: number) { const x = clamp01(t); return x * x * (3 - 2 * x); }
@@ -64,8 +41,6 @@ export default function Home() {
 	const [baseEmotion, setBaseEmotion] = useState<EmotionState>(NEUTRAL_EMOTION);
 	const [activePresetId, setActivePresetId] = useState<string>("neutral");
 	const [isCustomizationOpen, setIsCustomizationOpen] = useState(false);
-	const [isTranscriptOpen, setIsTranscriptOpen] = useState(false);
-	const [isDotThinking, setIsDotThinking] = useState(false);
 	const avatarStageRef = useRef<HTMLDivElement>(null);
 	const [faceVariant, setFaceVariant] = useState<FaceVariant>("minimal");
 	const [voiceEnabled, setVoiceEnabled] = useState<boolean>(true);
@@ -74,22 +49,13 @@ export default function Home() {
 	const targetEmotionRef = useRef<EmotionState>(NEUTRAL_EMOTION);
 	const baseEmotionRef = useRef<EmotionState>(NEUTRAL_EMOTION);
 	const [mounted, setMounted] = useState(false);
-    const [history, setHistory] = useState<{ role: string; content: string }[]>(INITIAL_HISTORY);
+	const { theme, setTheme } = useTheme();
 
     const { 
         levels, 
         connectMicrophone,
-        connectExternalAnalyser,
         disconnect: disconnectAudio,
     } = useAudioAnalysis();
-    
-    const { speak, stop: stopSpeaking, analyserRef: ttsAnalyserRef } = useVoiceSynthesis({
-        onAudioStart: () => {
-            if (ttsAnalyserRef.current) {
-                connectExternalAnalyser(ttsAnalyserRef.current);
-            }
-        },
-    });
 
     // Pass levels to avatar
     useEffect(() => {
@@ -189,52 +155,6 @@ export default function Home() {
 		applyPreset(EMOTION_PRESETS[nextIndex].id);
 	};
 
-	// Conceptual chat: local "Dot" responses (no network, no AI)
-	const handleSendMessage = async (message: string) => {
-		const trimmed = message.trim();
-		if (!trimmed) return;
-
-		stopSpeaking();
-
-		const nextHistory = [...history, { role: "user", content: trimmed }];
-		setHistory(nextHistory);
-
-		try {
-			setIsDotThinking(true);
-			// tiny delay to preserve the "presence" without pretending
-			await new Promise((r) => setTimeout(r, 450));
-
-			const reply = (() => {
-				const e = detectEmotion(trimmed);
-				if (e.sadness > 0.6) return "I’m here. Want to sit with it for a second?";
-				if (e.joy > 0.6) return "That’s a good signal. Let it land.";
-				if (e.surprise > 0.6) return "Interesting. What changed?";
-				if (e.curiosity > 0.6) return "Tell me more. What are you exploring?";
-				return "Mm. Keep going.";
-			})();
-
-			// Add Dot's response
-			setHistory(prev => [...prev, { role: "dot", content: reply }]);
-
-			// Detect emotion from response
-			const emotion = detectEmotion(reply);
-			setBaseEmotion(emotion);
-			baseEmotionRef.current = emotion;
-			targetEmotionRef.current = emotion;
-
-			// Speak the response
-			if (voiceEnabled) {
-				speak(reply);
-			}
-
-		} catch (error) {
-			console.error(error);
-			// No network errors in conceptual mode; keep it silent
-		} finally {
-			setIsDotThinking(false);
-		}
-	};
-
 	return (
 		<div className="flex h-dvh w-full overflow-hidden bg-background font-sans selection:bg-foreground selection:text-background relative">
 			{/* BACKGROUND & ATMOSPHERE */}
@@ -257,6 +177,20 @@ export default function Home() {
 				</div>
 
 				<div className="absolute top-8 right-8 z-50 flex items-center gap-2">
+					{/* Theme Toggle */}
+					<button
+						onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+						className="size-9 rounded-full flex items-center justify-center border border-border/40 bg-card/40 backdrop-blur-xl shadow-zen hover:bg-card/70 text-muted-foreground hover:text-foreground transition-all duration-300 click-tactic"
+						title="Toggle Theme"
+						aria-label="Toggle theme"
+					>
+						{mounted && theme === "dark" ? (
+							<IoMoonOutline className="size-4" />
+						) : (
+							<IoSunnyOutline className="size-4" />
+						)}
+					</button>
+
 					{/* Settings Button */}
 					<button
 						onClick={() => setIsCustomizationOpen(true)}
@@ -301,21 +235,7 @@ export default function Home() {
 				<FloatingDock 
 					voiceEnabled={voiceEnabled}
 					onVoiceToggle={() => setVoiceEnabled(v => !v)}
-					onHistoryClick={() => setIsTranscriptOpen(true)}
 					presetLabel={EMOTION_PRESETS.find(p => p.id === activePresetId)?.label ?? "NEUTRAL"}
-				/>
-
-				{/* Transcript Overlay */}
-				<ConsoleOverlay 
-					isOpen={isTranscriptOpen} 
-					onClose={() => setIsTranscriptOpen(false)}
-                    history={history}
-					isThinking={isDotThinking}
-                    onSendMessage={handleSendMessage}
-                    onClear={() => {
-						setIsDotThinking(false);
-						setHistory([]);
-					}}
 				/>
 
 				{/* Settings Modal */}
