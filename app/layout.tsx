@@ -11,7 +11,7 @@ const carbon = localFont({
 });
 
 export const metadata: Metadata = {
-	title: "Dot | .",
+	title: "Dot | Agentic Expressive Avatar",
 	description:
 		"Dot – a minimal, expressive avatar. Pure eyes and mouth, emotion through orientation. .",
 };

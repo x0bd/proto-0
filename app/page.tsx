@@ -15,6 +15,15 @@ import { useAudioAnalysis, type AudioLevels } from "@/hooks/useAudioAnalysis";
 
 const NEUTRAL_EMOTION: EmotionState = { joy: 0.3, sadness: 0, surprise: 0, anger: 0, curiosity: 0.2 };
 
+const EMOTION_PRESETS: { id: string; label: string; state: EmotionState }[] = [
+	{ id: "neutral", label: "NEUTRAL", state: NEUTRAL_EMOTION },
+	{ id: "joy", label: "JOY", state: { joy: 1, sadness: 0, surprise: 0.2, anger: 0, curiosity: 0.3 } },
+	{ id: "sad", label: "SORROW", state: { joy: 0, sadness: 1, surprise: 0, anger: 0, curiosity: 0.1 } },
+	{ id: "surprised", label: "SHOCK", state: { joy: 0.4, sadness: 0, surprise: 1, anger: 0, curiosity: 0.4 } },
+	{ id: "angry", label: "RAGE", state: { joy: 0, sadness: 0.1, surprise: 0.2, anger: 1, curiosity: 0 } },
+	{ id: "curious", label: "QUERY", state: { joy: 0.3, sadness: 0, surprise: 0.3, anger: 0, curiosity: 1 } },
+];
+
 // Simple emotion detection from text
 function detectEmotion(text: string): EmotionState {
 	const lower = text.toLowerCase();
@@ -53,6 +62,7 @@ function lerpEmotion(a: EmotionState, b: EmotionState, alpha: number): EmotionSt
 export default function Home() {
 	const [currentEmotion, setCurrentEmotion] = useState<EmotionState>(NEUTRAL_EMOTION);
 	const [baseEmotion, setBaseEmotion] = useState<EmotionState>(NEUTRAL_EMOTION);
+	const [activePresetId, setActivePresetId] = useState<string>("neutral");
 	const [isCustomizationOpen, setIsCustomizationOpen] = useState(false);
 	const [isTranscriptOpen, setIsTranscriptOpen] = useState(false);
 	const [isDotThinking, setIsDotThinking] = useState(false);
@@ -160,6 +170,25 @@ export default function Home() {
 		targetEmotionRef.current = baseEmotionRef.current;
 	};
 
+	const applyPreset = (id: string) => {
+		const preset = EMOTION_PRESETS.find((p) => p.id === id);
+		if (!preset) return;
+		setActivePresetId(id);
+		setBaseEmotion(preset.state);
+		baseEmotionRef.current = preset.state;
+		targetEmotionRef.current = preset.state;
+		setCurrentEmotion(preset.state);
+	};
+
+	const cyclePreset = (direction: number) => {
+		const index = EMOTION_PRESETS.findIndex((p) => p.id === activePresetId);
+		const safeIndex = index === -1 ? 0 : index;
+		let nextIndex = safeIndex + direction;
+		if (nextIndex >= EMOTION_PRESETS.length) nextIndex = 0;
+		if (nextIndex < 0) nextIndex = EMOTION_PRESETS.length - 1;
+		applyPreset(EMOTION_PRESETS[nextIndex].id);
+	};
+
 	// Conceptual chat: local "Dot" responses (no network, no AI)
 	const handleSendMessage = async (message: string) => {
 		const trimmed = message.trim();
@@ -242,6 +271,17 @@ export default function Home() {
 				<motion.div
 					className="absolute inset-0 touch-none flex items-center justify-center z-0"
 					style={{ zIndex: 0 }}
+					drag="x"
+					dragConstraints={{ left: 0, right: 0 }}
+					dragElastic={0.18}
+					onDragEnd={(_, info: PanInfo) => {
+						const threshold = 60;
+						if (info.offset.x < -threshold) {
+							cyclePreset(1);
+						} else if (info.offset.x > threshold) {
+							cyclePreset(-1);
+						}
+					}}
 				>
 				<div
 					ref={avatarStageRef}
@@ -262,6 +302,7 @@ export default function Home() {
 					voiceEnabled={voiceEnabled}
 					onVoiceToggle={() => setVoiceEnabled(v => !v)}
 					onHistoryClick={() => setIsTranscriptOpen(true)}
+					presetLabel={EMOTION_PRESETS.find(p => p.id === activePresetId)?.label ?? "NEUTRAL"}
 				/>
 
 				{/* Transcript Overlay */}

@@ -9,15 +9,16 @@ interface FloatingDockProps {
     voiceEnabled: boolean;
     onVoiceToggle: () => void;
     onHistoryClick: () => void;
+	presetLabel: string;
 }
 
-export function FloatingDock({ voiceEnabled, onVoiceToggle, onHistoryClick }: FloatingDockProps) {
+export function FloatingDock({ voiceEnabled, onVoiceToggle, onHistoryClick, presetLabel }: FloatingDockProps) {
     return (
         <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-[60]">
             {/* Minimal Pill */}
             <motion.div 
                 layout
-                className="glass-card rounded-full p-1.5 flex items-center gap-1 shadow-premium backdrop-blur-2xl bg-card/60 border-0"
+				className="glass-card rounded-full px-2 py-1.5 flex items-center gap-2 shadow-premium backdrop-blur-2xl bg-card/60 border-0"
             >
                 {/* Voice Toggle */}
                 <button
@@ -41,8 +42,13 @@ export function FloatingDock({ voiceEnabled, onVoiceToggle, onHistoryClick }: Fl
                     </span>
                 </button>
 
-                {/* Separator */}
-                <div className="w-px h-5 bg-foreground/10" />
+				{/* Current Emotion Preset */}
+				<div className="flex items-center gap-2 px-2">
+					<div className="w-px h-5 bg-foreground/10" />
+					<span className="text-[9px] font-mono uppercase tracking-[0.22em] text-muted-foreground">
+						{presetLabel}
+					</span>
+				</div>
 
                 {/* Chat History Button */}
                 <button
