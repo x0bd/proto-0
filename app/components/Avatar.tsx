@@ -1,12 +1,14 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { gsap } from "gsap";
 
-import { Eyes } from "./face/Eyes";
+import { Eyes } from "./face/eyes/index";
 import { Mouth } from "./face/Mouth";
 import { Ears } from "./face/Ears";
-import { FaceVariant } from "./face/types";
+import { FaceVariant, supportsPupilTracking, isLegacyVariant } from "./face/types";
+import { applyAgentTheme, getAgentTheme } from "./face/themes";
+import { EYE_GEOMETRIES } from "./face/eyes/config";
 import type { AudioLevels } from "@/hooks/useAudioAnalysis";
 
 interface EmotionState {
@@ -47,20 +49,54 @@ export default function Avatar({
 	// Helper for mouth geometry
 	const generateMouthPath = (width: number, curve: number) => {
 		const half = width / 2;
-		if (variant === "tron") {
-			// Stepped path: Digital pulse
-			// Use curve/2 to match visual height of bezier peak
-			const y = curve / 2;
-			return `M ${-half} 0 L ${-half/2} 0 L ${-half/2} ${y} L ${half/2} ${y} L ${half/2} 0 L ${half} 0`;
+		
+		switch (variant) {
+			case "tron":
+			case "flux": 
+				// Angular/Geometric path
+				// Use curve/2 to match visual height of bezier peak
+				const y = curve / 2;
+				if (variant === "flux") {
+					// Flux: purely angular polyline
+					return `M ${-half} 0 L ${-half/3} ${curve/2} L ${half/3} ${curve/2} L ${half} 0`;
+				}
+				// Tron: Stepped
+				return `M ${-half} 0 L ${-half/2} 0 L ${-half/2} ${y} L ${half/2} ${y} L ${half/2} 0 L ${half} 0`;
+			
+			case "zane":
+				// Asymmetric smirk
+				return `M ${-half} 0 Q ${-half/4} ${curve * 0.8} 0 ${curve * 0.6} Q ${half/4} ${curve * 1.2} ${half} ${-curve * 0.3}`;
+			
+			case "myst":
+				// Wave curve
+				return `M ${-half} 0 Q ${-half/2} ${curve * 0.5} 0 ${curve} Q ${half/2} ${curve * 0.5} ${half} 0`;
+			
+			case "volo":
+			case "echo":
+				// Minimal straight line with subtle curve
+				return `M ${-half} 0 Q 0 ${curve * 0.5} ${half} 0`;
+
+			default:
+				// Standard curve (minimal, analogue, lumina)
+				return `M ${-half} 0 Q 0 ${curve} ${half} 0`;
 		}
-		// Analogue uses standard curve but will have filter applied
-		return `M ${-half} 0 Q 0 ${curve} ${half} 0`;
 	};
 
 	const containerRef = useRef<HTMLDivElement>(null);
 	// Generic SVGElement refs to support Ellipse (Minimal) or Rect (Tron)
 	const leftEyeRef = useRef<SVGElement>(null);
 	const rightEyeRef = useRef<SVGElement>(null);
+	// New: Pupil refs for tracking (agent variants only)
+	const leftPupilRef = useRef<SVGGElement>(null);
+	const rightPupilRef = useRef<SVGGElement>(null);
+	// Extra refs for Myst (3 eyes)
+	const topEyeRef = useRef<SVGElement>(null);
+	const topPupilRef = useRef<SVGGElement>(null);
+	// Pupil tracking state (normalized -1 to 1)
+	const [pupilOffset, setPupilOffset] = useState({ x: 0, y: 0 });
+	// Is avatar currently "active" (speaking/listening)
+	const [isActive, setIsActive] = useState(false);
+
 	const mouthRef = useRef<SVGPathElement>(null);
 	const mouthGroupRef = useRef<SVGGElement>(null);
 	const svgBoxRef = useRef<SVGSVGElement | null>(null);
@@ -115,6 +151,21 @@ export default function Avatar({
 			}
 		}
 	};
+
+	// Apply Agent Theme when variant changes
+	useEffect(() => {
+		applyAgentTheme(variant);
+	}, [variant]);
+
+	// Listen for audio activity/speech state
+	useEffect(() => {
+		if (audioLevels && audioLevels.overall > 0.1) {
+			setIsActive(true);
+		} else {
+			const timeout = setTimeout(() => setIsActive(false), 500);
+			return () => clearTimeout(timeout);
+		}
+	}, [audioLevels]);
 
 	function startBreathing() {
 		if (containerRef.current) {
@@ -298,6 +349,7 @@ export default function Avatar({
     }, [audioLevels]);
 
 	// Animation Helper to bridge Ellipse (Minimal) vs Rect (Tron) geometry
+	// Animation Helper to bridge different eye geometries
 	function animateEye(
 		target: SVGElement | null,
 		params: {
@@ -311,43 +363,84 @@ export default function Avatar({
 		duration: number,
 		ease: string = "power2.out",
 		delay: number = 0,
-		cxOrigin: number // 170 for left, 350 for right
+		cxOrigin: number // Legacy param, still useful for some logic
 	) {
 		if (!target) return;
 
 		const { rx, ry, cy, tilt = 0, scale = 1, xOffset = 0 } = params;
 		
-		// Tron Override: Use stepped easing for robotic feel if not specified otherwise
-		// But allow overrides (like blink) to pass their own ease
+		// Determine easing
 		let finalEase = ease;
 		if (variant === "tron" && ease.startsWith("power")) {
 			finalEase = "steps(5)";
 		} else if (variant === "analogue" && ease.startsWith("power")) {
-			// Stop-motion feel for Analogue
 			finalEase = "steps(12)"; 
 		}
 
-		if (variant === "tron") {
+		const tagName = target.tagName.toLowerCase();
+
+		if (tagName === "rect") {
 			// Tron uses <rect>
-			// width = 2 * rx
-			// height = 2 * ry
-			// x = cx - rx + xOffset (approximated, since rect x is left edge)
-			// y = cy - ry (approximated, since rect y is top edge)
-
-			// Note: For rotation, we need transformOrigin.
-			// Center of rect is (x + width/2, y + height/2).
-			// If we animate x/y/width/height, center moves.
-
 			gsap.to(target, {
 				attr: {
 					width: rx * 2,
 					height: ry * 2,
 					x: cxOrigin - rx + xOffset,
 					y: cy - ry,
-					rx: 4, // Fixed corner radius for Tron
+					rx: 4, 
 					ry: 4,
 				},
-				rotation: tilt, // Rotation handled by CSS transform usually centered on element if transformOrigin set
+				rotation: tilt,
+				scale: scale,
+				duration: duration,
+				ease: finalEase,
+				delay: delay,
+				transformOrigin: "center center",
+			});
+		} else if (tagName === "path") {
+			// Flux uses <path> (Triangle)
+			// Calculate deltaY from the variant's base cy
+			// We need to look up the base Cy for this variant to know how much to translate
+			const geom = EYE_GEOMETRIES[variant] || EYE_GEOMETRIES["minimal"];
+			// Assuming left/right/top distinction can be inferred or we just use leftCy as approx base for vertical movement
+			// If we really need precision, we'd need to know WHICH eye this is.
+			// Currently animateEye doesn't know. 
+			// But usually eyes move together vertically.
+			// Let's use leftCy as the "zero" point.
+			const baseCy = geom?.leftCy ?? 105;
+			
+			const deltaY = cy - baseCy;
+			const deltaX = (xOffset || 0); // xOffset is usually 0 unless glancing
+
+			gsap.to(target, {
+				y: deltaY,
+				x: deltaX,
+				rotation: tilt,
+				scale: scale,
+				duration: duration,
+				ease: finalEase,
+				delay: delay,
+				transformOrigin: "center center",
+			});
+		} else if (tagName === "circle") {
+			// Echo, Volo, Myst often use <circle>
+			// map rx/ry to r (average)
+			const r = (rx + ry) / 2;
+			
+			// For circle, x/y attributes are cx/cy.
+			// cx is static on element usually, but we can animate it if needed.
+			// But wait, the prop passed is cxOrigin.
+			
+			// If Volo (cyclops), cxOrigin passed by caller (handlePointerMove) might be 260.
+			// If Myst, could be 145, 375, or 260.
+			
+			gsap.to(target, {
+				attr: {
+					r: r,
+					cy: cy,
+					cx: cxOrigin + xOffset,
+				},
+				rotation: tilt,
 				scale: scale,
 				duration: duration,
 				ease: finalEase,
@@ -355,14 +448,15 @@ export default function Avatar({
 				transformOrigin: "center center",
 			});
 		} else {
-			// Minimal & Analogue use <ellipse>
+			// Default <ellipse> (Minimal, Analogue, Lumina, Zane)
 			gsap.to(target, {
 				attr: {
 					rx: rx,
 					ry: ry,
 					cy: cy,
-					// cx is static on element, we only animate if xOffset provided
-					...(xOffset !== 0 ? { cx: cxOrigin + xOffset } : {}),
+					// cx is static on element, we only animate if cx needs to change (glance)
+					// xOffset handles additional shift
+					cx: cxOrigin + xOffset,
 				},
 				rotation: tilt,
 				scale: scale,
@@ -453,7 +547,15 @@ export default function Avatar({
 		});
 	}
 
-	function handleEyeHover(eye: "left" | "right") {
+
+
+	function handleEyeHover(eye: "left" | "right" | "top") {
+		if (eye === "top") {
+			if (topEyeRef.current) {
+				animateEye(topEyeRef.current, { ...latestEyeTargetsRef.current, scale: 1.1 }, 0.2, "back.out(1.5)", 0, 260);
+			}
+			return;
+		}
 		const eyeRef = eye === "left" ? leftEyeRef : rightEyeRef;
 		const cx = eye === "left" ? 170 : 350;
 		const target = latestEyeTargetsRef.current;
@@ -463,9 +565,9 @@ export default function Avatar({
 			{
 				rx: Math.max(4, target.rx + 3),
 				ry: Math.max(3, target.ry + 6),
-				cy: target.cy, // we don't have this available easily? Yes we do: target.cy
+				cy: target.cy,
 				scale: 1.05,
-				tilt: eye === "left" ? -target.tilt : target.tilt, // maintain tilt
+				tilt: eye === "left" ? -target.tilt : target.tilt,
 			},
 			0.2,
 			"back.out(1.5)",
@@ -474,7 +576,13 @@ export default function Avatar({
 		);
 	}
 
-	function handleEyeHoverEnd(eye: "left" | "right") {
+	function handleEyeHoverEnd(eye: "left" | "right" | "top") {
+		if (eye === "top") {
+			if (topEyeRef.current) {
+				animateEye(topEyeRef.current, { ...latestEyeTargetsRef.current, scale: 1 }, 0.25, "power2.out", 0, 260);
+			}
+			return;
+		}
 		const eyeRef = eye === "left" ? leftEyeRef : rightEyeRef;
 		const cx = eye === "left" ? 170 : 350;
 		const target = latestEyeTargetsRef.current;
@@ -806,8 +914,18 @@ export default function Avatar({
 		const eyeYDelta = ny * 8; // increased from 6
 		const eyeScale = 1 + Math.abs(nx) * 0.05; // subtle scale on extreme movements
 
+		// Update pupil tracking state
+		if (supportsPupilTracking(variant)) {
+			// Smoothly dampen the input for pupils
+			setPupilOffset({ 
+				x: nx, 
+				y: ny 
+			});
+		}
+
 		// Don't override scale if deep emotion is active
 		if (!isLongPressActiveRef.current) {
+			// Standard eyes
 			const leftY = target.cy + eyeYDelta;
 			const rightY = target.cy + eyeYDelta;
 
@@ -840,6 +958,24 @@ export default function Avatar({
 				0,
 				350
 			);
+			
+			// Top eye for Myst
+			if (variant === "myst" && topEyeRef.current) {
+				animateEye(
+					topEyeRef.current,
+					{
+						rx: target.rx,
+						ry: target.ry,
+						cy: 65 + eyeYDelta * 0.5, // Less movement for top eye
+						tilt: nx * 5,
+						scale: eyeScale,
+					},
+					0.4,
+					"power3.out",
+					0,
+					260
+				);
+			}
 		}
 
 		// More expressive mouth tilt with overshoot
@@ -930,8 +1066,33 @@ export default function Avatar({
 	}
 
 	// Playful interactions
-	function performWink(eye: "left" | "right") {
+	function performWink(eye: "left" | "right" | "top") {
 		triggerHaptic(10); // Light tick
+		
+		if (eye === "top") {
+			// Basic blink for top eye if it exists
+			if (topEyeRef.current) {
+				const target = latestEyeTargetsRef.current;
+				animateEye(
+					topEyeRef.current,
+					{ ...target, scale: 0.1 },
+					0.1, 
+					"power2.in", 
+					0, 
+					260
+				);
+				animateEye(
+					topEyeRef.current,
+					{ ...target, scale: 1 },
+					0.15,
+					"back.out(2)",
+					0.1,
+					260
+				);
+			}
+			return;
+		}
+
 		const eyeRef = eye === "left" ? leftEyeRef : rightEyeRef;
 		const target = latestEyeTargetsRef.current;
 		const cx = eye === "left" ? 170 : 350;
@@ -950,7 +1111,7 @@ export default function Avatar({
 				scale: 0.7, // squeeze horizontally? No, scaleX/Y
 			},
 			0.1,
-			"power2.in",
+			variant === "tron" ? "steps(2)" : "power2.in",
 			0,
 			cx
 		);
@@ -970,7 +1131,7 @@ export default function Avatar({
 				scale: 1,
 			},
 			0.15,
-			"back.out(2)",
+			variant === "tron" ? "steps(3)" : "back.out(2)",
 			0.1, // delay
 			cx
 		);
@@ -981,11 +1142,26 @@ export default function Avatar({
 		const target = latestEyeTargetsRef.current;
 
 		// Eyes wide with bounce
-		[leftEyeRef.current, rightEyeRef.current].forEach((eye, i) => {
-			const cx = i === 0 ? 170 : 350;
+		// Include top eye for Myst
+		const eyesToAnimate: Array<{ ref: SVGElement | null, cx: number }> = [
+			{ ref: leftEyeRef.current, cx: 170 },
+			{ ref: rightEyeRef.current, cx: 350 }
+		];
+
+		if (variant === "myst" && topEyeRef.current) {
+			eyesToAnimate.push({ ref: topEyeRef.current, cx: 260 });
+		} else if (variant === "volo" && leftEyeRef.current) {
+			// Volo uses leftRef as main eye, center 260
+			// Override the default list for safety
+			eyesToAnimate.length = 0;
+			eyesToAnimate.push({ ref: leftEyeRef.current, cx: 260 });
+		}
+
+		eyesToAnimate.forEach(({ ref, cx }) => {
+			if (!ref) return;
 			// Expand
 			animateEye(
-				eye,
+				ref,
 				{
 					rx: target.rx + 15,
 					ry: target.ry + 10,
@@ -1000,7 +1176,7 @@ export default function Avatar({
 
 			// Return
 			animateEye(
-				eye,
+				ref,
 				{
 					rx: target.rx,
 					ry: target.ry,
@@ -1032,9 +1208,17 @@ export default function Avatar({
 					attr: {
 						d: generateMouthPath(m.width, m.curve),
 					},
-					duration: 0.3,
-					ease: "elastic.out(1, 0.5)",
-				});
+					duration: 0.4,
+					ease: "power2.out",
+				}, 0.5);
+				
+			// Tilt entire mouth slightly up
+			gsap.to(mouthGroupRef.current, {
+				y: -5,
+				duration: 0.2,
+				yoyo: true,
+				repeat: 1,
+			});
 		}
 	}
 
@@ -1269,12 +1453,18 @@ export default function Avatar({
 
 					<Ears variant={variant} emotion={emotion} />
 					<Eyes
+						variant={variant}
 						leftRef={leftEyeRef}
 						rightRef={rightEyeRef}
+						leftPupilRef={leftPupilRef}
+						rightPupilRef={rightPupilRef}
+						topRef={topEyeRef}
+						topPupilRef={topPupilRef}
+						pupilOffset={pupilOffset}
+						isActive={isActive}
 						onWink={performWink}
-						onHoverStart={(eye) => handleEyeHover(eye)}
-						onHoverEnd={(eye) => handleEyeHoverEnd(eye)}
-						variant={variant}
+						onHoverStart={handleEyeHover}
+						onHoverEnd={handleEyeHoverEnd}
 					/>
 					<Mouth
 						mouthRef={mouthRef}

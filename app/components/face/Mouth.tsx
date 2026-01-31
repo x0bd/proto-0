@@ -1,5 +1,6 @@
 import { RefObject, MutableRefObject } from "react";
 import { FaceVariant } from "./types";
+import { getMouthStyle, getAgentTheme } from "./themes";
 
 interface MouthProps {
 	mouthRef: RefObject<SVGPathElement>;
@@ -22,6 +23,9 @@ export function Mouth({
 	onHoverEnd,
 	variant = "minimal",
 }: MouthProps) {
+	const style = getMouthStyle(variant);
+	const theme = getAgentTheme(variant);
+
 	return (
 		<g ref={groupRef} transform="translate(260,175)">
 			<path
@@ -30,9 +34,10 @@ export function Mouth({
 				fill="none"
 				stroke="currentColor"
 				strokeWidth={variant === "tron" ? "4" : variant === "analogue" ? "3" : "4"}
-				strokeLinecap={variant === "tron" ? "square" : "round"}
-				shapeRendering={variant === "tron" ? "crispEdges" : "auto"}
+				strokeLinecap={style.strokeLinecap}
+				shapeRendering={style.shapeRendering}
 				filter={variant === "analogue" ? "url(#pencil)" : undefined}
+				style={theme ? { filter: `drop-shadow(0 0 8px ${theme.glow})` } : undefined}
 				className={`cursor-pointer transition-opacity hover:opacity-80 transition-colors duration-300 ${
 					variant === "tron"
 						? "drop-shadow-[0_0_5px_rgba(var(--primary-rgb),0.5)]"
