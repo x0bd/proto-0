@@ -1,6 +1,26 @@
 # Project Rewrite Specification: "Stuff"
 
-This document outlines the core features and architecture for the rebuild of the application. The goal is to combine the robust backend/logic of `proto-0` with the visual aesthetics and new variant system from `public/inspo/face.js`.
+## 0. The Vision: "Living Interface" (Kokoro 2.0)
+We are building a hyper-polished, emotion-first AI companion. It’s not just a chatbot; it’s a **living interface** that feels present, reactive, and visually stunning. This new repo will be a clean slate to merge the "Brain" of your prototype with the "Soul" of the inspiration design.
+
+### What's Inside? (The Synthesis)
+1.  **The "Soul" (Visuals from `face.js`)**
+    *   **6 Distinct Personas**: Porting the agent system—**Lumina**, **Volo**, **Myst**, **Zane**, **Flux**, **Echo**.
+    *   **Premium Aesthetics**: High-end glassmorphism, dynamic glowing backgrounds, and organic gradients.
+    *   **Fluid Motion**: Refined physics and "breathing" animations for every blink, glance, and hover.
+
+2.  **The "Brain" (Logic from `proto-0`)**
+    *   **Emotion Engine**: The avatar reacts to *what* it says (sadness -> drooping eyes, color shifts).
+    *   **Audio Intelligence**: Real-time frequency analysis drives mouth pulse and pupil size.
+    *   **Smart Conversation**: **Vercel AI SDK** with streaming responses so the avatar speaks *as* it thinks.
+
+3.  **The Stack**
+    *   **Framework**: Next.js 15.
+    *   **Animation**: GSAP + Framer Motion.
+    *   **Styling**: Tailwind CSS + CSS Variables.
+    *   **Voice**: ElevenLabs integration.
+
+---
 
 ## 1. Visual Interface (Source: `public/inspo/face.js`)
 **The UI must be pixel-perfect to the inspiration file.**
