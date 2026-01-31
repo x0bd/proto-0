@@ -103,6 +103,32 @@ export default function Home() {
 		}
 	}, [levels]);
 
+	// Debug / Rapid Switch: Cycle variants with 'v' key
+	useEffect(() => {
+		const handleKeyDown = (e: KeyboardEvent) => {
+			if (e.key.toLowerCase() === "v" && !e.repeat && !isCustomizationOpen) {
+				setFaceVariant((prev) => {
+					const variants: FaceVariant[] = [
+						"minimal",
+						"tron",
+						"analogue",
+						"lumina",
+						"volo",
+						"myst",
+						"zane",
+						"flux",
+						"echo"
+					];
+					const idx = variants.indexOf(prev);
+					const nextIdx = (idx + 1) % variants.length;
+					return variants[nextIdx];
+				});
+			}
+		};
+		window.addEventListener("keydown", handleKeyDown);
+		return () => window.removeEventListener("keydown", handleKeyDown);
+	}, [isCustomizationOpen]);
+
 	const handlePointerMove = (e: React.MouseEvent<HTMLDivElement>) => {
 		if (typeof window === "undefined") return;
 		

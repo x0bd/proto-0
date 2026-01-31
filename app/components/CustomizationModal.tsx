@@ -7,7 +7,13 @@ import {
     IoDesktopOutline, 
     IoPencilOutline, 
     IoEllipseOutline, 
-    IoCheckmarkOutline
+    IoCheckmarkOutline,
+    IoSparklesOutline,
+    IoEyeOutline,
+    IoShapesOutline,
+    IoFlashOutline,
+    IoCubeOutline,
+    IoRadioOutline
 } from "react-icons/io5";
 import { FaceVariant } from "./face/types";
 import { cn } from "@/lib/utils";
@@ -20,9 +26,17 @@ interface CustomizationModalProps {
 }
 
 const VARIANTS: { id: FaceVariant; label: string; description: string; icon: React.ElementType }[] = [
-    { id: "minimal", label: "Pure", description: "Essential form", icon: IoEllipseOutline },
-    { id: "tron", label: "Digital", description: "System aesthetics", icon: IoDesktopOutline },
-    { id: "analogue", label: "Sketch", description: "Hand-drawn lines", icon: IoPencilOutline },
+    // Legacy
+    { id: "minimal", label: "Pure (Legacy)", description: "Essential form", icon: IoEllipseOutline },
+    { id: "tron", label: "Digital (Legacy)", description: "System aesthetics", icon: IoDesktopOutline },
+    { id: "analogue", label: "Sketch (Legacy)", description: "Hand-drawn lines", icon: IoPencilOutline },
+    // New Agents
+    { id: "lumina", label: "Lumina", description: "Radiant & Classic", icon: IoSparklesOutline },
+    { id: "volo", label: "Volo", description: "Cyclops Sentinel", icon: IoEyeOutline },
+    { id: "myst", label: "Myst", description: "Arcane Triad", icon: IoShapesOutline },
+    { id: "zane", label: "Zane", description: "Rebellious Glitch", icon: IoFlashOutline },
+    { id: "flux", label: "Flux", description: "Geometric Construct", icon: IoCubeOutline },
+    { id: "echo", label: "Echo", description: "Minimalist Pulse", icon: IoRadioOutline },
 ];
 
 export const CustomizationModal = React.memo(function CustomizationModal({
