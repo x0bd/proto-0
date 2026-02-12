@@ -2,19 +2,6 @@
 
 import * as React from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { 
-    IoCloseOutline, 
-    IoDesktopOutline, 
-    IoPencilOutline, 
-    IoEllipseOutline, 
-    IoCheckmarkOutline,
-    IoSparklesOutline,
-    IoEyeOutline,
-    IoShapesOutline,
-    IoFlashOutline,
-    IoCubeOutline,
-    IoRadioOutline
-} from "react-icons/io5";
 import { FaceVariant } from "./face/types";
 import { cn } from "@/lib/utils";
 
@@ -25,19 +12,100 @@ interface CustomizationModalProps {
     onVariantChange: (variant: FaceVariant) => void;
 }
 
-const VARIANTS: { id: FaceVariant; label: string; description: string; icon: React.ElementType }[] = [
-    // Legacy
-    { id: "minimal", label: "Pure (Legacy)", description: "Essential form", icon: IoEllipseOutline },
-    { id: "tron", label: "Digital (Legacy)", description: "System aesthetics", icon: IoDesktopOutline },
-    { id: "analogue", label: "Sketch (Legacy)", description: "Hand-drawn lines", icon: IoPencilOutline },
-    // New Agents
-    { id: "lumina", label: "Lumina", description: "Radiant & Classic", icon: IoSparklesOutline },
-    { id: "volo", label: "Volo", description: "Cyclops Sentinel", icon: IoEyeOutline },
-    { id: "myst", label: "Myst", description: "Arcane Triad", icon: IoShapesOutline },
-    { id: "zane", label: "Zane", description: "Rebellious Glitch", icon: IoFlashOutline },
-    { id: "flux", label: "Flux", description: "Geometric Construct", icon: IoCubeOutline },
-    { id: "echo", label: "Echo", description: "Minimalist Pulse", icon: IoRadioOutline },
+// Simplified variant data - icons replaced with abstract eye shapes
+const AGENTS: { id: FaceVariant; name: string; kanji: string; soul: string }[] = [
+    { id: "lumina", name: "Lumina", kanji: "光", soul: "radiance" },
+    { id: "volo", name: "Volo", kanji: "眼", soul: "focus" },
+    { id: "myst", name: "Myst", kanji: "霧", soul: "vision" },
+    { id: "zane", name: "Zane", kanji: "閃", soul: "rebel" },
+    { id: "flux", name: "Flux", kanji: "流", soul: "form" },
+    { id: "echo", name: "Echo", kanji: "響", soul: "essence" },
 ];
+
+const LEGACY: { id: FaceVariant; name: string; style: string }[] = [
+    { id: "minimal", name: "Pure", style: "essential" },
+    { id: "tron", name: "Digital", style: "system" },
+    { id: "analogue", name: "Sketch", style: "hand-drawn" },
+];
+
+// Abstract eye visualization for each variant
+function EyePreview({ variant, isActive }: { variant: FaceVariant; isActive: boolean }) {
+    const baseClass = cn(
+        "transition-all duration-500",
+        isActive ? "fill-background" : "fill-foreground"
+    );
+    
+    switch (variant) {
+        case "lumina":
+            return (
+                <svg viewBox="0 0 48 24" className="w-12 h-6">
+                    <ellipse cx="12" cy="12" rx="8" ry="6" className={baseClass} />
+                    <ellipse cx="36" cy="12" rx="8" ry="6" className={baseClass} />
+                    <circle cx="12" cy="12" r="3" className={cn(isActive ? "fill-foreground/30" : "fill-background/30")} />
+                    <circle cx="36" cy="12" r="3" className={cn(isActive ? "fill-foreground/30" : "fill-background/30")} />
+                </svg>
+            );
+        case "volo":
+            return (
+                <svg viewBox="0 0 48 24" className="w-12 h-6">
+                    <ellipse cx="24" cy="12" rx="14" ry="10" className={baseClass} />
+                    <circle cx="24" cy="12" r="5" className={cn(isActive ? "fill-foreground/30" : "fill-background/30")} />
+                </svg>
+            );
+        case "myst":
+            return (
+                <svg viewBox="0 0 48 28" className="w-12 h-7">
+                    <circle cx="24" cy="6" r="5" className={baseClass} />
+                    <circle cx="10" cy="22" r="5" className={baseClass} />
+                    <circle cx="38" cy="22" r="5" className={baseClass} />
+                </svg>
+            );
+        case "zane":
+            return (
+                <svg viewBox="0 0 48 24" className="w-12 h-6">
+                    <circle cx="14" cy="12" r="5" className={baseClass} />
+                    <ellipse cx="34" cy="12" rx="10" ry="8" className={baseClass} />
+                </svg>
+            );
+        case "flux":
+            return (
+                <svg viewBox="0 0 48 24" className="w-12 h-6">
+                    <polygon points="12,4 20,20 4,20" className={baseClass} />
+                    <polygon points="36,4 44,20 28,20" className={baseClass} />
+                </svg>
+            );
+        case "echo":
+            return (
+                <svg viewBox="0 0 48 24" className="w-12 h-6">
+                    <circle cx="14" cy="12" r="4" className={baseClass} />
+                    <circle cx="34" cy="12" r="4" className={baseClass} />
+                </svg>
+            );
+        case "minimal":
+            return (
+                <svg viewBox="0 0 48 24" className="w-10 h-5">
+                    <ellipse cx="12" cy="12" rx="7" ry="5" className={baseClass} />
+                    <ellipse cx="36" cy="12" rx="7" ry="5" className={baseClass} />
+                </svg>
+            );
+        case "tron":
+            return (
+                <svg viewBox="0 0 48 24" className="w-10 h-5">
+                    <rect x="4" y="6" width="14" height="12" rx="2" className={baseClass} />
+                    <rect x="30" y="6" width="14" height="12" rx="2" className={baseClass} />
+                </svg>
+            );
+        case "analogue":
+            return (
+                <svg viewBox="0 0 48 24" className="w-10 h-5">
+                    <ellipse cx="12" cy="12" rx="7" ry="5" className={cn(baseClass, "opacity-70")} strokeWidth="1.5" stroke="currentColor" fill="none" />
+                    <ellipse cx="36" cy="12" rx="7" ry="5" className={cn(baseClass, "opacity-70")} strokeWidth="1.5" stroke="currentColor" fill="none" />
+                </svg>
+            );
+        default:
+            return null;
+    }
+}
 
 export const CustomizationModal = React.memo(function CustomizationModal({
     isOpen,
@@ -49,87 +117,143 @@ export const CustomizationModal = React.memo(function CustomizationModal({
         <AnimatePresence mode="wait">
             {isOpen && (
                 <>
-                    {/* Backdrop */}
+                    {/* Backdrop - Warm paper overlay, no blur */}
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        transition={{ duration: 0.3, ease: "easeInOut" }}
-                        className="fixed inset-0 z-[100] bg-background/40 backdrop-blur-xl"
+                        transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+                        className="fixed inset-0 z-[100] bg-background/90"
                         onClick={onClose}
                     />
 
                     {/* Modal */}
                     <div className="fixed inset-0 z-[101] flex items-center justify-center p-6 pointer-events-none">
                         <motion.div
-                            initial={{ opacity: 0, scale: 0.96, y: 20, filter: "blur(10px)" }}
-                            animate={{ opacity: 1, scale: 1, y: 0, filter: "blur(0px)" }}
-                            exit={{ opacity: 0, scale: 0.96, y: 20, filter: "blur(10px)" }}
-                            transition={{ type: "spring", damping: 32, stiffness: 300, mass: 0.8 }}
-                            className="pointer-events-auto w-full max-w-[400px] bg-background/80 backdrop-blur-3xl rounded-[32px] shadow-premium border border-white/10 dark:border-white/5 ring-1 ring-black/5 dark:ring-white/5 overflow-hidden flex flex-col"
+                            initial={{ opacity: 0, y: 40 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: 20 }}
+                            transition={{ type: "spring", damping: 40, stiffness: 400, mass: 0.8 }}
+                            className="pointer-events-auto w-full max-w-[520px] bg-background rounded-[28px] shadow-[0_8px_60px_-12px_rgba(0,0,0,0.15)] dark:shadow-[0_8px_60px_-12px_rgba(0,0,0,0.5)] overflow-hidden relative"
                             onClick={(e) => e.stopPropagation()}
                         >
-                            {/* Grain Texture */}
-                            <div className="absolute inset-0 bg-grain opacity-30 pointer-events-none z-[-1]" />
-
-                            {/* Header */}
-                            <div className="flex items-center justify-between px-6 py-5 border-b border-white/5 relative z-10">
-                                <span className="text-[13px] font-semibold tracking-tight">Face Style</span>
-                                <button
-                                    onClick={onClose}
-                                    className="size-9 rounded-full flex items-center justify-center hover:bg-rose-500/10 text-muted-foreground hover:text-rose-500 transition-all active:scale-95"
-                                >
-                                    <IoCloseOutline className="size-5" />
-                                </button>
+                            {/* Washi grain texture */}
+                            <div className="absolute inset-0 bg-grain opacity-40 pointer-events-none" />
+                            
+                            {/* Decorative vertical text - Japanese aesthetic */}
+                            <div className="absolute right-4 top-1/2 -translate-y-1/2 writing-vertical-rl text-[10px] tracking-[0.5em] text-muted-foreground/20 font-medium select-none pointer-events-none">
+                                IDENTITY
                             </div>
 
-                            {/* Content */}
-                            <div className="p-6">
-                                <div className="grid grid-cols-1 gap-2.5">
-                                    {VARIANTS.map((v) => {
-                                        const isActive = currentVariant === v.id;
-                                        const Icon = v.icon;
+                            {/* Header */}
+                            <div className="relative px-8 pt-8 pb-2">
+                                <div className="flex items-start justify-between">
+                                    <div>
+                                        <h2 className="text-[22px] font-semibold tracking-tight text-foreground">
+                                            Face
+                                        </h2>
+                                        <p className="text-[13px] text-muted-foreground mt-1">
+                                            Choose your expression
+                                        </p>
+                                    </div>
+                                    <button
+                                        onClick={onClose}
+                                        className="size-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-foreground/5 transition-all active:scale-95 -mr-1 -mt-1"
+                                    >
+                                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                                            <path d="M1 1L13 13M1 13L13 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Agents Grid */}
+                            <div className="relative px-8 pt-4 pb-2">
+                                <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/60 font-medium">
+                                    Agents
+                                </span>
+                                <div className="grid grid-cols-3 gap-3 mt-3">
+                                    {AGENTS.map((agent, i) => {
+                                        const isActive = currentVariant === agent.id;
                                         return (
-                                            <button
-                                                key={v.id}
-                                                onClick={() => onVariantChange(v.id)}
+                                            <motion.button
+                                                key={agent.id}
+                                                onClick={() => onVariantChange(agent.id)}
+                                                initial={{ opacity: 0, y: 10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                transition={{ delay: i * 0.03 }}
                                                 className={cn(
-                                                    "relative px-4 py-3.5 rounded-[20px] transition-all duration-300 flex items-center gap-4 text-left group border backdrop-blur-md",
+                                                    "relative aspect-[4/3] rounded-2xl transition-all duration-300 flex flex-col items-center justify-center gap-2 group overflow-hidden",
                                                     isActive 
-                                                        ? "bg-foreground text-background border-transparent shadow-lg" 
-                                                        : "bg-white/40 dark:bg-white/5 border-white/20 dark:border-white/5 hover:bg-white/60 dark:hover:bg-white/10 text-foreground"
+                                                        ? "bg-foreground text-background shadow-[0_4px_20px_-4px_rgba(0,0,0,0.2)] dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.5)]" 
+                                                        : "bg-muted/50 hover:bg-muted text-foreground"
                                                 )}
                                             >
-                                                <div className={cn(
-                                                    "size-10 rounded-xl flex items-center justify-center transition-all shrink-0",
-                                                    isActive ? "bg-background/20" : "bg-foreground/5 dark:bg-white/5"
+                                                {/* Kanji watermark */}
+                                                <span className={cn(
+                                                    "absolute top-2 right-2.5 text-[11px] font-medium transition-opacity",
+                                                    isActive ? "text-background/30" : "text-foreground/10"
                                                 )}>
-                                                    <Icon className="size-5" />
+                                                    {agent.kanji}
+                                                </span>
+                                                
+                                                {/* Eye preview */}
+                                                <div className="flex items-center justify-center h-7">
+                                                    <EyePreview variant={agent.id} isActive={isActive} />
                                                 </div>
-                                                <div className="flex-1 min-w-0">
-                                                    <span className="text-[13px] font-semibold tracking-tight block">
-                                                        {v.label}
-                                                    </span>
-                                                    <span className={cn(
-                                                        "text-[11px] block mt-0.5",
-                                                        isActive ? "opacity-70" : "text-muted-foreground"
-                                                    )}>
-                                                        {v.description}
-                                                    </span>
-                                                </div>
+                                                
+                                                {/* Name */}
+                                                <span className="text-[12px] font-medium tracking-tight">
+                                                    {agent.name}
+                                                </span>
+                                                
+                                                {/* Active indicator - subtle line */}
                                                 {isActive && (
                                                     <motion.div 
-                                                        layoutId="variant-check"
-                                                        className="size-5 rounded-full bg-background text-foreground flex items-center justify-center shadow-sm"
-                                                    >
-                                                        <IoCheckmarkOutline className="size-3.5" />
-                                                    </motion.div>
+                                                        layoutId="active-indicator"
+                                                        className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-background/40 rounded-full"
+                                                    />
                                                 )}
-                                            </button>
+                                            </motion.button>
                                         );
                                     })}
                                 </div>
                             </div>
+
+                            {/* Legacy Section */}
+                            <div className="relative px-8 pt-5 pb-8">
+                                <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/60 font-medium">
+                                    Legacy
+                                </span>
+                                <div className="flex gap-2 mt-3">
+                                    {LEGACY.map((item, i) => {
+                                        const isActive = currentVariant === item.id;
+                                        return (
+                                            <motion.button
+                                                key={item.id}
+                                                onClick={() => onVariantChange(item.id)}
+                                                initial={{ opacity: 0, y: 10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                transition={{ delay: 0.18 + i * 0.03 }}
+                                                className={cn(
+                                                    "flex-1 py-3.5 px-4 rounded-xl transition-all duration-300 flex flex-col items-center gap-2",
+                                                    isActive 
+                                                        ? "bg-foreground text-background" 
+                                                        : "bg-transparent border border-border/60 hover:border-foreground/20 text-foreground"
+                                                )}
+                                            >
+                                                <EyePreview variant={item.id} isActive={isActive} />
+                                                <span className="text-[11px] font-medium tracking-tight">
+                                                    {item.name}
+                                                </span>
+                                            </motion.button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                            
+                            {/* Bottom decorative line */}
+                            <div className="absolute bottom-0 left-8 right-8 h-px bg-gradient-to-r from-transparent via-border/40 to-transparent" />
                         </motion.div>
                     </div>
                 </>
