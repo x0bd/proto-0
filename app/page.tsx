@@ -109,16 +109,13 @@ export default function Home() {
 			if (e.key.toLowerCase() === "v" && !e.repeat && !isCustomizationOpen) {
 				setFaceVariant((prev) => {
 					const variants: FaceVariant[] = [
-						"minimal",
-						"tron",
-						"analogue",
-						"lumina",
-						"volo",
-						"myst",
-						"zane",
-						"flux",
-						"echo"
-					];
+					"minimal",
+					"tron",
+					"analogue",
+					"myst",
+					"flux",
+					"echo"
+				];
 					const idx = variants.indexOf(prev);
 					const nextIdx = (idx + 1) % variants.length;
 					return variants[nextIdx];

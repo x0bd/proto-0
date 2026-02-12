@@ -12,20 +12,13 @@ interface CustomizationModalProps {
     onVariantChange: (variant: FaceVariant) => void;
 }
 
-// Simplified variant data - icons replaced with abstract eye shapes
-const AGENTS: { id: FaceVariant; name: string; kanji: string; soul: string }[] = [
-    { id: "lumina", name: "Lumina", kanji: "光", soul: "radiance" },
-    { id: "volo", name: "Volo", kanji: "眼", soul: "focus" },
-    { id: "myst", name: "Myst", kanji: "霧", soul: "vision" },
-    { id: "zane", name: "Zane", kanji: "閃", soul: "rebel" },
-    { id: "flux", name: "Flux", kanji: "流", soul: "form" },
-    { id: "echo", name: "Echo", kanji: "響", soul: "essence" },
-];
-
-const LEGACY: { id: FaceVariant; name: string; style: string }[] = [
+const FACES: { id: FaceVariant; name: string; style: string }[] = [
     { id: "minimal", name: "Pure", style: "essential" },
     { id: "tron", name: "Digital", style: "system" },
     { id: "analogue", name: "Sketch", style: "hand-drawn" },
+    { id: "myst", name: "Myst", style: "vision" },
+    { id: "flux", name: "Flux", style: "form" },
+    { id: "echo", name: "Echo", style: "essence" },
 ];
 
 // Abstract eye visualization for each variant
@@ -36,47 +29,24 @@ function EyePreview({ variant, isActive }: { variant: FaceVariant; isActive: boo
     );
     
     switch (variant) {
-        case "lumina":
-            return (
-                <svg viewBox="0 0 48 24" className="w-12 h-6">
-                    <ellipse cx="12" cy="12" rx="8" ry="6" className={baseClass} />
-                    <ellipse cx="36" cy="12" rx="8" ry="6" className={baseClass} />
-                    <circle cx="12" cy="12" r="3" className={cn(isActive ? "fill-foreground/30" : "fill-background/30")} />
-                    <circle cx="36" cy="12" r="3" className={cn(isActive ? "fill-foreground/30" : "fill-background/30")} />
-                </svg>
-            );
-        case "volo":
-            return (
-                <svg viewBox="0 0 48 24" className="w-12 h-6">
-                    <ellipse cx="24" cy="12" rx="14" ry="10" className={baseClass} />
-                    <circle cx="24" cy="12" r="5" className={cn(isActive ? "fill-foreground/30" : "fill-background/30")} />
-                </svg>
-            );
         case "myst":
             return (
-                <svg viewBox="0 0 48 28" className="w-12 h-7">
+                <svg viewBox="0 0 48 28" className="w-10 h-5">
                     <circle cx="24" cy="6" r="5" className={baseClass} />
                     <circle cx="10" cy="22" r="5" className={baseClass} />
                     <circle cx="38" cy="22" r="5" className={baseClass} />
                 </svg>
             );
-        case "zane":
-            return (
-                <svg viewBox="0 0 48 24" className="w-12 h-6">
-                    <circle cx="14" cy="12" r="5" className={baseClass} />
-                    <ellipse cx="34" cy="12" rx="10" ry="8" className={baseClass} />
-                </svg>
-            );
         case "flux":
             return (
-                <svg viewBox="0 0 48 24" className="w-12 h-6">
+                <svg viewBox="0 0 48 24" className="w-10 h-5">
                     <polygon points="12,4 20,20 4,20" className={baseClass} />
                     <polygon points="36,4 44,20 28,20" className={baseClass} />
                 </svg>
             );
         case "echo":
             return (
-                <svg viewBox="0 0 48 24" className="w-12 h-6">
+                <svg viewBox="0 0 48 24" className="w-10 h-5">
                     <circle cx="14" cy="12" r="4" className={baseClass} />
                     <circle cx="34" cy="12" r="4" className={baseClass} />
                 </svg>
@@ -167,66 +137,10 @@ export const CustomizationModal = React.memo(function CustomizationModal({
                                 </div>
                             </div>
 
-                            {/* Agents Grid */}
-                            <div className="relative px-8 pt-4 pb-2">
-                                <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/60 font-medium">
-                                    Agents
-                                </span>
-                                <div className="grid grid-cols-3 gap-3 mt-3">
-                                    {AGENTS.map((agent, i) => {
-                                        const isActive = currentVariant === agent.id;
-                                        return (
-                                            <motion.button
-                                                key={agent.id}
-                                                onClick={() => onVariantChange(agent.id)}
-                                                initial={{ opacity: 0, y: 10 }}
-                                                animate={{ opacity: 1, y: 0 }}
-                                                transition={{ delay: i * 0.03 }}
-                                                className={cn(
-                                                    "relative aspect-[4/3] rounded-2xl transition-all duration-300 flex flex-col items-center justify-center gap-2 group overflow-hidden",
-                                                    isActive 
-                                                        ? "bg-foreground text-background shadow-[0_4px_20px_-4px_rgba(0,0,0,0.2)] dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.5)]" 
-                                                        : "bg-muted/50 hover:bg-muted text-foreground"
-                                                )}
-                                            >
-                                                {/* Kanji watermark */}
-                                                <span className={cn(
-                                                    "absolute top-2 right-2.5 text-[11px] font-medium transition-opacity",
-                                                    isActive ? "text-background/30" : "text-foreground/10"
-                                                )}>
-                                                    {agent.kanji}
-                                                </span>
-                                                
-                                                {/* Eye preview */}
-                                                <div className="flex items-center justify-center h-7">
-                                                    <EyePreview variant={agent.id} isActive={isActive} />
-                                                </div>
-                                                
-                                                {/* Name */}
-                                                <span className="text-[12px] font-medium tracking-tight">
-                                                    {agent.name}
-                                                </span>
-                                                
-                                                {/* Active indicator - subtle line */}
-                                                {isActive && (
-                                                    <motion.div 
-                                                        layoutId="active-indicator"
-                                                        className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-background/40 rounded-full"
-                                                    />
-                                                )}
-                                            </motion.button>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-
-                            {/* Legacy Section */}
-                            <div className="relative px-8 pt-5 pb-8">
-                                <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/60 font-medium">
-                                    Legacy
-                                </span>
-                                <div className="flex gap-2 mt-3">
-                                    {LEGACY.map((item, i) => {
+                            {/* Faces Grid */}
+                            <div className="relative px-8 pt-4 pb-8">
+                                <div className="grid grid-cols-3 gap-2">
+                                    {FACES.map((item, i) => {
                                         const isActive = currentVariant === item.id;
                                         return (
                                             <motion.button
@@ -234,9 +148,9 @@ export const CustomizationModal = React.memo(function CustomizationModal({
                                                 onClick={() => onVariantChange(item.id)}
                                                 initial={{ opacity: 0, y: 10 }}
                                                 animate={{ opacity: 1, y: 0 }}
-                                                transition={{ delay: 0.18 + i * 0.03 }}
+                                                transition={{ delay: i * 0.03 }}
                                                 className={cn(
-                                                    "flex-1 py-3.5 px-4 rounded-xl transition-all duration-300 flex flex-col items-center gap-2",
+                                                    "py-3.5 px-4 rounded-xl transition-all duration-300 flex flex-col items-center gap-2",
                                                     isActive 
                                                         ? "bg-foreground text-background" 
                                                         : "bg-transparent border border-border/60 hover:border-foreground/20 text-foreground"

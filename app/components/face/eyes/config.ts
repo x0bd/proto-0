@@ -52,29 +52,6 @@ export interface EyeGeometry {
 }
 
 export const EYE_GEOMETRIES: Partial<Record<FaceVariant, EyeGeometry>> = {
-  lumina: {
-    leftCx: 170,
-    leftCy: 105,
-    leftRx: 32,
-    leftRy: 24,
-    rightCx: 350,
-    rightCy: 105,
-    rightRx: 32,
-    rightRy: 24,
-    pupilRadius: 14,
-  },
-  volo: {
-    // Single cyclops eye - centered
-    leftCx: 260, // Center of face
-    leftCy: 95,
-    leftRx: 55,
-    leftRy: 45,
-    rightCx: 260, // Same as left (cyclops)
-    rightCy: 95,
-    rightRx: 55,
-    rightRy: 45,
-    pupilRadius: 22,
-  },
   myst: {
     // Triangular layout
     leftCx: 145,
@@ -89,18 +66,6 @@ export const EYE_GEOMETRIES: Partial<Record<FaceVariant, EyeGeometry>> = {
     topCy: 65,
     topR: 22,
     pupilRadius: 10,
-  },
-  zane: {
-    // Asymmetric - small left, large right
-    leftCx: 165,
-    leftCy: 100,
-    leftRx: 20,
-    leftRy: 20,
-    rightCx: 330,
-    rightCy: 95,
-    rightRx: 48,
-    rightRy: 50,
-    pupilRadius: 8, // Small for left
   },
   flux: {
     // Geometric triangles - approximated as circles for now

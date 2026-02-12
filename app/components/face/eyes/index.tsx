@@ -10,11 +10,8 @@ import { EyeProps, EyeRefs, EyeCallbacks } from "./config";
 // Legacy eyes (existing implementation)
 import { Eyes as LegacyEyes } from "@/app/components/face/Eyes";
 
-// New agent-based eyes
-import { LuminaEyes } from "./LuminaEyes";
-import { VoloEyes } from "./VoloEyes";
+// Agent-based eyes
 import { MystEyes } from "./MystEyes";
-import { ZaneEyes } from "./ZaneEyes";
 import { FluxEyes } from "./FluxEyes";
 import { EchoEyes } from "./EchoEyes";
 
@@ -75,14 +72,8 @@ export function Eyes({
   };
 
   switch (variant) {
-    case "lumina":
-      return <LuminaEyes {...props} />;
-    case "volo":
-      return <VoloEyes {...props} />;
     case "myst":
       return <MystEyes {...props} />;
-    case "zane":
-      return <ZaneEyes {...props} />;
     case "flux":
       return <FluxEyes {...props} />;
     case "echo":

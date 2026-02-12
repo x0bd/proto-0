@@ -5,26 +5,6 @@ import { AgentTheme, FaceVariant, AgentFaceVariant } from "./types";
  * These control colors, glows, and pupil gradients.
  */
 export const AGENT_THEMES: Record<AgentFaceVariant, AgentTheme> = {
-  lumina: {
-    base: "#F5F5F7",
-    text: "#1F2937",
-    accent: "#F59E0B",
-    glow: "#fbbf24",
-    eyeWhite: "#ffffff",
-    pupilStart: "#1F2937",
-    pupilEnd: "#111827",
-    darkMode: false,
-  },
-  volo: {
-    base: "#ECFEFF",
-    text: "#0E7490",
-    accent: "#06B6D4",
-    glow: "#22d3ee",
-    eyeWhite: "#ffffff",
-    pupilStart: "#164E63",
-    pupilEnd: "#0c2d3a",
-    darkMode: false,
-  },
   myst: {
     base: "#FAF5FF",
     text: "#6B21A8",
@@ -33,16 +13,6 @@ export const AGENT_THEMES: Record<AgentFaceVariant, AgentTheme> = {
     eyeWhite: "#fefcff",
     pupilStart: "#581C87",
     pupilEnd: "#3b0764",
-    darkMode: false,
-  },
-  zane: {
-    base: "#FFF1F2",
-    text: "#9F1239",
-    accent: "#E11D48",
-    glow: "#fb7185",
-    eyeWhite: "#ffffff",
-    pupilStart: "#881337",
-    pupilEnd: "#4c0519",
     darkMode: false,
   },
   flux: {

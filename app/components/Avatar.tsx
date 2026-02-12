@@ -54,7 +54,6 @@ export default function Avatar({
 			case "tron":
 			case "flux": 
 				// Angular/Geometric path
-				// Use curve/2 to match visual height of bezier peak
 				const y = curve / 2;
 				if (variant === "flux") {
 					// Flux: purely angular polyline
@@ -63,21 +62,16 @@ export default function Avatar({
 				// Tron: Stepped
 				return `M ${-half} 0 L ${-half/2} 0 L ${-half/2} ${y} L ${half/2} ${y} L ${half/2} 0 L ${half} 0`;
 			
-			case "zane":
-				// Asymmetric smirk
-				return `M ${-half} 0 Q ${-half/4} ${curve * 0.8} 0 ${curve * 0.6} Q ${half/4} ${curve * 1.2} ${half} ${-curve * 0.3}`;
-			
 			case "myst":
 				// Wave curve
 				return `M ${-half} 0 Q ${-half/2} ${curve * 0.5} 0 ${curve} Q ${half/2} ${curve * 0.5} ${half} 0`;
 			
-			case "volo":
 			case "echo":
 				// Minimal straight line with subtle curve
 				return `M ${-half} 0 Q 0 ${curve * 0.5} ${half} 0`;
 
 			default:
-				// Standard curve (minimal, analogue, lumina)
+				// Standard curve (minimal, analogue)
 				return `M ${-half} 0 Q 0 ${curve} ${half} 0`;
 		}
 	};
@@ -423,16 +417,8 @@ export default function Avatar({
 				transformOrigin: "center center",
 			});
 		} else if (tagName === "circle") {
-			// Echo, Volo, Myst often use <circle>
-			// map rx/ry to r (average)
+			// Echo, Myst use <circle>
 			const r = (rx + ry) / 2;
-			
-			// For circle, x/y attributes are cx/cy.
-			// cx is static on element usually, but we can animate it if needed.
-			// But wait, the prop passed is cxOrigin.
-			
-			// If Volo (cyclops), cxOrigin passed by caller (handlePointerMove) might be 260.
-			// If Myst, could be 145, 375, or 260.
 			
 			gsap.to(target, {
 				attr: {
@@ -448,7 +434,7 @@ export default function Avatar({
 				transformOrigin: "center center",
 			});
 		} else {
-			// Default <ellipse> (Minimal, Analogue, Lumina, Zane)
+			// Default <ellipse> (Minimal, Analogue)
 			gsap.to(target, {
 				attr: {
 					rx: rx,
@@ -1150,11 +1136,6 @@ export default function Avatar({
 
 		if (variant === "myst" && topEyeRef.current) {
 			eyesToAnimate.push({ ref: topEyeRef.current, cx: 260 });
-		} else if (variant === "volo" && leftEyeRef.current) {
-			// Volo uses leftRef as main eye, center 260
-			// Override the default list for safety
-			eyesToAnimate.length = 0;
-			eyesToAnimate.push({ ref: leftEyeRef.current, cx: 260 });
 		}
 
 		eyesToAnimate.forEach(({ ref, cx }) => {
