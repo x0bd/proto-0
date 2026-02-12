@@ -5,6 +5,7 @@ import type React from "react";
 import { motion, type PanInfo } from "motion/react";
 import Avatar from "./components/Avatar";
 import { CustomizationModal } from "./components/CustomizationModal";
+import { DownloadButton } from "./components/DownloadButton";
 import { FloatingDock } from "@/components/floating-dock";
 import { IoMoonOutline, IoSettingsOutline, IoSunnyOutline } from "react-icons/io5";
 import { cn } from "@/lib/utils";
@@ -268,6 +269,9 @@ export default function Home() {
 					currentVariant={faceVariant}
 					onVariantChange={setFaceVariant}
 				/>
+
+				{/* Download Button */}
+				<DownloadButton targetRef={avatarStageRef} />
 			</div>
 		</div>
 	);
