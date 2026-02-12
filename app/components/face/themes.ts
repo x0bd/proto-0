@@ -3,36 +3,39 @@ import { AgentTheme, FaceVariant, AgentFaceVariant } from "./types";
 /**
  * Theme definitions for each agent variant.
  * These control colors, glows, and pupil gradients.
+ * 
+ * UPDATE: All agents now use a strict Monochrome / Minimal aesthetic.
+ * No colored glows, no gradients.
  */
 export const AGENT_THEMES: Record<AgentFaceVariant, AgentTheme> = {
   myst: {
-    base: "#FAF5FF",
-    text: "#6B21A8",
-    accent: "#C026D3",
-    glow: "#d8b4fe",
-    eyeWhite: "#fefcff",
-    pupilStart: "#581C87",
-    pupilEnd: "#3b0764",
+    base: "#ffffff",
+    text: "#000000",
+    accent: "#000000",
+    glow: "rgba(0,0,0,0)", // No glow
+    eyeWhite: "#ffffff",
+    pupilStart: "#000000",
+    pupilEnd: "#000000",
     darkMode: false,
   },
   flux: {
-    base: "#EEF2FF",
-    text: "#3730A3",
-    accent: "#6366F1",
-    glow: "#818cf8",
+    base: "#ffffff",
+    text: "#000000",
+    accent: "#000000",
+    glow: "rgba(0,0,0,0)",
     eyeWhite: "#ffffff",
-    pupilStart: "#312E81",
-    pupilEnd: "#1e1b4b",
+    pupilStart: "#000000",
+    pupilEnd: "#000000",
     darkMode: false,
   },
   echo: {
-    base: "#09090b",
-    text: "#F4F4F5",
-    accent: "#64748B",
-    glow: "#94a3b8",
-    eyeWhite: "#18181b",
-    pupilStart: "#cbd5e1",
-    pupilEnd: "#94a3b8",
+    base: "#000000",
+    text: "#ffffff",
+    accent: "#ffffff",
+    glow: "rgba(255,255,255,0.1)", // Very subtle white glow for visibility on dark
+    eyeWhite: "#000000", // Inverted for echo
+    pupilStart: "#ffffff",
+    pupilEnd: "#ffffff",
     darkMode: true,
   },
 };
@@ -53,9 +56,23 @@ export function getAgentTheme(variant: FaceVariant): AgentTheme | undefined {
  */
 export function applyAgentTheme(variant: FaceVariant): void {
   const theme = getAgentTheme(variant);
-  if (!theme) return;
-
+  
+  // For legacy variants, we default to standard standard CSS vars
+  // or we can set neutral defaults
   const root = document.documentElement;
+  
+  if (!theme) {
+    // Reset to defaults
+    root.style.removeProperty("--avatar-base");
+    root.style.removeProperty("--avatar-text");
+    root.style.removeProperty("--avatar-accent");
+    root.style.removeProperty("--avatar-glow");
+    root.style.removeProperty("--avatar-eye-white");
+    root.style.removeProperty("--avatar-pupil-start");
+    root.style.removeProperty("--avatar-pupil-end");
+    return;
+  }
+
   root.style.setProperty("--avatar-base", theme.base);
   root.style.setProperty("--avatar-text", theme.text);
   root.style.setProperty("--avatar-accent", theme.accent);

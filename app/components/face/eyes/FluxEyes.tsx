@@ -1,6 +1,7 @@
 /**
  * Flux Eyes - Geometric triangular shapes
  * "The Architect" - structured, precise, systematic
+ * REFACTORED: Minimal Black & White Vibe
  */
 
 import { RefObject } from "react";
@@ -19,10 +20,9 @@ export function FluxEyes({
   isActive = false,
 }: EyeProps) {
   const geo = EYE_GEOMETRIES.flux!;
-  const theme = getAgentTheme("flux")!;
   
   // Listening state
-  const eyeScale = isActive ? 1.08 : 1;
+  const eyeScale = isActive ? 1.05 : 1;
   const pupilScale = isActive ? 1.1 : 1;
 
   const renderTriangleEye = (
@@ -43,7 +43,6 @@ export function FluxEyes({
     const pathD = `M ${points[0][0]} ${points[0][1]} L ${points[1][0]} ${points[1][1]} L ${points[2][0]} ${points[2][1]} Z`;
     
     const clipId = `flux-clip-${side}`;
-    const gradientId = `flux-pupil-gradient-${side}`;
     
     // Pupil movement (constrained by triangle)
     const pupilMoveX = size * 0.2;
@@ -66,39 +65,24 @@ export function FluxEyes({
           <clipPath id={clipId}>
             <path d={pathD} />
           </clipPath>
-          <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor={theme.pupilStart} />
-            <stop offset="100%" stopColor={theme.pupilEnd} />
-          </linearGradient>
         </defs>
         
-        {/* Outer geometric frame */}
-        <path
-          d={pathD}
-          fill="none"
-          stroke={theme.glow}
-          strokeWidth="1"
-          strokeDasharray="3 3"
-          opacity="0.3"
-          transform={`translate(0, -3) scale(1.15)`}
-          style={{ transformOrigin: `${cx}px ${cy}px` }}
-        />
+        {/* Outer geometric frame - Gone, keeping it clean */}
         
         {/* Main triangle sclera */}
         <path
           ref={eyeRef as RefObject<SVGPathElement>}
           d={pathD}
-          fill={theme.eyeWhite}
-          stroke={theme.accent}
-          strokeWidth="2"
-          strokeLinejoin="round"
+          fill="none"
+          stroke="currentColor" 
+          strokeWidth="1.5"
+          strokeLinejoin="miter" 
           style={{
-            filter: `drop-shadow(0 0 10px ${theme.glow})`,
             transform: `scale(${eyeScale})`,
             transformOrigin: `${cx}px ${cy}px`,
-            transition: "transform 0.15s steps(4)",
+            transition: "transform 0.15s steps(4)", // Keep robotic movement
           }}
-          className="cursor-pointer"
+          className="cursor-pointer text-foreground"
           onClick={(e) => {
             e.stopPropagation();
             onWink(side);
@@ -119,23 +103,16 @@ export function FluxEyes({
         >
           <path
             d={hexPath}
-            fill={`url(#${gradientId})`}
+            fill="currentColor"
+            className="text-foreground"
           />
-          {/* Inner hex ring */}
+          {/* Small white center in pupil for tech vibe */}
           <path
-            d={hexPath}
-            fill="none"
-            stroke={theme.glow}
-            strokeWidth="1"
-            opacity="0.5"
-            transform="scale(0.7)"
-            style={{ transformOrigin: `${cx}px ${cy}px` }}
-          />
-          {/* Geometric highlight */}
-          <polygon
-            points={`${cx - pupilR * 0.3},${cy - pupilR * 0.3} ${cx},${cy - pupilR * 0.45} ${cx + pupilR * 0.2},${cy - pupilR * 0.25}`}
-            fill="white"
-            opacity="0.8"
+             d={hexPath}
+             fill="currentColor"
+             transform="scale(0.3)"
+             className="text-background"
+             style={{ transformOrigin: `${cx}px ${cy}px` }}
           />
         </g>
       </g>
@@ -144,16 +121,16 @@ export function FluxEyes({
 
   return (
     <g className="flux-eyes">
-      {/* Grid lines connecting eyes */}
+      {/* Grid lines - barely visible guide */}
       <line
         x1={geo.leftCx + geo.leftRx}
         y1={geo.leftCy}
         x2={geo.rightCx - geo.rightRx}
         y2={geo.rightCy}
-        stroke={theme.glow}
-        strokeWidth="1"
-        strokeDasharray="4 4"
-        opacity="0.15"
+        stroke="currentColor"
+        strokeWidth="0.5"
+        strokeDasharray="2 2"
+        className="text-muted-foreground/30"
       />
       
       {renderTriangleEye("left", geo.leftCx, geo.leftCy, geo.leftRx * 2, leftRef, leftPupilRef)}

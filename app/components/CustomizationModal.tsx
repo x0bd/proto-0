@@ -4,6 +4,7 @@ import * as React from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { FaceVariant } from "./face/types";
 import { cn } from "@/lib/utils";
+import { IoCloseOutline } from "react-icons/io5";
 
 interface CustomizationModalProps {
     isOpen: boolean;
@@ -12,16 +13,15 @@ interface CustomizationModalProps {
     onVariantChange: (variant: FaceVariant) => void;
 }
 
-const FACES: { id: FaceVariant; name: string; style: string }[] = [
-    { id: "minimal", name: "Pure", style: "essential" },
-    { id: "tron", name: "Digital", style: "system" },
-    { id: "analogue", name: "Sketch", style: "hand-drawn" },
-    { id: "myst", name: "Myst", style: "vision" },
-    { id: "flux", name: "Flux", style: "form" },
-    { id: "echo", name: "Echo", style: "essence" },
+const FACES: { id: FaceVariant; name: string; desc: string }[] = [
+    { id: "minimal", name: "Pure", desc: "Essential form" },
+    { id: "tron", name: "Digital", desc: "System grid" },
+    { id: "analogue", name: "Sketch", desc: "Hand drawn" },
+    { id: "myst", name: "Myst", desc: "Visionary" },
+    { id: "flux", name: "Flux", desc: "Architect" },
+    { id: "echo", name: "Echo", desc: "Essence" },
 ];
 
-// Abstract eye visualization for each variant
 function EyePreview({ variant, isActive }: { variant: FaceVariant; isActive: boolean }) {
     const baseClass = cn(
         "transition-all duration-500",
@@ -31,45 +31,45 @@ function EyePreview({ variant, isActive }: { variant: FaceVariant; isActive: boo
     switch (variant) {
         case "myst":
             return (
-                <svg viewBox="0 0 48 28" className="w-10 h-5">
-                    <circle cx="24" cy="6" r="5" className={baseClass} />
-                    <circle cx="10" cy="22" r="5" className={baseClass} />
-                    <circle cx="38" cy="22" r="5" className={baseClass} />
+                <svg viewBox="0 0 48 24" className="w-12 h-6">
+                    <circle cx="24" cy="6" r="4" className={baseClass} />
+                    <circle cx="12" cy="18" r="4" className={baseClass} />
+                    <circle cx="36" cy="18" r="4" className={baseClass} />
                 </svg>
             );
         case "flux":
             return (
-                <svg viewBox="0 0 48 24" className="w-10 h-5">
-                    <polygon points="12,4 20,20 4,20" className={baseClass} />
-                    <polygon points="36,4 44,20 28,20" className={baseClass} />
+                <svg viewBox="0 0 48 24" className="w-12 h-6">
+                    <polygon points="12,6 18,18 6,18" className={baseClass} />
+                    <polygon points="36,6 42,18 30,18" className={baseClass} />
                 </svg>
             );
         case "echo":
             return (
-                <svg viewBox="0 0 48 24" className="w-10 h-5">
-                    <circle cx="14" cy="12" r="4" className={baseClass} />
-                    <circle cx="34" cy="12" r="4" className={baseClass} />
+                <svg viewBox="0 0 48 24" className="w-12 h-6">
+                    <circle cx="14" cy="12" r="3" className={baseClass} />
+                    <circle cx="34" cy="12" r="3" className={baseClass} />
                 </svg>
             );
         case "minimal":
             return (
-                <svg viewBox="0 0 48 24" className="w-10 h-5">
-                    <ellipse cx="12" cy="12" rx="7" ry="5" className={baseClass} />
-                    <ellipse cx="36" cy="12" rx="7" ry="5" className={baseClass} />
+                <svg viewBox="0 0 48 24" className="w-12 h-6">
+                    <ellipse cx="12" cy="12" rx="6" ry="4" className={baseClass} />
+                    <ellipse cx="36" cy="12" rx="6" ry="4" className={baseClass} />
                 </svg>
             );
         case "tron":
             return (
-                <svg viewBox="0 0 48 24" className="w-10 h-5">
-                    <rect x="4" y="6" width="14" height="12" rx="2" className={baseClass} />
-                    <rect x="30" y="6" width="14" height="12" rx="2" className={baseClass} />
+                <svg viewBox="0 0 48 24" className="w-12 h-6">
+                    <rect x="6" y="8" width="12" height="8" rx="1" className={baseClass} />
+                    <rect x="30" y="8" width="12" height="8" rx="1" className={baseClass} />
                 </svg>
             );
         case "analogue":
             return (
-                <svg viewBox="0 0 48 24" className="w-10 h-5">
-                    <ellipse cx="12" cy="12" rx="7" ry="5" className={cn(baseClass, "opacity-70")} strokeWidth="1.5" stroke="currentColor" fill="none" />
-                    <ellipse cx="36" cy="12" rx="7" ry="5" className={cn(baseClass, "opacity-70")} strokeWidth="1.5" stroke="currentColor" fill="none" />
+                <svg viewBox="0 0 48 24" className="w-12 h-6">
+                    <ellipse cx="12" cy="12" rx="6" ry="4" className={cn(baseClass, "opacity-70")} strokeWidth="1.5" stroke="currentColor" fill="none" />
+                    <ellipse cx="36" cy="12" rx="6" ry="4" className={cn(baseClass, "opacity-70")} strokeWidth="1.5" stroke="currentColor" fill="none" />
                 </svg>
             );
         default:
@@ -87,59 +87,50 @@ export const CustomizationModal = React.memo(function CustomizationModal({
         <AnimatePresence mode="wait">
             {isOpen && (
                 <>
-                    {/* Backdrop - Warm paper overlay, no blur */}
+                    {/* Backdrop */}
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
-                        className="fixed inset-0 z-[100] bg-background/90"
+                        transition={{ duration: 0.3 }}
+                        className="fixed inset-0 z-[100] bg-background/80 backdrop-blur-sm"
                         onClick={onClose}
                     />
 
                     {/* Modal */}
                     <div className="fixed inset-0 z-[101] flex items-center justify-center p-6 pointer-events-none">
                         <motion.div
-                            initial={{ opacity: 0, y: 40 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: 20 }}
-                            transition={{ type: "spring", damping: 40, stiffness: 400, mass: 0.8 }}
-                            className="pointer-events-auto w-full max-w-[520px] bg-background rounded-[28px] shadow-[0_8px_60px_-12px_rgba(0,0,0,0.15)] dark:shadow-[0_8px_60px_-12px_rgba(0,0,0,0.5)] overflow-hidden relative"
+                            initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                            transition={{ type: "spring", damping: 30, stiffness: 300 }}
+                            className="pointer-events-auto w-full max-w-[480px] bg-background border border-foreground/5 shadow-2xl rounded-[32px] overflow-hidden relative"
                             onClick={(e) => e.stopPropagation()}
                         >
-                            {/* Washi grain texture */}
-                            <div className="absolute inset-0 bg-grain opacity-40 pointer-events-none" />
-                            
-                            {/* Decorative vertical text - Japanese aesthetic */}
-                            <div className="absolute right-4 top-1/2 -translate-y-1/2 writing-vertical-rl text-[10px] tracking-[0.5em] text-muted-foreground/20 font-medium select-none pointer-events-none">
-                                IDENTITY
-                            </div>
+                            {/* Washi Texture Overlay */}
+                            <div className="absolute inset-0 bg-grain opacity-20 pointer-events-none z-0" />
 
                             {/* Header */}
-                            <div className="relative px-8 pt-8 pb-2">
-                                <div className="flex items-start justify-between">
-                                    <div>
-                                        <h2 className="text-[22px] font-semibold tracking-tight text-foreground">
-                                            Face
-                                        </h2>
-                                        <p className="text-[13px] text-muted-foreground mt-1">
-                                            Choose your expression
-                                        </p>
-                                    </div>
-                                    <button
-                                        onClick={onClose}
-                                        className="size-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-foreground/5 transition-all active:scale-95 -mr-1 -mt-1"
-                                    >
-                                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                                            <path d="M1 1L13 13M1 13L13 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                                        </svg>
-                                    </button>
+                            <div className="relative z-10 px-8 pt-8 pb-4 flex items-center justify-between">
+                                <div>
+                                    <h2 className="text-[14px] font-semibold tracking-[0.2em] uppercase text-foreground">
+                                        Identity
+                                    </h2>
+                                    <p className="text-[11px] text-muted-foreground mt-1 font-mono tracking-wide opacity-60">
+                                        Select your interface persona
+                                    </p>
                                 </div>
+                                <button
+                                    onClick={onClose}
+                                    className="size-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-foreground/5 transition-colors"
+                                >
+                                    <IoCloseOutline className="size-5" />
+                                </button>
                             </div>
 
-                            {/* Faces Grid */}
-                            <div className="relative px-8 pt-4 pb-8">
-                                <div className="grid grid-cols-3 gap-2">
+                            {/* Grid */}
+                            <div className="relative z-10 px-6 pb-8">
+                                <div className="grid grid-cols-2 gap-3">
                                     {FACES.map((item, i) => {
                                         const isActive = currentVariant === item.id;
                                         return (
@@ -148,26 +139,47 @@ export const CustomizationModal = React.memo(function CustomizationModal({
                                                 onClick={() => onVariantChange(item.id)}
                                                 initial={{ opacity: 0, y: 10 }}
                                                 animate={{ opacity: 1, y: 0 }}
-                                                transition={{ delay: i * 0.03 }}
+                                                transition={{ delay: i * 0.04 }}
                                                 className={cn(
-                                                    "py-3.5 px-4 rounded-xl transition-all duration-300 flex flex-col items-center gap-2",
+                                                    "group relative flex items-center gap-4 p-4 rounded-2xl transition-all duration-300 border text-left",
                                                     isActive 
-                                                        ? "bg-foreground text-background" 
-                                                        : "bg-transparent border border-border/60 hover:border-foreground/20 text-foreground"
+                                                        ? "bg-foreground text-background border-transparent shadow-lg" 
+                                                        : "bg-transparent border-foreground/5 hover:border-foreground/20 hover:bg-foreground/5 text-foreground"
                                                 )}
                                             >
-                                                <EyePreview variant={item.id} isActive={isActive} />
-                                                <span className="text-[11px] font-medium tracking-tight">
-                                                    {item.name}
-                                                </span>
+                                                {/* Icon */}
+                                                <div className="shrink-0 opacity-80 group-hover:opacity-100 transition-opacity">
+                                                    <EyePreview variant={item.id} isActive={isActive} />
+                                                </div>
+                                                
+                                                {/* Text */}
+                                                <div className="flex flex-col">
+                                                    <span className="text-[12px] font-semibold tracking-wide">
+                                                        {item.name}
+                                                    </span>
+                                                    <span className={cn(
+                                                        "text-[10px] font-medium tracking-tight mt-0.5",
+                                                        isActive ? "text-background/60" : "text-muted-foreground"
+                                                    )}>
+                                                        {item.desc}
+                                                    </span>
+                                                </div>
+
+                                                {/* Active Indicator Dot */}
+                                                {isActive && (
+                                                    <motion.div
+                                                        layoutId="active-dot"
+                                                        className="absolute right-4 top-1/2 -translate-y-1/2 size-1.5 rounded-full bg-background"
+                                                    />
+                                                )}
                                             </motion.button>
                                         );
                                     })}
                                 </div>
                             </div>
                             
-                            {/* Bottom decorative line */}
-                            <div className="absolute bottom-0 left-8 right-8 h-px bg-gradient-to-r from-transparent via-border/40 to-transparent" />
+                            {/* Footer / Decorative */}
+                            <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-foreground/10 to-transparent opacity-50" />
                         </motion.div>
                     </div>
                 </>
