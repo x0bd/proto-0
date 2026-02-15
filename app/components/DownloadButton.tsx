@@ -135,7 +135,7 @@ export function DownloadButton({ targetRef }: DownloadButtonProps) {
         try {
             setIsExporting(true);
             const container = targetRef.current;
-            const outputSize = 512;
+            const outputSize = 1024;
 
             const gif = new GIF({
                 workers: 2,
@@ -148,7 +148,7 @@ export function DownloadButton({ targetRef }: DownloadButtonProps) {
 
             // Capture frames
             const fps = 10;
-            const duration = 2000; // 2 seconds
+            const duration = 4000; // 4 seconds
             const totalFrames = (duration / 1000) * fps;
             
             for (let i = 0; i < totalFrames; i++) {
@@ -217,7 +217,7 @@ export function DownloadButton({ targetRef }: DownloadButtonProps) {
                             <div className="p-1.5 rounded-lg bg-foreground/5 text-foreground group-hover:scale-110 transition-transform">
                                 <IoVideocamOutline className="size-4" />
                             </div>
-                            <span>GIF (2s)</span>
+                            <span>GIF (4s)</span>
                         </button>
                     </motion.div>
                 )}
