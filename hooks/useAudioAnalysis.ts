@@ -105,7 +105,8 @@ export function useAudioAnalysis(options: UseAudioAnalysisOptions = {}) {
     const frequencyData = frequencyDataRef.current;
     if (!analyser || !frequencyData) return ZERO_LEVELS;
     
-    analyser.getByteFrequencyData(frequencyData as Uint8Array);
+    const dataArray = frequencyData as unknown as Uint8Array;
+    analyser.getByteFrequencyData(dataArray as any);
     
     const binCount = analyser.frequencyBinCount;
     const sampleRate = audioContextRef.current?.sampleRate || 44100;

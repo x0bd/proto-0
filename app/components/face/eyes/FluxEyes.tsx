@@ -93,7 +93,7 @@ export function FluxEyes({
         
         {/* Hexagonal pupil */}
         <g
-          ref={pupilRef}
+          ref={pupilRef as React.LegacyRef<SVGGElement>}
           clipPath={`url(#${clipId})`}
           style={{
             transform: `translate(${pupilX}px, ${pupilY}px) scale(${pupilScale})`,
