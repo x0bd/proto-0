@@ -3,14 +3,93 @@
 import * as React from "react";
 import { IoDownloadOutline, IoImageOutline, IoVideocamOutline, IoCheckmarkOutline, IoCloseOutline } from "react-icons/io5";
 import { motion, AnimatePresence } from "motion/react";
-import * as htmlToImage from "html-to-image";
 import { cn } from "@/lib/utils";
-// gif.js is not typed by default, need to handle import carefully or use a d.ts
-// We'll trust the user has the library available in public/ or node_modules
 import GIF from "gif.js";
 
 interface DownloadButtonProps {
     targetRef: React.RefObject<HTMLDivElement | null>;
+}
+
+/**
+ * Captures the avatar SVG as a PNG data URL using native SVG serialization.
+ * Completely bypasses html-to-image and its buggy font handling.
+ */
+async function captureAvatarPNG(container: HTMLDivElement, scale: number = 2): Promise<string> {
+    const svg = container.querySelector("svg");
+    if (!svg) throw new Error("No SVG element found in avatar container");
+
+    const rect = svg.getBoundingClientRect();
+    const w = Math.round(rect.width * scale);
+    const h = Math.round(rect.height * scale);
+
+    // Clone and prepare the SVG
+    const clone = svg.cloneNode(true) as SVGSVGElement;
+    clone.setAttribute("width", String(w));
+    clone.setAttribute("height", String(h));
+
+    // Resolve currentColor by reading computed color from the original SVG
+    const computedColor = getComputedStyle(svg).color || "#000000";
+    clone.style.color = computedColor;
+
+    // Also resolve any CSS custom properties used in fills/strokes
+    const isDark = document.documentElement.classList.contains("dark");
+    const fg = isDark ? "#fafafa" : "#09090b";
+    const bg = isDark ? "#09090b" : "#fafafa";
+
+    // Replace CSS variable references and currentColor in the clone
+    const allElements = clone.querySelectorAll("*");
+    allElements.forEach((el) => {
+        const htmlEl = el as SVGElement;
+        const style = htmlEl.style;
+
+        // Fix fill
+        const fill = htmlEl.getAttribute("fill");
+        if (fill === "currentColor") htmlEl.setAttribute("fill", fg);
+
+        // Fix stroke
+        const stroke = htmlEl.getAttribute("stroke");
+        if (stroke === "currentColor") htmlEl.setAttribute("stroke", fg);
+
+        // Remove CSS classes (they won't resolve in the serialized SVG)
+        htmlEl.removeAttribute("class");
+
+        // Remove filters that reference external defs 
+        if (style.filter && style.filter.includes("drop-shadow")) {
+            style.filter = "";
+        }
+    });
+
+    // Serialize to blob
+    const serializer = new XMLSerializer();
+    const svgString = serializer.serializeToString(clone);
+    const svgBlob = new Blob([svgString], { type: "image/svg+xml;charset=utf-8" });
+    const url = URL.createObjectURL(svgBlob);
+
+    // Draw onto canvas
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => {
+            const canvas = document.createElement("canvas");
+            canvas.width = w;
+            canvas.height = h;
+            const ctx = canvas.getContext("2d")!;
+
+            // Background
+            ctx.fillStyle = bg;
+            ctx.fillRect(0, 0, w, h);
+
+            // Draw SVG
+            ctx.drawImage(img, 0, 0, w, h);
+            URL.revokeObjectURL(url);
+
+            resolve(canvas.toDataURL("image/png"));
+        };
+        img.onerror = (e) => {
+            URL.revokeObjectURL(url);
+            reject(new Error("Failed to render SVG to canvas"));
+        };
+        img.src = url;
+    });
 }
 
 export function DownloadButton({ targetRef }: DownloadButtonProps) {
@@ -23,12 +102,7 @@ export function DownloadButton({ targetRef }: DownloadButtonProps) {
         
         try {
             setIsExporting(true);
-            const dataUrl = await htmlToImage.toPng(targetRef.current, {
-                pixelRatio: 2,
-                cacheBust: true,
-                skipAutoScale: true,
-                backgroundColor: "#000000", // Enforce black bg for consistency
-            });
+            const dataUrl = await captureAvatarPNG(targetRef.current, 2);
             
             const link = document.createElement("a");
             link.download = `dot-face-${Date.now()}.png`;
@@ -54,38 +128,39 @@ export function DownloadButton({ targetRef }: DownloadButtonProps) {
 
         try {
             setIsExporting(true);
-            
-            // Initialize GIF encoder
-            // Assumes gif.worker.js is in public folder. If not, we might need to fetch blob.
-            // For now, we'll try standard config.
+            const container = targetRef.current;
+            const svg = container.querySelector("svg");
+            if (!svg) throw new Error("No SVG found");
+
+            const rect = svg.getBoundingClientRect();
+            const scale = 2;
+            const w = Math.round(rect.width * scale);
+            const h = Math.round(rect.height * scale);
+
             const gif = new GIF({
                 workers: 2,
                 quality: 10,
-                width: targetRef.current.clientWidth * 2,
-                height: targetRef.current.clientHeight * 2,
+                width: w,
+                height: h,
                 workerScript: "/gif.worker.js",
-                background: "#000000"
+                background: "#000000",
             });
 
             // Capture frames
             const fps = 10;
             const duration = 2000; // 2 seconds
-            const frames = (duration / 1000) * fps;
+            const totalFrames = (duration / 1000) * fps;
             
-            for (let i = 0; i < frames; i++) {
-                const dataUrl = await htmlToImage.toPng(targetRef.current, {
-                    pixelRatio: 2,
-                    skipAutoScale: true,
-                    backgroundColor: "#000000",
-                });
+            for (let i = 0; i < totalFrames; i++) {
+                const dataUrl = await captureAvatarPNG(container, scale);
                 
                 const img = new Image();
                 img.src = dataUrl;
-                await new Promise((resolve) => { img.onload = resolve; });
+                await new Promise<void>((resolve) => { img.onload = () => resolve(); });
                 
                 gif.addFrame(img, { delay: 1000 / fps });
                 
-                // Wait for next "tick" of animation (approx)
+                // Wait for next animation tick
                 await new Promise(r => setTimeout(r, 1000 / fps));
             }
 
@@ -126,9 +201,9 @@ export function DownloadButton({ targetRef }: DownloadButtonProps) {
                         <button
                             onClick={handleDownloadPNG}
                             disabled={isExporting}
-                            className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-background/80 backdrop-blur-md border border-white/10 hover:bg-white/10 transition-all text-sm font-medium shadow-lg group w-40"
+                            className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-background/80 backdrop-blur-md border border-foreground/10 hover:bg-foreground/5 transition-all text-sm font-medium shadow-lg group w-40"
                         >
-                            <div className="p-1.5 rounded-lg bg-white/5 text-foreground group-hover:scale-110 transition-transform">
+                            <div className="p-1.5 rounded-lg bg-foreground/5 text-foreground group-hover:scale-110 transition-transform">
                                 <IoImageOutline className="size-4" />
                             </div>
                             <span>PNG</span>
@@ -137,9 +212,9 @@ export function DownloadButton({ targetRef }: DownloadButtonProps) {
                         <button
                             onClick={handleDownloadGIF}
                             disabled={isExporting}
-                            className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-background/80 backdrop-blur-md border border-white/10 hover:bg-white/10 transition-all text-sm font-medium shadow-lg group w-40"
+                            className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-background/80 backdrop-blur-md border border-foreground/10 hover:bg-foreground/5 transition-all text-sm font-medium shadow-lg group w-40"
                         >
-                            <div className="p-1.5 rounded-lg bg-white/5 text-foreground group-hover:scale-110 transition-transform">
+                            <div className="p-1.5 rounded-lg bg-foreground/5 text-foreground group-hover:scale-110 transition-transform">
                                 <IoVideocamOutline className="size-4" />
                             </div>
                             <span>GIF (2s)</span>
@@ -162,7 +237,7 @@ export function DownloadButton({ targetRef }: DownloadButtonProps) {
                                 ? "bg-rose-500/10 border-rose-500/20 text-rose-500"
                                 : isOpen 
                                     ? "bg-foreground text-background border-transparent"
-                                    : "bg-background/50 hover:bg-background/80 border-white/10 text-foreground"
+                                    : "bg-background/50 hover:bg-background/80 border-foreground/10 text-foreground"
                 )}
             >
                 <AnimatePresence mode="wait">
