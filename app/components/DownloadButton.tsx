@@ -12,29 +12,35 @@ interface DownloadButtonProps {
 
 /**
  * Captures the avatar SVG as a PNG data URL using native SVG serialization.
- * Completely bypasses html-to-image and its buggy font handling.
+ * Forces a perfect 1:1 square output by centering the SVG's viewBox.
  */
-async function captureAvatarPNG(container: HTMLDivElement, scale: number = 2): Promise<string> {
+async function captureAvatarPNG(container: HTMLDivElement, outputSize: number = 1024): Promise<{ dataUrl: string; size: number }> {
     const svg = container.querySelector("svg");
     if (!svg) throw new Error("No SVG element found in avatar container");
 
-    const rect = svg.getBoundingClientRect();
-    const w = Math.round(rect.width * scale);
-    const h = Math.round(rect.height * scale);
+    // Read the original viewBox (e.g. "0 -35 520 350")
+    const vb = svg.getAttribute("viewBox")?.split(/\s+/).map(Number) || [0, 0, 520, 350];
+    const [vbX, vbY, vbW, vbH] = vb;
 
-    // Clone and prepare the SVG
-    const clone = svg.cloneNode(true) as SVGSVGElement;
-    clone.setAttribute("width", String(w));
-    clone.setAttribute("height", String(h));
+    // Make the viewBox square by expanding the shorter axis, centered
+    const vbSide = Math.max(vbW, vbH);
+    const squareVBX = vbX - (vbSide - vbW) / 2;
+    const squareVBY = vbY - (vbSide - vbH) / 2;
 
-    // Resolve currentColor by reading computed color from the original SVG
-    const computedColor = getComputedStyle(svg).color || "#000000";
-    clone.style.color = computedColor;
-
-    // Also resolve any CSS custom properties used in fills/strokes
+    // Theme colors
     const isDark = document.documentElement.classList.contains("dark");
     const fg = isDark ? "#fafafa" : "#09090b";
     const bg = isDark ? "#09090b" : "#fafafa";
+
+    // Clone and prepare the SVG
+    const clone = svg.cloneNode(true) as SVGSVGElement;
+    clone.setAttribute("width", String(outputSize));
+    clone.setAttribute("height", String(outputSize));
+    clone.setAttribute("viewBox", `${squareVBX} ${squareVBY} ${vbSide} ${vbSide}`);
+
+    // Resolve currentColor
+    const computedColor = getComputedStyle(svg).color || fg;
+    clone.style.color = computedColor;
 
     // Replace CSS variable references and currentColor in the clone
     const allElements = clone.querySelectorAll("*");
@@ -46,14 +52,14 @@ async function captureAvatarPNG(container: HTMLDivElement, scale: number = 2): P
         const fill = htmlEl.getAttribute("fill");
         if (fill === "currentColor") htmlEl.setAttribute("fill", fg);
 
-        // Fix stroke
+        // Fix stroke  
         const stroke = htmlEl.getAttribute("stroke");
         if (stroke === "currentColor") htmlEl.setAttribute("stroke", fg);
 
         // Remove CSS classes (they won't resolve in the serialized SVG)
         htmlEl.removeAttribute("class");
 
-        // Remove filters that reference external defs 
+        // Remove filters that reference external defs
         if (style.filter && style.filter.includes("drop-shadow")) {
             style.filter = "";
         }
@@ -65,26 +71,26 @@ async function captureAvatarPNG(container: HTMLDivElement, scale: number = 2): P
     const svgBlob = new Blob([svgString], { type: "image/svg+xml;charset=utf-8" });
     const url = URL.createObjectURL(svgBlob);
 
-    // Draw onto canvas
+    // Draw onto a square canvas
     return new Promise((resolve, reject) => {
         const img = new Image();
         img.onload = () => {
             const canvas = document.createElement("canvas");
-            canvas.width = w;
-            canvas.height = h;
+            canvas.width = outputSize;
+            canvas.height = outputSize;
             const ctx = canvas.getContext("2d")!;
 
-            // Background
+            // Fill background
             ctx.fillStyle = bg;
-            ctx.fillRect(0, 0, w, h);
+            ctx.fillRect(0, 0, outputSize, outputSize);
 
-            // Draw SVG
-            ctx.drawImage(img, 0, 0, w, h);
+            // Draw the square SVG — it fills the entire canvas perfectly
+            ctx.drawImage(img, 0, 0, outputSize, outputSize);
             URL.revokeObjectURL(url);
 
-            resolve(canvas.toDataURL("image/png"));
+            resolve({ dataUrl: canvas.toDataURL("image/png"), size: outputSize });
         };
-        img.onerror = (e) => {
+        img.onerror = () => {
             URL.revokeObjectURL(url);
             reject(new Error("Failed to render SVG to canvas"));
         };
@@ -102,7 +108,7 @@ export function DownloadButton({ targetRef }: DownloadButtonProps) {
         
         try {
             setIsExporting(true);
-            const dataUrl = await captureAvatarPNG(targetRef.current, 2);
+            const { dataUrl } = await captureAvatarPNG(targetRef.current, 1024);
             
             const link = document.createElement("a");
             link.download = `dot-face-${Date.now()}.png`;
@@ -129,19 +135,13 @@ export function DownloadButton({ targetRef }: DownloadButtonProps) {
         try {
             setIsExporting(true);
             const container = targetRef.current;
-            const svg = container.querySelector("svg");
-            if (!svg) throw new Error("No SVG found");
-
-            const rect = svg.getBoundingClientRect();
-            const scale = 2;
-            const w = Math.round(rect.width * scale);
-            const h = Math.round(rect.height * scale);
+            const outputSize = 512;
 
             const gif = new GIF({
                 workers: 2,
                 quality: 10,
-                width: w,
-                height: h,
+                width: outputSize,
+                height: outputSize,
                 workerScript: "/gif.worker.js",
                 background: "#000000",
             });
@@ -152,7 +152,7 @@ export function DownloadButton({ targetRef }: DownloadButtonProps) {
             const totalFrames = (duration / 1000) * fps;
             
             for (let i = 0; i < totalFrames; i++) {
-                const dataUrl = await captureAvatarPNG(container, scale);
+                const { dataUrl } = await captureAvatarPNG(container, outputSize);
                 
                 const img = new Image();
                 img.src = dataUrl;
