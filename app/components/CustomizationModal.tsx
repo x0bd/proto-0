@@ -83,8 +83,20 @@ export const CustomizationModal = React.memo(function CustomizationModal({
     currentVariant,
     onVariantChange,
 }: CustomizationModalProps) {
+    const [hasAnimated, setHasAnimated] = React.useState(false);
+
+    React.useEffect(() => {
+        if (isOpen) {
+            // Reset animation state when modal opens
+            setHasAnimated(false);
+            // Mark as animated after initial animation completes
+            const timer = setTimeout(() => setHasAnimated(true), 600);
+            return () => clearTimeout(timer);
+        }
+    }, [isOpen]);
+
     return (
-        <AnimatePresence mode="wait">
+        <AnimatePresence>
             {isOpen && (
                 <>
                     {/* Backdrop - Solid, no blur */}
@@ -92,13 +104,13 @@ export const CustomizationModal = React.memo(function CustomizationModal({
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                        transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
                         className="fixed inset-0 z-[100] bg-background/95"
                         onClick={onClose}
                     />
 
                     {/* Modal */}
-                    <div className="fixed inset-0 z-[101] flex items-center justify-center p-6 pointer-events-none">
+                    <div className="fixed inset-0 z-[101] flex items-center justify-center p-4 sm:p-6 pointer-events-none">
                         <motion.div
                             initial={{ opacity: 0, scale: 0.96, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -109,7 +121,7 @@ export const CustomizationModal = React.memo(function CustomizationModal({
                                 stiffness: 400,
                                 mass: 0.8
                             }}
-                            className="pointer-events-auto w-full max-w-[600px] bg-background border border-foreground/5 shadow-premium rounded-[40px] overflow-hidden relative"
+                            className="pointer-events-auto w-full max-w-[600px] bg-background border border-foreground/5 shadow-premium rounded-[32px] sm:rounded-[40px] overflow-hidden relative max-h-[90vh] overflow-y-auto"
                             onClick={(e) => e.stopPropagation()}
                         >
                             {/* Washi Texture Overlay */}
@@ -123,25 +135,25 @@ export const CustomizationModal = React.memo(function CustomizationModal({
                             </div>
 
                             {/* Header */}
-                            <div className="relative z-10 px-10 pt-10 pb-6 flex items-start justify-between">
+                            <div className="relative z-10 px-4 sm:px-6 md:px-10 pt-6 sm:pt-8 md:pt-10 pb-4 sm:pb-6 flex items-start justify-between">
                                 <div className="space-y-1">
-                                    <h2 className="text-[15px] font-semibold tracking-[0.25em] uppercase text-foreground">
+                                    <h2 className="text-[13px] sm:text-[14px] md:text-[15px] font-semibold tracking-[0.25em] uppercase text-foreground">
                                         Face Style
                                     </h2>
-                                    <p className="text-[11px] text-muted-foreground/70 font-mono tracking-wide">
+                                    <p className="text-[10px] sm:text-[11px] text-muted-foreground/70 font-mono tracking-wide">
                                         Choose your visual identity
                                     </p>
                                 </div>
                                 <button
                                     onClick={onClose}
-                                    className="size-9 rounded-full flex items-center justify-center text-muted-foreground/60 hover:text-foreground hover:bg-foreground/5 transition-all duration-200 active:scale-95"
+                                    className="size-9 sm:size-10 rounded-full flex items-center justify-center text-muted-foreground/60 hover:text-foreground hover:bg-foreground/5 transition-all duration-200 active:scale-95 touch-manipulation shrink-0"
                                 >
-                                    <IoCloseOutline className="size-5" />
+                                    <IoCloseOutline className="size-4 sm:size-5" />
                                 </button>
                             </div>
 
                             {/* Content - Flowing Layout */}
-                            <div className="relative z-10 px-10 pb-10">
+                            <div className="relative z-10 px-4 sm:px-6 md:px-10 pb-6 sm:pb-8 md:pb-10">
                                 <div className="space-y-2">
                                     {FACES.map((item, i) => {
                                         const isActive = currentVariant === item.id;
@@ -149,16 +161,16 @@ export const CustomizationModal = React.memo(function CustomizationModal({
                                             <motion.button
                                                 key={item.id}
                                                 onClick={() => onVariantChange(item.id)}
-                                                initial={{ opacity: 0, x: -20 }}
+                                                initial={hasAnimated ? false : { opacity: 0, x: -20 }}
                                                 animate={{ opacity: 1, x: 0 }}
-                                                transition={{ 
-                                                    delay: i * 0.05,
+                                                transition={hasAnimated ? { duration: 0.2 } : { 
+                                                    delay: i * 0.04,
                                                     type: "spring",
                                                     damping: 30,
                                                     stiffness: 300
                                                 }}
                                                 className={cn(
-                                                    "group relative w-full flex items-center gap-5 p-5 rounded-[24px] transition-all duration-300 text-left",
+                                                    "group relative w-full flex items-center gap-3 sm:gap-4 md:gap-5 p-4 sm:p-5 rounded-[20px] sm:rounded-[24px] transition-all duration-200 text-left touch-manipulation",
                                                     "hover:scale-[1.01] active:scale-[0.99]",
                                                     isActive 
                                                         ? "bg-foreground text-background shadow-lg" 

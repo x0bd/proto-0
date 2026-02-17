@@ -189,7 +189,7 @@ export function DownloadButton({ targetRef }: DownloadButtonProps) {
     };
 
     return (
-        <div className="absolute bottom-10 right-10 z-50 flex flex-col items-end gap-3">
+        <div className="absolute bottom-4 right-2 sm:bottom-10 sm:right-6 z-50 flex flex-col items-end gap-2 sm:gap-3">
             <AnimatePresence>
                 {isOpen && (
                     <motion.div
@@ -208,7 +208,7 @@ export function DownloadButton({ targetRef }: DownloadButtonProps) {
                             onClick={handleDownloadPNG}
                             disabled={isExporting}
                             className={cn(
-                                "flex items-center gap-3.5 px-5 py-3 rounded-[20px] bg-background border border-foreground/5 hover:border-foreground/10 transition-all duration-200 text-[13px] font-medium shadow-premium group w-44",
+                                "flex items-center gap-3 sm:gap-3.5 px-4 sm:px-5 py-2.5 sm:py-3 rounded-[18px] sm:rounded-[20px] bg-background border border-foreground/5 hover:border-foreground/10 transition-all duration-200 text-[12px] sm:text-[13px] font-medium shadow-premium group w-40 sm:w-44 touch-manipulation",
                                 "hover:bg-foreground/3 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
                             )}
                         >
@@ -222,7 +222,7 @@ export function DownloadButton({ targetRef }: DownloadButtonProps) {
                             onClick={handleDownloadGIF}
                             disabled={isExporting}
                             className={cn(
-                                "flex items-center gap-3.5 px-5 py-3 rounded-[20px] bg-background border border-foreground/5 hover:border-foreground/10 transition-all duration-200 text-[13px] font-medium shadow-premium group w-44",
+                                "flex items-center gap-3 sm:gap-3.5 px-4 sm:px-5 py-2.5 sm:py-3 rounded-[18px] sm:rounded-[20px] bg-background border border-foreground/5 hover:border-foreground/10 transition-all duration-200 text-[12px] sm:text-[13px] font-medium shadow-premium group w-40 sm:w-44 touch-manipulation",
                                 "hover:bg-foreground/3 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
                             )}
                         >
@@ -240,7 +240,7 @@ export function DownloadButton({ targetRef }: DownloadButtonProps) {
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setIsOpen(!isOpen)}
                 className={cn(
-                    "size-14 rounded-full flex items-center justify-center border transition-all duration-200 shadow-premium z-50",
+                    "size-12 sm:size-14 rounded-full flex items-center justify-center border transition-all duration-200 shadow-premium z-50 touch-manipulation",
                     isExporting 
                         ? "bg-amber-500/10 border-amber-500/20 text-amber-500 hover:bg-amber-500/15"
                         : exportStatus === "success"

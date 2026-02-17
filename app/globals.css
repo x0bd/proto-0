@@ -172,6 +172,11 @@
 		transform: scale(0.96);
 		opacity: 0.8;
 	}
+
+	/* Touch Manipulation: Better mobile touch responsiveness */
+	.touch-manipulation {
+		touch-action: manipulation;
+	}
 }
 
 /* === ATMOSPHERE UTILITIES === */

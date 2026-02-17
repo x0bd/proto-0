@@ -186,40 +186,52 @@ export default function Home() {
 				className="absolute inset-0 w-full h-full text-foreground flex flex-col items-center justify-center transition-colors duration-500 bg-grain"
 				onMouseMove={handlePointerMove}
 				onMouseLeave={handlePointerLeave}
+				onTouchMove={(e) => {
+					// Handle touch events for emotion mapping on mobile
+					if (e.touches.length === 1) {
+						const touch = e.touches[0];
+						const syntheticEvent = {
+							clientX: touch.clientX,
+							clientY: touch.clientY,
+						} as React.MouseEvent<HTMLDivElement>;
+						handlePointerMove(syntheticEvent);
+					}
+				}}
+				onTouchEnd={handlePointerLeave}
 			>
 				{/* Background Gradient */}
 				<div className="absolute inset-0 bg-gradient-to-br from-background via-background to-muted/20" />
 				
 				{/* HEADER UI */}
-				<div className="absolute top-10 left-10 z-50 flex items-center gap-3 select-none">
+				<div className="absolute top-4 left-2 sm:top-10 sm:left-6 z-50 flex items-center gap-3 select-none">
 					{/* Branding */}
 					<motion.div 
 						initial={{ opacity: 0, scale: 0.9 }}
 						animate={{ opacity: 1, scale: 1 }}
 						transition={{ delay: 0.2, type: "spring", damping: 25, stiffness: 300 }}
-						className="flex items-center gap-2.5 rounded-full px-6 h-12 bg-background border border-foreground/5 shadow-premium hover:shadow-lg transition-all duration-300 group cursor-default"
+						className="flex items-center gap-2.5 rounded-full px-4 sm:px-6 h-10 sm:h-12 bg-background border border-foreground/5 shadow-premium hover:shadow-lg transition-all duration-300 group cursor-default"
 					>
-						<span className="logo-font font-bold text-sm leading-none tracking-[0.3em] text-foreground group-hover:text-foreground/80 transition-colors">
+						<span className="logo-font font-bold text-xs sm:text-sm leading-none tracking-[0.3em] text-foreground group-hover:text-foreground/80 transition-colors">
 							DOT
 						</span>
 					</motion.div>
 				</div>
 
-				<div className="absolute top-10 right-10 z-50 flex items-center gap-2.5">
+				<div className="absolute top-4 right-2 sm:top-10 sm:right-6 z-50 flex items-center gap-2 sm:gap-2.5">
 					{/* Theme Toggle */}
 					<motion.button
 						initial={{ opacity: 0, scale: 0.9 }}
 						animate={{ opacity: 1, scale: 1 }}
 						transition={{ delay: 0.25, type: "spring", damping: 25, stiffness: 300 }}
 						onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-						className="size-10 rounded-full flex items-center justify-center border border-foreground/5 bg-background shadow-premium hover:shadow-lg hover:bg-foreground/5 text-muted-foreground hover:text-foreground transition-all duration-200 active:scale-95"
+						className="size-10 sm:size-10 rounded-full flex items-center justify-center border border-foreground/5 bg-background shadow-premium hover:shadow-lg hover:bg-foreground/5 text-muted-foreground hover:text-foreground transition-all duration-200 active:scale-95 touch-manipulation"
 						title="Toggle Theme"
 						aria-label="Toggle theme"
 					>
 						{mounted && theme === "dark" ? (
-							<IoMoonOutline className="size-4.5" />
+							<IoMoonOutline className="size-4 sm:size-4.5" />
 						) : (
-							<IoSunnyOutline className="size-4.5" />
+							<IoSunnyOutline className="size-4 sm:size-4.5" />
 						)}
 					</motion.button>
 
@@ -229,10 +241,10 @@ export default function Home() {
 						animate={{ opacity: 1, scale: 1 }}
 						transition={{ delay: 0.3, type: "spring", damping: 25, stiffness: 300 }}
 						onClick={() => setIsCustomizationOpen(true)}
-						className="size-10 rounded-full flex items-center justify-center hover:bg-foreground/5 text-muted-foreground hover:text-foreground transition-all duration-200 active:scale-95"
+						className="size-10 sm:size-10 rounded-full flex items-center justify-center hover:bg-foreground/5 text-muted-foreground hover:text-foreground transition-all duration-200 active:scale-95 touch-manipulation"
 						title="Settings"
 					>
-						<IoSettingsOutline className="size-4.5" />
+						<IoSettingsOutline className="size-4 sm:size-4.5" />
 					</motion.button>
 				</div>
 

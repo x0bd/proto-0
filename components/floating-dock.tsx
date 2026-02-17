@@ -22,7 +22,7 @@ export function FloatingDock({ voiceEnabled, onVoiceToggle, presetLabel }: Float
     }, []);
 
     return (
-        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-[60] flex flex-col items-center gap-3">
+        <div className="absolute bottom-4 sm:bottom-6 md:bottom-10 left-1/2 -translate-x-1/2 z-[60] flex flex-col items-center gap-2 sm:gap-3 w-full max-w-[calc(100vw-2rem)] px-4">
             {/* Swipe Hint */}
             <AnimatePresence>
                 {showHint && (
@@ -31,13 +31,13 @@ export function FloatingDock({ voiceEnabled, onVoiceToggle, presetLabel }: Float
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 10, scale: 0.95 }}
                         transition={{ type: "spring", damping: 30, stiffness: 400 }}
-                        className="flex items-center gap-2.5 px-4 py-2 rounded-full bg-background/95 border border-foreground/5 shadow-premium"
+                        className="flex items-center gap-2 sm:gap-2.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-background/95 border border-foreground/5 shadow-premium"
                     >
-                        <IoChevronBackOutline className="size-3.5 text-muted-foreground/60" />
-                        <span className="text-[10px] font-mono uppercase tracking-[0.15em] text-muted-foreground/70">
+                        <IoChevronBackOutline className="size-3 sm:size-3.5 text-muted-foreground/60 shrink-0" />
+                        <span className="text-[9px] sm:text-[10px] font-mono uppercase tracking-[0.15em] text-muted-foreground/70 whitespace-nowrap">
                             Swipe to change
                         </span>
-                        <IoChevronForwardOutline className="size-3.5 text-muted-foreground/60" />
+                        <IoChevronForwardOutline className="size-3 sm:size-3.5 text-muted-foreground/60 shrink-0" />
                     </motion.div>
                 )}
             </AnimatePresence>
@@ -45,13 +45,13 @@ export function FloatingDock({ voiceEnabled, onVoiceToggle, presetLabel }: Float
             {/* Emotion Preset Pill */}
             <motion.div 
                 layout
-                className="rounded-full px-4 py-2.5 flex items-center gap-3 shadow-premium bg-background border border-foreground/5"
+                className="rounded-full px-3 sm:px-4 py-2 sm:py-2.5 flex items-center gap-2 sm:gap-3 shadow-premium bg-background border border-foreground/5 w-full max-w-fit"
             >
                 {/* Voice Toggle */}
                 <button
                     onClick={onVoiceToggle}
                     className={cn(
-                        "size-9 rounded-full flex items-center justify-center transition-all duration-200 relative group",
+                        "size-9 sm:size-10 rounded-full flex items-center justify-center transition-all duration-200 relative group touch-manipulation shrink-0",
                         voiceEnabled 
                             ? "bg-foreground text-background hover:bg-foreground/90" 
                             : "hover:bg-foreground/5 text-muted-foreground hover:text-foreground"
@@ -59,12 +59,12 @@ export function FloatingDock({ voiceEnabled, onVoiceToggle, presetLabel }: Float
                     title={voiceEnabled ? "Mute Voice" : "Enable Voice"}
                 >
                     {voiceEnabled ? (
-                        <IoVolumeHighOutline className="size-4.5" />
+                        <IoVolumeHighOutline className="size-4 sm:size-4.5" />
                     ) : (
-                        <IoVolumeMuteOutline className="size-4.5" />
+                        <IoVolumeMuteOutline className="size-4 sm:size-4.5" />
                     )}
                     {/* Tooltip */}
-                    <span className="absolute -top-11 left-1/2 -translate-x-1/2 px-2.5 py-1.5 bg-background rounded-lg border border-foreground/5 shadow-premium text-[9px] font-mono uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
+                    <span className="absolute -top-11 left-1/2 -translate-x-1/2 px-2.5 py-1.5 bg-foreground/95 dark:bg-foreground/90 text-background dark:text-background rounded-lg border border-foreground/10 shadow-premium text-[9px] font-mono uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
                         {voiceEnabled ? "VOICE ON" : "VOICE OFF"}
                     </span>
                 </button>
@@ -73,11 +73,11 @@ export function FloatingDock({ voiceEnabled, onVoiceToggle, presetLabel }: Float
                 <div className="w-px h-6 bg-foreground/8" />
 
                 {/* Current Emotion Preset */}
-                <div className="flex items-center gap-2.5 px-1">
-                    <span className="text-[10px] font-mono uppercase tracking-[0.25em] text-muted-foreground/50">
+                <div className="flex items-center gap-2 sm:gap-2.5 px-1 min-w-0">
+                    <span className="text-[9px] sm:text-[10px] font-mono uppercase tracking-[0.25em] text-muted-foreground/50 shrink-0">
                         Mood
                     </span>
-                    <span className="text-[11px] font-semibold tracking-[0.15em] text-foreground">
+                    <span className="text-[10px] sm:text-[11px] font-semibold tracking-[0.15em] text-foreground truncate">
                         {presetLabel}
                     </span>
                 </div>
