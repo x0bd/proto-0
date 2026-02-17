@@ -13,25 +13,25 @@ interface CustomizationModalProps {
     onVariantChange: (variant: FaceVariant) => void;
 }
 
-const FACES: { id: FaceVariant; name: string; desc: string }[] = [
-    { id: "minimal", name: "Pure", desc: "Essential form" },
-    { id: "tron", name: "Digital", desc: "System grid" },
-    { id: "analogue", name: "Sketch", desc: "Hand drawn" },
-    { id: "myst", name: "Myst", desc: "Visionary" },
-    { id: "flux", name: "Flux", desc: "Architect" },
-    { id: "echo", name: "Echo", desc: "Essence" },
+const FACES: { id: FaceVariant; name: string; desc: string; kanji: string }[] = [
+    { id: "minimal", name: "Pure", desc: "Essential form", kanji: "純" },
+    { id: "tron", name: "Digital", desc: "System grid", kanji: "数" },
+    { id: "analogue", name: "Sketch", desc: "Hand drawn", kanji: "描" },
+    { id: "myst", name: "Myst", desc: "Visionary", kanji: "霧" },
+    { id: "flux", name: "Flux", desc: "Architect", kanji: "流" },
+    { id: "echo", name: "Echo", desc: "Essence", kanji: "響" },
 ];
 
 function EyePreview({ variant, isActive }: { variant: FaceVariant; isActive: boolean }) {
     const baseClass = cn(
         "transition-all duration-500",
-        isActive ? "fill-background" : "fill-foreground"
+        isActive ? "fill-background" : "fill-foreground/60"
     );
     
     switch (variant) {
         case "myst":
             return (
-                <svg viewBox="0 0 48 24" className="w-12 h-6">
+                <svg viewBox="0 0 48 24" className="w-10 h-5">
                     <circle cx="24" cy="6" r="4" className={baseClass} />
                     <circle cx="12" cy="18" r="4" className={baseClass} />
                     <circle cx="36" cy="18" r="4" className={baseClass} />
@@ -39,35 +39,35 @@ function EyePreview({ variant, isActive }: { variant: FaceVariant; isActive: boo
             );
         case "flux":
             return (
-                <svg viewBox="0 0 48 24" className="w-12 h-6">
+                <svg viewBox="0 0 48 24" className="w-10 h-5">
                     <polygon points="12,6 18,18 6,18" className={baseClass} />
                     <polygon points="36,6 42,18 30,18" className={baseClass} />
                 </svg>
             );
         case "echo":
             return (
-                <svg viewBox="0 0 48 24" className="w-12 h-6">
+                <svg viewBox="0 0 48 24" className="w-10 h-5">
                     <circle cx="14" cy="12" r="3" className={baseClass} />
                     <circle cx="34" cy="12" r="3" className={baseClass} />
                 </svg>
             );
         case "minimal":
             return (
-                <svg viewBox="0 0 48 24" className="w-12 h-6">
+                <svg viewBox="0 0 48 24" className="w-10 h-5">
                     <ellipse cx="12" cy="12" rx="6" ry="4" className={baseClass} />
                     <ellipse cx="36" cy="12" rx="6" ry="4" className={baseClass} />
                 </svg>
             );
         case "tron":
             return (
-                <svg viewBox="0 0 48 24" className="w-12 h-6">
+                <svg viewBox="0 0 48 24" className="w-10 h-5">
                     <rect x="6" y="8" width="12" height="8" rx="1" className={baseClass} />
                     <rect x="30" y="8" width="12" height="8" rx="1" className={baseClass} />
                 </svg>
             );
         case "analogue":
             return (
-                <svg viewBox="0 0 48 24" className="w-12 h-6">
+                <svg viewBox="0 0 48 24" className="w-10 h-5">
                     <ellipse cx="12" cy="12" rx="6" ry="4" className={cn(baseClass, "opacity-70")} strokeWidth="1.5" stroke="currentColor" fill="none" />
                     <ellipse cx="36" cy="12" rx="6" ry="4" className={cn(baseClass, "opacity-70")} strokeWidth="1.5" stroke="currentColor" fill="none" />
                 </svg>
@@ -87,89 +87,132 @@ export const CustomizationModal = React.memo(function CustomizationModal({
         <AnimatePresence mode="wait">
             {isOpen && (
                 <>
-                    {/* Backdrop */}
+                    {/* Backdrop - Solid, no blur */}
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        transition={{ duration: 0.3 }}
-                        className="fixed inset-0 z-[100] bg-background/80 backdrop-blur-sm"
+                        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                        className="fixed inset-0 z-[100] bg-background/95"
                         onClick={onClose}
                     />
 
                     {/* Modal */}
                     <div className="fixed inset-0 z-[101] flex items-center justify-center p-6 pointer-events-none">
                         <motion.div
-                            initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                            initial={{ opacity: 0, scale: 0.96, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                            transition={{ type: "spring", damping: 30, stiffness: 300 }}
-                            className="pointer-events-auto w-full max-w-[480px] bg-background border border-foreground/5 shadow-2xl rounded-[32px] overflow-hidden relative"
+                            exit={{ opacity: 0, scale: 0.96, y: 20 }}
+                            transition={{ 
+                                type: "spring", 
+                                damping: 35, 
+                                stiffness: 400,
+                                mass: 0.8
+                            }}
+                            className="pointer-events-auto w-full max-w-[600px] bg-background border border-foreground/5 shadow-premium rounded-[40px] overflow-hidden relative"
                             onClick={(e) => e.stopPropagation()}
                         >
                             {/* Washi Texture Overlay */}
-                            <div className="absolute inset-0 bg-grain opacity-20 pointer-events-none z-0" />
+                            <div className="absolute inset-0 bg-grain opacity-[0.15] pointer-events-none z-0" />
+
+                            {/* Vertical Japanese Text - Left Side */}
+                            <div className="absolute left-0 top-0 bottom-0 flex items-center justify-center pl-6 pointer-events-none z-0">
+                                <span className="writing-vertical-rl text-6xl font-bold text-foreground/[0.02] select-none tracking-wider">
+                                    顔
+                                </span>
+                            </div>
 
                             {/* Header */}
-                            <div className="relative z-10 px-8 pt-8 pb-4 flex items-center justify-between">
-                                <div>
-                                    <h2 className="text-[14px] font-semibold tracking-[0.2em] uppercase text-foreground">
-                                        Identity
+                            <div className="relative z-10 px-10 pt-10 pb-6 flex items-start justify-between">
+                                <div className="space-y-1">
+                                    <h2 className="text-[15px] font-semibold tracking-[0.25em] uppercase text-foreground">
+                                        Face Style
                                     </h2>
-                                    <p className="text-[11px] text-muted-foreground mt-1 font-mono tracking-wide opacity-60">
-                                        Select your interface persona
+                                    <p className="text-[11px] text-muted-foreground/70 font-mono tracking-wide">
+                                        Choose your visual identity
                                     </p>
                                 </div>
                                 <button
                                     onClick={onClose}
-                                    className="size-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-foreground/5 transition-colors"
+                                    className="size-9 rounded-full flex items-center justify-center text-muted-foreground/60 hover:text-foreground hover:bg-foreground/5 transition-all duration-200 active:scale-95"
                                 >
                                     <IoCloseOutline className="size-5" />
                                 </button>
                             </div>
 
-                            {/* Grid */}
-                            <div className="relative z-10 px-6 pb-8">
-                                <div className="grid grid-cols-2 gap-3">
+                            {/* Content - Flowing Layout */}
+                            <div className="relative z-10 px-10 pb-10">
+                                <div className="space-y-2">
                                     {FACES.map((item, i) => {
                                         const isActive = currentVariant === item.id;
                                         return (
                                             <motion.button
                                                 key={item.id}
                                                 onClick={() => onVariantChange(item.id)}
-                                                initial={{ opacity: 0, y: 10 }}
-                                                animate={{ opacity: 1, y: 0 }}
-                                                transition={{ delay: i * 0.04 }}
+                                                initial={{ opacity: 0, x: -20 }}
+                                                animate={{ opacity: 1, x: 0 }}
+                                                transition={{ 
+                                                    delay: i * 0.05,
+                                                    type: "spring",
+                                                    damping: 30,
+                                                    stiffness: 300
+                                                }}
                                                 className={cn(
-                                                    "group relative flex items-center gap-4 p-4 rounded-2xl transition-all duration-300 border text-left",
+                                                    "group relative w-full flex items-center gap-5 p-5 rounded-[24px] transition-all duration-300 text-left",
+                                                    "hover:scale-[1.01] active:scale-[0.99]",
                                                     isActive 
-                                                        ? "bg-foreground text-background border-transparent shadow-lg" 
-                                                        : "bg-transparent border-foreground/5 hover:border-foreground/20 hover:bg-foreground/5 text-foreground"
+                                                        ? "bg-foreground text-background shadow-lg" 
+                                                        : "bg-transparent hover:bg-foreground/3 border border-foreground/5 hover:border-foreground/10 text-foreground"
                                                 )}
                                             >
-                                                {/* Icon */}
-                                                <div className="shrink-0 opacity-80 group-hover:opacity-100 transition-opacity">
+                                                {/* Kanji Watermark */}
+                                                <span className={cn(
+                                                    "absolute right-6 text-7xl font-bold select-none transition-opacity duration-300",
+                                                    isActive 
+                                                        ? "text-background/8" 
+                                                        : "text-foreground/[0.02] group-hover:text-foreground/[0.04]"
+                                                )}>
+                                                    {item.kanji}
+                                                </span>
+
+                                                {/* Eye Preview */}
+                                                <div className={cn(
+                                                    "shrink-0 transition-all duration-300 relative z-10",
+                                                    isActive ? "opacity-100" : "opacity-60 group-hover:opacity-80"
+                                                )}>
                                                     <EyePreview variant={item.id} isActive={isActive} />
                                                 </div>
                                                 
-                                                {/* Text */}
-                                                <div className="flex flex-col">
-                                                    <span className="text-[12px] font-semibold tracking-wide">
-                                                        {item.name}
-                                                    </span>
+                                                {/* Text Content */}
+                                                <div className="flex-1 flex flex-col relative z-10">
+                                                    <div className="flex items-baseline gap-3">
+                                                        <span className={cn(
+                                                            "text-[14px] font-semibold tracking-tight transition-colors",
+                                                            isActive ? "text-background" : "text-foreground"
+                                                        )}>
+                                                            {item.name}
+                                                        </span>
+                                                        <span className={cn(
+                                                            "text-[9px] font-mono uppercase tracking-widest transition-colors",
+                                                            isActive ? "text-background/40" : "text-muted-foreground/50"
+                                                        )}>
+                                                            {item.id.toUpperCase()}
+                                                        </span>
+                                                    </div>
                                                     <span className={cn(
-                                                        "text-[10px] font-medium tracking-tight mt-0.5",
-                                                        isActive ? "text-background/60" : "text-muted-foreground"
+                                                        "text-[11px] font-normal tracking-wide mt-0.5 transition-colors",
+                                                        isActive ? "text-background/60" : "text-muted-foreground/70"
                                                     )}>
                                                         {item.desc}
                                                     </span>
                                                 </div>
 
-                                                {/* Active Indicator Dot */}
+                                                {/* Active Indicator - Subtle */}
                                                 {isActive && (
                                                     <motion.div
-                                                        layoutId="active-dot"
-                                                        className="absolute right-4 top-1/2 -translate-y-1/2 size-1.5 rounded-full bg-background"
+                                                        layoutId="active-indicator"
+                                                        className="absolute right-5 top-1/2 -translate-y-1/2 size-2 rounded-full bg-background/80 shadow-sm"
+                                                        initial={false}
                                                     />
                                                 )}
                                             </motion.button>
@@ -178,8 +221,8 @@ export const CustomizationModal = React.memo(function CustomizationModal({
                                 </div>
                             </div>
                             
-                            {/* Footer / Decorative */}
-                            <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-foreground/10 to-transparent opacity-50" />
+                            {/* Subtle Bottom Accent */}
+                            <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-foreground/5 to-transparent" />
                         </motion.div>
                     </div>
                 </>

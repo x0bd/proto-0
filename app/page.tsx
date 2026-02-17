@@ -191,38 +191,49 @@ export default function Home() {
 				<div className="absolute inset-0 bg-gradient-to-br from-background via-background to-muted/20" />
 				
 				{/* HEADER UI */}
-				<div className="absolute top-8 left-8 z-50 flex items-center gap-3 select-none">
+				<div className="absolute top-10 left-10 z-50 flex items-center gap-3 select-none">
 					{/* Branding */}
-					<div className="flex items-center gap-2.5 glass-card rounded-full px-5 h-12 opacity-60 hover:opacity-100 transition-opacity border border-white/10">
-						<span className="logo-font font-bold text-sm leading-none tracking-[0.3em]">
+					<motion.div 
+						initial={{ opacity: 0, scale: 0.9 }}
+						animate={{ opacity: 1, scale: 1 }}
+						transition={{ delay: 0.2, type: "spring", damping: 25, stiffness: 300 }}
+						className="flex items-center gap-2.5 rounded-full px-6 h-12 bg-background border border-foreground/5 shadow-premium hover:shadow-lg transition-all duration-300 group cursor-default"
+					>
+						<span className="logo-font font-bold text-sm leading-none tracking-[0.3em] text-foreground group-hover:text-foreground/80 transition-colors">
 							DOT
 						</span>
-					</div>
+					</motion.div>
 				</div>
 
-				<div className="absolute top-8 right-8 z-50 flex items-center gap-2">
+				<div className="absolute top-10 right-10 z-50 flex items-center gap-2.5">
 					{/* Theme Toggle */}
-					<button
+					<motion.button
+						initial={{ opacity: 0, scale: 0.9 }}
+						animate={{ opacity: 1, scale: 1 }}
+						transition={{ delay: 0.25, type: "spring", damping: 25, stiffness: 300 }}
 						onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-						className="size-9 rounded-full flex items-center justify-center border border-border/40 bg-card/40 backdrop-blur-xl shadow-zen hover:bg-card/70 text-muted-foreground hover:text-foreground transition-all duration-300 click-tactic"
+						className="size-10 rounded-full flex items-center justify-center border border-foreground/5 bg-background shadow-premium hover:shadow-lg hover:bg-foreground/5 text-muted-foreground hover:text-foreground transition-all duration-200 active:scale-95"
 						title="Toggle Theme"
 						aria-label="Toggle theme"
 					>
 						{mounted && theme === "dark" ? (
-							<IoMoonOutline className="size-4" />
+							<IoMoonOutline className="size-4.5" />
 						) : (
-							<IoSunnyOutline className="size-4" />
+							<IoSunnyOutline className="size-4.5" />
 						)}
-					</button>
+					</motion.button>
 
 					{/* Settings Button */}
-					<button
+					<motion.button
+						initial={{ opacity: 0, scale: 0.9 }}
+						animate={{ opacity: 1, scale: 1 }}
+						transition={{ delay: 0.3, type: "spring", damping: 25, stiffness: 300 }}
 						onClick={() => setIsCustomizationOpen(true)}
-						className="size-9 rounded-full flex items-center justify-center hover:bg-foreground/5 text-muted-foreground hover:text-foreground transition-all duration-300 click-tactic"
+						className="size-10 rounded-full flex items-center justify-center hover:bg-foreground/5 text-muted-foreground hover:text-foreground transition-all duration-200 active:scale-95"
 						title="Settings"
 					>
-						<IoSettingsOutline className="size-4" />
-					</button>
+						<IoSettingsOutline className="size-4.5" />
+					</motion.button>
 				</div>
 
 				{/* CENTER STAGE (Avatar) */}
