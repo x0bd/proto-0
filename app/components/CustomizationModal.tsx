@@ -3,23 +3,233 @@
 import * as React from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { FaceVariant } from "./face/types";
-import { VARIANT_COLORS } from "./face/themes";
-import { IoCloseOutline, IoCheckmark } from "react-icons/io5";
+import { IoCloseOutline } from "react-icons/io5";
 
-const PALETTE = [
-	"#FF6B6B", // coral
-	"#F472B6", // sakura
-	"#C084FC", // plum
-	"#A78BFA", // lavender
-	"#60A5FA", // sky
-	"#06B6D4", // cyan
-	"#34D399", // mint
-	"#FBBF24", // citron
-	"#FB923C", // tangerine
-	"#EF4444", // brick
-	"#8B7355", // umber
-	"#374151", // ink
+/* ─── Color conversion ──────────────────────────────────── */
+
+function hexToHsv(hex: string): [number, number, number] {
+	const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+	if (!m) return [0, 0.8, 0.95];
+	const r = parseInt(m[1], 16) / 255;
+	const g = parseInt(m[2], 16) / 255;
+	const b = parseInt(m[3], 16) / 255;
+	const max = Math.max(r, g, b),
+		min = Math.min(r, g, b),
+		d = max - min;
+	let h = 0;
+	if (d) {
+		if (max === r) h = ((g - b) / d + (g < b ? 6 : 0)) * 60;
+		else if (max === g) h = ((b - r) / d + 2) * 60;
+		else h = ((r - g) / d + 4) * 60;
+	}
+	return [h, max === 0 ? 0 : d / max, max];
+}
+
+function hsvToHex(h: number, s: number, v: number): string {
+	const c = v * s,
+		x = c * (1 - Math.abs(((h / 60) % 2) - 1)),
+		m = v - c;
+	let r = 0,
+		g = 0,
+		b = 0;
+	if (h < 60) {
+		r = c;
+		g = x;
+	} else if (h < 120) {
+		r = x;
+		g = c;
+	} else if (h < 180) {
+		g = c;
+		b = x;
+	} else if (h < 240) {
+		g = x;
+		b = c;
+	} else if (h < 300) {
+		r = x;
+		b = c;
+	} else {
+		r = c;
+		b = x;
+	}
+	const toHex = (n: number) =>
+		Math.round((n + m) * 255)
+			.toString(16)
+			.padStart(2, "0");
+	return `#${toHex(r)}${toHex(g)}${toHex(b)}`.toUpperCase();
+}
+
+/* ─── Constants ─────────────────────────────────────────── */
+
+const FACES: { id: FaceVariant; name: string }[] = [
+	{ id: "minimal", name: "Pure" },
+	{ id: "tron", name: "Digital" },
+	{ id: "analogue", name: "Sketch" },
 ];
+
+const SWATCHES = [
+	"#FF6B6B",
+	"#F472B6",
+	"#C084FC",
+	"#A78BFA",
+	"#60A5FA",
+	"#06B6D4",
+	"#34D399",
+	"#FBBF24",
+	"#FB923C",
+	"#EF4444",
+];
+
+/* ─── Spectrum color picker ─────────────────────────────── */
+
+function SpectrumPicker({
+	color,
+	onChange,
+}: {
+	color: string;
+	onChange: (hex: string) => void;
+}) {
+	const [hsv, _setHsv] = React.useState<[number, number, number]>(() =>
+		hexToHsv(color),
+	);
+	const hsvRef = React.useRef(hsv);
+	const svRef = React.useRef<HTMLDivElement>(null);
+	const hueRef = React.useRef<HTMLDivElement>(null);
+	const dragging = React.useRef<"sv" | "hue" | null>(null);
+
+	const setHsv = React.useCallback((v: [number, number, number]) => {
+		hsvRef.current = v;
+		_setHsv(v);
+	}, []);
+
+	/* sync external color when not dragging */
+	React.useEffect(() => {
+		if (!dragging.current) setHsv(hexToHsv(color));
+	}, [color, setHsv]);
+
+	const emit = React.useCallback(
+		(h: number, s: number, v: number) => onChange(hsvToHex(h, s, v)),
+		[onChange],
+	);
+
+	const pickSv = React.useCallback(
+		(cx: number, cy: number) => {
+			const el = svRef.current;
+			if (!el) return;
+			const r = el.getBoundingClientRect();
+			const s = Math.max(0, Math.min(1, (cx - r.left) / r.width));
+			const v = Math.max(0, Math.min(1, 1 - (cy - r.top) / r.height));
+			const h = hsvRef.current[0];
+			setHsv([h, s, v]);
+			emit(h, s, v);
+		},
+		[setHsv, emit],
+	);
+
+	const pickHue = React.useCallback(
+		(cx: number) => {
+			const el = hueRef.current;
+			if (!el) return;
+			const r = el.getBoundingClientRect();
+			const h = Math.max(
+				0,
+				Math.min(360, ((cx - r.left) / r.width) * 360),
+			);
+			const [, s, v] = hsvRef.current;
+			setHsv([h, s, v]);
+			emit(h, s, v);
+		},
+		[setHsv, emit],
+	);
+
+	/* global pointer tracking */
+	React.useEffect(() => {
+		const onMove = (e: PointerEvent) => {
+			if (dragging.current === "sv") pickSv(e.clientX, e.clientY);
+			else if (dragging.current === "hue") pickHue(e.clientX);
+		};
+		const onUp = () => {
+			dragging.current = null;
+		};
+		window.addEventListener("pointermove", onMove);
+		window.addEventListener("pointerup", onUp);
+		return () => {
+			window.removeEventListener("pointermove", onMove);
+			window.removeEventListener("pointerup", onUp);
+		};
+	}, [pickSv, pickHue]);
+
+	const [h, s, v] = hsv;
+	const pureHue = `hsl(${h}, 100%, 50%)`;
+
+	return (
+		<div className="space-y-2.5">
+			{/* Saturation / Value plane */}
+			<div
+				ref={svRef}
+				className="relative w-full h-[136px] rounded-xl cursor-crosshair touch-none select-none overflow-hidden"
+				style={{ backgroundColor: pureHue }}
+				onPointerDown={(e) => {
+					e.preventDefault();
+					dragging.current = "sv";
+					pickSv(e.clientX, e.clientY);
+				}}
+			>
+				<div
+					className="absolute inset-0"
+					style={{
+						background:
+							"linear-gradient(to right, #ffffff, transparent)",
+					}}
+				/>
+				<div
+					className="absolute inset-0"
+					style={{
+						background:
+							"linear-gradient(to bottom, transparent, #000000)",
+					}}
+				/>
+				{/* thumb */}
+				<div
+					className="absolute size-4 rounded-full border-2 border-white -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+					style={{
+						left: `${s * 100}%`,
+						top: `${(1 - v) * 100}%`,
+						backgroundColor: color,
+						boxShadow:
+							"0 0 0 1px rgba(0,0,0,0.12), 0 2px 6px rgba(0,0,0,0.25)",
+					}}
+				/>
+			</div>
+
+			{/* Hue rail */}
+			<div
+				ref={hueRef}
+				className="relative w-full h-3 rounded-full cursor-pointer touch-none select-none"
+				style={{
+					background:
+						"linear-gradient(to right, #ff0000 0%, #ffff00 17%, #00ff00 33%, #00ffff 50%, #0000ff 67%, #ff00ff 83%, #ff0000 100%)",
+				}}
+				onPointerDown={(e) => {
+					e.preventDefault();
+					dragging.current = "hue";
+					pickHue(e.clientX);
+				}}
+			>
+				<div
+					className="absolute top-1/2 size-4 rounded-full border-2 border-white -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+					style={{
+						left: `${(h / 360) * 100}%`,
+						backgroundColor: pureHue,
+						boxShadow:
+							"0 0 0 1px rgba(0,0,0,0.1), 0 2px 5px rgba(0,0,0,0.2)",
+					}}
+				/>
+			</div>
+		</div>
+	);
+}
+
+/* ─── Modal ─────────────────────────────────────────────── */
 
 interface CustomizationModalProps {
 	isOpen: boolean;
@@ -32,86 +242,6 @@ interface CustomizationModalProps {
 	onAccentColorChange: (color: string) => void;
 }
 
-const FACES: { id: FaceVariant; name: string; desc: string; kanji: string }[] =
-	[
-		{ id: "minimal", name: "Pure", desc: "Essential form", kanji: "純" },
-		{ id: "tron", name: "Digital", desc: "System grid", kanji: "数" },
-		{ id: "analogue", name: "Sketch", desc: "Hand drawn", kanji: "描" },
-	];
-
-function EyePreview({
-	variant,
-	color,
-}: {
-	variant: FaceVariant;
-	color: string;
-}) {
-	const style = { fill: color };
-	const styleStroke = { fill: "none", stroke: color, strokeWidth: 1.5 };
-	switch (variant) {
-		case "minimal":
-			return (
-				<svg viewBox="0 0 48 24" className="w-9 h-[18px]">
-					<ellipse cx="12" cy="12" rx="6" ry="4" style={style} />
-					<ellipse cx="36" cy="12" rx="6" ry="4" style={style} />
-				</svg>
-			);
-		case "tron":
-			return (
-				<svg viewBox="0 0 48 24" className="w-9 h-[18px]">
-					<rect
-						x="6"
-						y="8"
-						width="12"
-						height="8"
-						rx="1"
-						style={style}
-					/>
-					<rect
-						x="30"
-						y="8"
-						width="12"
-						height="8"
-						rx="1"
-						style={style}
-					/>
-				</svg>
-			);
-		case "analogue":
-			return (
-				<svg viewBox="0 0 48 24" className="w-9 h-[18px]">
-					<ellipse
-						cx="12"
-						cy="12"
-						rx="6"
-						ry="4"
-						style={styleStroke}
-					/>
-					<ellipse
-						cx="36"
-						cy="12"
-						rx="6"
-						ry="4"
-						style={styleStroke}
-					/>
-				</svg>
-			);
-		default:
-			return null;
-	}
-}
-
-function SectionLabel({ children }: { children: React.ReactNode }) {
-	return (
-		<div className="flex items-center gap-3 mb-4">
-			<span className="text-[9px] font-mono uppercase tracking-[0.3em] text-foreground/35 shrink-0">
-				{children}
-			</span>
-			<div className="flex-1 border-t border-foreground/[0.07]" />
-		</div>
-	);
-}
-
 export const CustomizationModal = React.memo(function CustomizationModal({
 	isOpen,
 	onClose,
@@ -122,23 +252,13 @@ export const CustomizationModal = React.memo(function CustomizationModal({
 	accentColor,
 	onAccentColorChange,
 }: CustomizationModalProps) {
-	const [hasAnimated, setHasAnimated] = React.useState(false);
 	const [nameVal, setNameVal] = React.useState(avatarName);
-	const customColorRef = React.useRef<HTMLInputElement>(null);
 
 	React.useEffect(() => {
 		setNameVal(avatarName);
 	}, [avatarName]);
 
-	React.useEffect(() => {
-		if (isOpen) {
-			setHasAnimated(false);
-			const timer = setTimeout(() => setHasAnimated(true), 700);
-			return () => clearTimeout(timer);
-		}
-	}, [isOpen]);
-
-	const handleNameBlur = () => {
+	const commitName = () => {
 		const trimmed = nameVal.trim();
 		if (trimmed) onAvatarNameChange(trimmed);
 		else setNameVal(avatarName);
@@ -148,302 +268,187 @@ export const CustomizationModal = React.memo(function CustomizationModal({
 		<AnimatePresence>
 			{isOpen && (
 				<>
-					{/* Backdrop */}
+					{/* backdrop */}
 					<motion.div
 						initial={{ opacity: 0 }}
 						animate={{ opacity: 1 }}
 						exit={{ opacity: 0 }}
-						transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-						className="fixed inset-0 z-[100] bg-background/60 backdrop-blur-sm"
+						transition={{ duration: 0.2 }}
+						className="fixed inset-0 z-100 bg-black/20 dark:bg-black/45 backdrop-blur-sm"
 						onClick={onClose}
 					/>
 
-					<div className="fixed inset-0 z-[101] flex items-center justify-center p-4 sm:p-6 pointer-events-none">
+					<div className="fixed inset-0 z-101 flex items-center justify-center p-4 pointer-events-none">
 						<motion.div
-							initial={{ opacity: 0, scale: 0.97, y: 14 }}
+							initial={{ opacity: 0, scale: 0.96, y: 10 }}
 							animate={{ opacity: 1, scale: 1, y: 0 }}
-							exit={{ opacity: 0, scale: 0.97, y: 14 }}
+							exit={{ opacity: 0, scale: 0.96, y: 10 }}
 							transition={{
 								type: "spring",
-								damping: 38,
-								stiffness: 420,
-								mass: 0.7,
+								damping: 34,
+								stiffness: 400,
+								mass: 0.6,
 							}}
-							className="pointer-events-auto w-full max-w-[460px]"
+							className="pointer-events-auto w-full max-w-[400px]"
 							onClick={(e) => e.stopPropagation()}
 						>
-							{/* Paper card */}
-							<div className="relative bg-background border border-foreground/[0.07] rounded-[28px] overflow-hidden shadow-[0_12px_48px_-8px_rgba(0,0,0,0.1),0_2px_8px_-2px_rgba(0,0,0,0.06)] max-h-[90vh] overflow-y-auto">
-								{/* Washi fiber texture */}
-								<div className="absolute inset-0 bg-washi pointer-events-none z-0" />
+							<div className="relative bg-background border border-foreground/8 rounded-2xl overflow-hidden shadow-[0_24px_80px_-16px_rgba(0,0,0,0.12)] max-h-[90vh] overflow-y-auto">
+								{/* washi texture */}
+								<div className="absolute inset-0 bg-washi pointer-events-none opacity-40" />
 
-								{/* Vertical Japanese watermark */}
-								<div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none z-0 select-none">
-									<span className="writing-vertical-rl text-[72px] font-black text-foreground/[0.025] tracking-wider">
-										設定
-									</span>
-								</div>
-
-								<div className="relative z-10 px-6 sm:px-8 pt-7 pb-8">
-									{/* Header */}
-									<div className="flex items-start justify-between mb-8">
+								<div className="relative z-10 px-6 pt-6 pb-7">
+									{/* ── header ── */}
+									<div className="flex items-center justify-between mb-7">
 										<div>
-											<h2 className="logo-font text-base font-bold tracking-[0.15em] text-foreground leading-none uppercase">
+											<h2 className="text-base font-semibold tracking-tight text-foreground leading-none">
 												Settings
 											</h2>
-											<p className="text-[9px] text-foreground/35 font-mono tracking-[0.25em] mt-1.5 uppercase">
-												personalise your companion
+											<p className="text-[10px] font-mono text-foreground/35 tracking-[0.14em] mt-1.5 uppercase">
+												configure your companion
 											</p>
 										</div>
 										<button
 											onClick={onClose}
-											className="size-7 rounded-full flex items-center justify-center text-foreground/40 hover:text-foreground hover:bg-foreground/8 transition-all duration-200 active:scale-90 touch-manipulation shrink-0"
+											className="size-8 rounded-lg flex items-center justify-center text-foreground/35 hover:text-foreground hover:bg-foreground/5 transition-all duration-150 active:scale-90"
 										>
-											<IoCloseOutline className="size-4.5" />
+											<IoCloseOutline className="size-5" />
 										</button>
 									</div>
 
-									{/* ── IDENTITY ── */}
-									<SectionLabel>Identity</SectionLabel>
-									<div className="mb-8">
-										<div className="relative">
-											<input
-												type="text"
-												value={nameVal}
-												onChange={(e) =>
-													setNameVal(e.target.value)
-												}
-												onBlur={handleNameBlur}
-												onKeyDown={(e) => {
-													if (e.key === "Enter")
-														e.currentTarget.blur();
-												}}
-												maxLength={20}
-												placeholder="Name your companion"
-												className="w-full bg-transparent text-foreground logo-font text-2xl font-bold tracking-[0.05em] pb-2 border-0 border-b border-foreground/12 focus:outline-none transition-colors duration-200 placeholder:text-foreground/18 placeholder:font-normal placeholder:tracking-normal placeholder:text-lg"
-												style={{
-													caretColor: accentColor,
-												}}
-											/>
-											<motion.div
-												className="absolute bottom-0 left-0 h-[1.5px] rounded-full"
-												animate={{
-													width: nameVal
-														? "100%"
-														: "0%",
-												}}
-												transition={{
-													duration: 0.4,
-													ease: [0.16, 1, 0.3, 1],
-												}}
-												style={{
-													backgroundColor:
-														accentColor,
-													opacity: 0.45,
-												}}
-											/>
-										</div>
-										<p className="text-[9px] font-mono text-foreground/22 uppercase tracking-[0.2em] mt-2.5">
-											displayed in the header
-										</p>
-									</div>
+									{/* ── name ── */}
+									<span className="block text-[10px] font-mono font-medium uppercase tracking-[0.22em] text-foreground/40 mb-2.5">
+										Name
+									</span>
+									<input
+										type="text"
+										value={nameVal}
+										onChange={(e) =>
+											setNameVal(e.target.value)
+										}
+										onBlur={commitName}
+										onKeyDown={(e) => {
+											if (e.key === "Enter")
+												e.currentTarget.blur();
+										}}
+										maxLength={20}
+										spellCheck={false}
+										placeholder="Name your companion"
+										className="w-full bg-foreground/3 rounded-xl px-4 h-11 text-sm font-medium text-foreground border border-foreground/7 focus:outline-none focus:border-foreground/20 transition-colors font-mono placeholder:text-foreground/20 placeholder:font-normal mb-7"
+										style={{ caretColor: accentColor }}
+									/>
 
-									{/* ── FACE ── */}
-									<SectionLabel>Face Style</SectionLabel>
-									<div className="flex gap-2 mb-8">
-										{FACES.map((item, i) => {
-											const isActive =
-												currentVariant === item.id;
-											const varColor =
-												VARIANT_COLORS[item.id];
+									{/* ── style ── */}
+									<span className="block text-[10px] font-mono font-medium uppercase tracking-[0.22em] text-foreground/40 mb-2.5">
+										Style
+									</span>
+									<div className="grid grid-cols-3 gap-2 mb-7">
+										{FACES.map((face) => {
+											const active =
+												currentVariant === face.id;
 											return (
 												<motion.button
-													key={item.id}
+													key={face.id}
 													onClick={() =>
-														onVariantChange(item.id)
+														onVariantChange(face.id)
 													}
-													initial={
-														hasAnimated
-															? false
-															: {
-																	opacity: 0,
-																	y: 8,
-																}
-													}
-													animate={{
-														opacity: 1,
-														y: 0,
-													}}
-													transition={
-														hasAnimated
-															? { duration: 0.15 }
-															: {
-																	delay:
-																		i *
-																		0.05,
-																	type: "spring",
-																	damping: 28,
-																	stiffness: 320,
-																}
-													}
-													whileTap={{ scale: 0.96 }}
-													className="flex-1 relative flex flex-col items-center gap-2.5 py-4 px-2 rounded-2xl transition-all duration-200 touch-manipulation border overflow-hidden"
+													whileTap={{ scale: 0.95 }}
+													className="relative h-11 rounded-xl font-mono text-[11px] font-semibold uppercase tracking-widest transition-all duration-150 border cursor-pointer"
 													style={
-														isActive
+														active
 															? {
-																	backgroundColor: `${varColor}14`,
-																	borderColor: `${varColor}50`,
+																	backgroundColor: `${accentColor}14`,
+																	borderColor: `${accentColor}40`,
+																	color: accentColor,
 																}
 															: {
 																	backgroundColor:
 																		"transparent",
 																	borderColor:
-																		"rgba(0,0,0,0.06)",
+																		"var(--border)",
+																	color: "var(--foreground)",
 																}
 													}
 												>
-													<span
-														className="absolute -bottom-1 right-0.5 text-[40px] font-black select-none pointer-events-none leading-none"
-														style={{
-															color: isActive
-																? `${varColor}1a`
-																: "transparent",
-														}}
-													>
-														{item.kanji}
-													</span>
-													<EyePreview
-														variant={item.id}
-														color={
-															isActive
-																? varColor
-																: "currentColor"
-														}
-													/>
-													<div className="relative z-10 text-center">
-														<div
-															className="text-[11px] font-bold logo-font leading-none tracking-wide"
-															style={{
-																color: isActive
-																	? varColor
-																	: undefined,
-															}}
-														>
-															{item.name}
-														</div>
-														<div className="text-[8px] text-foreground/30 font-mono tracking-widest mt-0.5 uppercase">
-															{item.desc}
-														</div>
-													</div>
-													{isActive && (
+													{face.name}
+													{active && (
 														<motion.div
-															layoutId="face-check"
-															className="absolute top-2 right-2 size-3.5 rounded-full flex items-center justify-center"
+															layoutId="active-face"
+															className="absolute top-1.5 right-1.5 size-1.5 rounded-full"
 															style={{
 																backgroundColor:
-																	varColor,
+																	accentColor,
 															}}
-															initial={false}
-														>
-															<IoCheckmark className="size-2 text-white" />
-														</motion.div>
+															transition={{
+																type: "spring",
+																stiffness: 500,
+																damping: 32,
+															}}
+														/>
 													)}
 												</motion.button>
 											);
 										})}
 									</div>
 
-									{/* ── COLOR ── */}
-									<SectionLabel>Accent Color</SectionLabel>
-									<div className="flex flex-wrap gap-2 items-center">
-										{PALETTE.map((hex) => {
-											const isActive =
-												accentColor === hex;
+									{/* ── color ── */}
+									<span className="block text-[10px] font-mono font-medium uppercase tracking-[0.22em] text-foreground/40 mb-2.5">
+										Color
+									</span>
+									<SpectrumPicker
+										color={accentColor}
+										onChange={onAccentColorChange}
+									/>
+
+									{/* quick-pick swatches */}
+									<div className="flex flex-wrap items-center gap-1.5 mt-4">
+										{SWATCHES.map((hex) => {
+											const active =
+												accentColor.toUpperCase() ===
+												hex;
 											return (
-												<motion.button
+												<button
 													key={hex}
 													onClick={() =>
 														onAccentColorChange(hex)
 													}
-													whileTap={{ scale: 0.82 }}
-													className="relative size-7 rounded-full touch-manipulation focus:outline-none shrink-0"
+													className="relative size-[22px] rounded-full transition-transform duration-150 hover:scale-110 active:scale-90 shrink-0"
 													style={{
 														backgroundColor: hex,
 													}}
 												>
-													{isActive && (
+													{active && (
 														<motion.div
-															layoutId="color-ring"
+															layoutId="swatch-ring"
 															className="absolute -inset-[3px] rounded-full border-[1.5px]"
 															style={{
 																borderColor:
 																	hex,
 															}}
-															initial={false}
 															transition={{
 																type: "spring",
-																stiffness: 600,
-																damping: 40,
+																stiffness: 500,
+																damping: 35,
 															}}
 														/>
 													)}
-													{isActive && (
-														<IoCheckmark
-															className="absolute inset-0 m-auto size-3 text-white"
-															style={{
-																filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.5))",
-															}}
-														/>
-													)}
-												</motion.button>
+												</button>
 											);
 										})}
-										{/* Custom color swatch */}
-										<button
-											onClick={() =>
-												customColorRef.current?.click()
-											}
-											className="relative size-7 rounded-full border border-dashed border-foreground/20 flex items-center justify-center hover:border-foreground/40 transition-colors duration-200 touch-manipulation overflow-hidden shrink-0"
-											title="Custom color"
-										>
-											{!PALETTE.includes(accentColor) ? (
-												<>
-													<div
-														className="absolute inset-0 rounded-full"
-														style={{
-															backgroundColor:
-																accentColor,
-														}}
-													/>
-													<IoCheckmark
-														className="relative z-10 size-3 text-white"
-														style={{
-															filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.5))",
-														}}
-													/>
-												</>
-											) : (
-												<span className="text-foreground/30 text-sm leading-none">
-													+
-												</span>
-											)}
-										</button>
-										<input
-											ref={customColorRef}
-											type="color"
-											value={accentColor}
-											onChange={(e) =>
-												onAccentColorChange(
-													e.target.value,
-												)
-											}
-											className="sr-only"
-											aria-hidden
-										/>
 									</div>
-									<p className="text-[9px] font-mono text-foreground/22 uppercase tracking-[0.2em] mt-3">
-										overrides the face variant default
-									</p>
+
+									{/* hex readout */}
+									<div className="flex items-center gap-2 mt-4">
+										<div
+											className="size-4 rounded-[5px] shrink-0"
+											style={{
+												backgroundColor: accentColor,
+												boxShadow: `0 0 0 1px ${accentColor}30`,
+											}}
+										/>
+										<span className="text-[11px] font-mono font-medium text-foreground/40 uppercase tracking-wider">
+											{accentColor}
+										</span>
+									</div>
 								</div>
 							</div>
 						</motion.div>
