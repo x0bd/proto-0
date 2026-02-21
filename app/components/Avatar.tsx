@@ -6,12 +6,8 @@ import { gsap } from "gsap";
 import { Eyes } from "./face/eyes/index";
 import { Mouth } from "./face/Mouth";
 import { Ears } from "./face/Ears";
-import {
-	FaceVariant,
-	supportsPupilTracking,
-	isLegacyVariant,
-} from "./face/types";
-import { applyAgentTheme, getAgentTheme, VARIANT_COLORS } from "./face/themes";
+import { FaceVariant } from "./face/types";
+import { applyAgentTheme, VARIANT_COLORS } from "./face/themes";
 import { EYE_GEOMETRIES } from "./face/eyes/config";
 import type { AudioLevels } from "@/hooks/useAudioAnalysis";
 
@@ -55,25 +51,11 @@ export default function Avatar({
 		const half = width / 2;
 
 		switch (variant) {
-			case "tron":
-			case "flux":
-				// Angular/Geometric path
+			case "tron": {
+				// Tron: Stepped angular path
 				const y = curve / 2;
-				if (variant === "flux") {
-					// Flux: purely angular polyline
-					return `M ${-half} 0 L ${-half / 3} ${curve / 2} L ${half / 3} ${curve / 2} L ${half} 0`;
-				}
-				// Tron: Stepped
 				return `M ${-half} 0 L ${-half / 2} 0 L ${-half / 2} ${y} L ${half / 2} ${y} L ${half / 2} 0 L ${half} 0`;
-
-			case "myst":
-				// Wave curve
-				return `M ${-half} 0 Q ${-half / 2} ${curve * 0.5} 0 ${curve} Q ${half / 2} ${curve * 0.5} ${half} 0`;
-
-			case "echo":
-				// Minimal straight line with subtle curve
-				return `M ${-half} 0 Q 0 ${curve * 0.5} ${half} 0`;
-
+			}
 			default:
 				// Standard curve (minimal, analogue)
 				return `M ${-half} 0 Q 0 ${curve} ${half} 0`;
@@ -922,15 +904,6 @@ export default function Avatar({
 		const eyeYDelta = ny * 8; // increased from 6
 		const eyeScale = 1 + Math.abs(nx) * 0.05; // subtle scale on extreme movements
 
-		// Update pupil tracking state
-		if (supportsPupilTracking(variant)) {
-			// Smoothly dampen the input for pupils
-			setPupilOffset({
-				x: nx,
-				y: ny,
-			});
-		}
-
 		// Don't override scale if deep emotion is active
 		if (!isLongPressActiveRef.current) {
 			// Standard eyes
@@ -966,24 +939,6 @@ export default function Avatar({
 				0,
 				350,
 			);
-
-			// Top eye for Myst
-			if (variant === "myst" && topEyeRef.current) {
-				animateEye(
-					topEyeRef.current,
-					{
-						rx: target.rx,
-						ry: target.ry,
-						cy: 65 + eyeYDelta * 0.5, // Less movement for top eye
-						tilt: nx * 5,
-						scale: eyeScale,
-					},
-					0.4,
-					"power3.out",
-					0,
-					260,
-				);
-			}
 		}
 
 		// More expressive mouth tilt with overshoot
@@ -1150,15 +1105,10 @@ export default function Avatar({
 		const target = latestEyeTargetsRef.current;
 
 		// Eyes wide with bounce
-		// Include top eye for Myst
 		const eyesToAnimate: Array<{ ref: SVGElement | null; cx: number }> = [
 			{ ref: leftEyeRef.current, cx: 170 },
 			{ ref: rightEyeRef.current, cx: 350 },
 		];
-
-		if (variant === "myst" && topEyeRef.current) {
-			eyesToAnimate.push({ ref: topEyeRef.current, cx: 260 });
-		}
 
 		eyesToAnimate.forEach(({ ref, cx }) => {
 			if (!ref) return;

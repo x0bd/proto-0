@@ -171,9 +171,6 @@ export default function Home() {
 						"minimal",
 						"tron",
 						"analogue",
-						"myst",
-						"flux",
-						"echo",
 					];
 					const idx = variants.indexOf(prev);
 					const nextIdx = (idx + 1) % variants.length;
@@ -261,7 +258,7 @@ export default function Home() {
 		<div className="flex h-dvh w-full overflow-hidden bg-background font-sans relative">
 			{/* BACKGROUND & ATMOSPHERE */}
 			<div
-				className="absolute inset-0 w-full h-full text-foreground flex flex-col items-center justify-center transition-colors duration-500 bg-dot-pattern bg-dot-fade"
+				className="absolute inset-0 w-full h-full text-foreground flex flex-col items-center justify-center transition-colors duration-500"
 				onMouseMove={handlePointerMove}
 				onMouseLeave={handlePointerLeave}
 				onTouchMove={(e) => {
@@ -277,15 +274,13 @@ export default function Home() {
 				}}
 				onTouchEnd={handlePointerLeave}
 			>
-				{/* Background Gradient */}
-				<div className="absolute inset-0 bg-gradient-to-br from-background via-background to-muted/20" />
+				{/* Washi paper texture */}
+				<div className="absolute inset-0 bg-washi pointer-events-none" />
 
-				{/* Variant color aura — smooth.js style floating blob */}
+				{/* Faint variant color wash */}
 				<div
 					className="absolute inset-0 pointer-events-none transition-all duration-700"
-					style={{
-						background: `radial-gradient(ellipse 55% 45% at 50% 55%, ${variantGlow} 0%, transparent 70%)`,
-					}}
+					style={{ backgroundColor: `${variantColor}0a` }}
 				/>
 
 				{/* HEADER UI */}
@@ -381,7 +376,7 @@ export default function Home() {
 				>
 					<div
 						ref={avatarStageRef}
-						className="w-[90vw] md:w-[70vw] lg:w-[50vw] max-w-[700px] aspect-square flex items-center justify-center pointer-events-auto drop-shadow-2xl"
+						className="w-[95vw] md:w-[82vw] lg:w-[62vw] max-w-[820px] aspect-square flex items-center justify-center pointer-events-auto drop-shadow-2xl"
 					>
 						<Avatar
 							emotion={currentEmotion}

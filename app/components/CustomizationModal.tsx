@@ -19,9 +19,6 @@ const FACES: { id: FaceVariant; name: string; desc: string; kanji: string }[] =
 		{ id: "minimal", name: "Pure", desc: "Essential form", kanji: "純" },
 		{ id: "tron", name: "Digital", desc: "System grid", kanji: "数" },
 		{ id: "analogue", name: "Sketch", desc: "Hand drawn", kanji: "描" },
-		{ id: "myst", name: "Myst", desc: "Visionary", kanji: "霧" },
-		{ id: "flux", name: "Flux", desc: "Architect", kanji: "流" },
-		{ id: "echo", name: "Echo", desc: "Essence", kanji: "響" },
 	];
 
 function EyePreview({
@@ -36,28 +33,6 @@ function EyePreview({
 	const styleStroke = { fill: "none", stroke: color, strokeWidth: 1.5 };
 
 	switch (variant) {
-		case "myst":
-			return (
-				<svg viewBox="0 0 48 24" className="w-10 h-5">
-					<circle cx="24" cy="6" r="4" style={style} />
-					<circle cx="12" cy="18" r="4" style={style} />
-					<circle cx="36" cy="18" r="4" style={style} />
-				</svg>
-			);
-		case "flux":
-			return (
-				<svg viewBox="0 0 48 24" className="w-10 h-5">
-					<polygon points="12,6 18,18 6,18" style={style} />
-					<polygon points="36,6 42,18 30,18" style={style} />
-				</svg>
-			);
-		case "echo":
-			return (
-				<svg viewBox="0 0 48 24" className="w-10 h-5">
-					<circle cx="14" cy="12" r="3" style={style} />
-					<circle cx="34" cy="12" r="3" style={style} />
-				</svg>
-			);
 		case "minimal":
 			return (
 				<svg viewBox="0 0 48 24" className="w-10 h-5">
@@ -189,63 +164,99 @@ export const CustomizationModal = React.memo(function CustomizationModal({
 							<div className="relative z-10 px-4 sm:px-6 md:px-10 pb-6 sm:pb-8 md:pb-10">
 								<div className="space-y-2">
 									{FACES.map((item, i) => {
-										const isActive = currentVariant === item.id;
+										const isActive =
+											currentVariant === item.id;
 										const color = VARIANT_COLORS[item.id];
 										return (
 											<motion.button
 												key={item.id}
-												onClick={() => onVariantChange(item.id)}
-												initial={hasAnimated ? false : { opacity: 0, x: -20 }}
+												onClick={() =>
+													onVariantChange(item.id)
+												}
+												initial={
+													hasAnimated
+														? false
+														: { opacity: 0, x: -20 }
+												}
 												animate={{ opacity: 1, x: 0 }}
-												transition={hasAnimated ? { duration: 0.2 } : {
-													delay: i * 0.04,
-													type: "spring",
-													damping: 30,
-													stiffness: 300,
-												}}
+												transition={
+													hasAnimated
+														? { duration: 0.2 }
+														: {
+																delay: i * 0.04,
+																type: "spring",
+																damping: 30,
+																stiffness: 300,
+															}
+												}
 												className="group relative w-full flex items-center gap-3 sm:gap-4 md:gap-5 p-4 sm:p-5 rounded-[20px] sm:rounded-[24px] transition-all duration-300 text-left touch-manipulation border-2 hover:scale-[1.01] active:scale-[0.99]"
-												style={isActive ? {
-													backgroundColor: color,
-													borderColor: color,
-													boxShadow: `0 12px 32px -6px ${color}55, 0 4px 12px -2px ${color}33`,
-												} : {
-													backgroundColor: `${color}08`,
-													borderColor: `${color}35`,
-												}}
+												style={
+													isActive
+														? {
+																backgroundColor:
+																	color,
+																borderColor:
+																	color,
+																boxShadow: `0 12px 32px -6px ${color}55, 0 4px 12px -2px ${color}33`,
+															}
+														: {
+																backgroundColor: `${color}08`,
+																borderColor: `${color}35`,
+															}
+												}
 											>
 												{/* Kanji Watermark */}
 												<span
 													className="absolute right-6 text-7xl font-bold select-none"
-													style={{ color: isActive ? "rgba(255,255,255,0.12)" : `${color}14` }}
+													style={{
+														color: isActive
+															? "rgba(255,255,255,0.12)"
+															: `${color}14`,
+													}}
 												>
 													{item.kanji}
 												</span>
 
 												{/* Eye Preview */}
 												<div className="shrink-0 relative z-10">
-													<EyePreview variant={item.id} isActive={isActive} />
+													<EyePreview
+														variant={item.id}
+														isActive={isActive}
+													/>
 												</div>
 
 												{/* Text */}
 												<div className="flex-1 flex flex-col relative z-10">
 													<div className="flex items-baseline gap-3">
-														<span className={cn(
-															"text-[14px] font-bold tracking-tight logo-font",
-															isActive ? "text-white" : "text-foreground",
-														)}>
+														<span
+															className={cn(
+																"text-[14px] font-bold tracking-tight logo-font",
+																isActive
+																	? "text-white"
+																	: "text-foreground",
+															)}
+														>
 															{item.name}
 														</span>
 														<span
 															className="text-[9px] font-mono uppercase tracking-widest font-bold"
-															style={{ color: isActive ? "rgba(255,255,255,0.65)" : `${color}99` }}
+															style={{
+																color: isActive
+																	? "rgba(255,255,255,0.65)"
+																	: `${color}99`,
+															}}
 														>
 															{item.id.toUpperCase()}
 														</span>
 													</div>
-													<span className={cn(
-														"text-[11px] font-medium tracking-wide mt-0.5",
-														isActive ? "text-white/75" : "text-muted-foreground",
-													)}>
+													<span
+														className={cn(
+															"text-[11px] font-medium tracking-wide mt-0.5",
+															isActive
+																? "text-white/75"
+																: "text-muted-foreground",
+														)}
+													>
 														{item.desc}
 													</span>
 												</div>
@@ -264,8 +275,8 @@ export const CustomizationModal = React.memo(function CustomizationModal({
 								</div>
 							</div>
 
-						{/* Bottom Accent */}
-						<div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-[#FF6B6B] via-[#A78BFA] to-[#60A5FA]" />
+							{/* Bottom Accent */}
+							<div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-[#FF6B6B] via-[#FBBF24] to-[#06B6D4]" />
 						</motion.div>
 					</div>
 				</>
