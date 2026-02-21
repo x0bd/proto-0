@@ -3,11 +3,11 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 import {
-	IoVolumeHighOutline,
-	IoVolumeMuteOutline,
-	IoChevronBackOutline,
-	IoChevronForwardOutline,
-} from "react-icons/io5";
+	RiVolumeUpFill,
+	RiVolumeMuteFill,
+	RiArrowLeftSLine,
+	RiArrowRightSLine,
+} from "react-icons/ri";
 import { motion, AnimatePresence } from "motion/react";
 
 interface FloatingDockProps {
@@ -33,7 +33,7 @@ export function FloatingDock({
 	}, []);
 
 	return (
-		<div className="absolute bottom-4 sm:bottom-6 md:bottom-10 left-1/2 -translate-x-1/2 z-[60] flex flex-col items-center gap-2 sm:gap-3 w-full max-w-[calc(100vw-2rem)] px-4">
+		<div className="absolute bottom-4 sm:bottom-6 md:bottom-10 left-1/2 -translate-x-1/2 z-60 flex flex-col items-center gap-2 sm:gap-3 w-full max-w-[calc(100vw-2rem)] px-4">
 			{/* Swipe Hint */}
 			<AnimatePresence>
 				{showHint && (
@@ -49,15 +49,15 @@ export function FloatingDock({
 						className="flex items-center gap-2 sm:gap-2.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-background/95 border shadow-premium"
 						style={{ borderColor: `${accentColor}30` }}
 					>
-						<IoChevronBackOutline
-							className="size-3 sm:size-3.5 shrink-0"
+						<RiArrowLeftSLine
+							className="size-3.5 sm:size-4 shrink-0"
 							style={{ color: accentColor }}
 						/>
 						<span className="text-[9px] sm:text-[10px] font-mono uppercase tracking-[0.15em] text-foreground font-semibold whitespace-nowrap">
 							Swipe to change
 						</span>
-						<IoChevronForwardOutline
-							className="size-3 sm:size-3.5 shrink-0"
+						<RiArrowRightSLine
+							className="size-3.5 sm:size-4 shrink-0"
 							style={{ color: accentColor }}
 						/>
 					</motion.div>
@@ -92,9 +92,9 @@ export function FloatingDock({
 					title={voiceEnabled ? "Mute Voice" : "Enable Voice"}
 				>
 					{voiceEnabled ? (
-						<IoVolumeHighOutline className="size-4 sm:size-4.5" />
+						<RiVolumeUpFill className="size-[18px]" />
 					) : (
-						<IoVolumeMuteOutline className="size-4 sm:size-4.5" />
+						<RiVolumeMuteFill className="size-[18px]" />
 					)}
 					{/* Tooltip */}
 					<span className="absolute -top-11 left-1/2 -translate-x-1/2 px-2.5 py-1.5 bg-foreground/95 text-background rounded-lg border border-foreground/10 shadow-premium text-[9px] font-mono uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
@@ -117,7 +117,7 @@ export function FloatingDock({
 						Mood
 					</span>
 					<span
-						className="text-[10px] sm:text-[11px] font-bold tracking-[0.1em] truncate logo-font"
+						className="text-[10px] sm:text-[11px] font-bold tracking-widest truncate logo-font"
 						style={{ color: accentColor }}
 					>
 						{presetLabel}

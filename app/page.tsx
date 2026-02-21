@@ -7,11 +7,7 @@ import Avatar from "./components/Avatar";
 import { CustomizationModal } from "./components/CustomizationModal";
 import { DownloadButton } from "./components/DownloadButton";
 import { FloatingDock } from "@/components/floating-dock";
-import {
-	IoMoonOutline,
-	IoSettingsOutline,
-	IoSunnyOutline,
-} from "react-icons/io5";
+import { RiMoonFill, RiSunFill, RiSettings4Fill } from "react-icons/ri";
 import { cn } from "@/lib/utils";
 import { FaceVariant, EmotionState } from "./components/face/types";
 import { VARIANT_COLORS } from "./components/face/themes";
@@ -355,9 +351,9 @@ export default function Home() {
 						aria-label="Toggle theme"
 					>
 						{mounted && theme === "dark" ? (
-							<IoMoonOutline className="size-4 sm:size-4.5" />
+							<RiMoonFill className="size-[18px]" />
 						) : (
-							<IoSunnyOutline className="size-4 sm:size-4.5" />
+							<RiSunFill className="size-[18px]" />
 						)}
 					</motion.button>
 
@@ -379,7 +375,7 @@ export default function Home() {
 						}}
 						title="Settings"
 					>
-						<IoSettingsOutline className="size-4 sm:size-4.5" />
+						<RiSettings4Fill className="size-[18px]" />
 					</motion.button>
 				</div>
 
@@ -401,7 +397,7 @@ export default function Home() {
 				>
 					<div
 						ref={avatarStageRef}
-						className="w-[95vw] md:w-[82vw] lg:w-[62vw] max-w-[820px] aspect-square flex items-center justify-center pointer-events-auto drop-shadow-2xl"
+						className="w-[95vw] md:w-[82vw] lg:w-[62vw] max-w-[820px] aspect-square flex items-center justify-center pointer-events-auto"
 					>
 						<Avatar
 							emotion={currentEmotion}
@@ -438,7 +434,10 @@ export default function Home() {
 				/>
 
 				{/* Download Button */}
-				<DownloadButton targetRef={avatarStageRef} />
+				<DownloadButton
+					targetRef={avatarStageRef}
+					accentColor={accentColor}
+				/>
 			</div>
 		</div>
 	);
