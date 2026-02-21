@@ -6,19 +6,20 @@
 @theme inline {
 	--color-background: var(--background);
 	--color-foreground: var(--foreground);
-	
-	/* Glass & Air: Clean, modern Geist stack */
+
+	/* Playful type stack */
 	--font-sans: var(--font-geist-sans), system-ui, sans-serif;
 	--font-mono: var(--font-geist-mono), ui-monospace, monospace;
 	--font-display: "Doto", sans-serif;
+	--font-mochiy: "Mochiy Pop One", system-ui, sans-serif;
 	--font-carbon: var(--font-carbon), monospace;
-	
+
 	/* UI Elements */
 	--color-sidebar: var(--sidebar);
 	--color-sidebar-foreground: var(--sidebar-foreground);
 	--color-card: var(--card);
 	--color-card-foreground: var(--card-foreground);
-	
+
 	/* Primitive Colors */
 	--color-input: var(--input);
 	--color-border: var(--border);
@@ -30,7 +31,7 @@
 	--color-muted-foreground: var(--muted-foreground);
 	--color-accent: var(--accent);
 	--color-accent-foreground: var(--accent-foreground);
-	
+
 	/* Radius - Aggressive rounding for premium feel */
 	--radius-sm: 8px;
 	--radius-md: 16px;
@@ -40,61 +41,71 @@
 }
 
 :root {
-	--radius: 16px;
-	
-	/* Light Mode: Warm "Washi" Paper */
-	--background: #f8f8fa;
-	--foreground: #000000;
-	
+	--radius: 20px;
+
+	/* === LIGHT MODE: Warm Cream + Violet === */
+	--background: #fff8f0;
+	--foreground: #1c0a2e;
+
 	--card: #ffffff;
-	--card-foreground: #000000;
-	
-	--primary: #000000;
+	--card-foreground: #1c0a2e;
+
+	--primary: #7c3aed;
 	--primary-foreground: #ffffff;
-	
-	--secondary: #f4f4f5;
-	--secondary-foreground: #000000;
-	
-	--muted: #f4f4f5;
-	--muted-foreground: #71717a;
-	
-	--accent: #f4f4f5;
-	--accent-foreground: #18181b;
-	
-	--border: rgba(0, 0, 0, 0.08);
-	--input: rgba(0, 0, 0, 0.08);
-	--ring: #18181b;
-	
+
+	--secondary: #f3e8ff;
+	--secondary-foreground: #6d28d9;
+
+	--muted: #f5f0ff;
+	--muted-foreground: #7c6a9c;
+
+	--accent: #fff0f6;
+	--accent-foreground: #db2777;
+
+	--border: rgba(124, 58, 237, 0.14);
+	--input: rgba(124, 58, 237, 0.1);
+	--ring: #7c3aed;
+
 	--sidebar: var(--background);
 	--sidebar-foreground: var(--foreground);
+
+	/* Per-variant face color (updated by JS) */
+	--face-color: #7c3aed;
+	--face-glow: rgba(124, 58, 237, 0.35);
+	--face-bg-tint: rgba(124, 58, 237, 0.04);
 }
 
 .dark {
-	/* Dark Mode: Deep Space - Not pure black, slightly warm */
-	--background: hsl(240 10% 4%);
-	--foreground: #ffffff;
-	
-	--card: hsl(240 10% 6%);
-	--card-foreground: #ffffff;
-	
-	--primary: #ffffff;
-	--primary-foreground: #000000;
-	
-	--secondary: hsl(240 10% 8%);
-	--secondary-foreground: #ffffff;
-	
-	--muted: hsl(240 10% 10%);
-	--muted-foreground: #888888;
-	
-	--accent: hsl(240 10% 12%);
-	--accent-foreground: #ededed;
-	
-	--border: rgba(255, 255, 255, 0.08);
-	--input: rgba(255, 255, 255, 0.08);
-	--ring: #ededed;
-	
+	/* === DARK MODE: Deep Indigo === */
+	--background: hsl(246 30% 7%);
+	--foreground: #f0eeff;
+
+	--card: hsl(246 30% 10%);
+	--card-foreground: #f0eeff;
+
+	--primary: #a78bfa;
+	--primary-foreground: #1c0a2e;
+
+	--secondary: hsl(246 30% 14%);
+	--secondary-foreground: #c4b5fd;
+
+	--muted: hsl(246 30% 12%);
+	--muted-foreground: #a094c2;
+
+	--accent: hsl(280 30% 16%);
+	--accent-foreground: #f0eeff;
+
+	--border: rgba(167, 139, 250, 0.18);
+	--input: rgba(167, 139, 250, 0.12);
+	--ring: #a78bfa;
+
 	--sidebar: var(--background);
 	--sidebar-foreground: var(--foreground);
+
+	/* Per-variant face color (updated by JS) */
+	--face-color: #a78bfa;
+	--face-glow: rgba(167, 139, 250, 0.4);
+	--face-bg-tint: rgba(167, 139, 250, 0.06);
 }
 
 @layer base {
@@ -102,10 +113,20 @@
 		@apply border-border;
 	}
 	body {
-		@apply bg-background text-foreground antialiased selection:bg-foreground selection:text-background font-sans;
+		@apply bg-background text-foreground antialiased font-sans;
+		selection-color: #ffffff;
+		-webkit-font-smoothing: antialiased;
 		font-feature-settings: "ss01", "ss02", "cv01", "cv02";
 	}
-	
+	::selection {
+		background-color: #7c3aed;
+		color: #ffffff;
+	}
+	.dark ::selection {
+		background-color: #a78bfa;
+		color: #1c0a2e;
+	}
+
 	/* Premium Scrollbars */
 	::-webkit-scrollbar {
 		width: 6px;
@@ -119,65 +140,121 @@
 	}
 }
 
-/* === GLASS & AIR UTILITIES === */
+/* === PLAYFUL SHADOW UTILITIES === */
 
 @layer utilities {
-	/* Premium Shadow: Vercel-ish (crisp, layered, precise) */
+	/* Depth Shadow: Smooth.js-inspired colored lift */
 	.shadow-premium {
-		box-shadow: 
-			0 4px 24px -6px rgba(0, 0, 0, 0.08),
-			0 2px 8px -2px rgba(0, 0, 0, 0.04),
-			0 0 0 1px rgba(0, 0, 0, 0.04);
+		box-shadow:
+			0 20px 40px -10px rgba(124, 58, 237, 0.18),
+			0 8px 16px -4px rgba(124, 58, 237, 0.1),
+			inset 0 2px 4px rgba(255, 255, 255, 0.5);
 	}
 	.dark .shadow-premium {
-		box-shadow: 
-			0 8px 32px -8px rgba(0, 0, 0, 0.4),
-			0 4px 12px -2px rgba(0, 0, 0, 0.3),
-			0 0 0 1px rgba(255, 255, 255, 0.08),
-			inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+		box-shadow:
+			0 20px 40px -10px rgba(0, 0, 0, 0.5),
+			0 8px 16px -4px rgba(0, 0, 0, 0.3),
+			0 0 0 1px rgba(167, 139, 250, 0.15),
+			inset 0 1px 0 rgba(255, 255, 255, 0.06);
 	}
 
-	/* Zen Shadow: Sharper, for active states */
+	/* Playful Depth Shadows per emotion/variant */
+	.shadow-depth-purple {
+		box-shadow:
+			0 20px 40px -10px rgba(139, 92, 246, 0.4),
+			0 10px 20px -5px rgba(139, 92, 246, 0.2),
+			inset 0 2px 4px rgba(255, 255, 255, 0.3);
+	}
+	.shadow-depth-blue {
+		box-shadow:
+			0 20px 40px -10px rgba(59, 130, 246, 0.3),
+			0 10px 20px -5px rgba(59, 130, 246, 0.15),
+			inset 0 2px 4px rgba(255, 255, 255, 0.3);
+	}
+	.shadow-depth-coral {
+		box-shadow:
+			0 20px 40px -10px rgba(255, 107, 107, 0.35),
+			0 10px 20px -5px rgba(255, 107, 107, 0.18),
+			inset 0 2px 4px rgba(255, 255, 255, 0.3);
+	}
+	.shadow-depth-amber {
+		box-shadow:
+			0 20px 40px -10px rgba(251, 191, 36, 0.35),
+			0 10px 20px -5px rgba(251, 191, 36, 0.15),
+			inset 0 2px 4px rgba(255, 255, 255, 0.3);
+	}
+	.shadow-depth-orange {
+		box-shadow:
+			0 20px 40px -10px rgba(251, 146, 60, 0.35),
+			0 10px 20px -5px rgba(251, 146, 60, 0.15),
+			inset 0 2px 4px rgba(255, 255, 255, 0.3);
+	}
+	.shadow-depth-cyan {
+		box-shadow:
+			0 20px 40px -10px rgba(6, 182, 212, 0.3),
+			0 10px 20px -5px rgba(6, 182, 212, 0.15),
+			inset 0 2px 4px rgba(255, 255, 255, 0.3);
+	}
+
+	/* Zen Shadow */
 	.shadow-zen {
-		box-shadow: 
-			0 1px 2px 0 rgba(0, 0, 0, 0.05),
-			0 0 0 1px rgba(0, 0, 0, 0.04);
+		box-shadow:
+			0 2px 8px -1px rgba(124, 58, 237, 0.12),
+			0 0 0 1px rgba(124, 58, 237, 0.08);
 	}
 	.dark .shadow-zen {
-		box-shadow: 
-			0 1px 3px 0 rgba(0, 0, 0, 0.4),
-			0 0 0 1px rgba(255, 255, 255, 0.05);
+		box-shadow:
+			0 2px 8px -1px rgba(0, 0, 0, 0.4),
+			0 0 0 1px rgba(167, 139, 250, 0.1);
 	}
 
-	/* Matte Glass: Frosted plastic feel, not shiny glass */
+	/* Matte Glass */
 	.glass-card {
-		@apply bg-card/60 backdrop-blur-2xl border-0; /* No border, just mass */
-		box-shadow: 
-			0 8px 32px -4px rgba(0, 0, 0, 0.08),
-			0 2px 4px -1px rgba(0, 0, 0, 0.04);
+		@apply bg-card/70 backdrop-blur-2xl border-0;
+		box-shadow:
+			0 8px 32px -4px rgba(124, 58, 237, 0.1),
+			0 2px 4px -1px rgba(124, 58, 237, 0.06),
+			inset 0 1px 0 rgba(255, 255, 255, 0.6);
 	}
 	.dark .glass-card {
-		@apply bg-card/40;
-		box-shadow: 
+		@apply bg-card/50;
+		box-shadow:
 			0 8px 32px -4px rgba(0, 0, 0, 0.4),
 			0 2px 4px -1px rgba(0, 0, 0, 0.2),
-			inset 0 1px 0 0 rgba(255, 255, 255, 0.03);
+			inset 0 1px 0 rgba(255, 255, 255, 0.04);
 	}
 
-	/* Glass Tech: Frosted technical feel */
+	/* Glass Tech */
 	.glass-tech {
 		@apply backdrop-blur-xl bg-background/80 border-0;
 	}
 
-	/* Tactile Click: Deep press effect */
+	/* Tactile Click: Deep press */
 	.click-tactic:active {
-		transform: scale(0.96);
-		opacity: 0.8;
+		transform: scale(0.94);
+		opacity: 0.85;
 	}
 
-	/* Touch Manipulation: Better mobile touch responsiveness */
+	/* Touch */
 	.touch-manipulation {
 		touch-action: manipulation;
+	}
+
+	/* Mochiy Pop One display font */
+	.font-mochiy {
+		font-family: "Mochiy Pop One", system-ui, sans-serif;
+	}
+
+	/* Display/Hero text style */
+	.text-display {
+		font-family: "Mochiy Pop One", system-ui, sans-serif;
+		letter-spacing: -0.01em;
+		line-height: 0.95;
+	}
+
+	/* Tight bold text (smooth.js style) */
+	.tight-text {
+		letter-spacing: -0.04em;
 	}
 }
 
@@ -200,25 +277,42 @@
 	mix-blend-mode: overlay;
 }
 
-/* Vercel Dot Pattern - Stronger Contrast */
+/* Playful Dot Pattern - violet-tinted */
 .bg-dot-pattern {
-	background-image: radial-gradient(rgba(0, 0, 0, 0.45) 1px, transparent 1px);
+	background-image: radial-gradient(
+		rgba(124, 58, 237, 0.35) 1px,
+		transparent 1px
+	);
 	background-size: 24px 24px;
 }
 .dark .bg-dot-pattern {
-	background-image: radial-gradient(rgba(255, 255, 255, 0.45) 1px, transparent 1px);
+	background-image: radial-gradient(
+		rgba(167, 139, 250, 0.3) 1px,
+		transparent 1px
+	);
 }
 
 /* Fade out dots towards the edges - Reduced fade */
 .bg-dot-fade {
 	mask-image: radial-gradient(circle at center, black 60%, transparent 100%);
-	-webkit-mask-image: radial-gradient(circle at center, black 60%, transparent 100%);
+	-webkit-mask-image: radial-gradient(
+		circle at center,
+		black 60%,
+		transparent 100%
+	);
 }
 
 /* Breathing Aura: Pulsing background */
 @keyframes breathe {
-	0%, 100% { opacity: 0.3; transform: scale(1); }
-	50% { opacity: 0.5; transform: scale(1.05); }
+	0%,
+	100% {
+		opacity: 0.3;
+		transform: scale(1);
+	}
+	50% {
+		opacity: 0.5;
+		transform: scale(1.05);
+	}
 }
 .animate-breathe {
 	animation: breathe 8s ease-in-out infinite;
@@ -234,27 +328,35 @@
 
 /* Micro Header: The signature label style */
 .text-micro {
-	@apply text-[10px] uppercase tracking-[0.2em] font-medium text-muted-foreground;
+	@apply text-[10px] uppercase tracking-[0.2em] font-semibold text-muted-foreground;
 }
 
-/* Metric Display: Large numbers with thin weight */
+/* Metric Display: Large numbers */
 .text-metric {
-	@apply text-4xl font-light tracking-tight text-foreground;
+	@apply text-4xl font-black tracking-tight text-foreground;
 }
 
-/* Logo lockup: Carbon-only mark */
+/* Logo lockup: Mochiy Pop One */
 .logo-font {
-	font-family: var(--font-carbon);
+	font-family: "Mochiy Pop One", var(--font-carbon), monospace;
+}
+
+/* Huge Hero Text */
+.text-hero {
+	font-family: "Mochiy Pop One", system-ui, sans-serif;
+	font-size: clamp(3.5rem, 10vw, 7rem);
+	line-height: 0.9;
+	letter-spacing: -0.02em;
 }
 
 /* === ELECTRIC PRESET UTILITIES === */
 @layer utilities {
-    .electric-border {
-        filter: url(#electric-turbulence);
-        border-color: #dd8448; /* Fallback/Base */
-    }
-    
-    .electric-hue {
-        filter: url(#electric-hue);
-    }
+	.electric-border {
+		filter: url(#electric-turbulence);
+		border-color: #dd8448; /* Fallback/Base */
+	}
+
+	.electric-hue {
+		filter: url(#electric-hue);
+	}
 }

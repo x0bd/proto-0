@@ -6,8 +6,12 @@ import { gsap } from "gsap";
 import { Eyes } from "./face/eyes/index";
 import { Mouth } from "./face/Mouth";
 import { Ears } from "./face/Ears";
-import { FaceVariant, supportsPupilTracking, isLegacyVariant } from "./face/types";
-import { applyAgentTheme, getAgentTheme } from "./face/themes";
+import {
+	FaceVariant,
+	supportsPupilTracking,
+	isLegacyVariant,
+} from "./face/types";
+import { applyAgentTheme, getAgentTheme, VARIANT_COLORS } from "./face/themes";
 import { EYE_GEOMETRIES } from "./face/eyes/config";
 import type { AudioLevels } from "@/hooks/useAudioAnalysis";
 
@@ -49,23 +53,23 @@ export default function Avatar({
 	// Helper for mouth geometry
 	const generateMouthPath = (width: number, curve: number) => {
 		const half = width / 2;
-		
+
 		switch (variant) {
 			case "tron":
-			case "flux": 
+			case "flux":
 				// Angular/Geometric path
 				const y = curve / 2;
 				if (variant === "flux") {
 					// Flux: purely angular polyline
-					return `M ${-half} 0 L ${-half/3} ${curve/2} L ${half/3} ${curve/2} L ${half} 0`;
+					return `M ${-half} 0 L ${-half / 3} ${curve / 2} L ${half / 3} ${curve / 2} L ${half} 0`;
 				}
 				// Tron: Stepped
-				return `M ${-half} 0 L ${-half/2} 0 L ${-half/2} ${y} L ${half/2} ${y} L ${half/2} 0 L ${half} 0`;
-			
+				return `M ${-half} 0 L ${-half / 2} 0 L ${-half / 2} ${y} L ${half / 2} ${y} L ${half / 2} 0 L ${half} 0`;
+
 			case "myst":
 				// Wave curve
-				return `M ${-half} 0 Q ${-half/2} ${curve * 0.5} 0 ${curve} Q ${half/2} ${curve * 0.5} ${half} 0`;
-			
+				return `M ${-half} 0 Q ${-half / 2} ${curve * 0.5} 0 ${curve} Q ${half / 2} ${curve * 0.5} ${half} 0`;
+
 			case "echo":
 				// Minimal straight line with subtle curve
 				return `M ${-half} 0 Q 0 ${curve * 0.5} ${half} 0`;
@@ -171,34 +175,34 @@ export default function Avatar({
 				const glitchLoop = () => {
 					// Random delay between glitches
 					const delay = gsap.utils.random(0.5, 2.5);
-					
+
 					breathingTL.current = gsap.timeline({
-						onComplete: glitchLoop
+						onComplete: glitchLoop,
 					});
 
 					// 1. Tiny position shift
-					breathingTL.current.to(containerRef.current, {
-						x: gsap.utils.random(-2, 2),
-						y: gsap.utils.random(-2, 2),
-						duration: 0, // instant
-					})
-					// 2. Hold
-					.to(containerRef.current, {
-						duration: 0.1,
-					})
-					// 3. Reset
-					.to(containerRef.current, {
-						x: 0,
-						y: 0,
-						duration: 0,
-					})
-					// 4. Wait
-					.to(containerRef.current, {
-						duration: delay
-					});
+					breathingTL.current
+						.to(containerRef.current, {
+							x: gsap.utils.random(-2, 2),
+							y: gsap.utils.random(-2, 2),
+							duration: 0, // instant
+						})
+						// 2. Hold
+						.to(containerRef.current, {
+							duration: 0.1,
+						})
+						// 3. Reset
+						.to(containerRef.current, {
+							x: 0,
+							y: 0,
+							duration: 0,
+						})
+						// 4. Wait
+						.to(containerRef.current, {
+							duration: delay,
+						});
 				};
 				glitchLoop();
-
 			} else if (variant === "analogue") {
 				// Analogue: No breathing, just line boil (handled by boilTicker)
 				// Maybe very slow drift?
@@ -206,7 +210,7 @@ export default function Avatar({
 				breathingTL.current.to(containerRef.current, {
 					rotation: 1, // very subtle tilt
 					duration: 4,
-					ease: "sine.inOut"
+					ease: "sine.inOut",
 				});
 			} else {
 				// Standard Organic Breathing
@@ -226,121 +230,127 @@ export default function Avatar({
 		}
 	}
 
-    // Voice Reactivity: Multi-band audio-driven animation
-    useEffect(() => {
-        if (!mouthRef.current) return;
-        
-        // Determine effective audio levels
-        // Priority: audioLevels > voiceLevel (legacy fallback)
-        const hasAudioLevels = audioLevels && audioLevels.overall > 0.01;
-        const hasVoiceLevel = voiceEnabled && voiceLevel > 0.01;
-        const isSpeaking = hasAudioLevels || hasVoiceLevel;
-        
-        if (!isSpeaking) return; // Let emotion-driven animation take over
-        
-        const base = latestMouthRef.current;
-        
-        // Calculate target values from audio bands
-        let targetCurve = base.curve;
-        let targetWidth = base.width;
-        let mouthJitter = 0;
-        
-        if (hasAudioLevels) {
-            // Multi-band mouth modulation
-            const { bass, lowMid, mid, highMid } = audioLevels;
-            
-            // Primary opening from low-mid (vowels, speech fundamentals)
-            targetCurve += lowMid * 55 + bass * 15;
-            
-            // Width variation from mid (consonants, formants)
-            targetWidth += mid * 12 - lowMid * 8;
-            
-            // Subtle rotation jitter from high-mid (adds organic feel)
-            mouthJitter = (highMid - 0.3) * 3;
-        } else {
-            // Legacy fallback: simple voiceLevel modulation
-            targetCurve += voiceLevel * 60;
-        }
+	// Voice Reactivity: Multi-band audio-driven animation
+	useEffect(() => {
+		if (!mouthRef.current) return;
 
-        const pathData = generateMouthPath(targetWidth, targetCurve);
-        
-        // Fast tween for responsiveness
-        gsap.to(mouthRef.current, {
-            attr: { d: pathData },
-            duration: 0.04,
-            ease: "none",
-            overwrite: "auto"
-        });
-        
-        // Apply jitter to mouth group if we have multi-band data
-        if (mouthGroupRef.current && hasAudioLevels && Math.abs(mouthJitter) > 0.1) {
-            gsap.to(mouthGroupRef.current, {
-                rotation: base.tilt + mouthJitter,
-                duration: 0.06,
-                ease: "none",
-                overwrite: "auto"
-            });
-        }
+		// Determine effective audio levels
+		// Priority: audioLevels > voiceLevel (legacy fallback)
+		const hasAudioLevels = audioLevels && audioLevels.overall > 0.01;
+		const hasVoiceLevel = voiceEnabled && voiceLevel > 0.01;
+		const isSpeaking = hasAudioLevels || hasVoiceLevel;
 
-    }, [voiceLevel, voiceEnabled, audioLevels, generateMouthPath]);
+		if (!isSpeaking) return; // Let emotion-driven animation take over
 
-    // Eye Reactivity: Subtle pulse from bass, micro-glances from presence
-    useEffect(() => {
-        if (!audioLevels || audioLevels.overall < 0.05) return;
-        if (!leftEyeRef.current || !rightEyeRef.current) return;
-        
-        const { bass, highMid, presence } = audioLevels;
-        const target = latestEyeTargetsRef.current;
-        
-        // Subtle scale pulse from bass (0.98 - 1.02 range)
-        const scalePulse = 1 + (bass - 0.3) * 0.03;
-        
-        // Very subtle vertical movement from high frequencies
-        const yPulse = highMid * 1.5;
+		const base = latestMouthRef.current;
 
-        // Apply to both eyes
-        [{ ref: leftEyeRef, cx: 170, tiltSign: -1 }, { ref: rightEyeRef, cx: 350, tiltSign: 1 }].forEach(({ ref, cx, tiltSign }) => {
-            if (!ref.current) return;
-            
-            animateEye(
-                ref.current,
-                {
-                    rx: target.rx,
-                    ry: target.ry,
-                    cy: target.cy - yPulse,
-                    tilt: target.tilt * tiltSign,
-                    scale: scalePulse,
-                },
-                0.05,
-                "none",
-                0,
-                cx
-            );
-        });
-        
-        // Trigger micro-glance on presence spikes (randomly)
-        if (presence > 0.6 && Math.random() < 0.02) {
-            performGlance();
-        }
-    }, [audioLevels]);
+		// Calculate target values from audio bands
+		let targetCurve = base.curve;
+		let targetWidth = base.width;
+		let mouthJitter = 0;
 
-    // Container Reactivity: Bass-modulated breathing depth
-    useEffect(() => {
-        if (!audioLevels || !containerRef.current) return;
-        if (audioLevels.overall < 0.1) return;
-        
-        const { bass } = audioLevels;
-        
-        // Subtle scale modulation from bass
-        const scaleOffset = bass * 0.008;
-        
-        gsap.to(containerRef.current, {
-            scale: 1 + scaleOffset,
-            duration: 0.08,
-            ease: "none",
-            overwrite: "auto"
-        });
-    }, [audioLevels]);
+		if (hasAudioLevels) {
+			// Multi-band mouth modulation
+			const { bass, lowMid, mid, highMid } = audioLevels;
+
+			// Primary opening from low-mid (vowels, speech fundamentals)
+			targetCurve += lowMid * 55 + bass * 15;
+
+			// Width variation from mid (consonants, formants)
+			targetWidth += mid * 12 - lowMid * 8;
+
+			// Subtle rotation jitter from high-mid (adds organic feel)
+			mouthJitter = (highMid - 0.3) * 3;
+		} else {
+			// Legacy fallback: simple voiceLevel modulation
+			targetCurve += voiceLevel * 60;
+		}
+
+		const pathData = generateMouthPath(targetWidth, targetCurve);
+
+		// Fast tween for responsiveness
+		gsap.to(mouthRef.current, {
+			attr: { d: pathData },
+			duration: 0.04,
+			ease: "none",
+			overwrite: "auto",
+		});
+
+		// Apply jitter to mouth group if we have multi-band data
+		if (
+			mouthGroupRef.current &&
+			hasAudioLevels &&
+			Math.abs(mouthJitter) > 0.1
+		) {
+			gsap.to(mouthGroupRef.current, {
+				rotation: base.tilt + mouthJitter,
+				duration: 0.06,
+				ease: "none",
+				overwrite: "auto",
+			});
+		}
+	}, [voiceLevel, voiceEnabled, audioLevels, generateMouthPath]);
+
+	// Eye Reactivity: Subtle pulse from bass, micro-glances from presence
+	useEffect(() => {
+		if (!audioLevels || audioLevels.overall < 0.05) return;
+		if (!leftEyeRef.current || !rightEyeRef.current) return;
+
+		const { bass, highMid, presence } = audioLevels;
+		const target = latestEyeTargetsRef.current;
+
+		// Subtle scale pulse from bass (0.98 - 1.02 range)
+		const scalePulse = 1 + (bass - 0.3) * 0.03;
+
+		// Very subtle vertical movement from high frequencies
+		const yPulse = highMid * 1.5;
+
+		// Apply to both eyes
+		[
+			{ ref: leftEyeRef, cx: 170, tiltSign: -1 },
+			{ ref: rightEyeRef, cx: 350, tiltSign: 1 },
+		].forEach(({ ref, cx, tiltSign }) => {
+			if (!ref.current) return;
+
+			animateEye(
+				ref.current,
+				{
+					rx: target.rx,
+					ry: target.ry,
+					cy: target.cy - yPulse,
+					tilt: target.tilt * tiltSign,
+					scale: scalePulse,
+				},
+				0.05,
+				"none",
+				0,
+				cx,
+			);
+		});
+
+		// Trigger micro-glance on presence spikes (randomly)
+		if (presence > 0.6 && Math.random() < 0.02) {
+			performGlance();
+		}
+	}, [audioLevels]);
+
+	// Container Reactivity: Bass-modulated breathing depth
+	useEffect(() => {
+		if (!audioLevels || !containerRef.current) return;
+		if (audioLevels.overall < 0.1) return;
+
+		const { bass } = audioLevels;
+
+		// Subtle scale modulation from bass
+		const scaleOffset = bass * 0.008;
+
+		gsap.to(containerRef.current, {
+			scale: 1 + scaleOffset,
+			duration: 0.08,
+			ease: "none",
+			overwrite: "auto",
+		});
+	}, [audioLevels]);
 
 	// Animation Helper to bridge Ellipse (Minimal) vs Rect (Tron) geometry
 	// Animation Helper to bridge different eye geometries
@@ -357,18 +367,18 @@ export default function Avatar({
 		duration: number,
 		ease: string = "power2.out",
 		delay: number = 0,
-		cxOrigin: number // Legacy param, still useful for some logic
+		cxOrigin: number, // Legacy param, still useful for some logic
 	) {
 		if (!target) return;
 
 		const { rx, ry, cy, tilt = 0, scale = 1, xOffset = 0 } = params;
-		
+
 		// Determine easing
 		let finalEase = ease;
 		if (variant === "tron" && ease.startsWith("power")) {
 			finalEase = "steps(5)";
 		} else if (variant === "analogue" && ease.startsWith("power")) {
-			finalEase = "steps(12)"; 
+			finalEase = "steps(12)";
 		}
 
 		const tagName = target.tagName.toLowerCase();
@@ -381,7 +391,7 @@ export default function Avatar({
 					height: ry * 2,
 					x: cxOrigin - rx + xOffset,
 					y: cy - ry,
-					rx: 4, 
+					rx: 4,
 					ry: 4,
 				},
 				rotation: tilt,
@@ -398,13 +408,13 @@ export default function Avatar({
 			const geom = EYE_GEOMETRIES[variant] || EYE_GEOMETRIES["minimal"];
 			// Assuming left/right/top distinction can be inferred or we just use leftCy as approx base for vertical movement
 			// If we really need precision, we'd need to know WHICH eye this is.
-			// Currently animateEye doesn't know. 
+			// Currently animateEye doesn't know.
 			// But usually eyes move together vertically.
 			// Let's use leftCy as the "zero" point.
 			const baseCy = geom?.leftCy ?? 105;
-			
+
 			const deltaY = cy - baseCy;
-			const deltaX = (xOffset || 0); // xOffset is usually 0 unless glancing
+			const deltaX = xOffset || 0; // xOffset is usually 0 unless glancing
 
 			gsap.to(target, {
 				y: deltaY,
@@ -419,7 +429,7 @@ export default function Avatar({
 		} else if (tagName === "circle") {
 			// Echo, Myst use <circle>
 			const r = (rx + ry) / 2;
-			
+
 			gsap.to(target, {
 				attr: {
 					r: r,
@@ -490,7 +500,7 @@ export default function Avatar({
 				0.4,
 				"back.out(1.5)",
 				0,
-				cx
+				cx,
 			);
 		});
 	}
@@ -528,17 +538,22 @@ export default function Avatar({
 				0.3,
 				"power2.out",
 				0,
-				cx
+				cx,
 			);
 		});
 	}
 
-
-
 	function handleEyeHover(eye: "left" | "right" | "top") {
 		if (eye === "top") {
 			if (topEyeRef.current) {
-				animateEye(topEyeRef.current, { ...latestEyeTargetsRef.current, scale: 1.1 }, 0.2, "back.out(1.5)", 0, 260);
+				animateEye(
+					topEyeRef.current,
+					{ ...latestEyeTargetsRef.current, scale: 1.1 },
+					0.2,
+					"back.out(1.5)",
+					0,
+					260,
+				);
 			}
 			return;
 		}
@@ -558,14 +573,21 @@ export default function Avatar({
 			0.2,
 			"back.out(1.5)",
 			0,
-			cx
+			cx,
 		);
 	}
 
 	function handleEyeHoverEnd(eye: "left" | "right" | "top") {
 		if (eye === "top") {
 			if (topEyeRef.current) {
-				animateEye(topEyeRef.current, { ...latestEyeTargetsRef.current, scale: 1 }, 0.25, "power2.out", 0, 260);
+				animateEye(
+					topEyeRef.current,
+					{ ...latestEyeTargetsRef.current, scale: 1 },
+					0.25,
+					"power2.out",
+					0,
+					260,
+				);
 			}
 			return;
 		}
@@ -585,7 +607,7 @@ export default function Avatar({
 			0.25,
 			"power2.out",
 			0,
-			cx
+			cx,
 		);
 	}
 
@@ -706,7 +728,7 @@ export default function Avatar({
 			0.75,
 			"power2.out",
 			0,
-			170
+			170,
 		);
 
 		// Animate right eye with slight delay
@@ -721,7 +743,7 @@ export default function Avatar({
 			0.75,
 			"power2.out",
 			stagger,
-			350
+			350,
 		);
 
 		// Save latest eye targets for idle (blink/glance)
@@ -783,7 +805,7 @@ export default function Avatar({
 				blinkDur,
 				variant === "tron" ? "steps(2)" : "power1.in", // Digital blink
 				0,
-				cx
+				cx,
 			);
 		});
 
@@ -802,7 +824,7 @@ export default function Avatar({
 				0.12,
 				variant === "tron" ? "steps(3)" : "power2.out",
 				reopenDelay,
-				cx
+				cx,
 			);
 		});
 	}
@@ -868,7 +890,7 @@ export default function Avatar({
 
 	// Enhanced cursor/touch tracking with playful movements
 	function handlePointerMove(
-		e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>
+		e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>,
 	) {
 		if (!containerRef.current) return;
 		// find the svg element once
@@ -903,9 +925,9 @@ export default function Avatar({
 		// Update pupil tracking state
 		if (supportsPupilTracking(variant)) {
 			// Smoothly dampen the input for pupils
-			setPupilOffset({ 
-				x: nx, 
-				y: ny 
+			setPupilOffset({
+				x: nx,
+				y: ny,
 			});
 		}
 
@@ -927,7 +949,7 @@ export default function Avatar({
 				0.4,
 				"power3.out",
 				0,
-				170
+				170,
 			);
 
 			animateEye(
@@ -942,9 +964,9 @@ export default function Avatar({
 				0.4,
 				"power3.out",
 				0,
-				350
+				350,
 			);
-			
+
 			// Top eye for Myst
 			if (variant === "myst" && topEyeRef.current) {
 				animateEye(
@@ -959,7 +981,7 @@ export default function Avatar({
 					0.4,
 					"power3.out",
 					0,
-					260
+					260,
 				);
 			}
 		}
@@ -1017,7 +1039,7 @@ export default function Avatar({
 			0.6,
 			"power3.out",
 			0,
-			170
+			170,
 		);
 
 		animateEye(
@@ -1032,7 +1054,7 @@ export default function Avatar({
 			0.6,
 			"power3.out",
 			0,
-			350
+			350,
 		);
 
 		if (mouthGroupRef.current)
@@ -1054,7 +1076,7 @@ export default function Avatar({
 	// Playful interactions
 	function performWink(eye: "left" | "right" | "top") {
 		triggerHaptic(10); // Light tick
-		
+
 		if (eye === "top") {
 			// Basic blink for top eye if it exists
 			if (topEyeRef.current) {
@@ -1062,10 +1084,10 @@ export default function Avatar({
 				animateEye(
 					topEyeRef.current,
 					{ ...target, scale: 0.1 },
-					0.1, 
-					"power2.in", 
-					0, 
-					260
+					0.1,
+					"power2.in",
+					0,
+					260,
 				);
 				animateEye(
 					topEyeRef.current,
@@ -1073,7 +1095,7 @@ export default function Avatar({
 					0.15,
 					"back.out(2)",
 					0.1,
-					260
+					260,
 				);
 			}
 			return;
@@ -1099,7 +1121,7 @@ export default function Avatar({
 			0.1,
 			variant === "tron" ? "steps(2)" : "power2.in",
 			0,
-			cx
+			cx,
 		);
 		// Note: scale: 0.7 passed to animateEye applies to both X and Y if number.
 		// Original code had scaleX: 0.7. animateEye takes `scale` as number.
@@ -1119,7 +1141,7 @@ export default function Avatar({
 			0.15,
 			variant === "tron" ? "steps(3)" : "back.out(2)",
 			0.1, // delay
-			cx
+			cx,
 		);
 	}
 
@@ -1129,9 +1151,9 @@ export default function Avatar({
 
 		// Eyes wide with bounce
 		// Include top eye for Myst
-		const eyesToAnimate: Array<{ ref: SVGElement | null, cx: number }> = [
+		const eyesToAnimate: Array<{ ref: SVGElement | null; cx: number }> = [
 			{ ref: leftEyeRef.current, cx: 170 },
-			{ ref: rightEyeRef.current, cx: 350 }
+			{ ref: rightEyeRef.current, cx: 350 },
 		];
 
 		if (variant === "myst" && topEyeRef.current) {
@@ -1152,7 +1174,7 @@ export default function Avatar({
 				0.2,
 				"back.out(2)",
 				0,
-				cx
+				cx,
 			);
 
 			// Return
@@ -1167,7 +1189,7 @@ export default function Avatar({
 				0.3,
 				"elastic.out(1, 0.5)",
 				0.2, // delay
-				cx
+				cx,
 			);
 		});
 
@@ -1183,16 +1205,20 @@ export default function Avatar({
 						duration: 0.2,
 						ease: "back.out(2)",
 					},
-					0
+					0,
 				)
-				.to(mouthRef.current, {
-					attr: {
-						d: generateMouthPath(m.width, m.curve),
+				.to(
+					mouthRef.current,
+					{
+						attr: {
+							d: generateMouthPath(m.width, m.curve),
+						},
+						duration: 0.4,
+						ease: "power2.out",
 					},
-					duration: 0.4,
-					ease: "power2.out",
-				}, 0.5);
-				
+					0.5,
+				);
+
 			// Tilt entire mouth slightly up
 			gsap.to(mouthGroupRef.current, {
 				y: -5,
@@ -1280,15 +1306,19 @@ export default function Avatar({
 					// but we can manipulate DOM directly.
 					// Actually 'seed' is an attribute.
 					const newSeed = Math.floor(Math.random() * 100);
-					turbulenceRef.current.setAttribute("seed", newSeed.toString());
+					turbulenceRef.current.setAttribute(
+						"seed",
+						newSeed.toString(),
+					);
 				}
 			};
-			// Run at reduced rate? 
+			// Run at reduced rate?
 			// GSAP ticker runs at raf. We can throttle.
 			let frameCount = 0;
 			const throttledTicker = () => {
 				frameCount++;
-				if (frameCount % 5 === 0) { // ~12fps
+				if (frameCount % 5 === 0) {
+					// ~12fps
 					boilTicker();
 				}
 			};
@@ -1390,6 +1420,7 @@ export default function Avatar({
 			<div
 				ref={containerRef}
 				className="relative group cursor-pointer w-full"
+				style={{ color: VARIANT_COLORS[variant] }}
 				onMouseMove={handlePointerMove}
 				onMouseLeave={handlePointerLeave}
 				onMouseDown={handlePointerDown}
@@ -1399,7 +1430,6 @@ export default function Avatar({
 				onTouchCancel={handlePointerCancel}
 				onTouchMove={handlePointerMove}
 			>
-
 				<svg
 					ref={svgBoxRef}
 					viewBox="0 -35 520 350"
