@@ -99,13 +99,13 @@ export const CustomizationModal = React.memo(function CustomizationModal({
         <AnimatePresence>
             {isOpen && (
                 <>
-                    {/* Backdrop - Solid, no blur */}
+                    {/* Backdrop - Vercel Frosted Glass */}
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-                        className="fixed inset-0 z-[100] bg-background/95"
+                        className="fixed inset-0 z-[100] bg-background/80 backdrop-blur-md"
                         onClick={onClose}
                     />
 
@@ -146,7 +146,7 @@ export const CustomizationModal = React.memo(function CustomizationModal({
                                 </div>
                                 <button
                                     onClick={onClose}
-                                    className="size-9 sm:size-10 rounded-full flex items-center justify-center text-muted-foreground/60 hover:text-foreground hover:bg-foreground/5 transition-all duration-200 active:scale-95 touch-manipulation shrink-0"
+                                    className="size-9 sm:size-10 rounded-full flex items-center justify-center border border-transparent hover:border-foreground/10 text-muted-foreground/60 hover:text-foreground hover:bg-foreground/5 transition-all duration-300 active:scale-95 touch-manipulation shrink-0"
                                 >
                                     <IoCloseOutline className="size-4 sm:size-5" />
                                 </button>
@@ -170,11 +170,11 @@ export const CustomizationModal = React.memo(function CustomizationModal({
                                                     stiffness: 300
                                                 }}
                                                 className={cn(
-                                                    "group relative w-full flex items-center gap-3 sm:gap-4 md:gap-5 p-4 sm:p-5 rounded-[20px] sm:rounded-[24px] transition-all duration-200 text-left touch-manipulation",
+                                                    "group relative w-full flex items-center gap-3 sm:gap-4 md:gap-5 p-4 sm:p-5 rounded-[20px] sm:rounded-[24px] transition-all duration-300 text-left touch-manipulation",
                                                     "hover:scale-[1.01] active:scale-[0.99]",
                                                     isActive 
                                                         ? "bg-foreground text-background shadow-lg" 
-                                                        : "bg-transparent hover:bg-foreground/3 border border-foreground/5 hover:border-foreground/10 text-foreground"
+                                                        : "bg-transparent hover:bg-foreground/5 border border-foreground/5 hover:border-foreground/10 text-foreground"
                                                 )}
                                             >
                                                 {/* Kanji Watermark */}

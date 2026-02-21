@@ -208,8 +208,9 @@ export function DownloadButton({ targetRef }: DownloadButtonProps) {
                             onClick={handleDownloadPNG}
                             disabled={isExporting}
                             className={cn(
-                                "flex items-center gap-3 sm:gap-3.5 px-4 sm:px-5 py-2.5 sm:py-3 rounded-[18px] sm:rounded-[20px] bg-background border border-foreground/5 hover:border-foreground/10 transition-all duration-200 text-[12px] sm:text-[13px] font-medium shadow-premium group w-40 sm:w-44 touch-manipulation",
-                                "hover:bg-foreground/3 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                                "flex items-center gap-3 px-4 py-2.5 rounded-xl bg-background/95 backdrop-blur-md border border-foreground/5 hover:border-foreground/10 hover:bg-foreground/5 transition-all text-sm font-medium shadow-premium group w-40",
+                                "sm:gap-3.5 sm:px-5 sm:py-3 sm:rounded-[20px] sm:text-[13px] sm:w-44 touch-manipulation",
+                                "active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
                             )}
                         >
                             <div className="p-1.5 rounded-[10px] bg-foreground/5 text-foreground group-hover:bg-foreground/10 group-hover:scale-105 transition-all duration-200">
@@ -222,8 +223,9 @@ export function DownloadButton({ targetRef }: DownloadButtonProps) {
                             onClick={handleDownloadGIF}
                             disabled={isExporting}
                             className={cn(
-                                "flex items-center gap-3 sm:gap-3.5 px-4 sm:px-5 py-2.5 sm:py-3 rounded-[18px] sm:rounded-[20px] bg-background border border-foreground/5 hover:border-foreground/10 transition-all duration-200 text-[12px] sm:text-[13px] font-medium shadow-premium group w-40 sm:w-44 touch-manipulation",
-                                "hover:bg-foreground/3 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                                "flex items-center gap-3 px-4 py-2.5 rounded-xl bg-background/95 backdrop-blur-md border border-foreground/5 hover:border-foreground/10 hover:bg-foreground/5 transition-all text-sm font-medium shadow-premium group w-40",
+                                "sm:gap-3.5 sm:px-5 sm:py-3 sm:rounded-[20px] sm:text-[13px] sm:w-44 touch-manipulation",
+                                "active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
                             )}
                         >
                             <div className="p-1.5 rounded-[10px] bg-foreground/5 text-foreground group-hover:bg-foreground/10 group-hover:scale-105 transition-all duration-200">

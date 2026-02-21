@@ -183,7 +183,7 @@ export default function Home() {
 		<div className="flex h-dvh w-full overflow-hidden bg-background font-sans selection:bg-foreground selection:text-background relative">
 			{/* BACKGROUND & ATMOSPHERE */}
 			<div
-				className="absolute inset-0 w-full h-full text-foreground flex flex-col items-center justify-center transition-colors duration-500 bg-grain"
+				className="absolute inset-0 w-full h-full text-foreground flex flex-col items-center justify-center transition-colors duration-500 bg-dot-pattern bg-dot-fade"
 				onMouseMove={handlePointerMove}
 				onMouseLeave={handlePointerLeave}
 				onTouchMove={(e) => {
@@ -211,7 +211,7 @@ export default function Home() {
 						transition={{ delay: 0.2, type: "spring", damping: 25, stiffness: 300 }}
 						className="flex items-center gap-2.5 rounded-full px-4 sm:px-6 h-10 sm:h-12 bg-background border border-foreground/5 shadow-premium hover:shadow-lg transition-all duration-300 group cursor-default"
 					>
-						<span className="logo-font font-bold text-xs sm:text-sm leading-none tracking-[0.3em] text-foreground group-hover:text-foreground/80 transition-colors">
+						<span className="logo-font font-bold text-xs sm:text-sm leading-none tracking-[0.3em] pl-1 text-foreground group-hover:text-foreground/80 transition-colors">
 							DOT
 						</span>
 					</motion.div>
@@ -224,7 +224,7 @@ export default function Home() {
 						animate={{ opacity: 1, scale: 1 }}
 						transition={{ delay: 0.25, type: "spring", damping: 25, stiffness: 300 }}
 						onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-						className="size-10 sm:size-10 rounded-full flex items-center justify-center border border-foreground/5 bg-background shadow-premium hover:shadow-lg hover:bg-foreground/5 text-muted-foreground hover:text-foreground transition-all duration-200 active:scale-95 touch-manipulation"
+						className="size-10 sm:size-10 rounded-full flex items-center justify-center border border-foreground/10 bg-background shadow-premium hover:shadow-lg hover:border-foreground/20 hover:bg-foreground/5 text-foreground/80 hover:text-foreground transition-all duration-300 active:scale-95 touch-manipulation"
 						title="Toggle Theme"
 						aria-label="Toggle theme"
 					>
@@ -241,7 +241,7 @@ export default function Home() {
 						animate={{ opacity: 1, scale: 1 }}
 						transition={{ delay: 0.3, type: "spring", damping: 25, stiffness: 300 }}
 						onClick={() => setIsCustomizationOpen(true)}
-						className="size-10 sm:size-10 rounded-full flex items-center justify-center hover:bg-foreground/5 text-muted-foreground hover:text-foreground transition-all duration-200 active:scale-95 touch-manipulation"
+						className="size-10 sm:size-10 rounded-full flex items-center justify-center border border-foreground/10 bg-background shadow-premium hover:shadow-lg hover:border-foreground/20 hover:bg-foreground/5 text-foreground/80 hover:text-foreground transition-all duration-300 active:scale-95 touch-manipulation"
 						title="Settings"
 					>
 						<IoSettingsOutline className="size-4 sm:size-4.5" />

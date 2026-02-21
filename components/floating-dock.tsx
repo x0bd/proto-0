@@ -45,7 +45,7 @@ export function FloatingDock({ voiceEnabled, onVoiceToggle, presetLabel }: Float
             {/* Emotion Preset Pill */}
             <motion.div 
                 layout
-                className="rounded-full px-3 sm:px-4 py-2 sm:py-2.5 flex items-center gap-2 sm:gap-3 shadow-premium bg-background border border-foreground/5 w-full max-w-fit"
+                className="rounded-full px-3 sm:px-4 py-2 sm:py-2.5 flex items-center gap-2 sm:gap-3 shadow-premium bg-background/95 backdrop-blur-md border border-foreground/5 hover:border-foreground/10 transition-colors w-full max-w-fit"
             >
                 {/* Voice Toggle */}
                 <button
@@ -54,7 +54,7 @@ export function FloatingDock({ voiceEnabled, onVoiceToggle, presetLabel }: Float
                         "size-9 sm:size-10 rounded-full flex items-center justify-center transition-all duration-200 relative group touch-manipulation shrink-0",
                         voiceEnabled 
                             ? "bg-foreground text-background hover:bg-foreground/90" 
-                            : "hover:bg-foreground/5 text-muted-foreground hover:text-foreground"
+                            : "hover:bg-foreground/5 text-foreground/80 hover:text-foreground"
                     )}
                     title={voiceEnabled ? "Mute Voice" : "Enable Voice"}
                 >
