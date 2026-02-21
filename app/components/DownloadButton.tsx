@@ -44,6 +44,20 @@ async function captureAvatarPNG(
 	const fg = isDark ? "#fafafa" : "#09090b";
 	const bg = isDark ? "#09090b" : "#fafafa";
 
+	// Read computed styles from LIVE elements BEFORE cloning so CSS classes,
+	// CSS variables, and currentColor all resolve to their actual painted values.
+	const liveRoot = getComputedStyle(svg);
+	const accentColor = liveRoot.color || fg; // the accent color via `color: accentColor` on container
+
+	const liveElements = Array.from(svg.querySelectorAll("*")) as SVGElement[];
+	const resolvedFills: string[] = [];
+	const resolvedStrokes: string[] = [];
+	liveElements.forEach((el) => {
+		const cs = getComputedStyle(el);
+		resolvedFills.push(cs.fill || "");
+		resolvedStrokes.push(cs.stroke || "");
+	});
+
 	// Clone and prepare the SVG
 	const clone = svg.cloneNode(true) as SVGSVGElement;
 	clone.setAttribute("width", String(outputSize));
@@ -52,32 +66,53 @@ async function captureAvatarPNG(
 		"viewBox",
 		`${squareVBX} ${squareVBY} ${vbSide} ${vbSide}`,
 	);
+	clone.style.color = accentColor;
 
-	// Resolve currentColor
-	const computedColor = getComputedStyle(svg).color || fg;
-	clone.style.color = computedColor;
+	// Apply resolved paint values to every cloned element
+	const allElements = Array.from(clone.querySelectorAll("*")) as SVGElement[];
+	allElements.forEach((el, i) => {
+		const attrFill = el.getAttribute("fill");
+		const attrStroke = el.getAttribute("stroke");
 
-	// Replace CSS variable references and currentColor in the clone
-	const allElements = clone.querySelectorAll("*");
-	allElements.forEach((el) => {
-		const htmlEl = el as SVGElement;
-		const style = htmlEl.style;
-
-		// Fix fill
-		const fill = htmlEl.getAttribute("fill");
-		if (fill === "currentColor") htmlEl.setAttribute("fill", fg);
-
-		// Fix stroke
-		const stroke = htmlEl.getAttribute("stroke");
-		if (stroke === "currentColor") htmlEl.setAttribute("stroke", fg);
-
-		// Remove CSS classes (they won't resolve in the serialized SVG)
-		htmlEl.removeAttribute("class");
-
-		// Remove filters that reference external defs
-		if (style.filter && style.filter.includes("drop-shadow")) {
-			style.filter = "";
+		// Resolve fill: attribute "currentColor" → accentColor,
+		// otherwise use the computed fill from the live element (handles CSS classes)
+		if (attrFill === "currentColor") {
+			el.setAttribute("fill", accentColor);
+		} else if (attrFill === null || attrFill === "") {
+			// fill came from a CSS class — bake it in
+			const resolved = resolvedFills[i];
+			if (
+				resolved &&
+				resolved !== "none" &&
+				!resolved.startsWith("url(")
+			) {
+				el.setAttribute("fill", resolved);
+			}
 		}
+
+		// Resolve stroke the same way
+		if (attrStroke === "currentColor") {
+			el.setAttribute("stroke", accentColor);
+		} else if (attrStroke === null || attrStroke === "") {
+			const resolved = resolvedStrokes[i];
+			if (
+				resolved &&
+				resolved !== "none" &&
+				!resolved.startsWith("url(")
+			) {
+				el.setAttribute("stroke", resolved);
+			}
+		}
+
+		// Remove CSS classes (no stylesheet in serialized SVG)
+		el.removeAttribute("class");
+
+		// Remove any inline CSS vars / filter that won't survive serialization
+		if (el.style.filter?.includes("drop-shadow")) el.style.filter = "";
+		if (el.style.fill?.startsWith("var(")) el.style.removeProperty("fill");
+		if (el.style.stroke?.startsWith("var("))
+			el.style.removeProperty("stroke");
+		if (el.style.color?.startsWith("var(")) el.style.color = accentColor;
 	});
 
 	// Serialize to blob
