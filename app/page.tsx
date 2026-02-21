@@ -14,7 +14,7 @@ import {
 } from "react-icons/io5";
 import { cn } from "@/lib/utils";
 import { FaceVariant, EmotionState } from "./components/face/types";
-import { VARIANT_COLORS, VARIANT_GLOW } from "./components/face/themes";
+import { VARIANT_COLORS } from "./components/face/themes";
 import { useAudioAnalysis, type AudioLevels } from "@/hooks/useAudioAnalysis";
 import { useTheme } from "next-themes";
 
@@ -96,9 +96,32 @@ export default function Home() {
 	const [mounted, setMounted] = useState(false);
 	const { theme, setTheme } = useTheme();
 
-	// Adaptive accent based on current face variant
+	// Avatar personalisation
+	const [avatarName, setAvatarName] = useState<string>(() => {
+		if (typeof window !== "undefined")
+			return localStorage.getItem("avatarName") || "DOT";
+		return "DOT";
+	});
+	const [customAccentColor, setCustomAccentColor] = useState<string | null>(
+		() => {
+			if (typeof window !== "undefined")
+				return localStorage.getItem("accentColor") || null;
+			return null;
+		},
+	);
+
+	const handleAvatarNameChange = (name: string) => {
+		setAvatarName(name);
+		localStorage.setItem("avatarName", name);
+	};
+	const handleAccentColorChange = (color: string) => {
+		setCustomAccentColor(color);
+		localStorage.setItem("accentColor", color);
+	};
+
+	// Adaptive accent based on current face variant (or custom override)
 	const variantColor = VARIANT_COLORS[faceVariant];
-	const variantGlow = VARIANT_GLOW[faceVariant];
+	const accentColor = customAccentColor ?? variantColor;
 
 	const {
 		levels,
@@ -280,7 +303,7 @@ export default function Home() {
 				{/* Faint variant color wash */}
 				<div
 					className="absolute inset-0 pointer-events-none transition-all duration-700"
-					style={{ backgroundColor: `${variantColor}0a` }}
+					style={{ backgroundColor: `${accentColor}0a` }}
 				/>
 
 				{/* HEADER UI */}
@@ -296,13 +319,13 @@ export default function Home() {
 							stiffness: 300,
 						}}
 						className="flex items-center gap-2.5 rounded-full px-4 sm:px-6 h-10 sm:h-12 bg-background border shadow-premium hover:shadow-lg transition-all duration-300 group cursor-default"
-						style={{ borderColor: `${variantColor}40` }}
+						style={{ borderColor: `${accentColor}40` }}
 					>
 						<span
 							className="logo-font font-bold text-xs sm:text-sm leading-none tracking-[0.2em] pl-1 transition-colors"
-							style={{ color: variantColor }}
+							style={{ color: accentColor }}
 						>
-							DOT
+							{avatarName}
 						</span>
 					</motion.div>
 				</div>
@@ -323,8 +346,8 @@ export default function Home() {
 						}
 						className="size-10 sm:size-10 rounded-full flex items-center justify-center bg-background border-2 shadow-premium hover:shadow-lg transition-all duration-300 active:scale-95 touch-manipulation"
 						style={{
-							borderColor: `${variantColor}50`,
-							color: variantColor,
+							borderColor: `${accentColor}50`,
+							color: accentColor,
 						}}
 						title="Toggle Theme"
 						aria-label="Toggle theme"
@@ -349,8 +372,8 @@ export default function Home() {
 						onClick={() => setIsCustomizationOpen(true)}
 						className="size-10 sm:size-10 rounded-full flex items-center justify-center bg-background border-2 shadow-premium hover:shadow-lg transition-all duration-300 active:scale-95 touch-manipulation"
 						style={{
-							borderColor: `${variantColor}50`,
-							color: variantColor,
+							borderColor: `${accentColor}50`,
+							color: accentColor,
 						}}
 						title="Settings"
 					>
@@ -396,7 +419,7 @@ export default function Home() {
 						EMOTION_PRESETS.find((p) => p.id === activePresetId)
 							?.label ?? "NEUTRAL"
 					}
-					accentColor={variantColor}
+					accentColor={accentColor}
 				/>
 
 				{/* Settings Modal */}
@@ -405,6 +428,10 @@ export default function Home() {
 					onClose={() => setIsCustomizationOpen(false)}
 					currentVariant={faceVariant}
 					onVariantChange={setFaceVariant}
+					avatarName={avatarName}
+					onAvatarNameChange={handleAvatarNameChange}
+					accentColor={accentColor}
+					onAccentColorChange={handleAccentColorChange}
 				/>
 
 				{/* Download Button */}

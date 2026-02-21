@@ -4,14 +4,32 @@ import * as React from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { FaceVariant } from "./face/types";
 import { VARIANT_COLORS } from "./face/themes";
-import { cn } from "@/lib/utils";
-import { IoCloseOutline } from "react-icons/io5";
+import { IoCloseOutline, IoCheckmark } from "react-icons/io5";
+
+const PALETTE = [
+	"#FF6B6B", // coral
+	"#F472B6", // sakura
+	"#C084FC", // plum
+	"#A78BFA", // lavender
+	"#60A5FA", // sky
+	"#06B6D4", // cyan
+	"#34D399", // mint
+	"#FBBF24", // citron
+	"#FB923C", // tangerine
+	"#EF4444", // brick
+	"#8B7355", // umber
+	"#374151", // ink
+];
 
 interface CustomizationModalProps {
 	isOpen: boolean;
 	onClose: () => void;
 	currentVariant: FaceVariant;
 	onVariantChange: (variant: FaceVariant) => void;
+	avatarName: string;
+	onAvatarNameChange: (name: string) => void;
+	accentColor: string;
+	onAccentColorChange: (color: string) => void;
 }
 
 const FACES: { id: FaceVariant; name: string; desc: string; kanji: string }[] =
@@ -23,26 +41,24 @@ const FACES: { id: FaceVariant; name: string; desc: string; kanji: string }[] =
 
 function EyePreview({
 	variant,
-	isActive,
+	color,
 }: {
 	variant: FaceVariant;
-	isActive: boolean;
+	color: string;
 }) {
-	const color = isActive ? "#FFFFFF" : VARIANT_COLORS[variant];
 	const style = { fill: color };
 	const styleStroke = { fill: "none", stroke: color, strokeWidth: 1.5 };
-
 	switch (variant) {
 		case "minimal":
 			return (
-				<svg viewBox="0 0 48 24" className="w-10 h-5">
+				<svg viewBox="0 0 48 24" className="w-9 h-[18px]">
 					<ellipse cx="12" cy="12" rx="6" ry="4" style={style} />
 					<ellipse cx="36" cy="12" rx="6" ry="4" style={style} />
 				</svg>
 			);
 		case "tron":
 			return (
-				<svg viewBox="0 0 48 24" className="w-10 h-5">
+				<svg viewBox="0 0 48 24" className="w-9 h-[18px]">
 					<rect
 						x="6"
 						y="8"
@@ -63,7 +79,7 @@ function EyePreview({
 			);
 		case "analogue":
 			return (
-				<svg viewBox="0 0 48 24" className="w-10 h-5">
+				<svg viewBox="0 0 48 24" className="w-9 h-[18px]">
 					<ellipse
 						cx="12"
 						cy="12"
@@ -85,198 +101,351 @@ function EyePreview({
 	}
 }
 
+function SectionLabel({ children }: { children: React.ReactNode }) {
+	return (
+		<div className="flex items-center gap-3 mb-4">
+			<span className="text-[9px] font-mono uppercase tracking-[0.3em] text-foreground/35 shrink-0">
+				{children}
+			</span>
+			<div className="flex-1 border-t border-foreground/[0.07]" />
+		</div>
+	);
+}
+
 export const CustomizationModal = React.memo(function CustomizationModal({
 	isOpen,
 	onClose,
 	currentVariant,
 	onVariantChange,
+	avatarName,
+	onAvatarNameChange,
+	accentColor,
+	onAccentColorChange,
 }: CustomizationModalProps) {
 	const [hasAnimated, setHasAnimated] = React.useState(false);
+	const [nameVal, setNameVal] = React.useState(avatarName);
+	const customColorRef = React.useRef<HTMLInputElement>(null);
+
+	React.useEffect(() => {
+		setNameVal(avatarName);
+	}, [avatarName]);
 
 	React.useEffect(() => {
 		if (isOpen) {
-			// Reset animation state when modal opens
 			setHasAnimated(false);
-			// Mark as animated after initial animation completes
-			const timer = setTimeout(() => setHasAnimated(true), 600);
+			const timer = setTimeout(() => setHasAnimated(true), 700);
 			return () => clearTimeout(timer);
 		}
 	}, [isOpen]);
+
+	const handleNameBlur = () => {
+		const trimmed = nameVal.trim();
+		if (trimmed) onAvatarNameChange(trimmed);
+		else setNameVal(avatarName);
+	};
 
 	return (
 		<AnimatePresence>
 			{isOpen && (
 				<>
-					{/* Backdrop - Vercel Frosted Glass */}
+					{/* Backdrop */}
 					<motion.div
 						initial={{ opacity: 0 }}
 						animate={{ opacity: 1 }}
 						exit={{ opacity: 0 }}
-						transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-						className="fixed inset-0 z-[100] bg-background/80 backdrop-blur-md"
+						transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+						className="fixed inset-0 z-[100] bg-background/60 backdrop-blur-sm"
 						onClick={onClose}
 					/>
 
-					{/* Modal */}
 					<div className="fixed inset-0 z-[101] flex items-center justify-center p-4 sm:p-6 pointer-events-none">
 						<motion.div
-							initial={{ opacity: 0, scale: 0.96, y: 20 }}
+							initial={{ opacity: 0, scale: 0.97, y: 14 }}
 							animate={{ opacity: 1, scale: 1, y: 0 }}
-							exit={{ opacity: 0, scale: 0.96, y: 20 }}
+							exit={{ opacity: 0, scale: 0.97, y: 14 }}
 							transition={{
 								type: "spring",
-								damping: 35,
-								stiffness: 400,
-								mass: 0.8,
+								damping: 38,
+								stiffness: 420,
+								mass: 0.7,
 							}}
-							className="pointer-events-auto w-full max-w-[600px] bg-background border-2 border-primary/20 shadow-premium rounded-[32px] sm:rounded-[40px] overflow-hidden relative max-h-[90vh] overflow-y-auto"
+							className="pointer-events-auto w-full max-w-[460px]"
 							onClick={(e) => e.stopPropagation()}
 						>
-							{/* Washi Texture Overlay */}
-							<div className="absolute inset-0 bg-grain opacity-[0.15] pointer-events-none z-0" />
+							{/* Paper card */}
+							<div className="relative bg-background border border-foreground/[0.07] rounded-[28px] overflow-hidden shadow-[0_12px_48px_-8px_rgba(0,0,0,0.1),0_2px_8px_-2px_rgba(0,0,0,0.06)] max-h-[90vh] overflow-y-auto">
+								{/* Washi fiber texture */}
+								<div className="absolute inset-0 bg-washi pointer-events-none z-0" />
 
-							{/* Vertical Japanese Text - Left Side */}
-							<div className="absolute left-0 top-0 bottom-0 flex items-center justify-center pl-6 pointer-events-none z-0">
-								<span className="writing-vertical-rl text-6xl font-bold text-foreground/[0.02] select-none tracking-wider">
-									顔
-								</span>
-							</div>
-
-							{/* Header */}
-							<div className="relative z-10 px-4 sm:px-6 md:px-10 pt-6 sm:pt-8 md:pt-10 pb-4 sm:pb-6 flex items-start justify-between">
-								<div className="space-y-1">
-									<h2 className="logo-font text-xl sm:text-2xl font-bold tracking-[0.1em] text-foreground">
-										Face Style
-									</h2>
-									<p className="text-[10px] sm:text-[11px] text-muted-foreground font-mono tracking-wide">
-										Choose your visual identity
-									</p>
+								{/* Vertical Japanese watermark */}
+								<div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none z-0 select-none">
+									<span className="writing-vertical-rl text-[72px] font-black text-foreground/[0.025] tracking-wider">
+										設定
+									</span>
 								</div>
-								<button
-									onClick={onClose}
-									className="size-9 sm:size-10 rounded-full flex items-center justify-center text-foreground font-bold hover:bg-foreground/10 transition-all duration-300 active:scale-95 touch-manipulation shrink-0"
-								>
-									<IoCloseOutline className="size-5 sm:size-6" />
-								</button>
-							</div>
 
-							{/* Content - Flowing Layout */}
-							<div className="relative z-10 px-4 sm:px-6 md:px-10 pb-6 sm:pb-8 md:pb-10">
-								<div className="space-y-2">
-									{FACES.map((item, i) => {
-										const isActive =
-											currentVariant === item.id;
-										const color = VARIANT_COLORS[item.id];
-										return (
-											<motion.button
-												key={item.id}
-												onClick={() =>
-													onVariantChange(item.id)
+								<div className="relative z-10 px-6 sm:px-8 pt-7 pb-8">
+									{/* Header */}
+									<div className="flex items-start justify-between mb-8">
+										<div>
+											<h2 className="logo-font text-base font-bold tracking-[0.15em] text-foreground leading-none uppercase">
+												Settings
+											</h2>
+											<p className="text-[9px] text-foreground/35 font-mono tracking-[0.25em] mt-1.5 uppercase">
+												personalise your companion
+											</p>
+										</div>
+										<button
+											onClick={onClose}
+											className="size-7 rounded-full flex items-center justify-center text-foreground/40 hover:text-foreground hover:bg-foreground/8 transition-all duration-200 active:scale-90 touch-manipulation shrink-0"
+										>
+											<IoCloseOutline className="size-4.5" />
+										</button>
+									</div>
+
+									{/* ── IDENTITY ── */}
+									<SectionLabel>Identity</SectionLabel>
+									<div className="mb-8">
+										<div className="relative">
+											<input
+												type="text"
+												value={nameVal}
+												onChange={(e) =>
+													setNameVal(e.target.value)
 												}
-												initial={
-													hasAnimated
-														? false
-														: { opacity: 0, x: -20 }
-												}
-												animate={{ opacity: 1, x: 0 }}
-												transition={
-													hasAnimated
-														? { duration: 0.2 }
-														: {
-																delay: i * 0.04,
-																type: "spring",
-																damping: 30,
-																stiffness: 300,
-															}
-												}
-												className="group relative w-full flex items-center gap-3 sm:gap-4 md:gap-5 p-4 sm:p-5 rounded-[20px] sm:rounded-[24px] transition-all duration-300 text-left touch-manipulation border-2 hover:scale-[1.01] active:scale-[0.99]"
-												style={
-													isActive
-														? {
-																backgroundColor:
-																	color,
-																borderColor:
-																	color,
-																boxShadow: `0 12px 32px -6px ${color}55, 0 4px 12px -2px ${color}33`,
-															}
-														: {
-																backgroundColor: `${color}08`,
-																borderColor: `${color}35`,
-															}
-												}
-											>
-												{/* Kanji Watermark */}
-												<span
-													className="absolute right-6 text-7xl font-bold select-none"
-													style={{
-														color: isActive
-															? "rgba(255,255,255,0.12)"
-															: `${color}14`,
+												onBlur={handleNameBlur}
+												onKeyDown={(e) => {
+													if (e.key === "Enter")
+														e.currentTarget.blur();
+												}}
+												maxLength={20}
+												placeholder="Name your companion"
+												className="w-full bg-transparent text-foreground logo-font text-2xl font-bold tracking-[0.05em] pb-2 border-0 border-b border-foreground/12 focus:outline-none transition-colors duration-200 placeholder:text-foreground/18 placeholder:font-normal placeholder:tracking-normal placeholder:text-lg"
+												style={{
+													caretColor: accentColor,
+												}}
+											/>
+											<motion.div
+												className="absolute bottom-0 left-0 h-[1.5px] rounded-full"
+												animate={{
+													width: nameVal
+														? "100%"
+														: "0%",
+												}}
+												transition={{
+													duration: 0.4,
+													ease: [0.16, 1, 0.3, 1],
+												}}
+												style={{
+													backgroundColor:
+														accentColor,
+													opacity: 0.45,
+												}}
+											/>
+										</div>
+										<p className="text-[9px] font-mono text-foreground/22 uppercase tracking-[0.2em] mt-2.5">
+											displayed in the header
+										</p>
+									</div>
+
+									{/* ── FACE ── */}
+									<SectionLabel>Face Style</SectionLabel>
+									<div className="flex gap-2 mb-8">
+										{FACES.map((item, i) => {
+											const isActive =
+												currentVariant === item.id;
+											const varColor =
+												VARIANT_COLORS[item.id];
+											return (
+												<motion.button
+													key={item.id}
+													onClick={() =>
+														onVariantChange(item.id)
+													}
+													initial={
+														hasAnimated
+															? false
+															: {
+																	opacity: 0,
+																	y: 8,
+																}
+													}
+													animate={{
+														opacity: 1,
+														y: 0,
 													}}
+													transition={
+														hasAnimated
+															? { duration: 0.15 }
+															: {
+																	delay:
+																		i *
+																		0.05,
+																	type: "spring",
+																	damping: 28,
+																	stiffness: 320,
+																}
+													}
+													whileTap={{ scale: 0.96 }}
+													className="flex-1 relative flex flex-col items-center gap-2.5 py-4 px-2 rounded-2xl transition-all duration-200 touch-manipulation border overflow-hidden"
+													style={
+														isActive
+															? {
+																	backgroundColor: `${varColor}14`,
+																	borderColor: `${varColor}50`,
+																}
+															: {
+																	backgroundColor:
+																		"transparent",
+																	borderColor:
+																		"rgba(0,0,0,0.06)",
+																}
+													}
 												>
-													{item.kanji}
-												</span>
-
-												{/* Eye Preview */}
-												<div className="shrink-0 relative z-10">
+													<span
+														className="absolute -bottom-1 right-0.5 text-[40px] font-black select-none pointer-events-none leading-none"
+														style={{
+															color: isActive
+																? `${varColor}1a`
+																: "transparent",
+														}}
+													>
+														{item.kanji}
+													</span>
 													<EyePreview
 														variant={item.id}
-														isActive={isActive}
+														color={
+															isActive
+																? varColor
+																: "currentColor"
+														}
 													/>
-												</div>
-
-												{/* Text */}
-												<div className="flex-1 flex flex-col relative z-10">
-													<div className="flex items-baseline gap-3">
-														<span
-															className={cn(
-																"text-[14px] font-bold tracking-tight logo-font",
-																isActive
-																	? "text-white"
-																	: "text-foreground",
-															)}
-														>
-															{item.name}
-														</span>
-														<span
-															className="text-[9px] font-mono uppercase tracking-widest font-bold"
+													<div className="relative z-10 text-center">
+														<div
+															className="text-[11px] font-bold logo-font leading-none tracking-wide"
 															style={{
 																color: isActive
-																	? "rgba(255,255,255,0.65)"
-																	: `${color}99`,
+																	? varColor
+																	: undefined,
 															}}
 														>
-															{item.id.toUpperCase()}
-														</span>
+															{item.name}
+														</div>
+														<div className="text-[8px] text-foreground/30 font-mono tracking-widest mt-0.5 uppercase">
+															{item.desc}
+														</div>
 													</div>
-													<span
-														className={cn(
-															"text-[11px] font-medium tracking-wide mt-0.5",
-															isActive
-																? "text-white/75"
-																: "text-muted-foreground",
-														)}
-													>
-														{item.desc}
-													</span>
-												</div>
+													{isActive && (
+														<motion.div
+															layoutId="face-check"
+															className="absolute top-2 right-2 size-3.5 rounded-full flex items-center justify-center"
+															style={{
+																backgroundColor:
+																	varColor,
+															}}
+															initial={false}
+														>
+															<IoCheckmark className="size-2 text-white" />
+														</motion.div>
+													)}
+												</motion.button>
+											);
+										})}
+									</div>
 
-												{/* Active Dot */}
-												{isActive && (
-													<motion.div
-														layoutId="active-indicator"
-														className="absolute right-5 top-1/2 -translate-y-1/2 size-2.5 rounded-full bg-white/90"
-														initial={false}
+									{/* ── COLOR ── */}
+									<SectionLabel>Accent Color</SectionLabel>
+									<div className="flex flex-wrap gap-2 items-center">
+										{PALETTE.map((hex) => {
+											const isActive =
+												accentColor === hex;
+											return (
+												<motion.button
+													key={hex}
+													onClick={() =>
+														onAccentColorChange(hex)
+													}
+													whileTap={{ scale: 0.82 }}
+													className="relative size-7 rounded-full touch-manipulation focus:outline-none shrink-0"
+													style={{
+														backgroundColor: hex,
+													}}
+												>
+													{isActive && (
+														<motion.div
+															layoutId="color-ring"
+															className="absolute -inset-[3px] rounded-full border-[1.5px]"
+															style={{
+																borderColor:
+																	hex,
+															}}
+															initial={false}
+															transition={{
+																type: "spring",
+																stiffness: 600,
+																damping: 40,
+															}}
+														/>
+													)}
+													{isActive && (
+														<IoCheckmark
+															className="absolute inset-0 m-auto size-3 text-white"
+															style={{
+																filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.5))",
+															}}
+														/>
+													)}
+												</motion.button>
+											);
+										})}
+										{/* Custom color swatch */}
+										<button
+											onClick={() =>
+												customColorRef.current?.click()
+											}
+											className="relative size-7 rounded-full border border-dashed border-foreground/20 flex items-center justify-center hover:border-foreground/40 transition-colors duration-200 touch-manipulation overflow-hidden shrink-0"
+											title="Custom color"
+										>
+											{!PALETTE.includes(accentColor) ? (
+												<>
+													<div
+														className="absolute inset-0 rounded-full"
+														style={{
+															backgroundColor:
+																accentColor,
+														}}
 													/>
-												)}
-											</motion.button>
-										);
-									})}
+													<IoCheckmark
+														className="relative z-10 size-3 text-white"
+														style={{
+															filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.5))",
+														}}
+													/>
+												</>
+											) : (
+												<span className="text-foreground/30 text-sm leading-none">
+													+
+												</span>
+											)}
+										</button>
+										<input
+											ref={customColorRef}
+											type="color"
+											value={accentColor}
+											onChange={(e) =>
+												onAccentColorChange(
+													e.target.value,
+												)
+											}
+											className="sr-only"
+											aria-hidden
+										/>
+									</div>
+									<p className="text-[9px] font-mono text-foreground/22 uppercase tracking-[0.2em] mt-3">
+										overrides the face variant default
+									</p>
 								</div>
 							</div>
-
-							{/* Bottom Accent */}
-							<div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-[#FF6B6B] via-[#FBBF24] to-[#06B6D4]" />
 						</motion.div>
 					</div>
 				</>
