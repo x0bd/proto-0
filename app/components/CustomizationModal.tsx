@@ -140,15 +140,15 @@ export const CustomizationModal = React.memo(function CustomizationModal({
                                     <h2 className="text-[13px] sm:text-[14px] md:text-[15px] font-semibold tracking-[0.25em] uppercase text-foreground">
                                         Face Style
                                     </h2>
-                                    <p className="text-[10px] sm:text-[11px] text-muted-foreground/70 font-mono tracking-wide">
+                                    <p className="text-[10px] sm:text-[11px] text-foreground font-mono tracking-wide">
                                         Choose your visual identity
                                     </p>
                                 </div>
                                 <button
                                     onClick={onClose}
-                                    className="size-9 sm:size-10 rounded-full flex items-center justify-center border border-transparent hover:border-foreground/10 text-muted-foreground/60 hover:text-foreground hover:bg-foreground/5 transition-all duration-300 active:scale-95 touch-manipulation shrink-0"
+                                    className="size-9 sm:size-10 rounded-full flex items-center justify-center text-foreground font-bold hover:bg-foreground/10 transition-all duration-300 active:scale-95 touch-manipulation shrink-0"
                                 >
-                                    <IoCloseOutline className="size-4 sm:size-5" />
+                                    <IoCloseOutline className="size-5 sm:size-6" />
                                 </button>
                             </div>
 
@@ -206,14 +206,14 @@ export const CustomizationModal = React.memo(function CustomizationModal({
                                                         </span>
                                                         <span className={cn(
                                                             "text-[9px] font-mono uppercase tracking-widest transition-colors",
-                                                            isActive ? "text-background/40" : "text-muted-foreground/50"
+                                                            isActive ? "text-background" : "text-foreground font-semibold"
                                                         )}>
                                                             {item.id.toUpperCase()}
                                                         </span>
                                                     </div>
                                                     <span className={cn(
-                                                        "text-[11px] font-normal tracking-wide mt-0.5 transition-colors",
-                                                        isActive ? "text-background/60" : "text-muted-foreground/70"
+                                                        "text-[11px] font-medium tracking-wide mt-0.5 transition-colors",
+                                                        isActive ? "text-background font-medium" : "text-foreground"
                                                     )}>
                                                         {item.desc}
                                                     </span>

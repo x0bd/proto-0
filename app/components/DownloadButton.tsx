@@ -208,7 +208,7 @@ export function DownloadButton({ targetRef }: DownloadButtonProps) {
                             onClick={handleDownloadPNG}
                             disabled={isExporting}
                             className={cn(
-                                "flex items-center gap-3 px-4 py-2.5 rounded-xl bg-background/95 backdrop-blur-md border border-foreground/5 hover:border-foreground/10 hover:bg-foreground/5 transition-all text-sm font-medium shadow-premium group w-40",
+                                "flex items-center gap-3 px-4 py-2.5 rounded-xl bg-background border border-foreground/10 hover:border-foreground/20 hover:bg-foreground/5 transition-all text-sm font-medium shadow-premium group w-40",
                                 "sm:gap-3.5 sm:px-5 sm:py-3 sm:rounded-[20px] sm:text-[13px] sm:w-44 touch-manipulation",
                                 "active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
                             )}
@@ -223,7 +223,7 @@ export function DownloadButton({ targetRef }: DownloadButtonProps) {
                             onClick={handleDownloadGIF}
                             disabled={isExporting}
                             className={cn(
-                                "flex items-center gap-3 px-4 py-2.5 rounded-xl bg-background/95 backdrop-blur-md border border-foreground/5 hover:border-foreground/10 hover:bg-foreground/5 transition-all text-sm font-medium shadow-premium group w-40",
+                                "flex items-center gap-3 px-4 py-2.5 rounded-xl bg-background border border-foreground/10 hover:border-foreground/20 hover:bg-foreground/5 transition-all text-sm font-medium shadow-premium group w-40",
                                 "sm:gap-3.5 sm:px-5 sm:py-3 sm:rounded-[20px] sm:text-[13px] sm:w-44 touch-manipulation",
                                 "active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
                             )}
@@ -242,16 +242,16 @@ export function DownloadButton({ targetRef }: DownloadButtonProps) {
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setIsOpen(!isOpen)}
                 className={cn(
-                    "size-12 sm:size-14 rounded-full flex items-center justify-center border transition-all duration-200 shadow-premium touch-manipulation relative z-10",
+                    "size-12 rounded-full flex items-center justify-center border transition-all shadow-premium z-50",
                     isExporting 
-                        ? "bg-amber-500/10 border-amber-500/20 text-amber-500 hover:bg-amber-500/15"
+                        ? "bg-amber-500/10 border-amber-500/20 text-amber-500"
                         : exportStatus === "success"
-                            ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-500 hover:bg-emerald-500/15"
+                            ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-500"
                             : exportStatus === "error"
-                                ? "bg-rose-500/10 border-rose-500/20 text-rose-500 hover:bg-rose-500/15"
+                                ? "bg-rose-500/10 border-rose-500/20 text-rose-500"
                                 : isOpen 
-                                    ? "bg-foreground text-background border-transparent hover:bg-foreground/90"
-                                    : "bg-background hover:bg-foreground/5 border-foreground/5 hover:border-foreground/10 text-foreground"
+                                    ? "bg-black text-white dark:bg-white dark:text-black border-transparent"
+                                    : "bg-white dark:bg-black border-black/20 dark:border-white/20 hover:border-black/40 dark:hover:border-white/40 hover:bg-black/10 dark:hover:bg-white/10 text-black dark:text-white active:scale-95 touch-manipulation"
                 )}
             >
                 <AnimatePresence mode="wait">

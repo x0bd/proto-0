@@ -44,16 +44,16 @@
 	
 	/* Light Mode: Warm "Washi" Paper */
 	--background: #f8f8fa;
-	--foreground: #0a0a0b;
+	--foreground: #000000;
 	
 	--card: #ffffff;
-	--card-foreground: #0a0a0b;
+	--card-foreground: #000000;
 	
-	--primary: #0a0a0b;
-	--primary-foreground: #fafafa;
+	--primary: #000000;
+	--primary-foreground: #ffffff;
 	
 	--secondary: #f4f4f5;
-	--secondary-foreground: #18181b;
+	--secondary-foreground: #000000;
 	
 	--muted: #f4f4f5;
 	--muted-foreground: #71717a;
@@ -71,17 +71,17 @@
 
 .dark {
 	/* Dark Mode: Deep Space - Not pure black, slightly warm */
-	--background: hsl(240 10% 3.9%);
-	--foreground: #ededed;
+	--background: hsl(240 10% 4%);
+	--foreground: #ffffff;
 	
 	--card: hsl(240 10% 6%);
-	--card-foreground: #ededed;
+	--card-foreground: #ffffff;
 	
-	--primary: #fafafa;
-	--primary-foreground: #0a0a0b;
+	--primary: #ffffff;
+	--primary-foreground: #000000;
 	
 	--secondary: hsl(240 10% 8%);
-	--secondary-foreground: #ededed;
+	--secondary-foreground: #ffffff;
 	
 	--muted: hsl(240 10% 10%);
 	--muted-foreground: #888888;
@@ -200,19 +200,19 @@
 	mix-blend-mode: overlay;
 }
 
-/* Vercel Dot Pattern */
+/* Vercel Dot Pattern - Stronger Contrast */
 .bg-dot-pattern {
-	background-image: radial-gradient(rgba(0, 0, 0, 0.15) 1px, transparent 1px);
+	background-image: radial-gradient(rgba(0, 0, 0, 0.45) 1px, transparent 1px);
 	background-size: 24px 24px;
 }
 .dark .bg-dot-pattern {
-	background-image: radial-gradient(rgba(255, 255, 255, 0.15) 1px, transparent 1px);
+	background-image: radial-gradient(rgba(255, 255, 255, 0.45) 1px, transparent 1px);
 }
 
-/* Fade out dots towards the edges */
+/* Fade out dots towards the edges - Reduced fade */
 .bg-dot-fade {
-	mask-image: radial-gradient(circle at center, black 40%, transparent 100%);
-	-webkit-mask-image: radial-gradient(circle at center, black 40%, transparent 100%);
+	mask-image: radial-gradient(circle at center, black 60%, transparent 100%);
+	-webkit-mask-image: radial-gradient(circle at center, black 60%, transparent 100%);
 }
 
 /* Breathing Aura: Pulsing background */

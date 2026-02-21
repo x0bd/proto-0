@@ -211,7 +211,7 @@ export default function Home() {
 						transition={{ delay: 0.2, type: "spring", damping: 25, stiffness: 300 }}
 						className="flex items-center gap-2.5 rounded-full px-4 sm:px-6 h-10 sm:h-12 bg-background border border-foreground/5 shadow-premium hover:shadow-lg transition-all duration-300 group cursor-default"
 					>
-						<span className="logo-font font-bold text-xs sm:text-sm leading-none tracking-[0.3em] pl-1 text-foreground group-hover:text-foreground/80 transition-colors">
+						<span className="logo-font font-bold text-xs sm:text-sm leading-none tracking-[0.3em] pl-1 text-black dark:text-white transition-colors">
 							DOT
 						</span>
 					</motion.div>
@@ -224,14 +224,14 @@ export default function Home() {
 						animate={{ opacity: 1, scale: 1 }}
 						transition={{ delay: 0.25, type: "spring", damping: 25, stiffness: 300 }}
 						onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-						className="size-10 sm:size-10 rounded-full flex items-center justify-center border border-foreground/10 bg-background shadow-premium hover:shadow-lg hover:border-foreground/20 hover:bg-foreground/5 text-foreground/80 hover:text-foreground transition-all duration-300 active:scale-95 touch-manipulation"
+						className="size-10 sm:size-10 rounded-full flex items-center justify-center border border-black/20 dark:border-white/20 bg-white dark:bg-black shadow-premium hover:shadow-lg hover:border-black/40 dark:hover:border-white/40 hover:bg-black/5 dark:hover:bg-white/5 text-black dark:text-white transition-all duration-300 active:scale-95 touch-manipulation"
 						title="Toggle Theme"
 						aria-label="Toggle theme"
 					>
 						{mounted && theme === "dark" ? (
-							<IoMoonOutline className="size-4 sm:size-4.5" />
+							<IoMoonOutline className="size-4 sm:size-4.5 text-white" />
 						) : (
-							<IoSunnyOutline className="size-4 sm:size-4.5" />
+							<IoSunnyOutline className="size-4 sm:size-4.5 text-black" />
 						)}
 					</motion.button>
 
@@ -241,10 +241,10 @@ export default function Home() {
 						animate={{ opacity: 1, scale: 1 }}
 						transition={{ delay: 0.3, type: "spring", damping: 25, stiffness: 300 }}
 						onClick={() => setIsCustomizationOpen(true)}
-						className="size-10 sm:size-10 rounded-full flex items-center justify-center border border-foreground/10 bg-background shadow-premium hover:shadow-lg hover:border-foreground/20 hover:bg-foreground/5 text-foreground/80 hover:text-foreground transition-all duration-300 active:scale-95 touch-manipulation"
+						className="size-10 sm:size-10 rounded-full flex items-center justify-center border border-black/20 dark:border-white/20 bg-white dark:bg-black shadow-premium hover:shadow-lg hover:border-black/40 dark:hover:border-white/40 hover:bg-black/5 dark:hover:bg-white/5 text-black dark:text-white transition-all duration-300 active:scale-95 touch-manipulation"
 						title="Settings"
 					>
-						<IoSettingsOutline className="size-4 sm:size-4.5" />
+						<IoSettingsOutline className="size-4 sm:size-4.5 text-black dark:text-white" />
 					</motion.button>
 				</div>
 
