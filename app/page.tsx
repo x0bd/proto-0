@@ -300,10 +300,12 @@ export default function Home() {
 				{/* Washi paper texture */}
 				<div className="absolute inset-0 bg-washi pointer-events-none" />
 
-				{/* Faint variant color wash */}
+				{/* Faint accent color wash — visible in both light & dark */}
 				<div
 					className="absolute inset-0 pointer-events-none transition-all duration-700"
-					style={{ backgroundColor: `${accentColor}0a` }}
+					style={{
+						background: `radial-gradient(ellipse at 50% 40%, ${accentColor}10 0%, transparent 70%)`,
+					}}
 				/>
 
 				{/* HEADER UI */}
@@ -407,6 +409,7 @@ export default function Home() {
 							voiceLevel={voiceLevel}
 							audioLevels={audioLevels}
 							variant={faceVariant}
+							accentColor={customAccentColor ?? undefined}
 						/>
 					</div>
 				</motion.div>

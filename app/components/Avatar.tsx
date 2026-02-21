@@ -28,6 +28,8 @@ interface AvatarProps {
 	/** Multi-band audio levels from useAudioAnalysis hook */
 	audioLevels?: AudioLevels;
 	variant?: FaceVariant;
+	/** Custom accent color — overrides variant default */
+	accentColor?: string;
 }
 
 const DEFAULT_EMOTION: EmotionState = {
@@ -45,7 +47,10 @@ export default function Avatar({
 	voiceLevel = 0,
 	audioLevels,
 	variant = "minimal",
+	accentColor,
 }: AvatarProps) {
+	// Resolve display color: custom accent overrides variant default
+	const displayColor = accentColor || VARIANT_COLORS[variant];
 	// Helper for mouth geometry
 	const generateMouthPath = (width: number, curve: number) => {
 		const half = width / 2;
@@ -132,10 +137,10 @@ export default function Avatar({
 		}
 	};
 
-	// Apply Agent Theme when variant changes
+	// Apply Agent Theme when variant or accent color changes
 	useEffect(() => {
-		applyAgentTheme(variant);
-	}, [variant]);
+		applyAgentTheme(variant, accentColor);
+	}, [variant, accentColor]);
 
 	// Listen for audio activity/speech state
 	useEffect(() => {
@@ -1370,7 +1375,7 @@ export default function Avatar({
 			<div
 				ref={containerRef}
 				className="relative group cursor-pointer w-full"
-				style={{ color: VARIANT_COLORS[variant] }}
+				style={{ color: displayColor }}
 				onMouseMove={handlePointerMove}
 				onMouseLeave={handlePointerLeave}
 				onMouseDown={handlePointerDown}

@@ -274,7 +274,7 @@ export const CustomizationModal = React.memo(function CustomizationModal({
 						animate={{ opacity: 1 }}
 						exit={{ opacity: 0 }}
 						transition={{ duration: 0.2 }}
-						className="fixed inset-0 z-100 bg-black/20 dark:bg-black/45 backdrop-blur-sm"
+						className="fixed inset-0 z-100 bg-black/20 dark:bg-black/50 backdrop-blur-md"
 						onClick={onClose}
 					/>
 
@@ -292,56 +292,93 @@ export const CustomizationModal = React.memo(function CustomizationModal({
 							className="pointer-events-auto w-full max-w-[400px]"
 							onClick={(e) => e.stopPropagation()}
 						>
-							<div className="relative bg-background border border-foreground/8 rounded-2xl overflow-hidden shadow-[0_24px_80px_-16px_rgba(0,0,0,0.12)] max-h-[90vh] overflow-y-auto">
+							<div
+								className="relative bg-background rounded-2xl overflow-hidden max-h-[90vh] overflow-y-auto"
+								style={{
+									border: `1px solid ${accentColor}18`,
+									boxShadow: `0 24px 80px -16px rgba(0,0,0,0.12), 0 0 0 1px ${accentColor}08`,
+								}}
+							>
 								{/* washi texture */}
 								<div className="absolute inset-0 bg-washi pointer-events-none opacity-40" />
 
+								{/* faint accent wash on card */}
+								<div
+									className="absolute inset-0 pointer-events-none"
+									style={{
+										backgroundColor: `${accentColor}05`,
+									}}
+								/>
+
 								<div className="relative z-10 px-6 pt-6 pb-7">
 									{/* ── header ── */}
-									<div className="flex items-center justify-between mb-7">
+									<div className="flex items-center justify-between mb-8">
 										<div>
-											<h2 className="text-base font-semibold tracking-tight text-foreground leading-none">
+											<h2 className="text-[15px] font-semibold tracking-[-0.01em] text-foreground leading-none">
 												Settings
 											</h2>
-											<p className="text-[10px] font-mono text-foreground/35 tracking-[0.14em] mt-1.5 uppercase">
+											<p className="text-[10px] font-mono text-foreground/30 tracking-[0.12em] mt-1.5 uppercase">
 												configure your companion
 											</p>
 										</div>
 										<button
 											onClick={onClose}
-											className="size-8 rounded-lg flex items-center justify-center text-foreground/35 hover:text-foreground hover:bg-foreground/5 transition-all duration-150 active:scale-90"
+											className="size-8 rounded-lg flex items-center justify-center transition-all duration-150 active:scale-90"
+											style={{
+												color: `${accentColor}70`,
+											}}
 										>
 											<IoCloseOutline className="size-5" />
 										</button>
 									</div>
 
 									{/* ── name ── */}
-									<span className="block text-[10px] font-mono font-medium uppercase tracking-[0.22em] text-foreground/40 mb-2.5">
+									<label className="block text-[10px] font-mono font-medium uppercase tracking-[0.2em] text-foreground/35 mb-2">
 										Name
-									</span>
-									<input
-										type="text"
-										value={nameVal}
-										onChange={(e) =>
-											setNameVal(e.target.value)
-										}
-										onBlur={commitName}
-										onKeyDown={(e) => {
-											if (e.key === "Enter")
-												e.currentTarget.blur();
-										}}
-										maxLength={20}
-										spellCheck={false}
-										placeholder="Name your companion"
-										className="w-full bg-foreground/3 rounded-xl px-4 h-11 text-sm font-medium text-foreground border border-foreground/7 focus:outline-none focus:border-foreground/20 transition-colors font-mono placeholder:text-foreground/20 placeholder:font-normal mb-7"
-										style={{ caretColor: accentColor }}
-									/>
+									</label>
+									<div className="relative mb-8">
+										<input
+											type="text"
+											value={nameVal}
+											onChange={(e) =>
+												setNameVal(e.target.value)
+											}
+											onBlur={commitName}
+											onKeyDown={(e) => {
+												if (e.key === "Enter")
+													e.currentTarget.blur();
+											}}
+											maxLength={20}
+											spellCheck={false}
+											placeholder="Name your companion"
+											className="w-full bg-foreground/2.5 dark:bg-foreground/4 rounded-xl px-4 h-11 text-[13px] font-medium text-foreground focus:outline-none transition-all duration-200 font-mono placeholder:text-foreground/18 placeholder:font-normal"
+											style={{
+												caretColor: accentColor,
+												border: `1px solid ${accentColor}18`,
+											}}
+										/>
+										<motion.div
+											className="absolute bottom-0 left-3 right-3 h-px"
+											animate={{
+												scaleX: nameVal ? 1 : 0,
+											}}
+											transition={{
+												duration: 0.35,
+												ease: [0.16, 1, 0.3, 1],
+											}}
+											style={{
+												backgroundColor: accentColor,
+												opacity: 0.25,
+												transformOrigin: "left",
+											}}
+										/>
+									</div>
 
 									{/* ── style ── */}
-									<span className="block text-[10px] font-mono font-medium uppercase tracking-[0.22em] text-foreground/40 mb-2.5">
+									<label className="block text-[10px] font-mono font-medium uppercase tracking-[0.2em] text-foreground/35 mb-2">
 										Style
-									</span>
-									<div className="grid grid-cols-3 gap-2 mb-7">
+									</label>
+									<div className="grid grid-cols-3 gap-2 mb-8">
 										{FACES.map((face) => {
 											const active =
 												currentVariant === face.id;
@@ -352,20 +389,20 @@ export const CustomizationModal = React.memo(function CustomizationModal({
 														onVariantChange(face.id)
 													}
 													whileTap={{ scale: 0.95 }}
-													className="relative h-11 rounded-xl font-mono text-[11px] font-semibold uppercase tracking-widest transition-all duration-150 border cursor-pointer"
+													className="relative h-11 rounded-xl font-mono text-[11px] font-semibold uppercase tracking-widest transition-all duration-200 cursor-pointer"
 													style={
 														active
 															? {
-																	backgroundColor: `${accentColor}14`,
-																	borderColor: `${accentColor}40`,
+																	backgroundColor: `${accentColor}12`,
+																	border: `1.5px solid ${accentColor}45`,
 																	color: accentColor,
 																}
 															: {
 																	backgroundColor:
 																		"transparent",
-																	borderColor:
-																		"var(--border)",
+																	border: `1px solid ${accentColor}14`,
 																	color: "var(--foreground)",
+																	opacity: 0.7,
 																}
 													}
 												>
@@ -391,16 +428,16 @@ export const CustomizationModal = React.memo(function CustomizationModal({
 									</div>
 
 									{/* ── color ── */}
-									<span className="block text-[10px] font-mono font-medium uppercase tracking-[0.22em] text-foreground/40 mb-2.5">
+									<label className="block text-[10px] font-mono font-medium uppercase tracking-[0.2em] text-foreground/35 mb-2">
 										Color
-									</span>
+									</label>
 									<SpectrumPicker
 										color={accentColor}
 										onChange={onAccentColorChange}
 									/>
 
 									{/* quick-pick swatches */}
-									<div className="flex flex-wrap items-center gap-1.5 mt-4">
+									<div className="flex flex-wrap items-center gap-1.5 mt-3.5">
 										{SWATCHES.map((hex) => {
 											const active =
 												accentColor.toUpperCase() ===
@@ -414,38 +451,30 @@ export const CustomizationModal = React.memo(function CustomizationModal({
 													className="relative size-[22px] rounded-full transition-transform duration-150 hover:scale-110 active:scale-90 shrink-0"
 													style={{
 														backgroundColor: hex,
+														boxShadow: active
+															? `0 0 0 2px var(--background), 0 0 0 3.5px ${hex}`
+															: "none",
 													}}
-												>
-													{active && (
-														<motion.div
-															layoutId="swatch-ring"
-															className="absolute -inset-[3px] rounded-full border-[1.5px]"
-															style={{
-																borderColor:
-																	hex,
-															}}
-															transition={{
-																type: "spring",
-																stiffness: 500,
-																damping: 35,
-															}}
-														/>
-													)}
-												</button>
+												/>
 											);
 										})}
 									</div>
 
 									{/* hex readout */}
-									<div className="flex items-center gap-2 mt-4">
+									<div
+										className="flex items-center gap-2.5 mt-4 pt-3.5"
+										style={{
+											borderTop: `1px solid ${accentColor}0c`,
+										}}
+									>
 										<div
 											className="size-4 rounded-[5px] shrink-0"
 											style={{
 												backgroundColor: accentColor,
-												boxShadow: `0 0 0 1px ${accentColor}30`,
+												boxShadow: `0 2px 8px ${accentColor}30`,
 											}}
 										/>
-										<span className="text-[11px] font-mono font-medium text-foreground/40 uppercase tracking-wider">
+										<span className="text-[11px] font-mono font-semibold text-foreground/50 uppercase tracking-[0.15em]">
 											{accentColor}
 										</span>
 									</div>

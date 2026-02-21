@@ -20,11 +20,26 @@ export const VARIANT_GLOW: Record<FaceVariant, string> = {
 };
 
 /**
- * Apply face color and glow CSS variables to document root.
+ * Convert a hex color to an rgba string at a given alpha.
  */
-export function applyAgentTheme(variant: FaceVariant): void {
-	const color = VARIANT_COLORS[variant] || "#7C3AED";
-	const glow = VARIANT_GLOW[variant] || "rgba(124, 58, 237, 0.35)";
+function hexToRgba(hex: string, alpha: number): string {
+	const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+	if (!m) return `rgba(124, 58, 237, ${alpha})`;
+	return `rgba(${parseInt(m[1], 16)}, ${parseInt(m[2], 16)}, ${parseInt(m[3], 16)}, ${alpha})`;
+}
+
+/**
+ * Apply face color and glow CSS variables to document root.
+ * If a custom accentColor is provided it overrides the variant default.
+ */
+export function applyAgentTheme(
+	variant: FaceVariant,
+	accentColor?: string,
+): void {
+	const color = accentColor || VARIANT_COLORS[variant] || "#7C3AED";
+	const glow = accentColor
+		? hexToRgba(accentColor, 0.4)
+		: VARIANT_GLOW[variant] || "rgba(124, 58, 237, 0.35)";
 	const root = document.documentElement;
 
 	root.style.setProperty("--face-color", color);
