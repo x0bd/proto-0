@@ -397,7 +397,7 @@ export default function Home() {
 				>
 					<div
 						ref={avatarStageRef}
-						className="w-[96vw] sm:w-[88vw] md:w-[78vw] lg:w-[62vw] max-w-[820px] aspect-[520/350] flex items-center justify-center pointer-events-auto"
+						className="w-full sm:w-[90vw] md:w-[80vw] lg:w-[62vw] max-w-[820px] aspect-[360/250] flex items-center justify-center pointer-events-auto"
 					>
 						<Avatar
 							emotion={currentEmotion}
