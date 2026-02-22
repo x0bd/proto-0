@@ -33,7 +33,7 @@ export function FloatingDock({
 	}, []);
 
 	return (
-		<div className="absolute bottom-4 sm:bottom-6 md:bottom-10 left-1/2 -translate-x-1/2 z-60 flex flex-col items-center gap-2 sm:gap-3 w-full max-w-[calc(100vw-2rem)] px-4">
+		<div className="absolute bottom-[max(16px,env(safe-area-inset-bottom))] sm:bottom-6 md:bottom-10 left-1/2 -translate-x-1/2 z-60 flex flex-col items-center gap-2 sm:gap-3 w-full max-w-[calc(100vw-2rem)] px-4">
 			{/* Swipe Hint */}
 			<AnimatePresence>
 				{showHint && (

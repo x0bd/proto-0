@@ -275,7 +275,7 @@ export const CustomizationModal = React.memo(function CustomizationModal({
 						onClick={onClose}
 					/>
 
-					<div className="fixed inset-0 z-[101] flex items-center justify-center p-4 pointer-events-none">
+					<div className="fixed inset-0 z-[101] flex items-center justify-center p-3 sm:p-4 pointer-events-none">
 						<motion.div
 							initial={{ opacity: 0, scale: 0.96, y: 10 }}
 							animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -290,7 +290,7 @@ export const CustomizationModal = React.memo(function CustomizationModal({
 							onClick={(e) => e.stopPropagation()}
 						>
 							<div
-								className="relative bg-background rounded-[14px] overflow-hidden max-h-[90vh] overflow-y-auto"
+								className="relative bg-background rounded-[14px] overflow-hidden max-h-[92svh] overflow-y-auto"
 								style={{
 									border: `1px solid ${accentColor}22`,
 									boxShadow: `0 20px 60px -12px rgba(0,0,0,0.14), 0 0 0 1px ${accentColor}0a`,

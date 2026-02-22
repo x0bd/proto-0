@@ -253,7 +253,7 @@ export function DownloadButton({
 	};
 
 	return (
-		<div className="absolute bottom-4 right-2 sm:bottom-10 sm:right-6 z-70 flex flex-col items-end gap-2 sm:gap-2.5 pointer-events-auto">
+		<div className="absolute bottom-[max(16px,env(safe-area-inset-bottom))] right-3 sm:bottom-10 sm:right-6 z-70 flex flex-col items-end gap-2 sm:gap-2.5 pointer-events-auto">
 			<AnimatePresence>
 				{isOpen && (
 					<motion.div

@@ -305,7 +305,7 @@ export default function Home() {
 				/>
 
 				{/* HEADER UI */}
-				<div className="absolute top-4 left-2 sm:top-10 sm:left-6 z-50 flex items-center gap-3 select-none">
+				<div className="absolute top-[max(12px,env(safe-area-inset-top))] left-3 sm:top-8 sm:left-6 z-50 flex items-center gap-3 select-none">
 					{/* Branding */}
 					<motion.div
 						initial={{ opacity: 0, scale: 0.9 }}
@@ -328,7 +328,7 @@ export default function Home() {
 					</motion.div>
 				</div>
 
-				<div className="absolute top-4 right-2 sm:top-10 sm:right-6 z-50 flex items-center gap-2 sm:gap-2.5">
+				<div className="absolute top-[max(12px,env(safe-area-inset-top))] right-3 sm:top-8 sm:right-6 z-50 flex items-center gap-2 sm:gap-2.5">
 					{/* Theme Toggle */}
 					<motion.button
 						initial={{ opacity: 0, scale: 0.9 }}
@@ -397,7 +397,7 @@ export default function Home() {
 				>
 					<div
 						ref={avatarStageRef}
-						className="w-[95vw] md:w-[82vw] lg:w-[62vw] max-w-[820px] aspect-square flex items-center justify-center pointer-events-auto"
+						className="w-[96vw] sm:w-[88vw] md:w-[78vw] lg:w-[62vw] max-w-[820px] aspect-[520/350] flex items-center justify-center pointer-events-auto"
 					>
 						<Avatar
 							emotion={currentEmotion}
