@@ -3,19 +3,13 @@
  * Routes to the correct eye component based on variant
  */
 
-import { RefObject } from "react";
-import { FaceVariant } from "../types";
-import { EyeCallbacks, EyeRefs } from "./config";
+import { EyeProps } from "./config";
 
 // Legacy eyes implementation
 import { Eyes as LegacyEyes } from "@/app/components/face/Eyes";
 
 // Re-export types
 export * from "./config";
-
-interface EyesDispatcherProps extends EyeRefs, EyeCallbacks {
-	variant: FaceVariant;
-}
 
 /**
  * Eyes component - renders the correct eye style per variant
@@ -27,7 +21,8 @@ export function Eyes({
 	onWink,
 	onHoverStart,
 	onHoverEnd,
-}: EyesDispatcherProps) {
+	...rest
+}: EyeProps) {
 	return (
 		<LegacyEyes
 			leftRef={leftRef}
