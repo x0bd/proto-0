@@ -7,6 +7,7 @@ import {
 	RiFilmFill,
 	RiCheckFill,
 	RiCloseFill,
+	RiGalleryFill,
 } from "react-icons/ri";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
@@ -15,7 +16,32 @@ import GIF from "gif.js";
 interface DownloadButtonProps {
 	targetRef: React.RefObject<HTMLDivElement | null>;
 	accentColor?: string;
+	companionName?: string;
+	emotion?: string;
 }
+
+// ─── Helpers ──────────────────────────────────────────────────────────────
+
+/** Parse a 6-digit hex color into an "r,g,b" string for rgba() usage. */
+function hexToRgb(hex: string): string {
+	const clean = hex.replace("#", "");
+	const r = parseInt(clean.slice(0, 2), 16);
+	const g = parseInt(clean.slice(2, 4), 16);
+	const b = parseInt(clean.slice(4, 6), 16);
+	if (isNaN(r) || isNaN(g) || isNaN(b)) return "139,92,246";
+	return `${r},${g},${b}`;
+}
+
+function loadImage(src: string): Promise<HTMLImageElement> {
+	return new Promise((resolve, reject) => {
+		const img = new Image();
+		img.onload = () => resolve(img);
+		img.onerror = reject;
+		img.src = src;
+	});
+}
+
+// ─── PNG Capture ───────────────────────────────────────────────────────────
 
 /**
  * Captures the avatar SVG as a PNG data URL using native SVG serialization.
@@ -153,15 +179,153 @@ async function captureAvatarPNG(
 	});
 }
 
+// ─── Share Card ────────────────────────────────────────────────────────────
+
+/**
+ * Composes a branded share card: dark canvas + face + companion name +
+ * emotion label + subtle branding. Returns a PNG data URL.
+ */
+async function captureShareCard(
+	container: HTMLDivElement,
+	companionName: string,
+	emotion: string,
+	accentColor: string,
+): Promise<string> {
+	const W = 1080;
+	const H = 1350;
+	const canvas = document.createElement("canvas");
+	canvas.width = W;
+	canvas.height = H;
+	const ctx = canvas.getContext("2d")!;
+
+	// ── Dark base ──
+	ctx.fillStyle = "#0c0c0e";
+	ctx.fillRect(0, 0, W, H);
+
+	// ── Accent radial glow at face center ──
+	const rgb = hexToRgb(accentColor);
+	const gx = W / 2;
+	const gy = 430;
+	const glow = ctx.createRadialGradient(gx, gy, 0, gx, gy, 640);
+	glow.addColorStop(0, `rgba(${rgb},0.20)`);
+	glow.addColorStop(0.45, `rgba(${rgb},0.08)`);
+	glow.addColorStop(1, "rgba(0,0,0,0)");
+	ctx.fillStyle = glow;
+	ctx.fillRect(0, 0, W, H);
+
+	// ── Face ──
+	const { dataUrl: facePng } = await captureAvatarPNG(container, 860);
+	const faceImg = await loadImage(facePng);
+	const faceSize = 860;
+	const faceX = (W - faceSize) / 2;
+	const faceY = 44;
+	ctx.drawImage(faceImg, faceX, faceY, faceSize, faceSize);
+
+	// ── Companion name ──
+	ctx.textAlign = "center";
+	ctx.font =
+		'700 72px -apple-system, BlinkMacSystemFont, "Inter", sans-serif';
+	ctx.fillStyle = "#f0f0f0";
+	ctx.fillText(companionName.toUpperCase(), W / 2, 990);
+
+	// ── Emotion label ──
+	ctx.font =
+		'400 32px -apple-system, BlinkMacSystemFont, "Inter", sans-serif';
+	ctx.fillStyle = accentColor;
+	ctx.globalAlpha = 0.75;
+	ctx.fillText(emotion.toLowerCase(), W / 2, 1042);
+	ctx.globalAlpha = 1;
+
+	// ── Thin gradient rule ──
+	const ruleY = 1090;
+	const ruleGrad = ctx.createLinearGradient(
+		W / 2 - 90,
+		ruleY,
+		W / 2 + 90,
+		ruleY,
+	);
+	ruleGrad.addColorStop(0, "rgba(255,255,255,0)");
+	ruleGrad.addColorStop(0.5, `rgba(${rgb},0.45)`);
+	ruleGrad.addColorStop(1, "rgba(255,255,255,0)");
+	ctx.strokeStyle = ruleGrad;
+	ctx.lineWidth = 1;
+	ctx.beginPath();
+	ctx.moveTo(W / 2 - 90, ruleY);
+	ctx.lineTo(W / 2 + 90, ruleY);
+	ctx.stroke();
+
+	// ── Branding ──
+	ctx.font =
+		'400 22px -apple-system, BlinkMacSystemFont, "Inter", sans-serif';
+	ctx.fillStyle = "rgba(255,255,255,0.20)";
+	ctx.fillText("dot-0.vercel.app", W / 2, 1145);
+
+	return canvas.toDataURL("image/png");
+}
+
+// ─── Component ─────────────────────────────────────────────────────────────
+
 export function DownloadButton({
 	targetRef,
 	accentColor = "#7C3AED",
+	companionName = "DOT",
+	emotion = "curious",
 }: DownloadButtonProps) {
 	const [isOpen, setIsOpen] = React.useState(false);
 	const [isExporting, setIsExporting] = React.useState(false);
 	const [exportStatus, setExportStatus] = React.useState<
 		"idle" | "success" | "error"
 	>("idle");
+
+	const handleShareCard = async () => {
+		if (!targetRef.current || isExporting) return;
+		try {
+			setIsExporting(true);
+			const dataUrl = await captureShareCard(
+				targetRef.current,
+				companionName,
+				emotion,
+				accentColor,
+			);
+
+			const blob = await fetch(dataUrl).then((r) => r.blob());
+			const file = new File([blob], `dot-${Date.now()}.png`, {
+				type: "image/png",
+			});
+
+			if (
+				typeof navigator !== "undefined" &&
+				navigator.canShare?.({ files: [file] })
+			) {
+				await navigator.share({
+					files: [file],
+					title: `${companionName} — ${emotion}`,
+				});
+			} else {
+				const link = document.createElement("a");
+				link.download = `dot-card-${Date.now()}.png`;
+				link.href = dataUrl;
+				link.click();
+			}
+
+			setExportStatus("success");
+			setTimeout(() => {
+				setExportStatus("idle");
+				setIsOpen(false);
+			}, 2000);
+		} catch (err) {
+			// User cancelled share — not an error
+			if (err instanceof Error && err.name === "AbortError") {
+				setExportStatus("idle");
+			} else {
+				console.error("Share card failed", err);
+				setExportStatus("error");
+				setTimeout(() => setExportStatus("idle"), 2000);
+			}
+		} finally {
+			setIsExporting(false);
+		}
+	};
 
 	const handleDownloadPNG = async () => {
 		if (!targetRef.current || isExporting) return;
@@ -268,6 +432,35 @@ export function DownloadButton({
 						}}
 						className="flex flex-col gap-2 mb-1 origin-bottom-right"
 					>
+						{/* Share Card */}
+						<button
+							onClick={handleShareCard}
+							disabled={isExporting}
+							className={cn(
+								"flex items-center gap-3 px-4 py-2.5 rounded-[10px] bg-background border transition-all font-mono font-semibold tracking-wide group w-40",
+								"sm:gap-3.5 sm:px-5 sm:py-3 sm:text-[12px] sm:w-44 touch-manipulation",
+								"active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed",
+							)}
+							style={{ borderColor: `${accentColor}20` }}
+						>
+							<div
+								className="p-1.5 rounded-[6px] transition-all duration-200 group-hover:scale-110 shrink-0"
+								style={{
+									backgroundColor: `${accentColor}12`,
+									color: accentColor,
+								}}
+							>
+								<RiGalleryFill className="size-[14px]" />
+							</div>
+							<span
+								className="uppercase text-[11px]"
+								style={{ color: accentColor }}
+							>
+								Share Card
+							</span>
+						</button>
+
+						{/* PNG */}
 						<button
 							onClick={handleDownloadPNG}
 							disabled={isExporting}

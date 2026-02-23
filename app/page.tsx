@@ -437,6 +437,8 @@ export default function Home() {
 				<DownloadButton
 					targetRef={avatarStageRef}
 					accentColor={accentColor}
+					companionName={avatarName}
+					emotion={currentEmotion}
 				/>
 			</div>
 		</div>
