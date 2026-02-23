@@ -20,6 +20,17 @@ interface DownloadButtonProps {
 	emotion?: string;
 }
 
+type CardFormat = "story" | "square";
+type CardBackground = "glow" | "mesh" | "clean";
+
+interface ShareCardConfig {
+	title: string;
+	subtitle: string;
+	format: CardFormat;
+	background: CardBackground;
+	showBranding: boolean;
+}
+
 // ─── Helpers ──────────────────────────────────────────────────────────────
 
 /** Parse a 6-digit hex color into an "r,g,b" string for rgba() usage. */
@@ -39,6 +50,12 @@ function loadImage(src: string): Promise<HTMLImageElement> {
 		img.onerror = reject;
 		img.src = src;
 	});
+}
+
+function normalizeText(value: unknown, fallback: string): string {
+	if (typeof value !== "string") return fallback;
+	const trimmed = value.trim();
+	return trimmed.length > 0 ? trimmed : fallback;
 }
 
 // ─── PNG Capture ───────────────────────────────────────────────────────────
@@ -187,57 +204,92 @@ async function captureAvatarPNG(
  */
 async function captureShareCard(
 	container: HTMLDivElement,
-	companionName: string,
-	emotion: string,
+	config: ShareCardConfig,
 	accentColor: string,
 ): Promise<string> {
+	const isStory = config.format === "story";
 	const W = 1080;
-	const H = 1350;
+	const H = isStory ? 1350 : 1080;
 	const canvas = document.createElement("canvas");
 	canvas.width = W;
 	canvas.height = H;
 	const ctx = canvas.getContext("2d")!;
+	const rgb = hexToRgb(accentColor);
+	const title = normalizeText(config.title, "DOT");
+	const subtitle = normalizeText(config.subtitle, "curious");
 
 	// ── Dark base ──
 	ctx.fillStyle = "#0c0c0e";
 	ctx.fillRect(0, 0, W, H);
 
-	// ── Accent radial glow at face center ──
-	const rgb = hexToRgb(accentColor);
-	const gx = W / 2;
-	const gy = 430;
-	const glow = ctx.createRadialGradient(gx, gy, 0, gx, gy, 640);
-	glow.addColorStop(0, `rgba(${rgb},0.20)`);
-	glow.addColorStop(0.45, `rgba(${rgb},0.08)`);
-	glow.addColorStop(1, "rgba(0,0,0,0)");
-	ctx.fillStyle = glow;
-	ctx.fillRect(0, 0, W, H);
+	// ── Background style ──
+	if (config.background === "glow") {
+		const gx = W / 2;
+		const gy = isStory ? 430 : 350;
+		const glow = ctx.createRadialGradient(gx, gy, 0, gx, gy, 640);
+		glow.addColorStop(0, `rgba(${rgb},0.20)`);
+		glow.addColorStop(0.45, `rgba(${rgb},0.08)`);
+		glow.addColorStop(1, "rgba(0,0,0,0)");
+		ctx.fillStyle = glow;
+		ctx.fillRect(0, 0, W, H);
+	}
+
+	if (config.background === "mesh") {
+		const g1 = ctx.createRadialGradient(
+			W * 0.25,
+			H * 0.22,
+			0,
+			W * 0.25,
+			H * 0.22,
+			W * 0.6,
+		);
+		g1.addColorStop(0, `rgba(${rgb},0.14)`);
+		g1.addColorStop(1, "rgba(0,0,0,0)");
+		ctx.fillStyle = g1;
+		ctx.fillRect(0, 0, W, H);
+
+		const g2 = ctx.createRadialGradient(
+			W * 0.78,
+			H * 0.72,
+			0,
+			W * 0.78,
+			H * 0.72,
+			W * 0.65,
+		);
+		g2.addColorStop(0, `rgba(${rgb},0.10)`);
+		g2.addColorStop(1, "rgba(0,0,0,0)");
+		ctx.fillStyle = g2;
+		ctx.fillRect(0, 0, W, H);
+	}
+
+	if (config.background === "clean") {
+		ctx.fillStyle = `rgba(${rgb},0.06)`;
+		ctx.fillRect(0, 0, W, 2);
+	}
 
 	// ── Face ──
-	const { dataUrl: facePng } = await captureAvatarPNG(container, 860);
+	const faceSize = isStory ? 860 : 780;
+	const { dataUrl: facePng } = await captureAvatarPNG(container, faceSize);
 	const faceImg = await loadImage(facePng);
-	const faceSize = 860;
 	const faceX = (W - faceSize) / 2;
-	const faceY = 44;
+	const faceY = isStory ? 44 : 36;
 	ctx.drawImage(faceImg, faceX, faceY, faceSize, faceSize);
 
-	// ── Companion name ──
+	// ── Title ──
 	ctx.textAlign = "center";
-	ctx.font =
-		'700 72px -apple-system, BlinkMacSystemFont, "Inter", sans-serif';
+	ctx.font = `700 ${isStory ? 72 : 64}px -apple-system, BlinkMacSystemFont, "Inter", sans-serif`;
 	ctx.fillStyle = "#f0f0f0";
-	ctx.fillText(companionName.toUpperCase(), W / 2, 990);
+	ctx.fillText(title.toUpperCase(), W / 2, isStory ? 990 : 900);
 
-	// ── Emotion label ──
-	ctx.font =
-		'400 32px -apple-system, BlinkMacSystemFont, "Inter", sans-serif';
+	// ── Subtitle ──
+	ctx.font = `400 ${isStory ? 32 : 30}px -apple-system, BlinkMacSystemFont, "Inter", sans-serif`;
 	ctx.fillStyle = accentColor;
 	ctx.globalAlpha = 0.75;
-	ctx.fillText(emotion.toLowerCase(), W / 2, 1042);
+	ctx.fillText(subtitle.toLowerCase(), W / 2, isStory ? 1042 : 945);
 	ctx.globalAlpha = 1;
 
 	// ── Thin gradient rule ──
-	const ruleY = 1090;
+	const ruleY = isStory ? 1090 : 990;
 	const ruleGrad = ctx.createLinearGradient(
 		W / 2 - 90,
 		ruleY,
@@ -255,10 +307,11 @@ async function captureShareCard(
 	ctx.stroke();
 
 	// ── Branding ──
-	ctx.font =
-		'400 22px -apple-system, BlinkMacSystemFont, "Inter", sans-serif';
-	ctx.fillStyle = "rgba(255,255,255,0.20)";
-	ctx.fillText("dot-0.vercel.app", W / 2, 1145);
+	if (config.showBranding) {
+		ctx.font = `400 ${isStory ? 22 : 20}px -apple-system, BlinkMacSystemFont, "Inter", sans-serif`;
+		ctx.fillStyle = "rgba(255,255,255,0.20)";
+		ctx.fillText("dot-0.vercel.app", W / 2, isStory ? 1145 : 1035);
+	}
 
 	return canvas.toDataURL("image/png");
 }
@@ -272,10 +325,27 @@ export function DownloadButton({
 	emotion = "curious",
 }: DownloadButtonProps) {
 	const [isOpen, setIsOpen] = React.useState(false);
+	const [isComposerOpen, setIsComposerOpen] = React.useState(false);
 	const [isExporting, setIsExporting] = React.useState(false);
 	const [exportStatus, setExportStatus] = React.useState<
 		"idle" | "success" | "error"
 	>("idle");
+	const [shareCardConfig, setShareCardConfig] =
+		React.useState<ShareCardConfig>({
+			title: normalizeText(companionName, "DOT"),
+			subtitle: normalizeText(emotion, "curious"),
+			format: "story",
+			background: "glow",
+			showBranding: true,
+		});
+
+	React.useEffect(() => {
+		setShareCardConfig((prev) => ({
+			...prev,
+			title: prev.title || normalizeText(companionName, "DOT"),
+			subtitle: prev.subtitle || normalizeText(emotion, "curious"),
+		}));
+	}, [companionName, emotion]);
 
 	const handleShareCard = async () => {
 		if (!targetRef.current || isExporting) return;
@@ -283,8 +353,7 @@ export function DownloadButton({
 			setIsExporting(true);
 			const dataUrl = await captureShareCard(
 				targetRef.current,
-				companionName,
-				emotion,
+				shareCardConfig,
 				accentColor,
 			);
 
@@ -299,7 +368,7 @@ export function DownloadButton({
 			) {
 				await navigator.share({
 					files: [file],
-					title: `${companionName} — ${emotion}`,
+					title: `${shareCardConfig.title} — ${shareCardConfig.subtitle}`,
 				});
 			} else {
 				const link = document.createElement("a");
@@ -312,6 +381,7 @@ export function DownloadButton({
 			setTimeout(() => {
 				setExportStatus("idle");
 				setIsOpen(false);
+				setIsComposerOpen(false);
 			}, 2000);
 		} catch (err) {
 			// User cancelled share — not an error
@@ -434,7 +504,7 @@ export function DownloadButton({
 					>
 						{/* Share Card */}
 						<button
-							onClick={handleShareCard}
+							onClick={() => setIsComposerOpen((prev) => !prev)}
 							disabled={isExporting}
 							className={cn(
 								"flex items-center gap-3 px-4 py-2.5 rounded-[10px] bg-background border transition-all font-mono font-semibold tracking-wide group w-40",
@@ -456,9 +526,195 @@ export function DownloadButton({
 								className="uppercase text-[11px]"
 								style={{ color: accentColor }}
 							>
-								Share Card
+								Customize Card
 							</span>
 						</button>
+
+						<AnimatePresence>
+							{isComposerOpen && (
+								<motion.div
+									initial={{ opacity: 0, y: 6, scale: 0.98 }}
+									animate={{ opacity: 1, y: 0, scale: 1 }}
+									exit={{ opacity: 0, y: 6, scale: 0.98 }}
+									transition={{
+										type: "spring",
+										damping: 26,
+										stiffness: 360,
+									}}
+									className="w-[18rem] sm:w-[20rem] rounded-[12px] border bg-background/95 backdrop-blur-sm p-3.5 flex flex-col gap-3"
+									style={{ borderColor: `${accentColor}25` }}
+								>
+									<div className="flex flex-col gap-1.5">
+										<label
+											className="text-[10px] uppercase tracking-[0.16em] font-mono"
+											style={{ color: accentColor }}
+										>
+											Card Name
+										</label>
+										<input
+											value={shareCardConfig.title}
+											onChange={(e) =>
+												setShareCardConfig((prev) => ({
+													...prev,
+													title: e.target.value,
+												}))
+											}
+											maxLength={24}
+											className="h-9 rounded-[8px] border bg-transparent px-3 text-[12px] outline-none"
+											style={{
+												borderColor: `${accentColor}30`,
+											}}
+										/>
+									</div>
+
+									<div className="flex flex-col gap-1.5">
+										<label
+											className="text-[10px] uppercase tracking-[0.16em] font-mono"
+											style={{ color: accentColor }}
+										>
+											Subtitle
+										</label>
+										<input
+											value={shareCardConfig.subtitle}
+											onChange={(e) =>
+												setShareCardConfig((prev) => ({
+													...prev,
+													subtitle: e.target.value,
+												}))
+											}
+											maxLength={28}
+											className="h-9 rounded-[8px] border bg-transparent px-3 text-[12px] outline-none"
+											style={{
+												borderColor: `${accentColor}30`,
+											}}
+										/>
+									</div>
+
+									<div className="grid grid-cols-2 gap-2">
+										<button
+											onClick={() =>
+												setShareCardConfig((prev) => ({
+													...prev,
+													format: "story",
+												}))
+											}
+											className="h-8 rounded-[8px] border text-[11px] uppercase tracking-[0.08em]"
+											style={{
+												borderColor:
+													shareCardConfig.format ===
+													"story"
+														? accentColor
+														: `${accentColor}30`,
+												color:
+													shareCardConfig.format ===
+													"story"
+														? accentColor
+														: "inherit",
+											}}
+										>
+											Story
+										</button>
+										<button
+											onClick={() =>
+												setShareCardConfig((prev) => ({
+													...prev,
+													format: "square",
+												}))
+											}
+											className="h-8 rounded-[8px] border text-[11px] uppercase tracking-[0.08em]"
+											style={{
+												borderColor:
+													shareCardConfig.format ===
+													"square"
+														? accentColor
+														: `${accentColor}30`,
+												color:
+													shareCardConfig.format ===
+													"square"
+														? accentColor
+														: "inherit",
+											}}
+										>
+											Square
+										</button>
+									</div>
+
+									<div className="grid grid-cols-3 gap-2">
+										{(
+											[
+												"glow",
+												"mesh",
+												"clean",
+											] as CardBackground[]
+										).map((mode) => (
+											<button
+												key={mode}
+												onClick={() =>
+													setShareCardConfig(
+														(prev) => ({
+															...prev,
+															background: mode,
+														}),
+													)
+												}
+												className="h-8 rounded-[8px] border text-[10px] uppercase tracking-[0.08em]"
+												style={{
+													borderColor:
+														shareCardConfig.background ===
+														mode
+															? accentColor
+															: `${accentColor}30`,
+													color:
+														shareCardConfig.background ===
+														mode
+															? accentColor
+															: "inherit",
+												}}
+											>
+												{mode}
+											</button>
+										))}
+									</div>
+
+									<label className="flex items-center justify-between gap-3 text-[11px] uppercase tracking-[0.08em] font-mono">
+										<span style={{ color: accentColor }}>
+											Branding
+										</span>
+										<input
+											type="checkbox"
+											checked={
+												shareCardConfig.showBranding
+											}
+											onChange={(e) =>
+												setShareCardConfig((prev) => ({
+													...prev,
+													showBranding:
+														e.target.checked,
+												}))
+											}
+											className="size-4 accent-current"
+											style={{ color: accentColor }}
+										/>
+									</label>
+
+									<button
+										onClick={handleShareCard}
+										disabled={isExporting}
+										className={cn(
+											"h-9 rounded-[9px] border text-[11px] uppercase tracking-[0.12em] font-mono font-semibold",
+											"active:scale-[0.98] transition-transform",
+											"disabled:opacity-50 disabled:cursor-not-allowed",
+										)}
+										style={{
+											borderColor: accentColor,
+											color: accentColor,
+										}}
+									>
+										Share Now
+									</button>
+								</motion.div>
+							)}
+						</AnimatePresence>
 
 						{/* PNG */}
 						<button
