@@ -1351,6 +1351,30 @@ export default function Avatar({
 
 	function performMouthClick() {
 		triggerHaptic(10); // Light tick
+
+		if (variant === "robot") {
+			// Robot: quick bounce on all 5 bars
+			const bars = spectrumBarsRef.current;
+			if (bars.length >= 5) {
+				const baseHeights = [38, 52, 65, 52, 38];
+				bars.forEach((bar, i) => {
+					if (!bar) return;
+					gsap.timeline()
+						.to(bar, {
+							attr: { height: baseHeights[i] * 1.4 },
+							duration: 0.12,
+							ease: "back.out(2)",
+						})
+						.to(bar, {
+							attr: { height: baseHeights[i] },
+							duration: 0.25,
+							ease: "elastic.out(1, 0.4)",
+						});
+				});
+			}
+			return;
+		}
+
 		if (mouthRef.current) {
 			const m = latestMouthRef.current;
 			const smileD = generateMouthPath(m.width, m.curve - 20);
@@ -1390,6 +1414,13 @@ export default function Avatar({
 		};
 		startGlance();
 		startIdleMouthWave();
+
+		// Ensure spectrum bars visibility matches variant
+		if (spectrumGroupRef.current) {
+			gsap.set(spectrumGroupRef.current, {
+				opacity: variant === "robot" ? 1 : 0,
+			});
+		}
 
 		// Analogue Line Boil Loop
 		if (variant === "analogue") {
@@ -1565,7 +1596,7 @@ export default function Avatar({
 				simTickerRef.current = null;
 			}
 		};
-	}, [voiceEnabled]);
+	}, [voiceEnabled, variant]);
 
 	return (
 		<div className={`flex items-center justify-center w-full ${className}`}>
