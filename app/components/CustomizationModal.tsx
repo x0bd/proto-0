@@ -64,6 +64,7 @@ const FACES: { id: FaceVariant; name: string }[] = [
 	{ id: "minimal", name: "Pure" },
 	{ id: "tron", name: "Digital" },
 	{ id: "analogue", name: "Sketch" },
+	{ id: "robot", name: "Robot" },
 ];
 
 const SWATCHES = [

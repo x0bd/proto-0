@@ -25,6 +25,55 @@ export function Mouth({
 }: MouthProps) {
 	const style = getMouthStyle(variant);
 
+	if (variant === "robot") {
+		// Robot: 5 capsule bars as the mouth — bars ARE the expression
+		const barConfigs = [
+			{ cx: -44, w: 12, h: 38 },
+			{ cx: -22, w: 14, h: 52 },
+			{ cx: 0, w: 16, h: 65 },
+			{ cx: 22, w: 14, h: 52 },
+			{ cx: 44, w: 12, h: 38 },
+		];
+
+		return (
+			<g ref={groupRef} transform="translate(260,175)">
+				{/* Hidden path for ref compatibility */}
+				<path
+					ref={mouthRef}
+					d="M -33 0 Q 0 0 33 0"
+					fill="none"
+					stroke="none"
+					opacity="0"
+				/>
+				{/* 5 capsule bars — always visible */}
+				<g ref={spectrumGroupRef} opacity="1">
+					{barConfigs.map((bar, i) => (
+						<rect
+							key={i}
+							ref={(el) => {
+								if (el) spectrumBarsRef.current[i] = el;
+							}}
+							x={bar.cx - bar.w / 2}
+							y={-5}
+							width={bar.w}
+							height={bar.h}
+							rx={bar.w / 2}
+							fill="currentColor"
+							className="cursor-pointer transition-colors duration-300"
+							style={{ transformOrigin: `${bar.cx}px -5px` }}
+							onClick={(e) => {
+								e.stopPropagation();
+								onClick();
+							}}
+							onMouseEnter={onHoverStart}
+							onMouseLeave={onHoverEnd}
+						/>
+					))}
+				</g>
+			</g>
+		);
+	}
+
 	return (
 		<g ref={groupRef} transform="translate(260,175)">
 			<path

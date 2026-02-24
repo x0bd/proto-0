@@ -1,4 +1,4 @@
-export type FaceVariant = "minimal" | "tron" | "analogue";
+export type FaceVariant = "minimal" | "tron" | "analogue" | "robot";
 
 export interface FaceProps {
 	emotion: EmotionState;
