@@ -774,25 +774,38 @@ export default function Avatar({
 			if (bars.length >= 5) {
 				const baseHeights = [53, 71, 90, 71, 53];
 				const baseWidths = [16, 18, 20, 18, 16];
-				const curveNorm = mouthCurve / 40; // ~-1 to 1
+				const curveNorm = Math.max(
+					-1.25,
+					Math.min(1.25, mouthCurve / 32),
+				);
 				const spreadFactor = mouthWidth / 65;
 				const spacing = 26 * spreadFactor;
+				const emotionEnergy = Math.min(
+					1,
+					joy + sadness + anger + surprise,
+				);
 
 				for (let i = 0; i < 5; i++) {
 					const d = i - 2; // -2..2 from center
 					const absd = Math.abs(d);
 
-					// Height: joy amplifies bell, sadness inverts it
-					const heightDelta = curveNorm * absd * 10;
+					// Height: stronger bell/inversion with emotion-specific boosts
+					const heightDelta = curveNorm * absd * 15;
+					const centerBoost = joy * 11 + surprise * 8;
+					const edgeBoost = sadness * 8 + anger * 7;
 					const height = Math.max(
 						8,
-						baseHeights[i] - heightDelta + Math.abs(curveNorm) * 4,
+						baseHeights[i] -
+							heightDelta +
+							Math.abs(curveNorm) * 7 +
+							(i === 2 ? centerBoost : (edgeBoost * absd) / 2) +
+							emotionEnergy * 2,
 					);
 
-					// Y shift: creates smile/frown curve on bottom edges
-					const yShift = curveNorm * absd * 6;
+					// Y shift: stronger smile/frown arc
+					const yShift = curveNorm * absd * 9;
 
-					const w = baseWidths[i];
+					const w = baseWidths[i] + surprise * 1.5;
 					const x = d * spacing - w / 2;
 					const y = -5 - yShift;
 
@@ -820,10 +833,11 @@ export default function Avatar({
 			});
 		}
 
-		// Rotate the mouth group strictly around the face center (skip for robot — no tilt)
-		if (variant !== "robot" && mouthGroupRef.current) {
+		// Rotate the mouth group strictly around the face center
+		if (mouthGroupRef.current) {
+			const targetMouthTilt = variant === "robot" ? 0 : mouthTilt;
 			gsap.to(mouthGroupRef.current, {
-				rotation: mouthTilt,
+				rotation: targetMouthTilt,
 				duration: 0.8,
 				ease: "power2.out",
 				svgOrigin: "260 175",
@@ -835,7 +849,7 @@ export default function Avatar({
 		latestMouthRef.current = {
 			width: mouthWidth,
 			curve: mouthCurve,
-			tilt: mouthTilt,
+			tilt: variant === "robot" ? 0 : mouthTilt,
 		};
 	}
 
@@ -1065,13 +1079,15 @@ export default function Avatar({
 			);
 		}
 
-		// More expressive mouth tilt with overshoot (skip for robot — no tilt)
-		if (variant !== "robot" && mouthGroupRef.current)
+		// Mouth tilt with pointer follow (robot gets balanced left/right tilt)
+		if (mouthGroupRef.current) {
+			const pointerTilt = variant === "robot" ? nx * 14 : nx * 10;
 			gsap.to(mouthGroupRef.current, {
-				rotation: latestMouthRef.current.tilt + nx * 10,
+				rotation: latestMouthRef.current.tilt + pointerTilt,
 				duration: 0.45,
 				ease: "power3.out",
 			});
+		}
 
 		// Enhanced container movement with head lean
 		// Skip if shaking
@@ -1136,7 +1152,7 @@ export default function Avatar({
 			320,
 		);
 
-		if (variant !== "robot" && mouthGroupRef.current)
+		if (mouthGroupRef.current)
 			gsap.to(mouthGroupRef.current, {
 				rotation: latestMouthRef.current.tilt,
 				duration: 0.6,
