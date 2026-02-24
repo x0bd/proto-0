@@ -93,18 +93,18 @@ export default function Home() {
 	const { theme, setTheme } = useTheme();
 
 	// Avatar personalisation
-	const [avatarName, setAvatarName] = useState<string>("DOT");
+	const [avatarName, setAvatarName] = useState<string>(() => {
+		if (typeof window !== "undefined")
+			return localStorage.getItem("avatarName") || "DOT";
+		return "DOT";
+	});
 	const [customAccentColor, setCustomAccentColor] = useState<string | null>(
-		null,
+		() => {
+			if (typeof window !== "undefined")
+				return localStorage.getItem("accentColor") || null;
+			return null;
+		},
 	);
-
-	// Hydrate personalisation from localStorage after mount (avoids SSR mismatch)
-	useEffect(() => {
-		const storedName = localStorage.getItem("avatarName");
-		if (storedName) setAvatarName(storedName);
-		const storedColor = localStorage.getItem("accentColor");
-		if (storedColor) setCustomAccentColor(storedColor);
-	}, []);
 
 	const handleAvatarNameChange = (name: string) => {
 		setAvatarName(name);
@@ -437,8 +437,6 @@ export default function Home() {
 				<DownloadButton
 					targetRef={avatarStageRef}
 					accentColor={accentColor}
-					companionName={avatarName}
-					emotion={activePresetId}
 				/>
 			</div>
 		</div>
