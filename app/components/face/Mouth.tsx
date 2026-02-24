@@ -28,11 +28,11 @@ export function Mouth({
 	if (variant === "robot") {
 		// Robot: 5 capsule bars as the mouth — bars ARE the expression
 		const barConfigs = [
-			{ cx: -44, w: 12, h: 38 },
-			{ cx: -22, w: 14, h: 52 },
-			{ cx: 0, w: 16, h: 65 },
-			{ cx: 22, w: 14, h: 52 },
-			{ cx: 44, w: 12, h: 38 },
+			{ cx: -52, w: 16, h: 53 },
+			{ cx: -26, w: 18, h: 71 },
+			{ cx: 0, w: 20, h: 90 },
+			{ cx: 26, w: 18, h: 71 },
+			{ cx: 52, w: 16, h: 53 },
 		];
 
 		return (

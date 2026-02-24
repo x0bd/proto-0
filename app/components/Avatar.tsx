@@ -286,8 +286,9 @@ export default function Avatar({
 			overwrite: "auto",
 		});
 
-		// Apply jitter to mouth group if we have multi-band data
+		// Apply jitter to mouth group if we have multi-band data (skip robot — no tilt)
 		if (
+			variant !== "robot" &&
 			mouthGroupRef.current &&
 			hasAudioLevels &&
 			Math.abs(mouthJitter) > 0.1
@@ -317,8 +318,8 @@ export default function Avatar({
 
 		// Apply to both eyes
 		[
-			{ ref: leftEyeRef, cx: 170, tiltSign: -1 },
-			{ ref: rightEyeRef, cx: 350, tiltSign: 1 },
+			{ ref: leftEyeRef, cx: 200, tiltSign: -1 },
+			{ ref: rightEyeRef, cx: 320, tiltSign: 1 },
 		].forEach(({ ref, cx, tiltSign }) => {
 			if (!ref.current) return;
 
@@ -496,7 +497,7 @@ export default function Avatar({
 		// For simplicity/performance in this specific effect, we might inline logic or loop.
 
 		[leftEyeRef.current, rightEyeRef.current].forEach((eye, i) => {
-			const cx = i === 0 ? 170 : 350;
+			const cx = i === 0 ? 200 : 320;
 			// We want to scale UP 1.15 and increase dimensions
 			// animateEye handles "scale" prop.
 			animateEye(
@@ -536,7 +537,7 @@ export default function Avatar({
 		const target = latestEyeTargetsRef.current;
 
 		[leftEyeRef.current, rightEyeRef.current].forEach((eye, i) => {
-			const cx = i === 0 ? 170 : 350;
+			const cx = i === 0 ? 200 : 320;
 			animateEye(
 				eye,
 				{
@@ -568,7 +569,7 @@ export default function Avatar({
 			return;
 		}
 		const eyeRef = eye === "left" ? leftEyeRef : rightEyeRef;
-		const cx = eye === "left" ? 170 : 350;
+		const cx = eye === "left" ? 200 : 320;
 		const target = latestEyeTargetsRef.current;
 
 		animateEye(
@@ -602,7 +603,7 @@ export default function Avatar({
 			return;
 		}
 		const eyeRef = eye === "left" ? leftEyeRef : rightEyeRef;
-		const cx = eye === "left" ? 170 : 350;
+		const cx = eye === "left" ? 200 : 320;
 		const target = latestEyeTargetsRef.current;
 
 		animateEye(
@@ -622,6 +623,7 @@ export default function Avatar({
 	}
 
 	function handleMouthHover() {
+		if (variant === "robot") return; // Robot bars don't react to hover
 		if (mouthGroupRef.current) {
 			gsap.to(mouthGroupRef.current, {
 				scale: 1.05,
@@ -633,6 +635,7 @@ export default function Avatar({
 	}
 
 	function handleMouthHoverEnd() {
+		if (variant === "robot") return;
 		if (mouthGroupRef.current) {
 			gsap.to(mouthGroupRef.current, {
 				scale: 1,
@@ -738,7 +741,7 @@ export default function Avatar({
 			0.75,
 			"power2.out",
 			0,
-			170,
+			200,
 		);
 
 		// Animate right eye with slight delay
@@ -753,7 +756,7 @@ export default function Avatar({
 			0.75,
 			"power2.out",
 			stagger,
-			350,
+			320,
 		);
 
 		// Save latest eye targets for idle (blink/glance)
@@ -769,11 +772,11 @@ export default function Avatar({
 			// Robot: animate 5 capsule bars based on emotion
 			const bars = spectrumBarsRef.current;
 			if (bars.length >= 5) {
-				const baseHeights = [38, 52, 65, 52, 38];
-				const baseWidths = [12, 14, 16, 14, 12];
+				const baseHeights = [53, 71, 90, 71, 53];
+				const baseWidths = [16, 18, 20, 18, 16];
 				const curveNorm = mouthCurve / 40; // ~-1 to 1
 				const spreadFactor = mouthWidth / 65;
-				const spacing = 22 * spreadFactor;
+				const spacing = 26 * spreadFactor;
 
 				for (let i = 0; i < 5; i++) {
 					const d = i - 2; // -2..2 from center
@@ -817,8 +820,8 @@ export default function Avatar({
 			});
 		}
 
-		// Rotate the mouth group strictly around the face center using svgOrigin
-		if (mouthGroupRef.current) {
+		// Rotate the mouth group strictly around the face center (skip for robot — no tilt)
+		if (variant !== "robot" && mouthGroupRef.current) {
 			gsap.to(mouthGroupRef.current, {
 				rotation: mouthTilt,
 				duration: 0.8,
@@ -840,10 +843,9 @@ export default function Avatar({
 		const target = latestEyeTargetsRef.current;
 
 		if (variant === "robot") {
-			// Robot: scaleY squash blink on ring + pupil
+			// Robot: scaleY squash blink on solid dots
 			const eyes = [leftEyeRef.current, rightEyeRef.current];
-			const pupils = [leftPupilRef.current, rightPupilRef.current];
-			[...eyes, ...pupils].forEach((el) => {
+			eyes.forEach((el) => {
 				if (!el) return;
 				gsap.to(el, {
 					scaleY: 0.05,
@@ -853,7 +855,7 @@ export default function Avatar({
 				});
 			});
 			setTimeout(() => {
-				[...eyes, ...pupils].forEach((el) => {
+				eyes.forEach((el) => {
 					if (!el) return;
 					gsap.to(el, {
 						scaleY: 1,
@@ -871,7 +873,7 @@ export default function Avatar({
 
 		// Close eyes
 		[leftEyeRef.current, rightEyeRef.current].forEach((eye, i) => {
-			const cx = i === 0 ? 170 : 350;
+			const cx = i === 0 ? 200 : 320;
 			animateEye(
 				eye,
 				{
@@ -890,7 +892,7 @@ export default function Avatar({
 		// Reopen eyes (delayed)
 		const reopenDelay = blinkDur + (variant === "tron" ? 0.05 : 0);
 		[leftEyeRef.current, rightEyeRef.current].forEach((eye, i) => {
-			const cx = i === 0 ? 170 : 350;
+			const cx = i === 0 ? 200 : 320;
 			animateEye(
 				eye,
 				{
@@ -917,8 +919,8 @@ export default function Avatar({
 		// Let's manually handle glance logic branching since it uses yoyo/repeat.
 
 		const eyes = [
-			{ ref: leftEyeRef, cx: 170, baseRot: 0 }, // baseRot ignored as we do relative
-			{ ref: rightEyeRef, cx: 350, baseRot: 0 },
+			{ ref: leftEyeRef, cx: 200, baseRot: 0 }, // baseRot ignored as we do relative
+			{ ref: rightEyeRef, cx: 320, baseRot: 0 },
 		];
 
 		eyes.forEach(({ ref, cx }, i) => {
@@ -961,7 +963,7 @@ export default function Avatar({
 					// Robot: subtly oscillate bar heights around emotion baseline
 					const bars = spectrumBarsRef.current;
 					if (bars.length >= 5) {
-						const baseHeights = [38, 52, 65, 52, 38];
+						const baseHeights = [53, 71, 90, 71, 53];
 						const m = latestMouthRef.current;
 						const curveNorm = m.curve / 40;
 						for (let i = 0; i < 5; i++) {
@@ -1044,7 +1046,7 @@ export default function Avatar({
 				0.4,
 				"power3.out",
 				0,
-				170,
+				200,
 			);
 
 			animateEye(
@@ -1059,26 +1061,12 @@ export default function Avatar({
 				0.4,
 				"power3.out",
 				0,
-				350,
+				320,
 			);
 		}
 
-		// Robot: track pupils independently inside rings
-		if (variant === "robot") {
-			const pupilRange = 10;
-			[leftPupilRef.current, rightPupilRef.current].forEach((p) => {
-				if (!p) return;
-				gsap.to(p, {
-					x: nx * pupilRange,
-					y: ny * pupilRange * 0.6,
-					duration: 0.25,
-					ease: "power3.out",
-				});
-			});
-		}
-
-		// More expressive mouth tilt with overshoot
-		if (mouthGroupRef.current)
+		// More expressive mouth tilt with overshoot (skip for robot — no tilt)
+		if (variant !== "robot" && mouthGroupRef.current)
 			gsap.to(mouthGroupRef.current, {
 				rotation: latestMouthRef.current.tilt + nx * 10,
 				duration: 0.45,
@@ -1130,7 +1118,7 @@ export default function Avatar({
 			0.6,
 			"power3.out",
 			0,
-			170,
+			200,
 		);
 
 		animateEye(
@@ -1145,23 +1133,15 @@ export default function Avatar({
 			0.6,
 			"power3.out",
 			0,
-			350,
+			320,
 		);
 
-		if (mouthGroupRef.current)
+		if (variant !== "robot" && mouthGroupRef.current)
 			gsap.to(mouthGroupRef.current, {
 				rotation: latestMouthRef.current.tilt,
 				duration: 0.6,
 				ease: "power3.out",
 			});
-
-		// Robot: reset pupils to center
-		if (variant === "robot") {
-			[leftPupilRef.current, rightPupilRef.current].forEach((p) => {
-				if (!p) return;
-				gsap.to(p, { x: 0, y: 0, duration: 0.5, ease: "power3.out" });
-			});
-		}
 
 		if (containerRef.current)
 			gsap.to(containerRef.current, {
@@ -1203,7 +1183,7 @@ export default function Avatar({
 
 		const eyeRef = eye === "left" ? leftEyeRef : rightEyeRef;
 		const target = latestEyeTargetsRef.current;
-		const cx = eye === "left" ? 170 : 350;
+		const cx = eye === "left" ? 200 : 320;
 
 		// We need sequence. animateEye doesn't return tween (yet), so we chain via delay or callbacks.
 		// Simple delay approach:
@@ -1251,8 +1231,8 @@ export default function Avatar({
 
 		// Eyes wide with bounce
 		const eyesToAnimate: Array<{ ref: SVGElement | null; cx: number }> = [
-			{ ref: leftEyeRef.current, cx: 170 },
-			{ ref: rightEyeRef.current, cx: 350 },
+			{ ref: leftEyeRef.current, cx: 200 },
+			{ ref: rightEyeRef.current, cx: 320 },
 		];
 
 		eyesToAnimate.forEach(({ ref, cx }) => {
@@ -1356,7 +1336,7 @@ export default function Avatar({
 			// Robot: quick bounce on all 5 bars
 			const bars = spectrumBarsRef.current;
 			if (bars.length >= 5) {
-				const baseHeights = [38, 52, 65, 52, 38];
+				const baseHeights = [53, 71, 90, 71, 53];
 				bars.forEach((bar, i) => {
 					if (!bar) return;
 					gsap.timeline()
@@ -1485,7 +1465,7 @@ export default function Avatar({
 				// Robot: restore bars to emotion baseline
 				const bars = spectrumBarsRef.current;
 				if (bars.length >= 5) {
-					const baseHeights = [38, 52, 65, 52, 38];
+					const baseHeights = [53, 71, 90, 71, 53];
 					const m = latestMouthRef.current;
 					const curveNorm = m.curve / 40;
 					for (let i = 0; i < 5; i++) {
@@ -1513,7 +1493,7 @@ export default function Avatar({
 				}
 			}
 
-			if (mouthGroupRef.current) {
+			if (variant !== "robot" && mouthGroupRef.current) {
 				gsap.to(mouthGroupRef.current, {
 					rotation: latestMouthRef.current.tilt,
 					duration: 0.25,
@@ -1555,7 +1535,7 @@ export default function Avatar({
 				// Robot: modulate bar heights with voice amplitude
 				const bars = spectrumBarsRef.current;
 				if (bars.length >= 5) {
-					const baseHeights = [38, 52, 65, 52, 38];
+					const baseHeights = [53, 71, 90, 71, 53];
 					const m = latestMouthRef.current;
 					const curveNorm = m.curve / 40;
 					for (let i = 0; i < 5; i++) {

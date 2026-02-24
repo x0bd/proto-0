@@ -31,15 +31,13 @@ export function Eyes({
 			"cursor-pointer transition-opacity hover:opacity-80 transition-colors duration-300";
 		return (
 			<>
-				{/* Left eye ring */}
+				{/* Left eye — solid precision dot */}
 				<circle
 					ref={leftRef as RefObject<SVGCircleElement>}
-					cx="170"
+					cx="200"
 					cy="105"
-					r="28"
-					fill="none"
-					stroke="currentColor"
-					strokeWidth="4"
+					r="16"
+					fill="currentColor"
 					className={eyeClass}
 					onClick={(e) => {
 						e.stopPropagation();
@@ -48,26 +46,14 @@ export function Eyes({
 					onMouseEnter={() => onHoverStart("left")}
 					onMouseLeave={() => onHoverEnd("left")}
 				/>
-				{/* Left pupil */}
-				<g ref={leftPupilRef}>
-					<circle
-						cx="170"
-						cy="105"
-						r="10"
-						fill="currentColor"
-						className="pointer-events-none"
-					/>
-				</g>
 
-				{/* Right eye ring */}
+				{/* Right eye — solid precision dot */}
 				<circle
 					ref={rightRef as RefObject<SVGCircleElement>}
-					cx="350"
+					cx="320"
 					cy="105"
-					r="28"
-					fill="none"
-					stroke="currentColor"
-					strokeWidth="4"
+					r="16"
+					fill="currentColor"
 					className={eyeClass}
 					onClick={(e) => {
 						e.stopPropagation();
@@ -76,16 +62,6 @@ export function Eyes({
 					onMouseEnter={() => onHoverStart("right")}
 					onMouseLeave={() => onHoverEnd("right")}
 				/>
-				{/* Right pupil */}
-				<g ref={rightPupilRef}>
-					<circle
-						cx="350"
-						cy="105"
-						r="10"
-						fill="currentColor"
-						className="pointer-events-none"
-					/>
-				</g>
 			</>
 		);
 	}
