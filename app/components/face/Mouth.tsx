@@ -26,14 +26,16 @@ export function Mouth({
 	const style = getMouthStyle(variant);
 
 	if (variant === "robot") {
-		// Robot: 5 capsule bars as the mouth — bars ARE the expression
-		const barConfigs = [
-			{ cx: -52, w: 16, h: 53 },
-			{ cx: -26, w: 18, h: 71 },
-			{ cx: 0, w: 20, h: 90 },
-			{ cx: 26, w: 18, h: 71 },
-			{ cx: 52, w: 16, h: 53 },
-		];
+		// Robot: 7 slim uniform capsule bars — bottom-anchored, grow upward
+		const BAR_W = 9;
+		const BAR_BOTTOM = 20; // local y of bottom anchor
+		const STRIDE = 22; // px between bar centers
+		const baseHeights = [38, 52, 64, 72, 64, 52, 38];
+		const barConfigs = Array.from({ length: 7 }, (_, i) => {
+			const d = i - 3; // -3..3
+			const h = baseHeights[i];
+			return { cx: d * STRIDE, w: BAR_W, h, y: BAR_BOTTOM - h };
+		});
 
 		return (
 			<g ref={groupRef} transform="translate(260,175)">
@@ -45,7 +47,7 @@ export function Mouth({
 					stroke="none"
 					opacity="0"
 				/>
-				{/* 5 capsule bars — always visible */}
+				{/* 7 slim capsule bars — always visible, bottom-anchored */}
 				<g ref={spectrumGroupRef} opacity="1">
 					{barConfigs.map((bar, i) => (
 						<rect
@@ -54,13 +56,12 @@ export function Mouth({
 								if (el) spectrumBarsRef.current[i] = el;
 							}}
 							x={bar.cx - bar.w / 2}
-							y={-5}
+							y={bar.y}
 							width={bar.w}
 							height={bar.h}
 							rx={bar.w / 2}
 							fill="currentColor"
 							className="cursor-pointer transition-colors duration-300"
-							style={{ transformOrigin: `${bar.cx}px -5px` }}
 							onClick={(e) => {
 								e.stopPropagation();
 								onClick();

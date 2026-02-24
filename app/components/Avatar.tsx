@@ -117,6 +117,7 @@ export default function Avatar({
 		curve: number;
 		tilt: number;
 	}>({ width: 65, curve: 0, tilt: 0 });
+	const latestRobotBarsRef = useRef<number[]>([38, 52, 64, 72, 64, 52, 38]);
 
 	// Haptic helper
 	const triggerHaptic = (pattern: number | number[]) => {
@@ -769,59 +770,76 @@ export default function Avatar({
 
 		// Animate mouth with perfect facial symmetry (drawn around local origin)
 		if (variant === "robot") {
-			// Robot: animate 5 capsule bars based on emotion
+			// Robot: 7-bar bottom-anchored spectrum expressions
 			const bars = spectrumBarsRef.current;
-			if (bars.length >= 5) {
-				const baseHeights = [53, 71, 90, 71, 53];
-				const baseWidths = [16, 18, 20, 18, 16];
-				const curveNorm = Math.max(
-					-1.25,
-					Math.min(1.25, mouthCurve / 32),
-				);
-				const spreadFactor = mouthWidth / 65;
-				const spacing = 26 * spreadFactor;
-				const emotionEnergy = Math.min(
-					1,
-					joy + sadness + anger + surprise,
-				);
+			if (bars.length >= 7) {
+				const baseHeights = [38, 52, 64, 72, 64, 52, 38];
+				const BAR_W = 9;
+				const BAR_BOTTOM = 20;
+				const STRIDE = 22;
+				const calmMode =
+					intensity < 0.18 &&
+					surprise < 0.2 &&
+					anger < 0.2 &&
+					sadness < 0.22;
+				const smileMode = joy >= sadness && joy >= anger && joy > 0.33;
+				const sadMode =
+					sadness > joy && sadness >= anger && sadness > 0.3;
+				const equalMode = surprise > 0.62;
 
-				for (let i = 0; i < 5; i++) {
-					const d = i - 2; // -2..2 from center
+				const targetHeights: number[] = [];
+
+				for (let i = 0; i < 7; i++) {
+					const d = i - 3; // -3..3 from center
 					const absd = Math.abs(d);
+					let height = baseHeights[i];
 
-					// Height: stronger bell/inversion with emotion-specific boosts
-					const heightDelta = curveNorm * absd * 15;
-					const centerBoost = joy * 11 + surprise * 8;
-					const edgeBoost = sadness * 8 + anger * 7;
-					const height = Math.max(
-						8,
-						baseHeights[i] -
-							heightDelta +
-							Math.abs(curveNorm) * 7 +
-							(i === 2 ? centerBoost : (edgeBoost * absd) / 2) +
-							emotionEnergy * 2,
-					);
+					if (calmMode) {
+						// Near-dot: almost flat, barely alive
+						height = 8 + curiosity * 3 + (i === 3 ? 2 : 0);
+					} else if (equalMode) {
+						// Surprise: all bars equal height — electric wall
+						height = 38 + surprise * 22;
+					} else if (smileMode) {
+						// Joy: center-peak bell — energy concentrated at center
+						height =
+							baseHeights[i] + joy * 14 - absd * (7 + joy * 6);
+					} else if (sadMode) {
+						// Sad: center drops more than edges — wide flat trough
+						height = baseHeights[i] - sadness * (4 - absd) * 5;
+					} else {
+						// Neutral/mixed: subtle emotion blend
+						const curveNorm = Math.max(
+							-1,
+							Math.min(1, mouthCurve / 36),
+						);
+						height =
+							baseHeights[i] -
+							curveNorm * absd * 8 +
+							Math.abs(curveNorm) * 3;
+					}
 
-					// Y shift: stronger smile/frown arc
-					const yShift = curveNorm * absd * 9;
+					height = Math.max(8, height);
+					targetHeights[i] = height;
 
-					const w = baseWidths[i] + surprise * 1.5;
-					const x = d * spacing - w / 2;
-					const y = -5 - yShift;
+					const y = BAR_BOTTOM - height;
+					const x = d * STRIDE - BAR_W / 2;
 
 					gsap.to(bars[i], {
 						attr: {
 							height,
 							y,
 							x,
-							width: w,
-							rx: w / 2,
+							width: BAR_W,
+							rx: BAR_W / 2,
 						},
 						duration: 0.8,
 						ease: "power2.out",
-						delay: stagger * 2 + Math.abs(d) * 0.03,
+						delay: stagger * 2 + absd * 0.03,
 					});
 				}
+
+				latestRobotBarsRef.current = targetHeights;
 			}
 		} else if (mouthRef.current) {
 			const pathData = generateMouthPath(mouthWidth, mouthCurve);
@@ -967,33 +985,27 @@ export default function Avatar({
 		// Small wave around the current mouth curve, kept symmetric
 		const state = { offset: 0 };
 		idleMouthTweenRef.current = gsap.to(state, {
-			offset: 4,
-			duration: 2.2,
+			offset: variant === "robot" ? 1.15 : 4,
+			duration: variant === "robot" ? 3.4 : 2.2,
 			repeat: -1,
 			yoyo: true,
 			ease: "sine.inOut",
 			onUpdate: () => {
 				if (variant === "robot") {
-					// Robot: subtly oscillate bar heights around emotion baseline
+					// Robot: 98% static, micro-alive shimmer across 7 bars
 					const bars = spectrumBarsRef.current;
-					if (bars.length >= 5) {
-						const baseHeights = [53, 71, 90, 71, 53];
-						const m = latestMouthRef.current;
-						const curveNorm = m.curve / 40;
-						for (let i = 0; i < 5; i++) {
-							const d = Math.abs(i - 2);
-							const heightDelta = curveNorm * d * 10;
-							const baseH = Math.max(
-								8,
-								baseHeights[i] -
-									heightDelta +
-									Math.abs(curveNorm) * 4,
-							);
-							// Per-bar phase offset for subtle wave ripple
+					if (bars.length >= 7) {
+						const BAR_BOTTOM = 20;
+						const baseHeights = latestRobotBarsRef.current;
+						for (let i = 0; i < 7; i++) {
+							const baseH = baseHeights[i] ?? 16;
 							const wave =
-								state.offset * Math.sin((i / 4) * Math.PI);
+								state.offset *
+								Math.sin((i / 6) * Math.PI) *
+								0.7;
+							const h = Math.max(8, baseH + wave);
 							gsap.set(bars[i], {
-								attr: { height: Math.max(8, baseH + wave) },
+								attr: { height: h, y: BAR_BOTTOM - h },
 							});
 						}
 					}
@@ -1079,9 +1091,9 @@ export default function Avatar({
 			);
 		}
 
-		// Mouth tilt with pointer follow (robot gets balanced left/right tilt)
-		if (mouthGroupRef.current) {
-			const pointerTilt = variant === "robot" ? nx * 14 : nx * 10;
+		// Mouth tilt with pointer follow (robot stays stable)
+		if (variant !== "robot" && mouthGroupRef.current) {
+			const pointerTilt = nx * 10;
 			gsap.to(mouthGroupRef.current, {
 				rotation: latestMouthRef.current.tilt + pointerTilt,
 				duration: 0.45,
@@ -1349,20 +1361,23 @@ export default function Avatar({
 		triggerHaptic(10); // Light tick
 
 		if (variant === "robot") {
-			// Robot: quick bounce on all 5 bars
+			// Robot: quick bounce on all 7 bars
 			const bars = spectrumBarsRef.current;
-			if (bars.length >= 5) {
-				const baseHeights = [53, 71, 90, 71, 53];
-				bars.forEach((bar, i) => {
+			if (bars.length >= 7) {
+				const BAR_BOTTOM = 20;
+				const baseHeights = latestRobotBarsRef.current;
+				bars.slice(0, 7).forEach((bar, i) => {
 					if (!bar) return;
+					const bh = Math.max(8, baseHeights[i] ?? 52);
+					const bounceH = bh * 1.4;
 					gsap.timeline()
 						.to(bar, {
-							attr: { height: baseHeights[i] * 1.4 },
+							attr: { height: bounceH, y: BAR_BOTTOM - bounceH },
 							duration: 0.12,
 							ease: "back.out(2)",
 						})
 						.to(bar, {
-							attr: { height: baseHeights[i] },
+							attr: { height: bh, y: BAR_BOTTOM - bh },
 							duration: 0.25,
 							ease: "elastic.out(1, 0.4)",
 						});
@@ -1480,21 +1495,13 @@ export default function Avatar({
 			if (variant === "robot") {
 				// Robot: restore bars to emotion baseline
 				const bars = spectrumBarsRef.current;
-				if (bars.length >= 5) {
-					const baseHeights = [53, 71, 90, 71, 53];
-					const m = latestMouthRef.current;
-					const curveNorm = m.curve / 40;
-					for (let i = 0; i < 5; i++) {
-						const d = Math.abs(i - 2);
-						const heightDelta = curveNorm * d * 10;
-						const height = Math.max(
-							8,
-							baseHeights[i] -
-								heightDelta +
-								Math.abs(curveNorm) * 4,
-						);
+				if (bars.length >= 7) {
+					const BAR_BOTTOM = 20;
+					const baseHeights = latestRobotBarsRef.current;
+					for (let i = 0; i < 7; i++) {
+						const height = Math.max(8, baseHeights[i] ?? 16);
 						gsap.to(bars[i], {
-							attr: { height },
+							attr: { height, y: BAR_BOTTOM - height },
 							duration: 0.3,
 							ease: "power2.out",
 						});
@@ -1550,28 +1557,22 @@ export default function Avatar({
 			if (variant === "robot") {
 				// Robot: modulate bar heights with voice amplitude
 				const bars = spectrumBarsRef.current;
-				if (bars.length >= 5) {
-					const baseHeights = [53, 71, 90, 71, 53];
-					const m = latestMouthRef.current;
-					const curveNorm = m.curve / 40;
-					for (let i = 0; i < 5; i++) {
-						const d = Math.abs(i - 2);
-						const heightDelta = curveNorm * d * 10;
-						const baseH = Math.max(
-							8,
-							baseHeights[i] -
-								heightDelta +
-								Math.abs(curveNorm) * 4,
-						);
+				if (bars.length >= 7) {
+					const BAR_BOTTOM = 20;
+					const baseHeights = latestRobotBarsRef.current;
+					for (let i = 0; i < 7; i++) {
+						const baseH = Math.max(8, baseHeights[i] ?? 16);
 						// Per-bar phase offset for organic feel
-						const phaseOffset = i * 0.9;
+						const phaseOffset = i * 0.8;
 						const barAmp =
 							base *
 							(0.5 * Math.sin(t * 7.3 + phaseOffset) +
 								0.3 * Math.sin(t * 11.2 + phaseOffset * 1.3) +
 								0.2 * Math.sin(t * 15.7 + phaseOffset * 0.7));
 						const height = Math.max(8, baseH + barAmp * 0.8);
-						gsap.set(bars[i], { attr: { height } });
+						gsap.set(bars[i], {
+							attr: { height, y: BAR_BOTTOM - height },
+						});
 					}
 				}
 			} else {
