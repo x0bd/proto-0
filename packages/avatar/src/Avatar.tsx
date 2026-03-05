@@ -10,7 +10,7 @@ import { gsap } from "gsap";
 import { Eyes } from "./face/eyes/index";
 import { Mouth } from "./face/Mouth";
 import { Ears } from "./face/Ears";
-import type { FaceVariant, EmotionState } from "./face/types";
+import type { EmotionState } from "./face/types";
 import { applyAgentTheme, VARIANT_COLORS } from "./face/themes";
 import { EYE_GEOMETRIES } from "./face/eyes/config";
 import type { AudioLevels } from "./hooks/useAudioAnalysis";
@@ -1203,7 +1203,7 @@ export const Avatar = forwardRef<AvatarHandle, AvatarProps>(function Avatar(
 					variant={variant}
 					onWink={(eye) => {
 						performWink(eye);
-						if (eye !== "top") onEyeClick?.(eye);
+						onEyeClick?.(eye);
 					}}
 					onHoverStart={handleEyeHover}
 					onHoverEnd={handleEyeHoverEnd}
@@ -1253,5 +1253,3 @@ export const Avatar = forwardRef<AvatarHandle, AvatarProps>(function Avatar(
 });
 
 Avatar.displayName = "Avatar";
-
-export default Avatar;

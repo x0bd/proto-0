@@ -4,7 +4,6 @@
 
 // Main component
 export { Avatar } from "./Avatar";
-export { default } from "./Avatar";
 
 // Types
 export type {
