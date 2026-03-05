@@ -8,7 +8,6 @@ export const VARIANT_COLORS: Record<FaceVariant, string> = {
 	minimal: "#FF6B6B", // Coral red
 	tron: "#06B6D4", // Electric cyan
 	analogue: "#FBBF24", // Warm amber
-	robot: "#8B5CF6", // Violet
 };
 
 /**
@@ -18,7 +17,6 @@ export const VARIANT_GLOW: Record<FaceVariant, string> = {
 	minimal: "rgba(255, 107, 107, 0.4)",
 	tron: "rgba(6, 182, 212, 0.5)",
 	analogue: "rgba(251, 191, 36, 0.4)",
-	robot: "rgba(139, 92, 246, 0.45)",
 };
 
 /**

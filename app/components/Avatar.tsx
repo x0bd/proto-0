@@ -117,7 +117,6 @@ export default function Avatar({
 		curve: number;
 		tilt: number;
 	}>({ width: 65, curve: 0, tilt: 0 });
-	const latestRobotBarsRef = useRef<number[]>([70, 56, 42, 30, 42, 56, 70]);
 
 	// Haptic helper
 	const triggerHaptic = (pattern: number | number[]) => {
@@ -128,13 +127,6 @@ export default function Avatar({
 					navigator.vibrate(Math.min(pattern, 10));
 				} else {
 					navigator.vibrate(pattern.map((p) => Math.min(p, 10)));
-				}
-			} else if (variant === "robot") {
-				// Robot: crisp double-tap
-				if (typeof pattern === "number") {
-					navigator.vibrate([pattern * 0.4, 30, pattern * 0.4]);
-				} else {
-					navigator.vibrate(pattern);
 				}
 			} else {
 				navigator.vibrate(pattern);
@@ -202,27 +194,6 @@ export default function Avatar({
 					duration: 4,
 					ease: "sine.inOut",
 				});
-			} else if (variant === "robot") {
-				// Robot: mechanical pulse — scale throb with slight rotation
-				breathingTL.current = gsap.timeline({ repeat: -1 });
-				breathingTL.current
-					.to(containerRef.current, {
-						scale: 1.012,
-						rotation: 0.3,
-						duration: 1.8,
-						ease: "power1.inOut",
-					})
-					.to(containerRef.current, {
-						scale: 1,
-						rotation: -0.3,
-						duration: 2.0,
-						ease: "power1.inOut",
-					})
-					.to(containerRef.current, {
-						rotation: 0,
-						duration: 0.8,
-						ease: "power1.inOut",
-					});
 			} else {
 				// Standard Organic Breathing
 				breathingTL.current = gsap.timeline({ repeat: -1 });
@@ -287,9 +258,8 @@ export default function Avatar({
 			overwrite: "auto",
 		});
 
-		// Apply jitter to mouth group if we have multi-band data (skip robot — no tilt)
+		// Apply jitter to mouth group if we have multi-band data
 		if (
-			variant !== "robot" &&
 			mouthGroupRef.current &&
 			hasAudioLevels &&
 			Math.abs(mouthJitter) > 0.1
@@ -624,7 +594,6 @@ export default function Avatar({
 	}
 
 	function handleMouthHover() {
-		if (variant === "robot") return; // Robot bars don't react to hover
 		if (mouthGroupRef.current) {
 			gsap.to(mouthGroupRef.current, {
 				scale: 1.05,
@@ -636,7 +605,6 @@ export default function Avatar({
 	}
 
 	function handleMouthHoverEnd() {
-		if (variant === "robot") return;
 		if (mouthGroupRef.current) {
 			gsap.to(mouthGroupRef.current, {
 				scale: 1,
@@ -769,77 +737,7 @@ export default function Avatar({
 		};
 
 		// Animate mouth with perfect facial symmetry (drawn around local origin)
-		if (variant === "robot") {
-			// Robot: 7-bar bottom-anchored spectrum expressions
-			const bars = spectrumBarsRef.current;
-			if (bars.length >= 7) {
-				// Inverted bell base: [70,56,42,30,42,56,70] — edges tall, center short = smile arc
-				const baseHeights = [70, 56, 42, 30, 42, 56, 70];
-				const BAR_W = 9;
-				const BAR_BOTTOM = 20;
-				const STRIDE = 22;
-				const calmMode =
-					intensity < 0.18 &&
-					surprise < 0.2 &&
-					anger < 0.2 &&
-					sadness < 0.22;
-				const smileMode = joy >= sadness && joy >= anger && joy > 0.33;
-				const sadMode =
-					sadness > joy && sadness >= anger && sadness > 0.3;
-				const equalMode = surprise > 0.62;
-
-				const targetHeights: number[] = [];
-
-				for (let i = 0; i < 7; i++) {
-					const d = i - 3; // -3..3 from center
-					const absd = Math.abs(d);
-					let height = baseHeights[i];
-
-					if (calmMode) {
-						// Near-dot: all tiny, barely alive
-						height =
-							8 + curiosity * 3 + (i === 0 || i === 6 ? 2 : 0);
-					} else if (equalMode) {
-						// Surprise: all equal and tall — electric wall
-						height = 44 + surprise * 20;
-					} else if (smileMode) {
-						// Joy: push edges higher, center lower — wider smile arc
-						height = baseHeights[i] + joy * absd * 7;
-					} else if (sadMode) {
-						// Sad: flip to bell curve — edges drop, center rises = frown arc
-						height = 30 + (3 - absd) * (10 + sadness * 10);
-					} else {
-						// Neutral/mixed: ride the inverted bell baseline
-						const curveNorm = Math.max(
-							-1,
-							Math.min(1, mouthCurve / 36),
-						);
-						height = baseHeights[i] + curveNorm * absd * 6;
-					}
-
-					height = Math.max(8, height);
-					targetHeights[i] = height;
-
-					const y = BAR_BOTTOM - height;
-					const x = d * STRIDE - BAR_W / 2;
-
-					gsap.to(bars[i], {
-						attr: {
-							height,
-							y,
-							x,
-							width: BAR_W,
-							rx: BAR_W / 2,
-						},
-						duration: 0.8,
-						ease: "power2.out",
-						delay: stagger * 2 + absd * 0.03,
-					});
-				}
-
-				latestRobotBarsRef.current = targetHeights;
-			}
-		} else if (mouthRef.current) {
+		if (mouthRef.current) {
 			const pathData = generateMouthPath(mouthWidth, mouthCurve);
 			gsap.to(mouthRef.current, {
 				attr: { d: pathData },
@@ -851,9 +749,8 @@ export default function Avatar({
 
 		// Rotate the mouth group strictly around the face center
 		if (mouthGroupRef.current) {
-			const targetMouthTilt = variant === "robot" ? 0 : mouthTilt;
 			gsap.to(mouthGroupRef.current, {
-				rotation: targetMouthTilt,
+				rotation: mouthTilt,
 				duration: 0.8,
 				ease: "power2.out",
 				svgOrigin: "260 175",
@@ -865,38 +762,12 @@ export default function Avatar({
 		latestMouthRef.current = {
 			width: mouthWidth,
 			curve: mouthCurve,
-			tilt: variant === "robot" ? 0 : mouthTilt,
+			tilt: mouthTilt,
 		};
 	}
 
 	function performBlink() {
 		const target = latestEyeTargetsRef.current;
-
-		if (variant === "robot") {
-			// Robot: scaleY squash blink on solid dots
-			const eyes = [leftEyeRef.current, rightEyeRef.current];
-			eyes.forEach((el) => {
-				if (!el) return;
-				gsap.to(el, {
-					scaleY: 0.05,
-					duration: 0.06,
-					ease: "power1.in",
-					transformOrigin: "center center",
-				});
-			});
-			setTimeout(() => {
-				eyes.forEach((el) => {
-					if (!el) return;
-					gsap.to(el, {
-						scaleY: 1,
-						duration: 0.1,
-						ease: "power2.out",
-						transformOrigin: "center center",
-					});
-				});
-			}, 70);
-			return;
-		}
 
 		const blinkDur = variant === "tron" ? 0.05 : 0.08;
 		const ryClosed = variant === "tron" ? 0.5 : 2;
@@ -983,37 +854,17 @@ export default function Avatar({
 		// Small wave around the current mouth curve, kept symmetric
 		const state = { offset: 0 };
 		idleMouthTweenRef.current = gsap.to(state, {
-			offset: variant === "robot" ? 1.15 : 4,
-			duration: variant === "robot" ? 3.4 : 2.2,
+			offset: 4,
+			duration: 2.2,
 			repeat: -1,
 			yoyo: true,
 			ease: "sine.inOut",
 			onUpdate: () => {
-				if (variant === "robot") {
-					// Robot: 98% static, micro-alive shimmer across 7 bars
-					const bars = spectrumBarsRef.current;
-					if (bars.length >= 7) {
-						const BAR_BOTTOM = 20;
-						const baseHeights = latestRobotBarsRef.current;
-						for (let i = 0; i < 7; i++) {
-							const baseH = baseHeights[i] ?? 16;
-							const wave =
-								state.offset *
-								Math.sin((i / 6) * Math.PI) *
-								0.7;
-							const h = Math.max(8, baseH + wave);
-							gsap.set(bars[i], {
-								attr: { height: h, y: BAR_BOTTOM - h },
-							});
-						}
-					}
-				} else {
-					const m = latestMouthRef.current;
-					const controlYLocal = m.curve + state.offset;
-					const d = generateMouthPath(m.width, controlYLocal);
-					if (mouthRef.current)
-						gsap.set(mouthRef.current, { attr: { d } });
-				}
+				const m = latestMouthRef.current;
+				const controlYLocal = m.curve + state.offset;
+				const d = generateMouthPath(m.width, controlYLocal);
+				if (mouthRef.current)
+					gsap.set(mouthRef.current, { attr: { d } });
 			},
 		});
 	}
@@ -1089,8 +940,8 @@ export default function Avatar({
 			);
 		}
 
-		// Mouth tilt with pointer follow (robot stays stable)
-		if (variant !== "robot" && mouthGroupRef.current) {
+		// Mouth tilt with pointer follow
+		if (mouthGroupRef.current) {
 			const pointerTilt = nx * 10;
 			gsap.to(mouthGroupRef.current, {
 				rotation: latestMouthRef.current.tilt + pointerTilt,
@@ -1358,32 +1209,6 @@ export default function Avatar({
 	function performMouthClick() {
 		triggerHaptic(10); // Light tick
 
-		if (variant === "robot") {
-			// Robot: quick bounce on all 7 bars
-			const bars = spectrumBarsRef.current;
-			if (bars.length >= 7) {
-				const BAR_BOTTOM = 20;
-				const baseHeights = latestRobotBarsRef.current;
-				bars.slice(0, 7).forEach((bar, i) => {
-					if (!bar) return;
-					const bh = Math.max(8, baseHeights[i] ?? 52);
-					const bounceH = bh * 1.4;
-					gsap.timeline()
-						.to(bar, {
-							attr: { height: bounceH, y: BAR_BOTTOM - bounceH },
-							duration: 0.12,
-							ease: "back.out(2)",
-						})
-						.to(bar, {
-							attr: { height: bh, y: BAR_BOTTOM - bh },
-							duration: 0.25,
-							ease: "elastic.out(1, 0.4)",
-						});
-				});
-			}
-			return;
-		}
-
 		if (mouthRef.current) {
 			const m = latestMouthRef.current;
 			const smileD = generateMouthPath(m.width, m.curve - 20);
@@ -1424,11 +1249,9 @@ export default function Avatar({
 		startGlance();
 		startIdleMouthWave();
 
-		// Ensure spectrum bars visibility matches variant
+		// Ensure spectrum bars are always hidden
 		if (spectrumGroupRef.current) {
-			gsap.set(spectrumGroupRef.current, {
-				opacity: variant === "robot" ? 1 : 0,
-			});
+			gsap.set(spectrumGroupRef.current, { opacity: 0 });
 		}
 
 		// Analogue Line Boil Loop
@@ -1479,8 +1302,7 @@ export default function Avatar({
 
 	// Voice simulation setup / teardown (no mic)
 	useEffect(() => {
-		// Hide spectrum bars for non-robot variants (robot bars ARE the mouth)
-		if (variant !== "robot" && spectrumGroupRef.current)
+		if (spectrumGroupRef.current)
 			gsap.set(spectrumGroupRef.current, { opacity: 0 });
 
 		if (!voiceEnabled) {
@@ -1490,31 +1312,14 @@ export default function Avatar({
 				simTickerRef.current = null;
 			}
 
-			if (variant === "robot") {
-				// Robot: restore bars to emotion baseline
-				const bars = spectrumBarsRef.current;
-				if (bars.length >= 7) {
-					const BAR_BOTTOM = 20;
-					const baseHeights = latestRobotBarsRef.current;
-					for (let i = 0; i < 7; i++) {
-						const height = Math.max(8, baseHeights[i] ?? 16);
-						gsap.to(bars[i], {
-							attr: { height, y: BAR_BOTTOM - height },
-							duration: 0.3,
-							ease: "power2.out",
-						});
-					}
-				}
-			} else {
-				// Restore mouth visibility and reset to emotion baseline immediately
-				if (mouthRef.current) {
-					const m = latestMouthRef.current;
-					const d = generateMouthPath(m.width, m.curve);
-					gsap.set(mouthRef.current, { opacity: 1, attr: { d } });
-				}
+			// Restore mouth visibility and reset to emotion baseline immediately
+			if (mouthRef.current) {
+				const m = latestMouthRef.current;
+				const d = generateMouthPath(m.width, m.curve);
+				gsap.set(mouthRef.current, { opacity: 1, attr: { d } });
 			}
 
-			if (variant !== "robot" && mouthGroupRef.current) {
+			if (mouthGroupRef.current) {
 				gsap.to(mouthGroupRef.current, {
 					rotation: latestMouthRef.current.tilt,
 					duration: 0.25,
@@ -1552,35 +1357,11 @@ export default function Avatar({
 					0.2 * Math.sin(t * 13.4 + 1.9));
 			simAmpRef.current = amp; // -base..+base
 
-			if (variant === "robot") {
-				// Robot: modulate bar heights with voice amplitude
-				const bars = spectrumBarsRef.current;
-				if (bars.length >= 7) {
-					const BAR_BOTTOM = 20;
-					const baseHeights = latestRobotBarsRef.current;
-					for (let i = 0; i < 7; i++) {
-						const baseH = Math.max(8, baseHeights[i] ?? 16);
-						// Per-bar phase offset for organic feel
-						const phaseOffset = i * 0.8;
-						const barAmp =
-							base *
-							(0.5 * Math.sin(t * 7.3 + phaseOffset) +
-								0.3 * Math.sin(t * 11.2 + phaseOffset * 1.3) +
-								0.2 * Math.sin(t * 15.7 + phaseOffset * 0.7));
-						const height = Math.max(8, baseH + barAmp * 0.8);
-						gsap.set(bars[i], {
-							attr: { height, y: BAR_BOTTOM - height },
-						});
-					}
-				}
-			} else {
-				// Update mouth path around latest emotion curve/width
-				const m = latestMouthRef.current;
-				const controlYLocal = m.curve + simAmpRef.current;
-				const d = generateMouthPath(m.width, controlYLocal);
-				if (mouthRef.current)
-					gsap.set(mouthRef.current, { attr: { d } });
-			}
+			// Update mouth path around latest emotion curve/width
+			const m = latestMouthRef.current;
+			const controlYLocal = m.curve + simAmpRef.current;
+			const d = generateMouthPath(m.width, controlYLocal);
+			if (mouthRef.current) gsap.set(mouthRef.current, { attr: { d } });
 		};
 		simTickerRef.current = ticker;
 		gsap.ticker.add(ticker);
