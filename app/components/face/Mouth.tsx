@@ -27,10 +27,11 @@ export function Mouth({
 
 	if (variant === "robot") {
 		// Robot: 7 slim uniform capsule bars — bottom-anchored, grow upward
+		// Heights form an inverted bell (smile arc): edges tall, center short
 		const BAR_W = 9;
 		const BAR_BOTTOM = 20; // local y of bottom anchor
 		const STRIDE = 22; // px between bar centers
-		const baseHeights = [38, 52, 64, 72, 64, 52, 38];
+		const baseHeights = [70, 56, 42, 30, 42, 56, 70];
 		const barConfigs = Array.from({ length: 7 }, (_, i) => {
 			const d = i - 3; // -3..3
 			const h = baseHeights[i];

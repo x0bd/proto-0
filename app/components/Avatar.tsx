@@ -117,7 +117,7 @@ export default function Avatar({
 		curve: number;
 		tilt: number;
 	}>({ width: 65, curve: 0, tilt: 0 });
-	const latestRobotBarsRef = useRef<number[]>([38, 52, 64, 72, 64, 52, 38]);
+	const latestRobotBarsRef = useRef<number[]>([70, 56, 42, 30, 42, 56, 70]);
 
 	// Haptic helper
 	const triggerHaptic = (pattern: number | number[]) => {
@@ -773,7 +773,8 @@ export default function Avatar({
 			// Robot: 7-bar bottom-anchored spectrum expressions
 			const bars = spectrumBarsRef.current;
 			if (bars.length >= 7) {
-				const baseHeights = [38, 52, 64, 72, 64, 52, 38];
+				// Inverted bell base: [70,56,42,30,42,56,70] — edges tall, center short = smile arc
+				const baseHeights = [70, 56, 42, 30, 42, 56, 70];
 				const BAR_W = 9;
 				const BAR_BOTTOM = 20;
 				const STRIDE = 22;
@@ -795,28 +796,25 @@ export default function Avatar({
 					let height = baseHeights[i];
 
 					if (calmMode) {
-						// Near-dot: almost flat, barely alive
-						height = 8 + curiosity * 3 + (i === 3 ? 2 : 0);
-					} else if (equalMode) {
-						// Surprise: all bars equal height — electric wall
-						height = 38 + surprise * 22;
-					} else if (smileMode) {
-						// Joy: center-peak bell — energy concentrated at center
+						// Near-dot: all tiny, barely alive
 						height =
-							baseHeights[i] + joy * 14 - absd * (7 + joy * 6);
+							8 + curiosity * 3 + (i === 0 || i === 6 ? 2 : 0);
+					} else if (equalMode) {
+						// Surprise: all equal and tall — electric wall
+						height = 44 + surprise * 20;
+					} else if (smileMode) {
+						// Joy: push edges higher, center lower — wider smile arc
+						height = baseHeights[i] + joy * absd * 7;
 					} else if (sadMode) {
-						// Sad: center drops more than edges — wide flat trough
-						height = baseHeights[i] - sadness * (4 - absd) * 5;
+						// Sad: flip to bell curve — edges drop, center rises = frown arc
+						height = 30 + (3 - absd) * (10 + sadness * 10);
 					} else {
-						// Neutral/mixed: subtle emotion blend
+						// Neutral/mixed: ride the inverted bell baseline
 						const curveNorm = Math.max(
 							-1,
 							Math.min(1, mouthCurve / 36),
 						);
-						height =
-							baseHeights[i] -
-							curveNorm * absd * 8 +
-							Math.abs(curveNorm) * 3;
+						height = baseHeights[i] + curveNorm * absd * 6;
 					}
 
 					height = Math.max(8, height);
