@@ -1,0 +1,33 @@
+/**
+ * @dot/avatar — base CSS variables
+ *
+ * Import this file once in your app:
+ *   import "@dot/avatar/avatar.css"
+ *
+ * You can override any variable on a parent element or :root.
+ */
+
+:root {
+	/* ── Colour ──────────────────────────────────────── */
+	--face-color: #ff6b6b;
+	--face-glow: rgba(255, 107, 107, 0.6);
+	--face-bg-tint: rgba(255, 107, 107, 0.04);
+
+	/* ── Animation timing ────────────────────────────── */
+	--face-transition-fast: 0.04s;
+	--face-transition-base: 0.3s;
+	--face-transition-slow: 0.8s;
+}
+
+/* Variant helpers — applied by applyAgentTheme() at runtime */
+[data-avatar-variant="tron"] {
+	--face-color: #06b6d4;
+	--face-glow: rgba(6, 182, 212, 0.7);
+	--face-bg-tint: rgba(0, 200, 255, 0.03);
+}
+
+[data-avatar-variant="analogue"] {
+	--face-color: #fbbf24;
+	--face-glow: rgba(251, 191, 36, 0.6);
+	--face-bg-tint: rgba(251, 191, 36, 0.04);
+}
