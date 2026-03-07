@@ -11,7 +11,8 @@ export interface EmotionState {
 }
 
 export interface FaceProps {
+  emotion?: EmotionState;
+  voiceEnabled?: boolean;
   variant?: FaceVariant;
   color?: string;
-  emotion?: EmotionState;
 }

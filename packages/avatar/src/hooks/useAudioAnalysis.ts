@@ -100,9 +100,8 @@ export function useAudioAnalysis(options: UseAudioAnalysisOptions = {}) {
 		const frequencyData = frequencyDataRef.current;
 		if (!analyser || !frequencyData) return ZERO_LEVELS;
 
-		analyser.getByteFrequencyData(
-			frequencyData as unknown as Uint8Array<ArrayBuffer>,
-		);
+		// @ts-expect-error — TS lib types diverge between environments for Uint8Array
+		analyser.getByteFrequencyData(frequencyData);
 
 		const binCount = analyser.frequencyBinCount;
 		const sampleRate = audioContextRef.current?.sampleRate ?? 44100;

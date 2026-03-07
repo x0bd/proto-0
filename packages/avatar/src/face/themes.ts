@@ -15,6 +15,15 @@ export const VARIANT_GLOW: Record<FaceVariant, string> = {
 };
 
 /**
+ * Convert a hex color to an rgba() string.
+ */
+function hexToRgba(hex: string, alpha: number): string {
+  const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  if (!m) return `rgba(255, 107, 107, ${alpha})`;
+  return `rgba(${parseInt(m[1], 16)}, ${parseInt(m[2], 16)}, ${parseInt(m[3], 16)}, ${alpha})`;
+}
+
+/**
  * Apply avatar theme to a DOM element (or `document.documentElement` if none
  * is provided). Sets `--face-color`, `--face-glow`, and `--face-bg-tint` CSS
  * custom properties.
@@ -31,19 +40,19 @@ export function applyAgentTheme(
   const root = target ?? document.documentElement;
   const color = accentColor ?? VARIANT_COLORS[variant];
   const glow = accentColor
-    ? `${accentColor}99` // 60% alpha fallback
+    ? hexToRgba(accentColor, 0.6)
     : VARIANT_GLOW[variant];
-
-  root.style.setProperty("--face-color", color);
-  root.style.setProperty("--face-glow", glow);
-  root.style.setProperty(
-    "--face-bg-tint",
-    variant === "tron"
+  const bgTint = accentColor
+    ? hexToRgba(accentColor, 0.04)
+    : variant === "tron"
       ? "rgba(0, 200, 255, 0.03)"
       : variant === "analogue"
         ? "rgba(251, 191, 36, 0.04)"
-        : "rgba(255, 107, 107, 0.04)",
-  );
+        : "rgba(255, 107, 107, 0.04)";
+
+  root.style.setProperty("--face-color", color);
+  root.style.setProperty("--face-glow", glow);
+  root.style.setProperty("--face-bg-tint", bgTint);
 }
 
 /** Returns SVG rendering hints per variant */

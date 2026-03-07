@@ -24,7 +24,11 @@ export interface EyeProps {
 }
 
 /**
- * Optional per-variant geometry overrides.
- * Leave empty to use the default geometry baked into each eye component.
+ * Per-variant geometry used by `animateEye` to calculate offsets.
+ * Values here must match the SVG attributes in each eye renderer.
  */
-export const EYE_GEOMETRIES: Partial<Record<FaceVariant, EyeGeometry>> = {};
+export const EYE_GEOMETRIES: Record<FaceVariant, EyeGeometry> = {
+	minimal: { leftCx: 170, rightCx: 350, leftCy: 105, rightCy: 105, rx: 32, ry: 18 },
+	tron:    { leftCx: 138, rightCx: 382, leftCy: 87,  rightCy: 87,  rx: 32, ry: 18 },
+	analogue:{ leftCx: 170, rightCx: 350, leftCy: 105, rightCy: 105, rx: 32, ry: 18 },
+};
