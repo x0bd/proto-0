@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@dot/avatar": "workspace:*",
     "@ai-sdk/google": "^3.0.13",
     "@ai-sdk/openai": "^3.0.18",
     "@hookform/resolvers": "^5.2.2",

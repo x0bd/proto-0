@@ -155,17 +155,20 @@ var VARIANT_GLOW = {
   tron: "rgba(6, 182, 212, 0.7)",
   analogue: "rgba(251, 191, 36, 0.6)"
 };
+function hexToRgba(hex, alpha) {
+  const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  if (!m) return `rgba(255, 107, 107, ${alpha})`;
+  return `rgba(${parseInt(m[1], 16)}, ${parseInt(m[2], 16)}, ${parseInt(m[3], 16)}, ${alpha})`;
+}
 function applyAgentTheme(variant, accentColor, target) {
   if (typeof document === "undefined") return;
   const root = target ?? document.documentElement;
   const color = accentColor ?? VARIANT_COLORS[variant];
-  const glow = accentColor ? `${accentColor}99` : VARIANT_GLOW[variant];
+  const glow = accentColor ? hexToRgba(accentColor, 0.6) : VARIANT_GLOW[variant];
+  const bgTint = accentColor ? hexToRgba(accentColor, 0.04) : variant === "tron" ? "rgba(0, 200, 255, 0.03)" : variant === "analogue" ? "rgba(251, 191, 36, 0.04)" : "rgba(255, 107, 107, 0.04)";
   root.style.setProperty("--face-color", color);
   root.style.setProperty("--face-glow", glow);
-  root.style.setProperty(
-    "--face-bg-tint",
-    variant === "tron" ? "rgba(0, 200, 255, 0.03)" : variant === "analogue" ? "rgba(251, 191, 36, 0.04)" : "rgba(255, 107, 107, 0.04)"
-  );
+  root.style.setProperty("--face-bg-tint", bgTint);
 }
 function getMouthStyle(variant) {
   switch (variant) {
@@ -234,7 +237,11 @@ function Ears() {
 }
 
 // src/face/eyes/config.ts
-var EYE_GEOMETRIES = {};
+var EYE_GEOMETRIES = {
+  minimal: { leftCx: 170, rightCx: 350, leftCy: 105, rightCy: 105, rx: 32, ry: 18 },
+  tron: { leftCx: 138, rightCx: 382, leftCy: 87, rightCy: 87, rx: 32, ry: 18 },
+  analogue: { leftCx: 170, rightCx: 350, leftCy: 105, rightCy: 105, rx: 32, ry: 18 }
+};
 var DEFAULT_EMOTION = {
   joy: 0.3,
   sadness: 0,
@@ -1335,9 +1342,7 @@ function useAudioAnalysis(options = {}) {
     const analyser = analyserRef.current;
     const frequencyData = frequencyDataRef.current;
     if (!analyser || !frequencyData) return ZERO_LEVELS;
-    analyser.getByteFrequencyData(
-      frequencyData
-    );
+    analyser.getByteFrequencyData(frequencyData);
     const binCount = analyser.frequencyBinCount;
     const sampleRate = audioContextRef.current?.sampleRate ?? 44100;
     const binWidth = sampleRate / opts.fftSize;
