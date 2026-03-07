@@ -16,7 +16,11 @@
 	},
 	"files": [
 		"dist",
-		"avatar.css"
+		"avatar.css",
+		"README.md",
+		"dot-1 (1).png",
+		"dot-1 (2).png",
+		"dot-1 (3).png"
 	],
 	"scripts": {
 		"build": "tsup",

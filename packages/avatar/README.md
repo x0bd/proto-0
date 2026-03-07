@@ -1,5 +1,9 @@
 <p align="center">
-  <img src="./banner.png" alt="@dot/avatar" width="100%" />
+  <img src="./dot-1 (1).png" alt="tron variant" width="200" />
+  &nbsp;&nbsp;
+  <img src="./dot-1 (2).png" alt="analogue variant" width="200" />
+  &nbsp;&nbsp;
+  <img src="./dot-1 (3).png" alt="analogue variant – dark" width="200" />
 </p>
 
 <h1 align="center">@dot/avatar</h1>
