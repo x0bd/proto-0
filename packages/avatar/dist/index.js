@@ -1191,46 +1191,6 @@ var Avatar = forwardRef(function Avatar2({
                 }
               )
             ] }),
-            variant === "tron" ? /* @__PURE__ */ jsx(
-              "rect",
-              {
-                x: "100",
-                y: "30",
-                width: "320",
-                height: "240",
-                rx: "12",
-                ry: "12",
-                fill: "none",
-                stroke: "currentColor",
-                strokeWidth: "3",
-                opacity: "0.25"
-              }
-            ) : variant === "analogue" ? /* @__PURE__ */ jsx(
-              "ellipse",
-              {
-                cx: "260",
-                cy: "150",
-                rx: "170",
-                ry: "135",
-                fill: "none",
-                stroke: "currentColor",
-                strokeWidth: "2",
-                opacity: "0.15",
-                filter: "url(#pencil)"
-              }
-            ) : /* @__PURE__ */ jsx(
-              "ellipse",
-              {
-                cx: "260",
-                cy: "150",
-                rx: "172",
-                ry: "138",
-                fill: "none",
-                stroke: "currentColor",
-                strokeWidth: "2",
-                opacity: "0.12"
-              }
-            ),
             /* @__PURE__ */ jsx(Ears, {}),
             /* @__PURE__ */ jsx(
               Eyes,
@@ -1245,17 +1205,6 @@ var Avatar = forwardRef(function Avatar2({
                 onHoverStart: handleEyeHover,
                 onHoverEnd: handleEyeHoverEnd,
                 eyeClass
-              }
-            ),
-            /* @__PURE__ */ jsx(
-              "circle",
-              {
-                cx: "260",
-                cy: "148",
-                r: variant === "tron" ? 2 : 3,
-                fill: "currentColor",
-                opacity: "0.4",
-                shapeRendering: variant === "tron" ? "crispEdges" : "auto"
               }
             ),
             /* @__PURE__ */ jsx(

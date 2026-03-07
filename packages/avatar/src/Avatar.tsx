@@ -1156,46 +1156,7 @@ export const Avatar = forwardRef<AvatarHandle, AvatarProps>(function Avatar(
 					)}
 				</defs>
 
-				{/* ── Head ────────────────────────────────────────────────────── */}
-				{variant === "tron" ? (
-					<rect
-						x="100"
-						y="30"
-						width="320"
-						height="240"
-						rx="12"
-						ry="12"
-						fill="none"
-						stroke="currentColor"
-						strokeWidth="3"
-						opacity="0.25"
-					/>
-				) : variant === "analogue" ? (
-					<ellipse
-						cx="260"
-						cy="150"
-						rx="170"
-						ry="135"
-						fill="none"
-						stroke="currentColor"
-						strokeWidth="2"
-						opacity="0.15"
-						filter="url(#pencil)"
-					/>
-				) : (
-					<ellipse
-						cx="260"
-						cy="150"
-						rx="172"
-						ry="138"
-						fill="none"
-						stroke="currentColor"
-						strokeWidth="2"
-						opacity="0.12"
-					/>
-				)}
-
-				{/* ── Ears ────────────────────────────────────────────────────── */}
+			{/* ── Ears ────────────────────────────────────────────────────── */}
 				<Ears />
 
 				{/* ── Eyes ────────────────────────────────────────────────────── */}
@@ -1210,16 +1171,6 @@ export const Avatar = forwardRef<AvatarHandle, AvatarProps>(function Avatar(
 					onHoverStart={handleEyeHover}
 					onHoverEnd={handleEyeHoverEnd}
 					eyeClass={eyeClass}
-				/>
-
-				{/* ── Nose dot ────────────────────────────────────────────────── */}
-				<circle
-					cx="260"
-					cy="148"
-					r={variant === "tron" ? 2 : 3}
-					fill="currentColor"
-					opacity="0.4"
-					shapeRendering={variant === "tron" ? "crispEdges" : "auto"}
 				/>
 
 				{/* ── Mouth ───────────────────────────────────────────────────── */}
