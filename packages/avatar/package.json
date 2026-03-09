@@ -1,5 +1,5 @@
 {
-	"name": "@dot/avatar",
+	"name": "@xoboid/avatar",
 	"version": "0.1.0",
 	"description": "Animated SVG avatar component with multi-variant face system and audio reactivity",
 	"type": "module",

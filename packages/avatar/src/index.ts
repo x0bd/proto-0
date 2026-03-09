@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────────
-//  @dot/avatar — public API
+//  @xoboid/avatar — public API
 // ─────────────────────────────────────────────
 
 // Main component

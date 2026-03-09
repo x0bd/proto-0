@@ -6,8 +6,8 @@ import {
 	useAudioAnalysis,
 	applyAgentTheme,
 	type AvatarHandle,
-} from "@dot/avatar";
-import "@dot/avatar/avatar.css";
+} from "@xoboid/avatar";
+import "@xoboid/avatar/avatar.css";
 
 export default function TestAvatarPage() {
 	const avatarRef = useRef<AvatarHandle>(null);

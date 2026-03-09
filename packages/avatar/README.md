@@ -6,14 +6,14 @@
   <img src="./dot-1 (3).png" alt="analogue variant – dark" width="200" />
 </p>
 
-<h1 align="center">@dot/avatar</h1>
+<h1 align="center">@xoboid/avatar</h1>
 
 <p align="center">
   <strong>Animated SVG face component with emotion expressions, audio reactivity, and pointer interactions.</strong>
 </p>
 
 <p align="center">
-  <code>npm i @dot/avatar gsap</code>
+  <code>npm i @xoboid/avatar gsap</code>
 </p>
 
 ---
@@ -23,8 +23,8 @@
 ```tsx
 "use client";
 
-import { Avatar } from "@dot/avatar";
-import "@dot/avatar/avatar.css";
+import { Avatar } from "@xoboid/avatar";
+import "@xoboid/avatar/avatar.css";
 
 export default function App() {
   return (
@@ -85,7 +85,7 @@ interface EmotionState {
 Connect a microphone, audio element, or file — the face reacts in real-time.
 
 ```tsx
-import { Avatar, useAudioAnalysis } from "@dot/avatar";
+import { Avatar, useAudioAnalysis } from "@xoboid/avatar";
 
 function LiveAvatar() {
   const { levels, isAnalyzing, connectMicrophone } = useAudioAnalysis();
@@ -128,7 +128,7 @@ const { connectExternalAnalyser } = useAudioAnalysis(); // existing AnalyserNode
 Pair with a TTS endpoint for speaking avatars:
 
 ```tsx
-import { Avatar, useVoiceSynthesis, useAudioAnalysis } from "@dot/avatar";
+import { Avatar, useVoiceSynthesis, useAudioAnalysis } from "@xoboid/avatar";
 
 function SpeakingAvatar() {
   const { speak, isSpeaking, analyserRef } = useVoiceSynthesis({
@@ -158,7 +158,7 @@ For programmatic control via `ref`:
 
 ```tsx
 import { useRef } from "react";
-import { Avatar, type AvatarHandle } from "@dot/avatar";
+import { Avatar, type AvatarHandle } from "@xoboid/avatar";
 
 function App() {
   const ref = useRef<AvatarHandle>(null);
@@ -207,7 +207,7 @@ function App() {
 Feed arbitrary data into the avatar via the adapter pattern:
 
 ```tsx
-import type { InteractionFeed, AdapterFn } from "@dot/avatar";
+import type { InteractionFeed, AdapterFn } from "@xoboid/avatar";
 
 // Adapter: convert chat sentiment to emotion
 const chatAdapter: AdapterFn<{ sentiment: number }> = (data) => [{
@@ -229,7 +229,7 @@ const chatAdapter: AdapterFn<{ sentiment: number }> = (data) => [{
 ### CSS Variables
 
 ```tsx
-import "@dot/avatar/avatar.css";
+import "@xoboid/avatar/avatar.css";
 ```
 
 Override in your stylesheet:
