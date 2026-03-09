@@ -1,3 +1,4 @@
+import type { RefObject } from "react";
 import type { FaceVariant } from "../types";
 
 /** Geometry descriptor for a single eye variant */
@@ -12,9 +13,9 @@ export interface EyeGeometry {
 
 /** Props accepted by every eye sub-component */
 export interface EyeProps {
-	leftRef: React.RefObject<SVGElement>;
-	rightRef: React.RefObject<SVGElement>;
-	topRef?: React.RefObject<SVGElement>;
+	leftRef: RefObject<SVGElement>;
+	rightRef: RefObject<SVGElement>;
+	topRef?: RefObject<SVGElement>;
 	color?: string;
 	variant: FaceVariant;
 	onWink: (eye: "left" | "right" | "top") => void;

@@ -24,9 +24,17 @@ export function useVoiceSynthesis(options: UseVoiceSynthesisOptions = {}) {
 	const audioContextRef = useRef<AudioContext | null>(null);
 	const sourceRef = useRef<AudioBufferSourceNode | null>(null);
 	const analyserRef = useRef<AnalyserNode | null>(null);
+	const abortControllerRef = useRef<AbortController | null>(null);
 
 	const speak = useCallback(
 		async (text: string, voiceId?: string) => {
+			// Cancel any in-flight request and stop current playback
+			abortControllerRef.current?.abort();
+			sourceRef.current?.stop();
+
+			const abortController = new AbortController();
+			abortControllerRef.current = abortController;
+
 			try {
 				setIsSpeaking(true);
 				onAudioStart?.();
@@ -35,6 +43,7 @@ export function useVoiceSynthesis(options: UseVoiceSynthesisOptions = {}) {
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
 					body: JSON.stringify({ text, voiceId }),
+					signal: abortController.signal,
 				});
 
 				if (!response.ok) throw new Error("TTS request failed");
@@ -83,6 +92,10 @@ export function useVoiceSynthesis(options: UseVoiceSynthesisOptions = {}) {
 
 				return analyser;
 			} catch (err) {
+				if (err instanceof Error && err.name === "AbortError") {
+					// Expected — speak() was interrupted by a newer call or stop()
+					return null;
+				}
 				console.error("[useVoiceSynthesis]", err);
 				setIsSpeaking(false);
 				onAudioEnd?.();
@@ -93,6 +106,8 @@ export function useVoiceSynthesis(options: UseVoiceSynthesisOptions = {}) {
 	);
 
 	const stop = useCallback(() => {
+		abortControllerRef.current?.abort();
+		abortControllerRef.current = null;
 		if (sourceRef.current) {
 			sourceRef.current.stop();
 			sourceRef.current = null;

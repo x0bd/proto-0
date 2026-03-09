@@ -590,7 +590,6 @@ var Avatar = forwardRef(function Avatar2({
       }
       return;
     }
-    onEyeClick?.(eye);
     const eyeRef = eye === "left" ? leftEyeRef : rightEyeRef;
     const target = latestEyeTargetsRef.current;
     const cx = eye === "left" ? 200 : 320;
@@ -1104,8 +1103,9 @@ var Avatar = forwardRef(function Avatar2({
       variant
     });
   }, [emotion, speaking, audioLevels, variant, onStateChange]);
+  const safeSize = Math.max(20, size);
   const aspectRatio = 520 / 280;
-  const svgWidth = size * aspectRatio;
+  const svgWidth = safeSize * aspectRatio;
   const eyeClass = `transition-colors duration-300`;
   return /* @__PURE__ */ jsx(
     "div",
@@ -1115,7 +1115,7 @@ var Avatar = forwardRef(function Avatar2({
       style: {
         display: "inline-block",
         width: svgWidth,
-        height: size,
+        height: safeSize,
         color: displayColor,
         cursor: interactive ? "pointer" : "default",
         userSelect: "none",
@@ -1133,7 +1133,7 @@ var Avatar = forwardRef(function Avatar2({
         {
           viewBox: "80 26 360 250",
           width: svgWidth,
-          height: size,
+          height: safeSize,
           xmlns: "http://www.w3.org/2000/svg",
           style: { overflow: "visible" },
           children: [
@@ -1445,15 +1445,21 @@ function useVoiceSynthesis(options = {}) {
   const audioContextRef = useRef(null);
   const sourceRef = useRef(null);
   const analyserRef = useRef(null);
+  const abortControllerRef = useRef(null);
   const speak = useCallback(
     async (text, voiceId) => {
+      abortControllerRef.current?.abort();
+      sourceRef.current?.stop();
+      const abortController = new AbortController();
+      abortControllerRef.current = abortController;
       try {
         setIsSpeaking(true);
         onAudioStart?.();
         const response = await fetch(ttsEndpoint, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text, voiceId })
+          body: JSON.stringify({ text, voiceId }),
+          signal: abortController.signal
         });
         if (!response.ok) throw new Error("TTS request failed");
         const arrayBuffer = await response.arrayBuffer();
@@ -1480,6 +1486,9 @@ function useVoiceSynthesis(options = {}) {
         };
         return analyser;
       } catch (err) {
+        if (err instanceof Error && err.name === "AbortError") {
+          return null;
+        }
         console.error("[useVoiceSynthesis]", err);
         setIsSpeaking(false);
         onAudioEnd?.();
@@ -1489,6 +1498,8 @@ function useVoiceSynthesis(options = {}) {
     [ttsEndpoint, onAudioStart, onAudioEnd]
   );
   const stop = useCallback(() => {
+    abortControllerRef.current?.abort();
+    abortControllerRef.current = null;
     if (sourceRef.current) {
       sourceRef.current.stop();
       sourceRef.current = null;

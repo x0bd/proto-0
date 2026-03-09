@@ -470,7 +470,6 @@ export const Avatar = forwardRef<AvatarHandle, AvatarProps>(function Avatar(
 			return;
 		}
 
-		onEyeClick?.(eye);
 		const eyeRef = eye === "left" ? leftEyeRef : rightEyeRef;
 		const target = latestEyeTargetsRef.current;
 		const cx = eye === "left" ? 200 : 320;
@@ -1078,8 +1077,9 @@ export const Avatar = forwardRef<AvatarHandle, AvatarProps>(function Avatar(
 	}, [emotion, speaking, audioLevels, variant, onStateChange]);
 
 	// ── Derived values for JSX ─────────────────────────────────────────────
+	const safeSize = Math.max(20, size);
 	const aspectRatio = 520 / 280;
-	const svgWidth = size * aspectRatio;
+	const svgWidth = safeSize * aspectRatio;
 	const eyeClass = `transition-colors duration-300`;
 
 	// ── JSX ────────────────────────────────────────────────────────────────
@@ -1087,15 +1087,15 @@ export const Avatar = forwardRef<AvatarHandle, AvatarProps>(function Avatar(
 		<div
 			ref={containerRef}
 			className={className}
-			style={{
-				display: "inline-block",
-				width: svgWidth,
-				height: size,
-				color: displayColor,
-				cursor: interactive ? "pointer" : "default",
-				userSelect: "none",
-				WebkitUserSelect: "none",
-			}}
+		style={{
+			display: "inline-block",
+			width: svgWidth,
+			height: safeSize,
+			color: displayColor,
+			cursor: interactive ? "pointer" : "default",
+			userSelect: "none",
+			WebkitUserSelect: "none",
+		}}
 			onMouseMove={handlePointerMove}
 			onTouchMove={handlePointerMove}
 			onMouseLeave={handlePointerLeave}
@@ -1104,12 +1104,12 @@ export const Avatar = forwardRef<AvatarHandle, AvatarProps>(function Avatar(
 			onMouseUp={handlePointerUp}
 			onTouchEnd={handlePointerUp}
 		>
-			<svg
-				viewBox="80 26 360 250"
-				width={svgWidth}
-				height={size}
-				xmlns="http://www.w3.org/2000/svg"
-				style={{ overflow: "visible" }}
+		<svg
+			viewBox="80 26 360 250"
+			width={svgWidth}
+			height={safeSize}
+			xmlns="http://www.w3.org/2000/svg"
+			style={{ overflow: "visible" }}
 			>
 				<defs>
 					{/* Analogue pencil / sketch filter */}

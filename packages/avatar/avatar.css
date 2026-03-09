@@ -1,37 +1,44 @@
 /**
- * @dot/avatar — base CSS variables
+ * @xoboid/avatar — base stylesheet
  *
- * Import this file once in your app:
- *   import "@dot/avatar/avatar.css"
+ * Import once in your app:  import "@xoboid/avatar/avatar.css";
  *
- * You can override any variable on a parent element or :root.
- *
- * ⚠️  KEEP IN SYNC with src/face/themes.ts — VARIANT_COLORS & VARIANT_GLOW.
- *     If you change the default colors there, update them here too.
+ * Override any variable in your own :root to retheme globally, or on a
+ * specific element to scope the theme to a subtree.
  */
 
 :root {
-	/* ── Colour (default: minimal / coral) ─── */
-	--face-color: #ff6b6b;
-	--face-glow: rgba(255, 107, 107, 0.6);
-	--face-bg-tint: rgba(255, 107, 107, 0.04);
+  /* ── Face color ─────────────────────────────────────────────────────── */
+  --face-color:    #FF6B6B;               /* accent / stroke / fill        */
+  --face-glow:     rgba(255,107,107,0.6); /* drop-shadow / halo color      */
+  --face-bg-tint:  rgba(255,107,107,0.04);/* subtle background wash        */
 
-	/* ── Animation timing ────────────────────── */
-	--face-transition-fast: 0.04s;
-	--face-transition-base: 0.3s;
-	--face-transition-slow: 0.8s;
+  /* ── Transition speeds ──────────────────────────────────────────────── */
+  --face-transition-fast:  0.04s;         /* audio-reactive tweens         */
+  --face-transition-base:  0.3s;          /* hover / interactive           */
+  --face-transition-slow:  0.8s;          /* emotion state changes         */
 }
 
-/* Variant helpers — applied by applyAgentTheme() at runtime,
-   but also available as static CSS via data-attributes. */
-[data-avatar-variant="tron"] {
-	--face-color: #06b6d4;
-	--face-glow: rgba(6, 182, 212, 0.7);
-	--face-bg-tint: rgba(0, 200, 255, 0.03);
+/* ── Scoped reset for the SVG wrapper ──────────────────────────────────── */
+[data-avatar] {
+  display:     inline-block;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+  cursor: pointer;
 }
 
-[data-avatar-variant="analogue"] {
-	--face-color: #fbbf24;
-	--face-glow: rgba(251, 191, 36, 0.6);
-	--face-bg-tint: rgba(251, 191, 36, 0.04);
+[data-avatar][data-interactive="false"] {
+  cursor: default;
+  pointer-events: none;
+}
+
+/* ── Tron variant — crisp pixel rendering ──────────────────────────────── */
+[data-avatar][data-variant="tron"] svg {
+  shape-rendering: crispEdges;
+}
+
+/* ── Analogue variant — slightly softened rendering ────────────────────── */
+[data-avatar][data-variant="analogue"] svg {
+  shape-rendering: geometricPrecision;
 }
