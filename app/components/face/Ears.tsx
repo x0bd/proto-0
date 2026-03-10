@@ -1,14 +1,12 @@
 "use client";
 
-import { FaceVariant } from "./types";
+import { FaceVariant, EmotionState } from "./types";
 
 interface EarsProps {
 	variant: FaceVariant;
-	emotion: any;
+	emotion: EmotionState;
 }
 
-export function Ears({ variant, emotion }: EarsProps) {
-    // Ears were previously for Neko variant which is removed.
-    // Keeping component stub for potential future use.
+export function Ears(_props: EarsProps) {
 	return null;
 }

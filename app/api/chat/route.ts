@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 const MAX_RETRIES = 3;
 const RETRY_DELAY_MS = 1000;
 
-async function callGemini(apiKey: string, contents: any[], systemPrompt: string, attempt: number = 1): Promise<Response> {
+async function callGemini(apiKey: string, contents: { role: string; parts: { text: string }[] }[], systemPrompt: string, attempt: number = 1): Promise<Response> {
   const response = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
     {

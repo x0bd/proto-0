@@ -58,8 +58,6 @@ export function getMouthStyle(variant: FaceVariant): {
 	switch (variant) {
 		case "tron":
 			return { strokeLinecap: "square", shapeRendering: "crispEdges" };
-		case "robot":
-			return { strokeLinecap: "round", shapeRendering: "auto" };
 		default:
 			return { strokeLinecap: "round", shapeRendering: "auto" };
 	}

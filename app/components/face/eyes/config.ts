@@ -7,14 +7,12 @@ import { RefObject } from "react";
 import { FaceVariant } from "../types";
 
 export interface EyeRefs {
-	leftRef: RefObject<any>;
-	rightRef: RefObject<any>;
-	// New: pupil refs for tracking
-	leftPupilRef?: RefObject<any>;
-	rightPupilRef?: RefObject<any>;
-	// Extra refs for variants with 3+ eyes
-	topRef?: RefObject<any>;
-	topPupilRef?: RefObject<any>;
+	leftRef: RefObject<SVGElement>;
+	rightRef: RefObject<SVGElement>;
+	leftPupilRef?: RefObject<SVGElement>;
+	rightPupilRef?: RefObject<SVGElement>;
+	topRef?: RefObject<SVGElement>;
+	topPupilRef?: RefObject<SVGElement>;
 }
 
 export interface EyeCallbacks {

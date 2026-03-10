@@ -9,7 +9,6 @@ import { DownloadButton } from "./components/DownloadButton";
 import { FloatingDock } from "@/components/floating-dock";
 import { RiMoonFill, RiSunFill, RiSettings4Fill, RiGlobalLine } from "react-icons/ri";
 import { SiNpm, SiGithub } from "react-icons/si";
-import { cn } from "@/lib/utils";
 import { FaceVariant, EmotionState } from "./components/face/types";
 import { VARIANT_COLORS } from "./components/face/themes";
 import { useAudioAnalysis, type AudioLevels } from "@/hooks/useAudioAnalysis";
