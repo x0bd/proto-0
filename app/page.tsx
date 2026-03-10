@@ -8,6 +8,7 @@ import { CustomizationModal } from "./components/CustomizationModal";
 import { DownloadButton } from "./components/DownloadButton";
 import { FloatingDock } from "@/components/floating-dock";
 import { RiMoonFill, RiSunFill, RiSettings4Fill } from "react-icons/ri";
+import { SiNpm } from "react-icons/si";
 import { cn } from "@/lib/utils";
 import { FaceVariant, EmotionState } from "./components/face/types";
 import { VARIANT_COLORS } from "./components/face/themes";
@@ -438,6 +439,36 @@ export default function Home() {
 					targetRef={avatarStageRef}
 					accentColor={accentColor}
 				/>
+
+				{/* npm Badge */}
+				<motion.a
+					href="https://www.npmjs.com/package/@xoboid/avatar"
+					target="_blank"
+					rel="noopener noreferrer"
+					initial={{ opacity: 0, y: 8 }}
+					animate={{ opacity: 1, y: 0 }}
+					transition={{
+						delay: 0.5,
+						type: "spring",
+						damping: 28,
+						stiffness: 280,
+					}}
+					whileHover={{ scale: 1.04, y: -1 }}
+					whileTap={{ scale: 0.96 }}
+					className="absolute bottom-[max(16px,env(safe-area-inset-bottom))] left-3 sm:bottom-10 sm:left-6 z-50 flex items-center gap-2 rounded-full px-3.5 py-2 sm:px-4 sm:py-2.5 bg-background border-2 shadow-premium hover:shadow-lg transition-shadow duration-300 cursor-pointer select-none touch-manipulation"
+					style={{ borderColor: `${accentColor}40` }}
+				>
+					<SiNpm
+						className="size-5 sm:size-[22px] shrink-0"
+						style={{ color: accentColor }}
+					/>
+					<span
+						className="font-mono text-[10px] sm:text-[11px] font-bold tracking-[0.18em] uppercase leading-none"
+						style={{ color: accentColor }}
+					>
+						@xoboid/avatar
+					</span>
+				</motion.a>
 			</div>
 		</div>
 	);
