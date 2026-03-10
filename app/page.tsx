@@ -7,8 +7,8 @@ import Avatar from "./components/Avatar";
 import { CustomizationModal } from "./components/CustomizationModal";
 import { DownloadButton } from "./components/DownloadButton";
 import { FloatingDock } from "@/components/floating-dock";
-import { RiMoonFill, RiSunFill, RiSettings4Fill } from "react-icons/ri";
-import { SiNpm } from "react-icons/si";
+import { RiMoonFill, RiSunFill, RiSettings4Fill, RiGlobalLine } from "react-icons/ri";
+import { SiNpm, SiGithub } from "react-icons/si";
 import { cn } from "@/lib/utils";
 import { FaceVariant, EmotionState } from "./components/face/types";
 import { VARIANT_COLORS } from "./components/face/themes";
@@ -440,35 +440,53 @@ export default function Home() {
 					accentColor={accentColor}
 				/>
 
-				{/* npm Badge */}
-				<motion.a
-					href="https://www.npmjs.com/package/@xoboid/avatar"
-					target="_blank"
-					rel="noopener noreferrer"
-					initial={{ opacity: 0, y: 8 }}
-					animate={{ opacity: 1, y: 0 }}
-					transition={{
-						delay: 0.5,
-						type: "spring",
-						damping: 28,
-						stiffness: 280,
-					}}
-					whileHover={{ scale: 1.04, y: -1 }}
-					whileTap={{ scale: 0.96 }}
-					className="absolute bottom-[max(16px,env(safe-area-inset-bottom))] left-3 sm:bottom-10 sm:left-6 z-50 flex items-center gap-2 rounded-full px-3.5 py-2 sm:px-4 sm:py-2.5 bg-background border-2 shadow-premium hover:shadow-lg transition-shadow duration-300 cursor-pointer select-none touch-manipulation"
-					style={{ borderColor: `${accentColor}40` }}
-				>
-					<SiNpm
-						className="size-5 sm:size-[22px] shrink-0"
-						style={{ color: accentColor }}
-					/>
-					<span
-						className="font-mono text-[10px] sm:text-[11px] font-bold tracking-[0.18em] uppercase leading-none"
-						style={{ color: accentColor }}
-					>
-						@xoboid/avatar
-					</span>
-				</motion.a>
+				{/* Bottom-left link cluster */}
+				<div className="absolute bottom-[max(16px,env(safe-area-inset-bottom))] left-3 sm:bottom-10 sm:left-6 z-[70] pointer-events-auto flex flex-col items-start gap-2">
+					{[
+						{
+							icon: <RiGlobalLine className="size-[15px] sm:size-4 shrink-0" />,
+							label: "xoboid.com",
+							href: "https://xoboid.com",
+							delay: 0.4,
+						},
+						{
+							icon: <SiGithub className="size-[15px] sm:size-4 shrink-0" />,
+							label: "source",
+							href: "https://github.com/x0bd/proto-0",
+							delay: 0.48,
+						},
+						{
+							icon: <SiNpm className="size-[17px] sm:size-[19px] shrink-0" />,
+							label: "@xoboid/avatar",
+							href: "https://www.npmjs.com/package/@xoboid/avatar",
+							delay: 0.56,
+						},
+					].map(({ icon, label, href, delay }) => (
+						<motion.button
+							key={label}
+							initial={{ opacity: 0, x: -8 }}
+							animate={{ opacity: 1, x: 0 }}
+							transition={{
+								delay,
+								type: "spring",
+								damping: 28,
+								stiffness: 280,
+							}}
+							whileHover={{ scale: 1.04, x: 2 }}
+							whileTap={{ scale: 0.96 }}
+							onClick={() =>
+								window.open(href, "_blank", "noopener,noreferrer")
+							}
+							className="flex items-center gap-2 rounded-full px-3 py-1.5 sm:px-3.5 sm:py-2 bg-background border-2 shadow-premium hover:shadow-lg transition-shadow duration-200 cursor-pointer select-none touch-manipulation"
+							style={{ borderColor: `${accentColor}35`, color: accentColor }}
+						>
+							{icon}
+							<span className="font-mono text-[9px] sm:text-[10px] font-bold tracking-[0.15em] uppercase leading-none">
+								{label}
+							</span>
+						</motion.button>
+					))}
+				</div>
 			</div>
 		</div>
 	);
