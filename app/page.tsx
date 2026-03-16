@@ -439,28 +439,32 @@ export default function Home() {
 					accentColor={accentColor}
 				/>
 
-				{/* Bottom-left link cluster */}
-				<div className="absolute bottom-[max(16px,env(safe-area-inset-bottom))] left-3 sm:bottom-10 sm:left-6 z-[70] pointer-events-auto flex flex-col items-start gap-2">
+				{/* External links */}
+				<div className="absolute left-1/2 -translate-x-1/2 sm:translate-x-0 sm:left-6 bottom-[calc(max(16px,env(safe-area-inset-bottom))+78px)] sm:bottom-10 z-[70] pointer-events-auto w-[min(92vw,380px)] sm:w-auto">
+					<div className="grid grid-cols-3 gap-2 sm:flex sm:flex-col sm:items-start">
 					{[
 						{
 							icon: <RiGlobalLine className="size-[15px] sm:size-4 shrink-0" />,
 							label: "xoboid.com",
+							mobileLabel: "site",
 							href: "https://xoboid.com",
 							delay: 0.4,
 						},
 						{
 							icon: <SiGithub className="size-[15px] sm:size-4 shrink-0" />,
 							label: "source",
+							mobileLabel: "source",
 							href: "https://github.com/x0bd/proto-0",
 							delay: 0.48,
 						},
 						{
 							icon: <SiNpm className="size-[17px] sm:size-[19px] shrink-0" />,
 							label: "@xoboid/avatar",
+							mobileLabel: "npm",
 							href: "https://www.npmjs.com/package/@xoboid/avatar",
 							delay: 0.56,
 						},
-					].map(({ icon, label, href, delay }) => (
+					].map(({ icon, label, mobileLabel, href, delay }) => (
 						<motion.button
 							key={label}
 							initial={{ opacity: 0, x: -8 }}
@@ -476,15 +480,21 @@ export default function Home() {
 							onClick={() =>
 								window.open(href, "_blank", "noopener,noreferrer")
 							}
-							className="flex items-center gap-2 rounded-full px-3 py-1.5 sm:px-3.5 sm:py-2 bg-background border-2 shadow-premium hover:shadow-lg transition-shadow duration-200 cursor-pointer select-none touch-manipulation"
+							className="h-11 sm:h-auto flex items-center justify-center sm:justify-start gap-2 rounded-2xl sm:rounded-full px-2.5 sm:px-3.5 sm:py-2 bg-background border-2 shadow-premium hover:shadow-lg transition-shadow duration-200 cursor-pointer select-none touch-manipulation"
 							style={{ borderColor: `${accentColor}35`, color: accentColor }}
+							aria-label={`Open ${label}`}
+							title={label}
 						>
 							{icon}
-							<span className="font-mono text-[9px] sm:text-[10px] font-bold tracking-[0.15em] uppercase leading-none">
+							<span className="font-mono text-[9px] sm:text-[10px] font-bold tracking-[0.12em] sm:tracking-[0.15em] uppercase leading-none sm:hidden">
+								{mobileLabel}
+							</span>
+							<span className="font-mono text-[9px] sm:text-[10px] font-bold tracking-[0.15em] uppercase leading-none hidden sm:inline">
 								{label}
 							</span>
 						</motion.button>
 					))}
+					</div>
 				</div>
 			</div>
 		</div>
