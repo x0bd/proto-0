@@ -226,9 +226,16 @@ function SpectrumPicker({
     );
 }
 
-/* ─── Modal ─────────────────────────────────────────────── */
+/* ─── Modal (Now a Panel) ─────────────────────────────────────────────── */
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { KeyVaultPanel } from "./key-vault-panel";
+import {
+    Sheet,
+    SheetContent,
+    SheetHeader,
+    SheetTitle,
+} from "@/components/ui/sheet";
+import { Settings2, X } from "lucide-react";
 
 interface CustomizationModalProps {
     isOpen: boolean;
@@ -264,299 +271,225 @@ export const CustomizationModal = React.memo(function CustomizationModal({
     };
 
     return (
-        <AnimatePresence>
-            {isOpen && (
-                <>
-                    {/* backdrop */}
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="fixed inset-0 z-[100] bg-black/20 dark:bg-black/50 backdrop-blur-md"
-                        onClick={onClose}
-                    />
+        <Sheet open={isOpen} onOpenChange={onClose}>
+            <SheetContent
+                side="right"
+                className="w-[calc(100vw-16px)] sm:w-[460px] sm:max-w-md p-0 flex flex-col right-2 sm:right-4 top-2 sm:top-4 bottom-2 sm:bottom-4 h-[calc(100svh-16px)] sm:h-[calc(100svh-32px)] rounded-[32px] border-0 shadow-premium overflow-hidden glass-card"
+                style={
+                    {
+                        "--tw-glass-border": `${accentColor}20`,
+                    } as React.CSSProperties
+                }
+            >
+                {/* Subtle dynamic background wash */}
+                <div
+                    className="absolute inset-0 pointer-events-none opacity-[0.04] mix-blend-color-burn"
+                    style={{ backgroundColor: accentColor }}
+                />
+                <div className="absolute inset-0 bg-washi pointer-events-none opacity-[0.15]" />
 
-                    <div className="fixed inset-0 z-[101] flex items-center justify-center p-3 sm:p-4 pointer-events-none">
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.96, y: 10 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.96, y: 10 }}
-                            transition={{
-                                type: "spring",
-                                damping: 34,
-                                stiffness: 400,
-                                mass: 0.6,
+                {/* Header */}
+                <SheetHeader className="relative z-10 px-8 py-7 pb-4 shrink-0">
+                    <div className="flex items-center gap-3">
+                        <div
+                            className="size-10 rounded-full flex items-center justify-center shadow-sm"
+                            style={{
+                                backgroundColor: `${accentColor}15`,
+                                color: accentColor,
                             }}
-                            className="pointer-events-auto w-full max-w-[500px]"
-                            onClick={(e) => e.stopPropagation()}
                         >
-                            <div
-                                className="relative bg-background rounded-[14px] overflow-hidden max-h-[92svh] overflow-y-auto"
-                                style={{
-                                    border: `1px solid ${accentColor}22`,
-                                    boxShadow: `0 20px 60px -12px rgba(0,0,0,0.14), 0 0 0 1px ${accentColor}0a`,
-                                }}
+                            <Settings2 className="size-5" />
+                        </div>
+                        <SheetTitle className="text-2xl font-semibold tracking-tight text-foreground/90">
+                            Settings
+                        </SheetTitle>
+                    </div>
+                </SheetHeader>
+
+                {/* Scrollable Content */}
+                <div className="relative z-10 flex-1 overflow-y-auto px-6 pb-8 custom-scrollbar">
+                    <Tabs defaultValue="appearance" className="w-full">
+                        <TabsList
+                            className="mb-6 w-full flex rounded-[16px] p-1.5"
+                            style={{
+                                backgroundColor: `${accentColor}08`,
+                                borderColor: `${accentColor}15`,
+                            }}
+                        >
+                            <TabsTrigger
+                                value="appearance"
+                                className="data-[state=active]:bg-background/80 data-[state=active]:shadow-sm relative h-9 rounded-[12px] transition-all"
+                                style={({ "data-state": state }: any) =>
+                                    ({
+                                        color:
+                                            state === "active"
+                                                ? accentColor
+                                                : "var(--foreground)",
+                                        opacity: state === "active" ? 1 : 0.5,
+                                    }) as React.CSSProperties
+                                }
                             >
-                                {/* washi texture */}
-                                <div className="absolute inset-0 bg-washi pointer-events-none opacity-40" />
+                                Appearance
+                            </TabsTrigger>
+                            <TabsTrigger
+                                value="keys"
+                                className="data-[state=active]:bg-background/80 data-[state=active]:shadow-sm relative h-9 rounded-[12px] transition-all"
+                                style={({ "data-state": state }: any) =>
+                                    ({
+                                        color:
+                                            state === "active"
+                                                ? accentColor
+                                                : "var(--foreground)",
+                                        opacity: state === "active" ? 1 : 0.5,
+                                    }) as React.CSSProperties
+                                }
+                            >
+                                Key Vault
+                            </TabsTrigger>
+                        </TabsList>
 
-                                {/* faint accent wash */}
-                                <div
-                                    className="absolute inset-0 pointer-events-none"
-                                    style={{
-                                        backgroundColor: `${accentColor}05`,
-                                    }}
-                                />
-
-                                <div className="relative z-10 px-5 pt-5 pb-6">
-                                    {/* ── header ── */}
-                                    <div className="flex items-start justify-between mb-5">
-                                        <div>
-                                            <p className="text-[9px] font-mono text-foreground/30 tracking-[0.22em] uppercase mb-1.5">
-                                                Configure
-                                            </p>
-                                            <h2 className="text-[18px] font-semibold tracking-[-0.02em] text-foreground leading-none">
-                                                {avatarName || "Your Companion"}
-                                            </h2>
-                                        </div>
-                                        <button
-                                            onClick={onClose}
-                                            className="size-7 rounded-[7px] flex items-center justify-center transition-all duration-150 active:scale-90 mt-0.5"
-                                            style={{
-                                                backgroundColor: `${accentColor}0c`,
-                                                color: `${accentColor}80`,
-                                            }}
-                                        >
-                                            <RiCloseFill className="size-4" />
-                                        </button>
-                                    </div>
-
-                                    <Tabs defaultValue="appearance">
-                                        <TabsList
-                                            className="mb-4 w-full grid grid-cols-2"
-                                            style={{
-                                                backgroundColor: `${accentColor}07`,
-                                                borderColor: `${accentColor}18`,
-                                            }}
-                                        >
-                                            <TabsTrigger
-                                                value="appearance"
-                                                className="data-[state=active]:bg-transparent relative"
-                                                style={({
-                                                    "data-state": state,
-                                                }: any) =>
-                                                    ({
-                                                        color:
-                                                            state === "active"
-                                                                ? accentColor
-                                                                : "var(--foreground)",
-                                                        opacity:
-                                                            state === "active"
-                                                                ? 1
-                                                                : 0.4,
-                                                    }) as React.CSSProperties
-                                                }
-                                            >
-                                                Appearance
-                                            </TabsTrigger>
-                                            <TabsTrigger
-                                                value="keys"
-                                                className="data-[state=active]:bg-transparent relative"
-                                                style={({
-                                                    "data-state": state,
-                                                }: any) =>
-                                                    ({
-                                                        color:
-                                                            state === "active"
-                                                                ? accentColor
-                                                                : "var(--foreground)",
-                                                        opacity:
-                                                            state === "active"
-                                                                ? 1
-                                                                : 0.4,
-                                                    }) as React.CSSProperties
-                                                }
-                                            >
-                                                Key Vault
-                                            </TabsTrigger>
-                                        </TabsList>
-
-                                        <TabsContent
-                                            value="appearance"
-                                            className="space-y-6"
-                                        >
-                                            {/* ── name ── */}
-                                            <div>
-                                                <label className="block text-[9px] font-mono font-medium uppercase tracking-[0.22em] text-foreground/30 mb-2">
-                                                    Name
-                                                </label>
-                                                <div className="relative">
-                                                    <input
-                                                        type="text"
-                                                        value={nameVal}
-                                                        onChange={(e) =>
-                                                            setNameVal(
-                                                                e.target.value,
-                                                            )
-                                                        }
-                                                        onBlur={commitName}
-                                                        onKeyDown={(e) => {
-                                                            if (
-                                                                e.key ===
-                                                                "Enter"
-                                                            )
-                                                                e.currentTarget.blur();
-                                                        }}
-                                                        maxLength={20}
-                                                        spellCheck={false}
-                                                        placeholder="Name your companion"
-                                                        className="w-full bg-foreground/[0.03] rounded-[8px] px-3.5 h-10 text-[13px] font-medium text-foreground focus:outline-none transition-all duration-200 font-mono placeholder:text-foreground/20 placeholder:font-normal"
-                                                        style={{
-                                                            caretColor:
-                                                                accentColor,
-                                                            border: `1px solid ${accentColor}20`,
-                                                        }}
-                                                    />
-                                                </div>
-                                            </div>
-
-                                            {/* ── style ── */}
-                                            <div>
-                                                <label className="block text-[9px] font-mono font-medium uppercase tracking-[0.22em] text-foreground/30 mb-2">
-                                                    Style
-                                                </label>
-                                                <div
-                                                    className="relative flex rounded-[8px] p-[3px]"
-                                                    style={{
-                                                        backgroundColor: `${accentColor}07`,
-                                                        border: `1px solid ${accentColor}18`,
-                                                    }}
-                                                >
-                                                    {FACES.map((face) => {
-                                                        const active =
-                                                            currentVariant ===
-                                                            face.id;
-                                                        return (
-                                                            <button
-                                                                key={face.id}
-                                                                onClick={() =>
-                                                                    onVariantChange(
-                                                                        face.id,
-                                                                    )
-                                                                }
-                                                                className="relative flex-1 h-9 font-mono text-[10px] font-semibold uppercase tracking-widest cursor-pointer transition-colors duration-150 rounded-[5px]"
-                                                                style={{
-                                                                    color: active
-                                                                        ? accentColor
-                                                                        : "var(--foreground)",
-                                                                    opacity:
-                                                                        active
-                                                                            ? 1
-                                                                            : 0.38,
-                                                                }}
-                                                            >
-                                                                {active && (
-                                                                    <motion.div
-                                                                        layoutId="face-pill"
-                                                                        className="absolute inset-0 rounded-[5px]"
-                                                                        style={{
-                                                                            backgroundColor: `${accentColor}18`,
-                                                                        }}
-                                                                        transition={{
-                                                                            type: "spring",
-                                                                            stiffness: 450,
-                                                                            damping: 38,
-                                                                        }}
-                                                                    />
-                                                                )}
-                                                                <span className="relative z-10">
-                                                                    {face.name}
-                                                                </span>
-                                                            </button>
-                                                        );
-                                                    })}
-                                                </div>
-                                            </div>
-
-                                            {/* ── accent color ── */}
-                                            <div>
-                                                <label className="block text-[9px] font-mono font-medium uppercase tracking-[0.22em] text-foreground/30 mb-2">
-                                                    Accent
-                                                </label>
-                                                <SpectrumPicker
-                                                    color={accentColor}
-                                                    onChange={
-                                                        onAccentColorChange
-                                                    }
-                                                />
-
-                                                {/* quick-pick swatches */}
-                                                <div className="flex flex-wrap items-center gap-2 mt-3">
-                                                    {SWATCHES.map((hex) => {
-                                                        const active =
-                                                            accentColor.toUpperCase() ===
-                                                            hex;
-                                                        return (
-                                                            <button
-                                                                key={hex}
-                                                                onClick={() =>
-                                                                    onAccentColorChange(
-                                                                        hex,
-                                                                    )
-                                                                }
-                                                                className="relative size-5 rounded-[4px] transition-transform duration-150 hover:scale-110 active:scale-90 shrink-0"
-                                                                style={{
-                                                                    backgroundColor:
-                                                                        hex,
-                                                                    boxShadow:
-                                                                        active
-                                                                            ? `0 0 0 2px var(--background), 0 0 0 3.5px ${hex}`
-                                                                            : "none",
-                                                                }}
-                                                            />
-                                                        );
-                                                    })}
-                                                </div>
-
-                                                {/* hex readout */}
-                                                <div
-                                                    className="flex items-center justify-between mt-3.5 pt-3"
-                                                    style={{
-                                                        borderTop: `1px solid ${accentColor}10`,
-                                                    }}
-                                                >
-                                                    <span className="text-[9px] font-mono text-foreground/30 uppercase tracking-[0.2em]">
-                                                        Hex
-                                                    </span>
-                                                    <div className="flex items-center gap-2">
-                                                        <div
-                                                            className="size-3.5 rounded-[3px] shrink-0"
-                                                            style={{
-                                                                backgroundColor:
-                                                                    accentColor,
-                                                            }}
-                                                        />
-                                                        <span className="text-[11px] font-mono font-medium text-foreground/60 uppercase tracking-[0.08em]">
-                                                            {accentColor}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </TabsContent>
-
-                                        <TabsContent value="keys">
-                                            <KeyVaultPanel
-                                                accentColor={accentColor}
-                                            />
-                                        </TabsContent>
-                                    </Tabs>
+                        <TabsContent
+                            value="appearance"
+                            className="space-y-8 px-2"
+                        >
+                            {/* ── name ── */}
+                            <div className="space-y-3">
+                                <label className="flex items-center gap-2 text-[11px] font-mono font-semibold uppercase tracking-widest text-muted-foreground/70">
+                                    <div
+                                        className="w-1.5 h-1.5 rounded-full"
+                                        style={{ backgroundColor: accentColor }}
+                                    />
+                                    Identity
+                                </label>
+                                <div className="relative group">
+                                    <input
+                                        type="text"
+                                        value={nameVal}
+                                        onChange={(e) =>
+                                            setNameVal(e.target.value)
+                                        }
+                                        onBlur={commitName}
+                                        onKeyDown={(e) => {
+                                            if (e.key === "Enter")
+                                                e.currentTarget.blur();
+                                        }}
+                                        maxLength={20}
+                                        spellCheck={false}
+                                        placeholder="Name your companion"
+                                        className="w-full h-14 bg-background/60 backdrop-blur-sm rounded-[20px] px-5 text-[15px] font-medium text-foreground focus:outline-none transition-all duration-300 font-mono placeholder:text-foreground/30 shadow-sm border border-foreground/[0.05] focus:border-foreground/15 hover:bg-background/80"
+                                        style={{
+                                            caretColor: accentColor,
+                                        }}
+                                    />
                                 </div>
                             </div>
-                        </motion.div>
-                    </div>
-                </>
-            )}
-        </AnimatePresence>
+
+                            {/* ── style ── */}
+                            <div className="space-y-3">
+                                <label className="flex items-center gap-2 text-[11px] font-mono font-semibold uppercase tracking-widest text-muted-foreground/70">
+                                    <div
+                                        className="w-1.5 h-1.5 rounded-full"
+                                        style={{ backgroundColor: accentColor }}
+                                    />
+                                    Hardware Shell
+                                </label>
+                                <div className="grid grid-cols-3 gap-2">
+                                    {FACES.map((face) => {
+                                        const active =
+                                            currentVariant === face.id;
+                                        return (
+                                            <button
+                                                key={face.id}
+                                                onClick={() =>
+                                                    onVariantChange(face.id)
+                                                }
+                                                className="relative h-14 flex items-center justify-center rounded-[20px] font-mono text-[11px] font-semibold uppercase tracking-widest cursor-pointer transition-all duration-300 border bg-background/40 backdrop-blur-sm"
+                                                style={{
+                                                    borderColor: active
+                                                        ? `${accentColor}40`
+                                                        : "var(--color-foreground)",
+                                                    borderOpacity: active
+                                                        ? 1
+                                                        : 0.05,
+                                                    color: active
+                                                        ? accentColor
+                                                        : "var(--foreground)",
+                                                    opacity: active ? 1 : 0.5,
+                                                    backgroundColor: active
+                                                        ? `${accentColor}08`
+                                                        : undefined,
+                                                }}
+                                            >
+                                                <span className="relative z-10">
+                                                    {face.name}
+                                                </span>
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
+                            {/* ── accent color ── */}
+                            <div className="space-y-3">
+                                <label className="flex items-center gap-2 text-[11px] font-mono font-semibold uppercase tracking-widest text-muted-foreground/70">
+                                    <div
+                                        className="w-1.5 h-1.5 rounded-full"
+                                        style={{ backgroundColor: accentColor }}
+                                    />
+                                    Aura Color
+                                </label>
+                                <div className="p-4 bg-background/60 backdrop-blur-sm rounded-[24px] border border-foreground/[0.05] shadow-sm">
+                                    <SpectrumPicker
+                                        color={accentColor}
+                                        onChange={onAccentColorChange}
+                                    />
+
+                                    {/* quick-pick swatches */}
+                                    <div className="flex flex-wrap items-center gap-2.5 mt-5">
+                                        {SWATCHES.map((hex) => {
+                                            const active =
+                                                accentColor.toUpperCase() ===
+                                                hex;
+                                            return (
+                                                <button
+                                                    key={hex}
+                                                    onClick={() =>
+                                                        onAccentColorChange(hex)
+                                                    }
+                                                    className="relative size-6 rounded-[8px] transition-all duration-300 hover:scale-110 active:scale-90 shrink-0"
+                                                    style={{
+                                                        backgroundColor: hex,
+                                                        opacity: active
+                                                            ? 1
+                                                            : 0.7,
+                                                        boxShadow: active
+                                                            ? `0 0 0 3px var(--background), 0 0 0 5px ${hex}80`
+                                                            : "none",
+                                                    }}
+                                                />
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+
+                                {/* hex readout */}
+                                <div className="flex items-center justify-between px-2 pt-2">
+                                    <span className="text-[10px] font-mono text-muted-foreground/50 uppercase tracking-[0.2em]">
+                                        Active Hex
+                                    </span>
+                                    <span className="text-[11px] font-mono font-bold text-foreground/80 uppercase tracking-widest">
+                                        {accentColor}
+                                    </span>
+                                </div>
+                            </div>
+                        </TabsContent>
+
+                        <TabsContent value="keys" className="mt-0">
+                            <KeyVaultPanel accentColor={accentColor} />
+                        </TabsContent>
+                    </Tabs>
+                </div>
+            </SheetContent>
+        </Sheet>
     );
 });
