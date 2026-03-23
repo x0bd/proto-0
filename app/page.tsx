@@ -8,8 +8,9 @@ import { CustomizationModal } from "./components/CustomizationModal";
 import { DownloadButton } from "./components/DownloadButton";
 import { FloatingDock } from "@/components/floating-dock";
 import { MemoryDrawer } from "./components/memory-drawer";
+import { RitualDrawer } from "./components/ritual-drawer";
 import { TranscriptPanel } from "@/components/ui/transcript-panel";
-import { BrainCircuit, Database } from "lucide-react";
+import { BrainCircuit, Database, Calendar } from "lucide-react";
 import {
     RiMoonFill,
     RiSunFill,
@@ -101,6 +102,7 @@ export default function Home() {
     const { theme, setTheme } = useTheme();
 
     const [isMemoryOpen, setIsMemoryOpen] = useState(false);
+    const [isRitualOpen, setIsRitualOpen] = useState(false);
     const [showTranscript, setShowTranscript] = useState(true);
     // Avatar personalisation
     const [avatarName, setAvatarName] = useState<string>(() => {
