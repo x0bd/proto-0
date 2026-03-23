@@ -1,26 +1,26 @@
 # DOT UI TODO Plan
 
 ## U0 Foundation
-- [ ] Define UI token updates for spacing, radius, motion, and status colors.
-- [ ] Create shared primitives: `SectionCard`.
-- [ ] Create shared primitives: `SettingsRow`.
-- [ ] Create shared primitives: `EmptyState`.
-- [ ] Create shared primitives: `StatusBadge`.
-- [ ] Create shared primitives: `InlineHint`.
-- [ ] Create shared primitives: `ConfirmDialog`.
-- [ ] Ensure all new screens reuse shared primitives.
-- [ ] Validate base responsive behavior on mobile and desktop.
+- [x] Define UI token updates for spacing, radius, motion, and status colors.
+- [x] Create shared primitives: `SectionCard`.
+- [x] Create shared primitives: `SettingsRow`.
+- [x] Create shared primitives: `EmptyState`.
+- [x] Create shared primitives: `StatusBadge`.
+- [x] Create shared primitives: `InlineHint`.
+- [x] Create shared primitives: `ConfirmDialog`.
+- [x] Ensure all new screens reuse shared primitives.
+- [x] Validate base responsive behavior on mobile and desktop.
 
 ## U1 Key Vault UI (BYOK)
-- [ ] Build `KeyVaultPanel`.
-- [ ] Build provider cards for OpenAI, Google, ElevenLabs, and Integrations.
-- [ ] Build masked key input with reveal/hide behavior.
-- [ ] Build passphrase prompt UI for decrypt/lock actions.
-- [ ] Build key health status row with configured/missing/invalid/session-only states.
-- [ ] Add empty state for no configured keys.
-- [ ] Add success and failure feedback states for add/update/remove key actions.
-- [ ] Add session-only mode toggle UI.
-- [ ] Add key removal confirmation dialog.
+- [x] Build `KeyVaultPanel`.
+- [x] Build provider cards for OpenAI, Google, ElevenLabs, and Integrations.
+- [x] Build masked key input with reveal/hide behavior.
+- [x] Build passphrase prompt UI for decrypt/lock actions.
+- [x] Build key health status row with configured/missing/invalid/session-only states.
+- [x] Add empty state for no configured keys.
+- [x] Add success and failure feedback states for add/update/remove key actions.
+- [x] Add session-only mode toggle UI.
+- [x] Add key removal confirmation dialog.
 
 ## U2 Memory UI
 - [ ] Build `MemoryDrawer`.
