@@ -8,7 +8,7 @@ import { CustomizationModal } from "./components/CustomizationModal";
 import { DownloadButton } from "./components/DownloadButton";
 import { FloatingDock } from "@/components/floating-dock";
 import { MemoryDrawer } from "./components/memory-drawer";
-import { BrainCircuit } from "lucide-react";
+import { Database } from "lucide-react";
 import {
     RiMoonFill,
     RiSunFill,
@@ -380,8 +380,8 @@ export default function Home() {
                         }}
                         title="Memory Core"
                     >
-                        <BrainCircuit className="size-[18px]" />
-                    </motion.button>
+                        <Database className="size-[18px]" />
+                    </motion.button>{" "}
                     {/* Settings Button */}{" "}
                     <motion.button
                         initial={{ opacity: 0, scale: 0.9 }}
