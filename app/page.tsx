@@ -454,6 +454,8 @@ export default function Home() {
                         EMOTION_PRESETS.find((p) => p.id === activePresetId)
                             ?.label ?? "NEUTRAL"
                     }
+                    showTranscript={showTranscript}
+                    onToggleTranscript={() => setShowTranscript((v) => !v)}
                     accentColor={accentColor}
                 />
                 {/* Settings Modal */}

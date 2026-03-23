@@ -9,6 +9,8 @@ interface FloatingDockProps {
     voiceEnabled: boolean;
     onVoiceToggle: () => void;
     presetLabel: string;
+    showTranscript: boolean;
+    onToggleTranscript: () => void;
     accentColor?: string;
 }
 
@@ -16,6 +18,8 @@ export function FloatingDock({
     voiceEnabled,
     onVoiceToggle,
     presetLabel,
+    showTranscript,
+    onToggleTranscript,
     accentColor = "#7C3AED",
 }: FloatingDockProps) {
     // Temporary mock state to demonstrate the UI
@@ -29,7 +33,8 @@ export function FloatingDock({
                     setVoiceState(voiceState === "idle" ? "listening" : "idle")
                 }
                 onInterrupt={() => setVoiceState("idle")}
-                onToggleMode={() => {}}
+                showTranscript={showTranscript}
+                onToggleTranscript={onToggleTranscript}
                 isMuted={!voiceEnabled}
                 onToggleMute={onVoiceToggle}
                 accentColor={accentColor}
