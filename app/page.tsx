@@ -8,7 +8,8 @@ import { CustomizationModal } from "./components/CustomizationModal";
 import { DownloadButton } from "./components/DownloadButton";
 import { FloatingDock } from "@/components/floating-dock";
 import { MemoryDrawer } from "./components/memory-drawer";
-import { Database } from "lucide-react";
+import { TranscriptPanel } from "@/components/ui/transcript-panel";
+import { BrainCircuit, Database } from "lucide-react";
 import {
     RiMoonFill,
     RiSunFill,
@@ -433,7 +434,14 @@ export default function Home() {
                         />
                     </div>
                 </motion.div>
-                {/* BOTTOM UI (Playful Dock) */}
+                <div className="absolute bottom-[100px] sm:bottom-[120px] w-full flex justify-center z-50 px-4 pointer-events-none">
+                    <TranscriptPanel
+                        text="I remember you told me you prefer concise answers."
+                        isFinal={false}
+                        accentColor={accentColor}
+                    />
+                </div>
+                {/* BOTTOM UI (Playful Dock) */}{" "}
                 <FloatingDock
                     voiceEnabled={voiceEnabled}
                     onVoiceToggle={() => setVoiceEnabled((v) => !v)}

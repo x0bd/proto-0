@@ -35,15 +35,15 @@
 - [x] Add delete/clear confirmations.
 
 ## U3 Voice Companion UI
-- [ ] Build `VoiceCompanionBar` with push-to-talk, mute, interrupt, and mode toggle.
-- [ ] Build `VoiceStatusPill` with idle/listening/thinking/speaking states.
-- [ ] Build `TranscriptPanel` for partial and final transcript rendering.
+- [x] Build `VoiceCompanionBar` with push-to-talk, mute, interrupt, and mode toggle.
+- [x] Build `VoiceStatusPill` with idle/listening/thinking/speaking states.
+- [x] Build `TranscriptPanel` for partial and final transcript rendering.
 - [ ] Build `VoiceSettingsSheet` for voice profile and tuning controls.
-- [ ] Add mic-permission required state.
-- [ ] Add listening active visual state.
-- [ ] Add generating response visual state.
-- [ ] Add speaking playback visual state.
-- [ ] Add interrupted and error visual states.
+- [x] Add mic-permission required state.
+- [x] Add listening active visual state.
+- [x] Add generating response visual state.
+- [x] Add speaking playback visual state.
+- [x] Add interrupted and error visual states.
 
 ## U4 Daily Check-ins + Streaks UI
 - [ ] Build `DailyCheckInCard`.
