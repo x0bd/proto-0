@@ -333,11 +333,51 @@ export const CustomizationModal = React.memo(function CustomizationModal({
                                     </div>
 
                                     <Tabs defaultValue="appearance">
-                                        <TabsList className="mb-4">
-                                            <TabsTrigger value="appearance">
+                                        <TabsList
+                                            className="mb-4 w-full grid grid-cols-2"
+                                            style={{
+                                                backgroundColor: `${accentColor}07`,
+                                                borderColor: `${accentColor}18`,
+                                            }}
+                                        >
+                                            <TabsTrigger
+                                                value="appearance"
+                                                className="data-[state=active]:bg-transparent relative"
+                                                style={({
+                                                    "data-state": state,
+                                                }: any) =>
+                                                    ({
+                                                        color:
+                                                            state === "active"
+                                                                ? accentColor
+                                                                : "var(--foreground)",
+                                                        opacity:
+                                                            state === "active"
+                                                                ? 1
+                                                                : 0.4,
+                                                    }) as React.CSSProperties
+                                                }
+                                            >
                                                 Appearance
                                             </TabsTrigger>
-                                            <TabsTrigger value="keys">
+                                            <TabsTrigger
+                                                value="keys"
+                                                className="data-[state=active]:bg-transparent relative"
+                                                style={({
+                                                    "data-state": state,
+                                                }: any) =>
+                                                    ({
+                                                        color:
+                                                            state === "active"
+                                                                ? accentColor
+                                                                : "var(--foreground)",
+                                                        opacity:
+                                                            state === "active"
+                                                                ? 1
+                                                                : 0.4,
+                                                    }) as React.CSSProperties
+                                                }
+                                            >
                                                 Key Vault
                                             </TabsTrigger>
                                         </TabsList>
@@ -506,7 +546,9 @@ export const CustomizationModal = React.memo(function CustomizationModal({
                                         </TabsContent>
 
                                         <TabsContent value="keys">
-                                            <KeyVaultPanel />
+                                            <KeyVaultPanel
+                                                accentColor={accentColor}
+                                            />
                                         </TabsContent>
                                     </Tabs>
                                 </div>
