@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type React from "react";
-import { motion, type PanInfo } from "motion/react";
+import { motion, type PanInfo, AnimatePresence } from "motion/react";
 import Avatar from "./components/Avatar";
 import { CustomizationModal } from "./components/CustomizationModal";
 import { DownloadButton } from "./components/DownloadButton";
@@ -101,7 +101,7 @@ export default function Home() {
     const { theme, setTheme } = useTheme();
 
     const [isMemoryOpen, setIsMemoryOpen] = useState(false);
-
+    const [showTranscript, setShowTranscript] = useState(true);
     // Avatar personalisation
     const [avatarName, setAvatarName] = useState<string>(() => {
         if (typeof window !== "undefined")
@@ -435,11 +435,16 @@ export default function Home() {
                     </div>
                 </motion.div>
                 <div className="absolute bottom-[100px] sm:bottom-[120px] w-full flex justify-center z-50 px-4 pointer-events-none">
-                    <TranscriptPanel
-                        text="I remember you told me you prefer concise answers."
-                        isFinal={false}
-                        accentColor={accentColor}
-                    />
+                    <AnimatePresence>
+                        {showTranscript && (
+                            <TranscriptPanel
+                                text="I remember you told me you prefer concise answers."
+                                isFinal={false}
+                                accentColor={accentColor}
+                                onClose={() => setShowTranscript(false)}
+                            />
+                        )}
+                    </AnimatePresence>
                 </div>
                 {/* BOTTOM UI (Playful Dock) */}{" "}
                 <FloatingDock
