@@ -23,16 +23,16 @@
 - [x] Add key removal confirmation dialog.
 
 ## U2 Memory UI
-- [ ] Build `MemoryDrawer`.
-- [ ] Build `MemoryTimelineList`.
-- [ ] Build `MemoryItemCard`.
-- [ ] Build `MemoryFiltersBar` with tag chips and search.
-- [ ] Build `MemoryPolicyPanel` with read/write controls.
-- [ ] Build `MemoryDangerZone` with clear and purge actions.
-- [ ] Add empty memory state.
-- [ ] Add filtered-result state.
-- [ ] Add memory-disabled state banner.
-- [ ] Add delete/clear confirmations.
+- [x] Build `MemoryDrawer`.
+- [x] Build `MemoryTimelineList`.
+- [x] Build `MemoryItemCard`.
+- [x] Build `MemoryFiltersBar` with tag chips and search.
+- [x] Build `MemoryPolicyPanel` with read/write controls.
+- [x] Build `MemoryDangerZone` with clear and purge actions.
+- [x] Add empty memory state.
+- [x] Add filtered-result state.
+- [x] Add memory-disabled state banner.
+- [x] Add delete/clear confirmations.
 
 ## U3 Voice Companion UI
 - [ ] Build `VoiceCompanionBar` with push-to-talk, mute, interrupt, and mode toggle.
