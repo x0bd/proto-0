@@ -128,28 +128,19 @@ export function MemoryDrawer({
 
                 {/* Header */}
                 <SheetHeader className="relative z-10 px-8 py-7 pb-4 shrink-0">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <div
-                                className="size-10 rounded-full flex items-center justify-center shadow-sm"
-                                style={{
-                                    backgroundColor: `${accentColor}15`,
-                                    color: accentColor,
-                                }}
-                            >
-                                <Database className="size-5" />
-                            </div>
-                            <SheetTitle className="text-2xl font-semibold tracking-tight text-foreground/90">
-                                Memory
-                            </SheetTitle>
-                        </div>
-                        {/* Custom Close Button overriding the default one for better placement */}
-                        <button
-                            onClick={() => onOpenChange(false)}
-                            className="size-9 rounded-full flex items-center justify-center bg-foreground/5 hover:bg-foreground/10 text-foreground/50 hover:text-foreground transition-colors active:scale-95"
+                    <div className="flex items-center gap-3">
+                        <div
+                            className="size-10 rounded-full flex items-center justify-center shadow-sm"
+                            style={{
+                                backgroundColor: `${accentColor}15`,
+                                color: accentColor,
+                            }}
                         >
-                            <X className="size-4" />
-                        </button>
+                            <Database className="size-5" />
+                        </div>
+                        <SheetTitle className="text-2xl font-semibold tracking-tight text-foreground/90">
+                            Memory
+                        </SheetTitle>
                     </div>
                 </SheetHeader>
 
@@ -309,19 +300,11 @@ export function MemoryDrawer({
                                 </p>
                             </div>
                         ) : (
-                            <div className="bg-background/60 backdrop-blur-md rounded-[28px] border border-foreground/[0.05] overflow-hidden shadow-sm flex flex-col">
-                                {filteredMemories.map((memory, index) => (
+                            <div className="flex flex-col gap-3">
+                                {filteredMemories.map((memory) => (
                                     <div
                                         key={memory.id}
-                                        className="group relative flex flex-col p-5 transition-colors hover:bg-foreground/[0.02]"
-                                        style={{
-                                            borderBottom:
-                                                index !==
-                                                filteredMemories.length - 1
-                                                    ? "1px solid var(--color-foreground)"
-                                                    : "none",
-                                            borderBottomOpacity: 0.05,
-                                        }}
+                                        className="group relative flex flex-col p-5 bg-background/60 backdrop-blur-md rounded-[28px] border border-foreground/[0.05] shadow-sm hover:shadow-md transition-all hover:bg-foreground/[0.02]"
                                     >
                                         <p className="text-[15px] leading-relaxed text-foreground/90 pr-8">
                                             {memory.content}
