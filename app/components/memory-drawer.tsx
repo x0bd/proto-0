@@ -183,21 +183,18 @@ export function MemoryDrawer({
                                               }
                                             : {
                                                   backgroundColor:
-                                                      "var(--color-foreground)",
-                                                  opacity: 0.05,
-                                                  color: "transparent",
+                                                      "var(--foreground)",
+                                                  color: "var(--background)",
+                                                  opacity: 0.15,
                                               }
-                                    } // Using a trick for inactive state
+                                    }
                                     onClick={() => setActiveFilter(null)}
                                 >
                                     <span
                                         style={
                                             activeFilter === null
                                                 ? {}
-                                                : {
-                                                      color: "var(--color-foreground)",
-                                                      opacity: 20,
-                                                  }
+                                                : { color: "var(--background)" }
                                         }
                                     >
                                         All
@@ -218,9 +215,9 @@ export function MemoryDrawer({
                                                   }
                                                 : {
                                                       backgroundColor:
-                                                          "var(--color-foreground)",
-                                                      opacity: 0.05,
-                                                      color: "transparent",
+                                                          "var(--foreground)",
+                                                      color: "var(--background)",
+                                                      opacity: 0.15,
                                                   }
                                         }
                                         onClick={() => setActiveFilter(tag)}
@@ -230,8 +227,7 @@ export function MemoryDrawer({
                                                 activeFilter === tag
                                                     ? {}
                                                     : {
-                                                          color: "var(--color-foreground)",
-                                                          opacity: 20,
+                                                          color: "var(--background)",
                                                       }
                                             }
                                         >
@@ -344,7 +340,7 @@ export function MemoryDrawer({
 
                 {/* Fixed Bottom Action */}
                 {memories.length > 0 && (
-                    <div className="relative z-20 p-5 pt-4 border-t border-foreground/[0.05] bg-background/80 backdrop-blur-xl shrink-0">
+                    <div className="relative z-20 p-5 pt-4 bg-background/80 backdrop-blur-xl shrink-0">
                         <button
                             onClick={() => setClearAllConfirm(true)}
                             className="w-full h-14 rounded-[20px] bg-foreground/5 hover:bg-destructive/10 text-destructive font-semibold text-[15px] transition-colors flex items-center justify-center gap-2 active:scale-[0.98]"
