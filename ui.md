@@ -38,7 +38,7 @@
 - [x] Build `VoiceCompanionBar` with push-to-talk, mute, interrupt, and mode toggle.
 - [x] Build `VoiceStatusPill` with idle/listening/thinking/speaking states.
 - [x] Build `TranscriptPanel` for partial and final transcript rendering.
-- [ ] Build `VoiceSettingsSheet` for voice profile and tuning controls.
+- [x] Build `VoiceSettingsSheet` for voice profile and tuning controls.
 - [x] Add mic-permission required state.
 - [x] Add listening active visual state.
 - [x] Add generating response visual state.
@@ -85,4 +85,3 @@
 - [ ] Validate touch targets and overlap behavior on small screens.
 - [ ] Validate keyboard/focus states for controls and dialogs.
 - [ ] Validate contrast and readability for all actionable elements.
-

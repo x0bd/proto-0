@@ -9,6 +9,7 @@ import {
     Volume2,
     VolumeX,
     MessageSquareText,
+    SlidersHorizontal,
 } from "lucide-react";
 
 export type VoiceState =
@@ -26,6 +27,7 @@ interface VoiceCompanionBarProps {
     onToggleTranscript: () => void;
     isMuted: boolean;
     onToggleMute: () => void;
+    onOpenSettings: () => void;
     accentColor?: string;
     className?: string;
 }
@@ -38,6 +40,7 @@ export function VoiceCompanionBar({
     onToggleTranscript,
     isMuted,
     onToggleMute,
+    onOpenSettings,
     accentColor = "#7c3aed",
     className,
 }: VoiceCompanionBarProps) {
@@ -197,8 +200,8 @@ export function VoiceCompanionBar({
                     title={
                         showTranscript ? "Hide Transcript" : "Show Transcript"
                     }
-                >
-                    <MessageSquareText className="size-[18px]" />
+                    >
+                        <MessageSquareText className="size-[18px]" />
                     {showTranscript && (
                         <motion.div
                             layoutId="transcript-active"
@@ -206,7 +209,14 @@ export function VoiceCompanionBar({
                             style={{ backgroundColor: accentColor }}
                         />
                     )}
-                </button>{" "}
+                </button>
+                <button
+                    onClick={onOpenSettings}
+                    className="size-10 rounded-full flex items-center justify-center transition-colors hover:bg-foreground/5 text-foreground/70 hover:text-foreground active:scale-95"
+                    title="Voice Settings"
+                >
+                    <SlidersHorizontal className="size-[18px]" />
+                </button>
             </div>
         </div>
     );
