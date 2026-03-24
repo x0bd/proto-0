@@ -68,15 +68,15 @@
 - [x] Add unavailable persona state when requirements are missing.
 
 ## U6 Shareable Moments UI
-- [ ] Build `ShareDock`.
-- [ ] Build `ExportOptionsSheet` for PNG/GIF/WebM.
-- [ ] Build `TemplatePicker` for mood/reflection/reaction templates.
-- [ ] Build export progress and result toasts.
-- [ ] Build share target row with fallback behavior hints.
-- [ ] Add export in-progress state.
-- [ ] Add export success state.
-- [ ] Add export failure state.
-- [ ] Add share API unavailable fallback state.
+- [x] Build `ShareDock`.
+- [x] Build `ExportOptionsSheet` for PNG/GIF/WebM.
+- [x] Build `TemplatePicker` for mood/reflection/reaction templates.
+- [x] Build export progress and result toasts.
+- [x] Build share target row with fallback behavior hints.
+- [x] Add export in-progress state.
+- [x] Add export success state.
+- [x] Add export failure state.
+- [x] Add share API unavailable fallback state.
 
 ## U7 Integration and QA
 - [ ] Integrate all UI sections into `app/page.tsx` shell flow.

@@ -5,7 +5,7 @@ import type React from "react";
 import { motion, type PanInfo, AnimatePresence } from "motion/react";
 import Avatar from "./components/Avatar";
 import { CustomizationModal } from "./components/CustomizationModal";
-import { DownloadButton } from "./components/DownloadButton";
+import { ShareDock } from "./components/share-dock";
 import { FloatingDock } from "@/components/floating-dock";
 import { MemoryDrawer } from "./components/memory-drawer";
 import { RitualDrawer } from "./components/ritual-drawer";
@@ -532,8 +532,8 @@ export default function Home() {
                     onOpenChange={setIsRitualOpen}
                     accentColor={accentColor}
                 />
-                {/* Download Button */}{" "}
-                <DownloadButton
+                {/* Share Dock */}
+                <ShareDock
                     targetRef={avatarStageRef}
                     accentColor={accentColor}
                 />
