@@ -10,7 +10,8 @@ import { FloatingDock } from "@/components/floating-dock";
 import { MemoryDrawer } from "./components/memory-drawer";
 import { RitualDrawer } from "./components/ritual-drawer";
 import { TranscriptPanel } from "@/components/ui/transcript-panel";
-import { BrainCircuit, Database, Calendar } from "lucide-react";
+import { ActivePersonaChip } from "@/components/ui/active-persona-chip";
+import { Database, Calendar } from "lucide-react";
 import {
     RiMoonFill,
     RiSunFill,
@@ -104,6 +105,12 @@ export default function Home() {
     const [isMemoryOpen, setIsMemoryOpen] = useState(false);
     const [isRitualOpen, setIsRitualOpen] = useState(false);
     const [showTranscript, setShowTranscript] = useState(true);
+    const [activePersonaId, setActivePersonaId] = useState<string>(() => {
+        if (typeof window !== "undefined") {
+            return localStorage.getItem("activePersonaId") || "coach";
+        }
+        return "coach";
+    });
     // Avatar personalisation
     const [avatarName, setAvatarName] = useState<string>(() => {
         if (typeof window !== "undefined")
@@ -125,6 +132,10 @@ export default function Home() {
     const handleAccentColorChange = (color: string) => {
         setCustomAccentColor(color);
         localStorage.setItem("accentColor", color);
+    };
+    const handlePersonaChange = (personaId: string) => {
+        setActivePersonaId(personaId);
+        localStorage.setItem("activePersonaId", personaId);
     };
 
     // Adaptive accent based on current face variant (or custom override)
@@ -316,26 +327,44 @@ export default function Home() {
                 />
                 {/* HEADER UI */}
                 <div className="absolute top-[max(12px,env(safe-area-inset-top))] left-3 sm:top-8 sm:left-6 z-50 flex items-center gap-3 select-none">
-                    {/* Branding */}
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{
-                            delay: 0.2,
-                            type: "spring",
-                            damping: 25,
-                            stiffness: 300,
-                        }}
-                        className="flex items-center gap-2.5 rounded-full px-4 sm:px-6 h-10 sm:h-12 bg-background border shadow-premium hover:shadow-lg transition-all duration-300 group cursor-default"
-                        style={{ borderColor: `${accentColor}40` }}
-                    >
-                        <span
-                            className="logo-font font-bold text-xs sm:text-sm leading-none tracking-[0.2em] pl-1 transition-colors"
-                            style={{ color: accentColor }}
+                    <div className="flex flex-col items-start gap-2">
+                        {/* Branding */}
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{
+                                delay: 0.2,
+                                type: "spring",
+                                damping: 25,
+                                stiffness: 300,
+                            }}
+                            className="flex items-center gap-2.5 rounded-full px-4 sm:px-6 h-10 sm:h-12 bg-background border shadow-premium hover:shadow-lg transition-all duration-300 group cursor-default"
+                            style={{ borderColor: `${accentColor}40` }}
                         >
-                            {avatarName}
-                        </span>
-                    </motion.div>
+                            <span
+                                className="logo-font font-bold text-xs sm:text-sm leading-none tracking-[0.2em] pl-1 transition-colors"
+                                style={{ color: accentColor }}
+                            >
+                                {avatarName}
+                            </span>
+                        </motion.div>
+
+                        <motion.div
+                            initial={{ opacity: 0, y: 6 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{
+                                delay: 0.26,
+                                type: "spring",
+                                damping: 26,
+                                stiffness: 280,
+                            }}
+                        >
+                            <ActivePersonaChip
+                                label={activePersonaId.replace("-", " ")}
+                                accentColor={accentColor}
+                            />
+                        </motion.div>
+                    </div>
                 </div>
                 <div className="absolute top-[max(12px,env(safe-area-inset-top))] right-3 sm:top-8 sm:right-6 z-50 flex items-center gap-2 sm:gap-2.5">
                     {/* Theme Toggle */}
@@ -384,8 +413,27 @@ export default function Home() {
                         title="Memory Core"
                     >
                         <Database className="size-[18px]" />
-                    </motion.button>{" "}
-                    {/* Settings Button */}{" "}
+                    </motion.button>
+                    <motion.button
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{
+                            delay: 0.29,
+                            type: "spring",
+                            damping: 25,
+                            stiffness: 300,
+                        }}
+                        onClick={() => setIsRitualOpen(true)}
+                        className="size-10 sm:size-10 rounded-full flex items-center justify-center bg-background border-2 shadow-premium hover:shadow-lg transition-all duration-300 active:scale-95 touch-manipulation"
+                        style={{
+                            borderColor: `${accentColor}50`,
+                            color: accentColor,
+                        }}
+                        title="Rituals"
+                    >
+                        <Calendar className="size-[18px]" />
+                    </motion.button>
+                    {/* Settings Button */}
                     <motion.button
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
@@ -470,11 +518,18 @@ export default function Home() {
                     onAvatarNameChange={handleAvatarNameChange}
                     accentColor={accentColor}
                     onAccentColorChange={handleAccentColorChange}
+                    activePersonaId={activePersonaId}
+                    onPersonaChange={handlePersonaChange}
                 />
                 {/* Memory Drawer */}
                 <MemoryDrawer
                     open={isMemoryOpen}
                     onOpenChange={setIsMemoryOpen}
+                    accentColor={accentColor}
+                />
+                <RitualDrawer
+                    open={isRitualOpen}
+                    onOpenChange={setIsRitualOpen}
                     accentColor={accentColor}
                 />
                 {/* Download Button */}{" "}

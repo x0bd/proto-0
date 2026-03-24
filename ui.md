@@ -46,26 +46,26 @@
 - [x] Add interrupted and error visual states.
 
 ## U4 Daily Check-ins + Streaks UI
-- [ ] Build `DailyCheckInCard`.
-- [ ] Build mood input control (sliders or quick mood chips).
-- [ ] Build `ReflectionPromptCard`.
-- [ ] Build `StreakBadge`.
-- [ ] Build `WeeklySnapshotPanel`.
-- [ ] Add first-check-in empty onboarding state.
-- [ ] Add completed-today state.
-- [ ] Add streak-broken state.
-- [ ] Add weekly-data-empty state.
-- [ ] Add weekly-data-populated state.
+- [x] Build `DailyCheckInCard`.
+- [x] Build mood input control (sliders or quick mood chips).
+- [x] Build `ReflectionPromptCard`.
+- [x] Build `StreakBadge`.
+- [x] Build `WeeklySnapshotPanel`.
+- [x] Add first-check-in empty onboarding state.
+- [x] Add completed-today state.
+- [x] Add streak-broken state.
+- [x] Add weekly-data-empty state.
+- [x] Add weekly-data-populated state.
 
 ## U5 Persona Packs UI
-- [ ] Build `PersonaPicker`.
-- [ ] Build `PersonaCard`.
-- [ ] Build `PersonaPreview`.
-- [ ] Build `ActivePersonaChip`.
-- [ ] Build `PersonaSettingsPanel`.
-- [ ] Add default persona state.
-- [ ] Add active persona switch state feedback.
-- [ ] Add unavailable persona state when requirements are missing.
+- [x] Build `PersonaPicker`.
+- [x] Build `PersonaCard`.
+- [x] Build `PersonaPreview`.
+- [x] Build `ActivePersonaChip`.
+- [x] Build `PersonaSettingsPanel`.
+- [x] Add default persona state.
+- [x] Add active persona switch state feedback.
+- [x] Add unavailable persona state when requirements are missing.
 
 ## U6 Shareable Moments UI
 - [ ] Build `ShareDock`.

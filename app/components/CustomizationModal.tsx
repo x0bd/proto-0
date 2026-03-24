@@ -3,7 +3,6 @@
 import * as React from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { FaceVariant } from "./face/types";
-import { RiCloseFill } from "react-icons/ri";
 
 /* ─── Color conversion ──────────────────────────────────── */
 
@@ -78,6 +77,46 @@ const SWATCHES = [
     "#FB923C",
     "#EF4444",
 ];
+
+const PERSONAS = [
+    {
+        id: "coach",
+        name: "Coach",
+        tone: "Driven / focused",
+        description:
+            "More structured, motivating, and momentum-oriented when you need clarity.",
+        preview:
+            '"Let’s reduce the noise and move one strong step at a time."',
+    },
+    {
+        id: "playful",
+        name: "Playful",
+        tone: "Light / charming",
+        description:
+            "Softer, brighter, and more companion-like with a little bounce in the phrasing.",
+        preview:
+            '"We can make this feel lighter. Small wins still count."',
+    },
+    {
+        id: "deep-thinker",
+        name: "Deep Thinker",
+        tone: "Reflective / calm",
+        description:
+            "Gentle, philosophical, and more interested in meaning than raw speed.",
+        preview:
+            '"There is usually a quieter layer beneath the first reaction."',
+        unavailable: true,
+    },
+    {
+        id: "focus-buddy",
+        name: "Focus Buddy",
+        tone: "Quiet / practical",
+        description:
+            "Minimal, low-friction support for deep work and sustained attention.",
+        preview:
+            '"I’ll keep this simple. One task. One window. Let’s stay with it."',
+    },
+] as const;
 
 /* ─── Spectrum color picker ─────────────────────────────── */
 
@@ -229,13 +268,16 @@ function SpectrumPicker({
 /* ─── Modal (Now a Panel) ─────────────────────────────────────────────── */
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { KeyVaultPanel } from "./key-vault-panel";
+import { PersonaPicker } from "@/components/ui/persona-picker";
+import { PersonaPreview } from "@/components/ui/persona-preview";
+import { PersonaSettingsPanel } from "@/components/ui/persona-settings-panel";
 import {
     Sheet,
     SheetContent,
     SheetHeader,
     SheetTitle,
 } from "@/components/ui/sheet";
-import { Settings2, X } from "lucide-react";
+import { Settings2, WandSparkles } from "lucide-react";
 
 interface CustomizationModalProps {
     isOpen: boolean;
@@ -246,6 +288,8 @@ interface CustomizationModalProps {
     onAvatarNameChange: (name: string) => void;
     accentColor: string;
     onAccentColorChange: (color: string) => void;
+    activePersonaId: string;
+    onPersonaChange: (personaId: string) => void;
 }
 
 export const CustomizationModal = React.memo(function CustomizationModal({
@@ -257,8 +301,13 @@ export const CustomizationModal = React.memo(function CustomizationModal({
     onAvatarNameChange,
     accentColor,
     onAccentColorChange,
+    activePersonaId,
+    onPersonaChange,
 }: CustomizationModalProps) {
     const [nameVal, setNameVal] = React.useState(avatarName);
+    const activePersona =
+        PERSONAS.find((persona) => persona.id === activePersonaId) ??
+        PERSONAS[0];
 
     React.useEffect(() => {
         setNameVal(avatarName);
@@ -309,44 +358,47 @@ export const CustomizationModal = React.memo(function CustomizationModal({
                 {/* Scrollable Content */}
                 <div className="relative z-10 flex-1 overflow-y-auto px-6 pb-8 custom-scrollbar">
                     <Tabs defaultValue="appearance" className="w-full">
-                        <TabsList
-                            className="mb-6 w-full flex rounded-[16px] p-1.5"
-                            style={{
-                                backgroundColor: `${accentColor}08`,
-                                borderColor: `${accentColor}15`,
+                            <TabsList
+                                className="mb-6 w-full flex rounded-[16px] p-1.5"
+                                style={{
+                                    backgroundColor: `${accentColor}08`,
+                                    borderColor: `${accentColor}15`,
                             }}
-                        >
-                            <TabsTrigger
-                                value="appearance"
-                                className="data-[state=active]:bg-background/80 data-[state=active]:shadow-sm relative h-9 rounded-[12px] transition-all"
-                                style={({ "data-state": state }: any) =>
-                                    ({
-                                        color:
-                                            state === "active"
-                                                ? accentColor
-                                                : "var(--foreground)",
-                                        opacity: state === "active" ? 1 : 0.5,
-                                    }) as React.CSSProperties
-                                }
                             >
-                                Appearance
-                            </TabsTrigger>
-                            <TabsTrigger
-                                value="keys"
-                                className="data-[state=active]:bg-background/80 data-[state=active]:shadow-sm relative h-9 rounded-[12px] transition-all"
-                                style={({ "data-state": state }: any) =>
-                                    ({
-                                        color:
-                                            state === "active"
-                                                ? accentColor
-                                                : "var(--foreground)",
-                                        opacity: state === "active" ? 1 : 0.5,
-                                    }) as React.CSSProperties
-                                }
-                            >
-                                Key Vault
-                            </TabsTrigger>
-                        </TabsList>
+                                <TabsTrigger
+                                    value="appearance"
+                                    className="data-[state=active]:bg-background/80 data-[state=active]:shadow-sm relative h-9 rounded-[12px] transition-all data-[state=active]:text-current text-foreground/50"
+                                    style={
+                                        {
+                                            color: accentColor,
+                                        } as React.CSSProperties
+                                    }
+                                >
+                                    Appearance
+                                </TabsTrigger>
+                                <TabsTrigger
+                                    value="keys"
+                                    className="data-[state=active]:bg-background/80 data-[state=active]:shadow-sm relative h-9 rounded-[12px] transition-all data-[state=active]:text-current text-foreground/50"
+                                    style={
+                                        {
+                                            color: accentColor,
+                                        } as React.CSSProperties
+                                    }
+                                >
+                                    Key Vault
+                                </TabsTrigger>
+                                <TabsTrigger
+                                    value="persona"
+                                    className="data-[state=active]:bg-background/80 data-[state=active]:shadow-sm relative h-9 rounded-[12px] transition-all data-[state=active]:text-current text-foreground/50"
+                                    style={
+                                        {
+                                            color: accentColor,
+                                        } as React.CSSProperties
+                                    }
+                                >
+                                    Persona
+                                </TabsTrigger>
+                            </TabsList>
 
                         <TabsContent
                             value="appearance"
@@ -486,6 +538,71 @@ export const CustomizationModal = React.memo(function CustomizationModal({
 
                         <TabsContent value="keys" className="mt-0">
                             <KeyVaultPanel accentColor={accentColor} />
+                        </TabsContent>
+
+                        <TabsContent value="persona" className="mt-0 space-y-6 px-2">
+                            <div className="space-y-3">
+                                <label className="flex items-center gap-2 text-[11px] font-mono font-semibold uppercase tracking-widest text-muted-foreground/70">
+                                    <div
+                                        className="w-1.5 h-1.5 rounded-full"
+                                        style={{ backgroundColor: accentColor }}
+                                    />
+                                    Persona Packs
+                                </label>
+                                <div className="rounded-[28px] bg-background/60 backdrop-blur-md border border-foreground/[0.05] p-5 shadow-sm">
+                                    <div className="flex items-center gap-3 mb-4">
+                                        <div
+                                            className="size-10 rounded-full flex items-center justify-center shadow-sm"
+                                            style={{
+                                                backgroundColor: `${accentColor}15`,
+                                                color: accentColor,
+                                            }}
+                                        >
+                                            <WandSparkles className="size-5" />
+                                        </div>
+                                        <div>
+                                            <p className="text-[16px] font-semibold tracking-tight text-foreground/90">
+                                                Shape how DOT feels
+                                            </p>
+                                            <p className="text-[13px] leading-relaxed text-muted-foreground/75">
+                                                Personality affects tone, rhythm, and how companion-like the product feels.
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <PersonaPicker
+                                        personas={[...PERSONAS]}
+                                        activePersonaId={activePersonaId}
+                                        onSelect={onPersonaChange}
+                                        accentColor={accentColor}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="space-y-3">
+                                <label className="flex items-center gap-2 text-[11px] font-mono font-semibold uppercase tracking-widest text-muted-foreground/70">
+                                    <div
+                                        className="w-1.5 h-1.5 rounded-full"
+                                        style={{ backgroundColor: accentColor }}
+                                    />
+                                    Live Preview
+                                </label>
+                                <PersonaPreview
+                                    name={activePersona.name}
+                                    sample={activePersona.preview}
+                                    accentColor={accentColor}
+                                />
+                            </div>
+
+                            <div className="space-y-3">
+                                <label className="flex items-center gap-2 text-[11px] font-mono font-semibold uppercase tracking-widest text-muted-foreground/70">
+                                    <div
+                                        className="w-1.5 h-1.5 rounded-full"
+                                        style={{ backgroundColor: accentColor }}
+                                    />
+                                    Persona Tuning
+                                </label>
+                                <PersonaSettingsPanel accentColor={accentColor} />
+                            </div>
                         </TabsContent>
                     </Tabs>
                 </div>
