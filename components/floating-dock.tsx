@@ -11,6 +11,7 @@ interface FloatingDockProps {
     showTranscript: boolean;
     onToggleTranscript: () => void;
     accentColor?: string;
+    constraintsRef?: React.RefObject<Element>;
 }
 
 export function FloatingDock({
@@ -20,6 +21,7 @@ export function FloatingDock({
     showTranscript,
     onToggleTranscript,
     accentColor = "#7C3AED",
+    constraintsRef,
 }: FloatingDockProps) {
     // Temporary mock state to demonstrate the UI
     const [voiceState, setVoiceState] = React.useState<VoiceState>("idle");
@@ -49,6 +51,7 @@ export function FloatingDock({
                 open={isVoiceSettingsOpen}
                 onOpenChange={setIsVoiceSettingsOpen}
                 accentColor={accentColor}
+                constraintsRef={constraintsRef}
             />
         </>
     );

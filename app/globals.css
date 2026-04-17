@@ -65,7 +65,7 @@
 	--panel-border: #2a2a2a;
 	--key-bg: #1c1c1c;
 	--key-border: #333333;
-	--key-shadow: #000000;
+	--key-shadow: #333;
 
 	/* LCD Screen */
 	--lcd-bg: #000000; /* Pure black LCD */

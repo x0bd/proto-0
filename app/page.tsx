@@ -494,6 +494,7 @@ export default function Home() {
 					showTranscript={showTranscript}
 					onToggleTranscript={() => setShowTranscript((v) => !v)}
 					accentColor={accentColor}
+					constraintsRef={constraintsRef}
 				/>
 				{/* Settings Modal */}
 				<CustomizationModal
