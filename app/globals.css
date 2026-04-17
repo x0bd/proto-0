@@ -16,23 +16,23 @@
 }
 
 :root {
-	/* === TE x APPLE: LIGHT MODE === */
-	--background: #e5e5ea; /* Classic Apple Mac beige/grey */
-	--foreground: #1c1c1e;
+	/* === TE x APPLE: LIGHT MODE (WASHI B&W) === */
+	--background: #f4f4f0; /* Warm washi paper white */
+	--foreground: #111111; /* Stark black */
 
 	/* Hardware Materials */
-	--panel-bg: #f2f2f7;
-	--panel-border: #d1d1d6;
+	--panel-bg: #ffffff; /* Pure white chassis */
+	--panel-border: #e5e5e5;
 	--key-bg: #ffffff;
-	--key-border: #e5e5ea;
-	--key-shadow: #c7c7cc;
+	--key-border: #e5e5e5;
+	--key-shadow: #d4d4d4;
 
 	/* LCD Screen */
-	--lcd-bg: #d4d8c9; /* Classic LCD green/grey */
-	--lcd-text: #1e291b;
-	--lcd-glow: rgba(212, 216, 201, 0.5);
+	--lcd-bg: #eeeeee; /* Cool grey LCD */
+	--lcd-text: #111111;
+	--lcd-glow: rgba(0, 0, 0, 0.1);
 
-	/* Accents (TE style) */
+	/* Accents (TE style - kept vibrant) */
 	--te-orange: #ff3b30;
 	--te-yellow: #ffcc00;
 	--te-blue: #007aff;
@@ -43,36 +43,36 @@
 	--face-bg-tint: rgba(255, 59, 48, 0.04);
 
 	/* Radix / Shadcn fallbacks */
-	--muted: #e5e5ea;
+	--muted: #e5e5e5;
 	--muted-foreground: #8e8e93;
 	--destructive: #ff3b30;
 	--destructive-foreground: #ffffff;
 	--success: #34c759;
 	--success-foreground: #ffffff;
 	--warning: #ffcc00;
-	--warning-foreground: #1c1c1e;
+	--warning-foreground: #111111;
 	--info: #007aff;
 	--info-foreground: #ffffff;
 }
 
 .dark {
-	/* === TE x APPLE: DARK MODE === */
-	--background: #000000;
-	--foreground: #f2f2f7;
+	/* === TE x APPLE: DARK MODE (WASHI B&W) === */
+	--background: #0a0a0a; /* Stark washi black */
+	--foreground: #f4f4f0; /* Warm washi white */
 
 	/* Hardware Materials */
-	--panel-bg: #1c1c1e;
-	--panel-border: #2c2c2e;
-	--key-bg: #2c2c2e;
-	--key-border: #3a3a3c;
+	--panel-bg: #141414; /* Deep black chassis */
+	--panel-border: #2a2a2a;
+	--key-bg: #1c1c1c;
+	--key-border: #333333;
 	--key-shadow: #000000;
 
 	/* LCD Screen */
-	--lcd-bg: #0a100d;
-	--lcd-text: #34c759; /* Bright terminal green */
-	--lcd-glow: rgba(52, 199, 89, 0.2);
+	--lcd-bg: #000000; /* Pure black LCD */
+	--lcd-text: #f4f4f0;
+	--lcd-glow: rgba(255, 255, 255, 0.1);
 
-	/* Accents */
+	/* Accents (TE style - kept vibrant) */
 	--te-orange: #ff453a;
 	--te-yellow: #ffd60a;
 	--te-blue: #0a84ff;
@@ -83,7 +83,7 @@
 	--face-bg-tint: rgba(255, 69, 58, 0.06);
 
 	/* Radix / Shadcn fallbacks */
-	--muted: #1c1c1e;
+	--muted: #1c1c1c;
 	--muted-foreground: #8e8e93;
 	--destructive: #ff453a;
 	--destructive-foreground: #ffffff;
@@ -117,18 +117,18 @@
 		background-color: var(--panel-bg);
 		border: 1px solid var(--panel-border);
 		box-shadow:
-			0 24px 48px -12px rgba(0, 0, 0, 0.15),
-			0 12px 24px -8px rgba(0, 0, 0, 0.1),
-			inset 0 1px 1px rgba(255, 255, 255, 0.4),
-			inset 0 -1px 1px rgba(0, 0, 0, 0.05);
+			0 24px 48px -12px rgba(0, 0, 0, 0.08),
+			0 12px 24px -8px rgba(0, 0, 0, 0.04),
+			inset 0 1px 1px rgba(255, 255, 255, 0.8),
+			inset 0 -1px 1px rgba(0, 0, 0, 0.03);
 		@apply rounded-[16px];
 	}
 	.dark .te-panel {
 		box-shadow:
-			0 24px 48px -12px rgba(0, 0, 0, 0.8),
-			0 12px 24px -8px rgba(0, 0, 0, 0.6),
+			0 24px 48px -12px rgba(0, 0, 0, 0.9),
+			0 12px 24px -8px rgba(0, 0, 0, 0.8),
 			inset 0 1px 1px rgba(255, 255, 255, 0.05),
-			inset 0 -1px 1px rgba(0, 0, 0, 0.4);
+			inset 0 -1px 1px rgba(0, 0, 0, 0.6);
 	}
 
 	/* 2. Mechanical Keys (OP-1 Style) */
@@ -148,9 +148,9 @@
 		background-color: var(--lcd-bg);
 		color: var(--lcd-text);
 		box-shadow:
-			inset 0 2px 8px rgba(0, 0, 0, 0.15),
-			inset 0 0 0 1px rgba(0, 0, 0, 0.1),
-			0 1px 1px rgba(255, 255, 255, 0.5);
+			inset 0 2px 8px rgba(0, 0, 0, 0.08),
+			inset 0 0 0 1px rgba(0, 0, 0, 0.05),
+			0 1px 1px rgba(255, 255, 255, 0.8);
 		@apply font-mono uppercase tracking-widest rounded-[6px];
 	}
 	.dark .te-lcd {
@@ -165,15 +165,15 @@
 	.te-recessed {
 		background-color: var(--background);
 		box-shadow:
-			inset 0 2px 6px rgba(0, 0, 0, 0.08),
+			inset 0 2px 6px rgba(0, 0, 0, 0.04),
 			inset 0 0 0 1px rgba(0, 0, 0, 0.05),
-			0 1px 0 rgba(255, 255, 255, 0.6);
+			0 1px 0 rgba(255, 255, 255, 0.8);
 		@apply rounded-[12px];
 	}
 	.dark .te-recessed {
 		box-shadow:
-			inset 0 2px 6px rgba(0, 0, 0, 0.4),
-			inset 0 0 0 1px rgba(0, 0, 0, 0.3),
+			inset 0 2px 6px rgba(0, 0, 0, 0.6),
+			inset 0 0 0 1px rgba(0, 0, 0, 0.4),
 			0 1px 0 rgba(255, 255, 255, 0.05);
 	}
 
@@ -182,27 +182,27 @@
 		background-color: var(--panel-bg);
 		border: 1px solid var(--panel-border);
 		box-shadow:
-			0 32px 64px -16px rgba(0, 0, 0, 0.3),
-			0 16px 32px -8px rgba(0, 0, 0, 0.2),
-			0 0 0 1px rgba(0, 0, 0, 0.05),
-			inset 0 1px 1px rgba(255, 255, 255, 0.5),
-			inset 0 -1px 1px rgba(0, 0, 0, 0.1);
+			0 32px 64px -16px rgba(0, 0, 0, 0.15),
+			0 16px 32px -8px rgba(0, 0, 0, 0.1),
+			0 0 0 1px rgba(0, 0, 0, 0.02),
+			inset 0 1px 1px rgba(255, 255, 255, 0.8),
+			inset 0 -1px 1px rgba(0, 0, 0, 0.05);
 		@apply rounded-[12px] overflow-hidden flex flex-col;
 	}
 	.dark .te-module {
 		box-shadow:
-			0 32px 64px -16px rgba(0, 0, 0, 0.9),
-			0 16px 32px -8px rgba(0, 0, 0, 0.7),
-			0 0 0 1px rgba(0, 0, 0, 0.5),
+			0 32px 64px -16px rgba(0, 0, 0, 0.95),
+			0 16px 32px -8px rgba(0, 0, 0, 0.8),
+			0 0 0 1px rgba(0, 0, 0, 0.8),
 			inset 0 1px 1px rgba(255, 255, 255, 0.05),
-			inset 0 -1px 1px rgba(0, 0, 0, 0.4);
+			inset 0 -1px 1px rgba(0, 0, 0, 0.6);
 	}
 	.te-module-header {
 		@apply flex items-center justify-between px-3 py-2 border-b border-[var(--panel-border)] cursor-grab active:cursor-grabbing select-none shrink-0;
 		background: linear-gradient(to bottom, var(--key-bg), var(--panel-bg));
 	}
 	.dark .te-module-header {
-		background: linear-gradient(to bottom, #3a3a3c, var(--panel-bg));
+		background: linear-gradient(to bottom, #1c1c1c, var(--panel-bg));
 	}
 	.te-grip {
 		background-image: repeating-linear-gradient(
@@ -259,10 +259,10 @@
 	background-image:
 		url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='washi'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.04 0.7' numOctaves='5' seed='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23washi)' opacity='1'/%3E%3C/svg%3E"),
 		url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='grain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8 0.8' numOctaves='2' seed='7' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23grain)' opacity='1'/%3E%3C/svg%3E");
-	opacity: 0.08;
+	opacity: 0.05;
 	mix-blend-mode: multiply;
 }
 .dark .bg-washi::before {
-	opacity: 0.04;
+	opacity: 0.03;
 	mix-blend-mode: screen;
 }
