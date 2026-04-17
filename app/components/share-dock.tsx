@@ -20,12 +20,14 @@ import {
     Download,
     Smartphone,
     Sparkles,
+    X,
 } from "lucide-react";
 import GIF from "gif.js";
 
 interface ShareDockProps {
     targetRef: React.RefObject<HTMLDivElement | null>;
     accentColor?: string;
+    constraintsRef?: React.RefObject<Element>;
 }
 
 type ExportStatus = "idle" | "progress" | "success" | "error";
@@ -180,6 +182,7 @@ const TEMPLATES: {
 export function ShareDock({
     targetRef,
     accentColor = "#7C3AED",
+    constraintsRef,
 }: ShareDockProps) {
     const [isOpen, setIsOpen] = React.useState(false);
     const [template, setTemplate] = React.useState<ShareTemplate>("mood-card");
@@ -369,31 +372,31 @@ export function ShareDock({
                 </motion.button>
             </div>
 
-            <Sheet open={isOpen} onOpenChange={setIsOpen}>
-                <SheetContent
-                    side="right"
-                    className="w-[calc(100vw-16px)] sm:w-[460px] sm:max-w-md p-0 flex flex-col right-2 sm:right-4 top-2 sm:top-4 bottom-2 sm:bottom-4 h-[calc(100svh-16px)] sm:h-[calc(100svh-32px)] te-panel overflow-hidden"
+            <AnimatePresence>
+                {isOpen && (
+                <motion.div
+                    drag
+                    dragConstraints={constraintsRef}
+                    dragMomentum={false}
+                    initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                    transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                    className="absolute top-24 right-[400px] w-[340px] h-[500px] te-module z-[100]"
                 >
-                    <div
-                        className="absolute inset-0 pointer-events-none opacity-[0.02] mix-blend-color-burn"
-                        style={{ backgroundColor: accentColor }}
-                    />
-                    <div className="absolute inset-0 bg-washi pointer-events-none opacity-[0.2]" />
-
-                    <SheetHeader className="relative z-10 px-7 pt-7 pb-4 border-b border-[var(--panel-border)] bg-[var(--panel-bg)]">
-                        <div className="flex items-center gap-3">
-                            <div className="size-10 te-recessed flex items-center justify-center">
-                                <Share2 className="size-5 text-foreground/50" />
-                            </div>
-                            <div>
-                                <SheetTitle className="text-xl font-mono font-bold uppercase tracking-widest text-foreground/90">
-                                    EXPORT_MOD
-                                </SheetTitle>
-                            </div>
+                    {/* Header / Drag Handle */}
+                    <div className="te-module-header">
+                        <div className="flex items-center gap-2">
+                            <div className="size-2 rounded-full bg-[var(--te-orange)]" />
+                            <span className="font-mono text-[10px] font-bold uppercase tracking-widest text-foreground">EXPORT_MOD</span>
                         </div>
-                    </SheetHeader>
+                        <div className="w-16 h-2 te-grip opacity-50" />
+                        <button onClick={() => setIsOpen(false)} className="size-5 te-button !rounded-full !border-b-2 flex items-center justify-center text-foreground hover:text-[var(--te-orange)]">
+                            <X className="size-3" />
+                        </button>
+                    </div>
 
-                    <div className="relative z-10 flex-1 overflow-y-auto px-6 py-6 space-y-8 custom-scrollbar bg-[var(--panel-bg)]">
+                    <div className="relative z-10 flex-1 overflow-y-auto px-5 py-6 space-y-8 custom-scrollbar bg-[var(--panel-bg)]">
                         <section className="space-y-3">
                             <div className="flex items-center gap-2 px-2">
                                 <Sparkles
@@ -525,8 +528,9 @@ export function ShareDock({
                             </div>
                         </section>
                     </div>
-                </SheetContent>
-            </Sheet>
+                </motion.div>
+                )}
+            </AnimatePresence>
         </>
     );
 }

@@ -177,6 +177,43 @@
             0 1px 0 rgba(255, 255, 255, 0.05);
     }
 
+    /* 4.5 Draggable Hardware Modules */
+    .te-module {
+        background-color: var(--panel-bg);
+        border: 1px solid var(--panel-border);
+        box-shadow: 
+            0 32px 64px -16px rgba(0, 0, 0, 0.3),
+            0 16px 32px -8px rgba(0, 0, 0, 0.2),
+            0 0 0 1px rgba(0, 0, 0, 0.05),
+            inset 0 1px 1px rgba(255, 255, 255, 0.5),
+            inset 0 -1px 1px rgba(0, 0, 0, 0.1);
+        @apply rounded-[16px] overflow-hidden flex flex-col;
+    }
+    .dark .te-module {
+        box-shadow: 
+            0 32px 64px -16px rgba(0, 0, 0, 0.9),
+            0 16px 32px -8px rgba(0, 0, 0, 0.7),
+            0 0 0 1px rgba(0, 0, 0, 0.5),
+            inset 0 1px 1px rgba(255, 255, 255, 0.05),
+            inset 0 -1px 1px rgba(0, 0, 0, 0.4);
+    }
+    .te-module-header {
+        @apply flex items-center justify-between px-3 py-2 border-b border-[var(--panel-border)] cursor-grab active:cursor-grabbing select-none shrink-0;
+        background: linear-gradient(to bottom, var(--key-bg), var(--panel-bg));
+    }
+    .dark .te-module-header {
+        background: linear-gradient(to bottom, #3A3A3C, var(--panel-bg));
+    }
+    .te-grip {
+        background-image: repeating-linear-gradient(
+            90deg,
+            var(--panel-border),
+            var(--panel-border) 2px,
+            transparent 2px,
+            transparent 4px
+        );
+    }
+
     /* 5. Typography */
     .te-label {
         @apply font-mono text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.25em] text-foreground/50;

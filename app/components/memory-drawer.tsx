@@ -1,15 +1,10 @@
 "use client";
 
 import * as React from "react";
-import {
-    Sheet,
-    SheetContent,
-    SheetHeader,
-    SheetTitle,
-} from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { motion, AnimatePresence } from "motion/react";
 import {
     Search,
     Database,
@@ -26,6 +21,7 @@ interface MemoryDrawerProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     accentColor?: string;
+    constraintsRef?: React.RefObject<Element>;
 }
 
 const MOCK_MEMORIES = [
@@ -63,6 +59,7 @@ export function MemoryDrawer({
     open,
     onOpenChange,
     accentColor = "#7c3aed",
+    constraintsRef,
 }: MemoryDrawerProps) {
     const [searchQuery, setSearchQuery] = React.useState("");
     const [activeFilter, setActiveFilter] = React.useState<string | null>(null);
@@ -109,44 +106,33 @@ export function MemoryDrawer({
     };
 
     return (
-        <Sheet open={open} onOpenChange={onOpenChange}>
-            <SheetContent
-                side="right"
-                className="w-[calc(100vw-16px)] sm:w-[460px] sm:max-w-md p-0 flex flex-col right-2 sm:right-4 top-2 sm:top-4 bottom-2 sm:bottom-4 h-[calc(100svh-16px)] sm:h-[calc(100svh-32px)] rounded-[32px] border-0 overflow-hidden hardware-card"
-                style={
-                    {
-                        "--tw-glass-border": `${accentColor}20`,
-                    } as React.CSSProperties
-                }
-            >
-                {/* Subtle dynamic background wash */}
-                <div
-                    className="absolute inset-0 pointer-events-none opacity-[0.02] mix-blend-color-burn"
-                    style={{ backgroundColor: accentColor }}
-                />
-                <div className="absolute inset-0 bg-washi pointer-events-none opacity-[0.2]" />
-
-                {/* Header */}
-                <SheetHeader className="relative z-10 px-8 py-7 pb-4 shrink-0">
-                    <div className="flex items-center gap-3">
-                        <div
-                            className="size-10 rounded-[12px] flex items-center justify-center shadow-sm border border-foreground/[0.05]"
-                            style={{
-                                backgroundColor: `${accentColor}15`,
-                                color: accentColor,
-                            }}
-                        >
-                            <Database className="size-5" />
+        <AnimatePresence>
+            {open && (
+                <motion.div
+                    drag
+                    dragConstraints={constraintsRef}
+                    dragMomentum={false}
+                    initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                    transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                    className="absolute top-24 left-12 w-[340px] h-[500px] te-module z-[100]"
+                >
+                    {/* Header / Drag Handle */}
+                    <div className="te-module-header">
+                        <div className="flex items-center gap-2">
+                            <div className="size-2 rounded-full bg-[var(--te-blue)]" />
+                            <span className="font-mono text-[10px] font-bold uppercase tracking-widest text-foreground">MEMORY_CORE</span>
                         </div>
-                        <SheetTitle className="text-xl font-semibold tracking-tight text-foreground/90">
-                            Memory Core
-                        </SheetTitle>
+                        <div className="w-16 h-2 te-grip opacity-50" />
+                        <button onClick={() => onOpenChange(false)} className="size-5 te-button !rounded-full !border-b-2 flex items-center justify-center text-foreground hover:text-[var(--te-orange)]">
+                            <X className="size-3" />
+                        </button>
                     </div>
-                </SheetHeader>
 
-                {/* Scrollable Content */}
-                <div className="relative z-10 flex-1 overflow-y-auto px-6 pb-8 space-y-8 custom-scrollbar">
-                    {/* Top Controls Group (Search + Engine Toggle) */}
+                    {/* Scrollable Content */}
+                    <div className="relative z-10 flex-1 overflow-y-auto px-5 py-6 space-y-8 custom-scrollbar bg-[var(--panel-bg)]">
+                        {/* Top Controls Group (Search + Engine Toggle) */}
                     <div className="space-y-4 pt-2">
                         {/* Search Bar - Hardware Style */}
                         <div className="relative group">
@@ -341,13 +327,13 @@ export function MemoryDrawer({
 
                 {/* Fixed Bottom Action */}
                 {memories.length > 0 && (
-                    <div className="relative z-20 p-5 pt-4 bg-background/80 backdrop-blur-xl shrink-0">
+                    <div className="relative z-20 p-4 border-t border-[var(--panel-border)] bg-[var(--panel-bg)] shrink-0">
                         <button
                             onClick={() => setClearAllConfirm(true)}
-                            className="w-full h-14 rounded-[16px] hardware-btn hover:bg-destructive/10 text-destructive font-mono font-bold uppercase tracking-widest text-[12px] transition-colors flex items-center justify-center gap-2 active:scale-[0.98]"
+                            className="w-full h-12 te-button text-[var(--te-orange)]"
                         >
-                            <Trash2 className="size-[16px]" />
-                            Purge All
+                            <Trash2 className="size-[16px] mr-2" />
+                            PURGE_ALL
                         </button>
                     </div>
                 )}
@@ -371,7 +357,8 @@ export function MemoryDrawer({
                     destructive
                     onConfirm={handleClearAll}
                 />
-            </SheetContent>
-        </Sheet>
+                </motion.div>
+            )}
+        </AnimatePresence>
     );
 }

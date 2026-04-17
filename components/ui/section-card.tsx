@@ -9,7 +9,7 @@ import {
   CardFooter,
 } from "@/components/ui/card"
 
-interface SectionCardProps extends React.ComponentProps<typeof Card> {
+interface SectionCardProps extends Omit<React.ComponentProps<typeof Card>, "title"> {
   title: React.ReactNode
   description?: React.ReactNode
   footer?: React.ReactNode

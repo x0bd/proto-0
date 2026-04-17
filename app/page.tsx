@@ -99,6 +99,7 @@ export default function Home() {
     );
     const targetEmotionRef = useRef<EmotionState>(NEUTRAL_EMOTION);
     const baseEmotionRef = useRef<EmotionState>(NEUTRAL_EMOTION);
+    const constraintsRef = useRef<HTMLDivElement>(null);
     const [mounted, setMounted] = useState(false);
     const { theme, setTheme } = useTheme();
 
@@ -297,7 +298,7 @@ export default function Home() {
     };
 
     return (
-        <div className="flex h-dvh w-full overflow-hidden bg-background font-sans relative">
+        <div ref={constraintsRef} className="flex h-dvh w-full overflow-hidden bg-background font-sans relative">
             {/* BACKGROUND & ATMOSPHERE */}
             <div
                 className="absolute inset-0 w-full h-full text-foreground flex flex-col items-center justify-center transition-colors duration-500"
@@ -501,22 +502,26 @@ export default function Home() {
                     onAccentColorChange={handleAccentColorChange}
                     activePersonaId={activePersonaId}
                     onPersonaChange={handlePersonaChange}
+                    constraintsRef={constraintsRef}
                 />
                 {/* Memory Drawer */}
                 <MemoryDrawer
                     open={isMemoryOpen}
                     onOpenChange={setIsMemoryOpen}
                     accentColor={accentColor}
+                    constraintsRef={constraintsRef}
                 />
                 <RitualDrawer
                     open={isRitualOpen}
                     onOpenChange={setIsRitualOpen}
                     accentColor={accentColor}
+                    constraintsRef={constraintsRef}
                 />
                 {/* Share Dock */}
                 <ShareDock
                     targetRef={avatarStageRef}
                     accentColor={accentColor}
+                    constraintsRef={constraintsRef}
                 />
                 {/* External links */}
                 <div className="absolute left-3 sm:left-6 bottom-[calc(max(16px,env(safe-area-inset-bottom))+78px)] sm:bottom-10 z-[70] pointer-events-auto">

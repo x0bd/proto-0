@@ -271,13 +271,7 @@ import { KeyVaultPanel } from "./key-vault-panel";
 import { PersonaPicker } from "@/components/ui/persona-picker";
 import { PersonaPreview } from "@/components/ui/persona-preview";
 import { PersonaSettingsPanel } from "@/components/ui/persona-settings-panel";
-import {
-    Sheet,
-    SheetContent,
-    SheetHeader,
-    SheetTitle,
-} from "@/components/ui/sheet";
-import { Settings2, WandSparkles } from "lucide-react";
+import { Settings2, WandSparkles, X } from "lucide-react";
 
 interface CustomizationModalProps {
     isOpen: boolean;
@@ -290,6 +284,7 @@ interface CustomizationModalProps {
     onAccentColorChange: (color: string) => void;
     activePersonaId: string;
     onPersonaChange: (personaId: string) => void;
+    constraintsRef?: React.RefObject<Element>;
 }
 
 export const CustomizationModal = React.memo(function CustomizationModal({
@@ -303,6 +298,7 @@ export const CustomizationModal = React.memo(function CustomizationModal({
     onAccentColorChange,
     activePersonaId,
     onPersonaChange,
+    constraintsRef,
 }: CustomizationModalProps) {
     const [nameVal, setNameVal] = React.useState(avatarName);
     const activePersona =
@@ -320,34 +316,36 @@ export const CustomizationModal = React.memo(function CustomizationModal({
     };
 
     return (
-        <Sheet open={isOpen} onOpenChange={onClose}>
-            <SheetContent
-                side="right"
-                className="w-[calc(100vw-16px)] sm:w-[460px] sm:max-w-md p-0 flex flex-col right-2 sm:right-4 top-2 sm:top-4 bottom-2 sm:bottom-4 h-[calc(100svh-16px)] sm:h-[calc(100svh-32px)] te-panel overflow-hidden"
-            >
-                {/* Header */}
-                <SheetHeader className="relative z-10 px-8 py-7 pb-4 shrink-0 border-b border-[var(--panel-border)] bg-[var(--panel-bg)]">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <div className="size-10 te-recessed flex items-center justify-center">
-                                <Settings2 className="size-5 text-foreground/50" />
-                            </div>
-                            <SheetTitle className="text-xl font-mono font-bold tracking-widest uppercase text-foreground">
-                                SYS_CONFIG
-                            </SheetTitle>
+        <AnimatePresence>
+            {isOpen && (
+                <motion.div
+                    drag
+                    dragConstraints={constraintsRef}
+                    dragMomentum={false}
+                    initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                    transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                    className="absolute top-24 right-12 w-[340px] h-[500px] te-module z-[100]"
+                >
+                    {/* Header / Drag Handle */}
+                    <div className="te-module-header">
+                        <div className="flex items-center gap-2">
+                            <div className="size-2 rounded-full bg-[var(--te-orange)]" />
+                            <span className="font-mono text-[10px] font-bold uppercase tracking-widest text-foreground">SYS_CONFIG</span>
                         </div>
-                        <div className="te-lcd px-3 py-1 text-[10px]">
-                            V.0.1.0
-                        </div>
+                        <div className="w-16 h-2 te-grip opacity-50" />
+                        <button onClick={onClose} className="size-5 te-button !rounded-full !border-b-2 flex items-center justify-center text-foreground hover:text-[var(--te-orange)]">
+                            <X className="size-3" />
+                        </button>
                     </div>
-                </SheetHeader>
 
-                {/* Scrollable Content */}
-                <div className="relative z-10 flex-1 overflow-y-auto px-6 py-6 custom-scrollbar bg-[var(--panel-bg)]">
-                    <Tabs defaultValue="appearance" className="w-full">
-                            <TabsList
-                                className="mb-8 w-full flex p-2 te-recessed"
-                            >
+                    {/* Scrollable Content */}
+                    <div className="relative z-10 flex-1 overflow-y-auto px-5 py-6 custom-scrollbar bg-[var(--panel-bg)]">
+                        <Tabs defaultValue="appearance" className="w-full">
+                                <TabsList
+                                    className="mb-8 w-full flex p-1.5 te-recessed"
+                                >
                                 <TabsTrigger
                                     value="appearance"
                                     className="data-[state=active]:bg-[var(--key-bg)] data-[state=active]:shadow-sm relative h-10 rounded-[10px] transition-all data-[state=active]:text-foreground text-foreground/50 font-mono text-[11px] uppercase tracking-widest font-bold flex-1"
@@ -529,7 +527,8 @@ export const CustomizationModal = React.memo(function CustomizationModal({
                         </TabsContent>
                     </Tabs>
                 </div>
-            </SheetContent>
-        </Sheet>
+            </motion.div>
+            )}
+        </AnimatePresence>
     );
 });
