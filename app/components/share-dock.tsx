@@ -359,12 +359,9 @@ export function ShareDock({
                     whileHover={{ scale: 1.06 }}
                     whileTap={{ scale: 0.92 }}
                     onClick={() => setIsOpen(true)}
-                    className="size-12 sm:size-14 rounded-full flex items-center justify-center border-2 transition-all duration-200 shadow-premium"
+                    className="size-12 sm:size-14 flex items-center justify-center transition-all duration-200 te-button"
                     style={{
-                        backgroundColor: "var(--background)",
-                        borderColor: `${accentColor}40`,
                         color: accentColor,
-                        boxShadow: `0 8px 24px -8px ${accentColor}20`,
                     }}
                     title="Share Moment"
                 >
@@ -375,82 +372,56 @@ export function ShareDock({
             <Sheet open={isOpen} onOpenChange={setIsOpen}>
                 <SheetContent
                     side="right"
-                    className="w-[calc(100vw-16px)] sm:w-[460px] sm:max-w-md p-0 flex flex-col right-2 sm:right-4 top-2 sm:top-4 bottom-2 sm:bottom-4 h-[calc(100svh-16px)] sm:h-[calc(100svh-32px)] rounded-[32px] border-0 shadow-premium overflow-hidden glass-card"
+                    className="w-[calc(100vw-16px)] sm:w-[460px] sm:max-w-md p-0 flex flex-col right-2 sm:right-4 top-2 sm:top-4 bottom-2 sm:bottom-4 h-[calc(100svh-16px)] sm:h-[calc(100svh-32px)] te-panel overflow-hidden"
                 >
                     <div
-                        className="absolute inset-0 pointer-events-none opacity-[0.05] mix-blend-color-burn"
+                        className="absolute inset-0 pointer-events-none opacity-[0.02] mix-blend-color-burn"
                         style={{ backgroundColor: accentColor }}
                     />
-                    <div className="absolute inset-0 bg-washi pointer-events-none opacity-[0.12]" />
+                    <div className="absolute inset-0 bg-washi pointer-events-none opacity-[0.2]" />
 
-                    <SheetHeader className="relative z-10 px-7 pt-7 pb-4">
+                    <SheetHeader className="relative z-10 px-7 pt-7 pb-4 border-b border-[var(--panel-border)] bg-[var(--panel-bg)]">
                         <div className="flex items-center gap-3">
-                            <div
-                                className="size-10 rounded-full flex items-center justify-center shadow-sm"
-                                style={{
-                                    backgroundColor: `${accentColor}15`,
-                                    color: accentColor,
-                                }}
-                            >
-                                <Share2 className="size-5" />
+                            <div className="size-10 te-recessed flex items-center justify-center">
+                                <Share2 className="size-5 text-foreground/50" />
                             </div>
                             <div>
-                                <SheetTitle className="text-2xl font-semibold tracking-tight text-foreground/90">
-                                    Share Moment
+                                <SheetTitle className="text-xl font-mono font-bold uppercase tracking-widest text-foreground/90">
+                                    EXPORT_MOD
                                 </SheetTitle>
-                                <SheetDescription className="mt-1 text-[13px] leading-relaxed text-muted-foreground/75">
-                                    Export DOT as a card, a still, or a motion
-                                    clip in the same polished presentation style.
-                                </SheetDescription>
                             </div>
                         </div>
                     </SheetHeader>
 
-                    <div className="relative z-10 flex-1 overflow-y-auto px-6 pb-7 space-y-5 custom-scrollbar">
+                    <div className="relative z-10 flex-1 overflow-y-auto px-6 py-6 space-y-8 custom-scrollbar bg-[var(--panel-bg)]">
                         <section className="space-y-3">
                             <div className="flex items-center gap-2 px-2">
                                 <Sparkles
                                     className="size-3.5"
                                     style={{ color: accentColor }}
                                 />
-                                <span className="text-micro">Template Picker</span>
+                                <span className="te-label">TEMPLATE_SEL</span>
                             </div>
-                            <div className="space-y-3">
+                            <div className="space-y-3 te-recessed p-3">
                                 {TEMPLATES.map((item) => {
                                     const active = item.id === template;
                                     return (
                                         <button
                                             key={item.id}
                                             onClick={() => setTemplate(item.id)}
-                                            className="w-full text-left p-4 rounded-[24px] border transition-all duration-300 bg-background/60 backdrop-blur-md shadow-sm hover:bg-background/80"
-                                            style={{
-                                                borderColor: active
-                                                    ? `${accentColor}45`
-                                                    : "rgba(28,10,46,0.06)",
-                                                boxShadow: active
-                                                    ? `0 10px 24px -14px ${accentColor}60`
-                                                    : undefined,
-                                            }}
+                                            className={`w-full text-left p-4 rounded-[12px] transition-all duration-150 ${active ? 'bg-[var(--key-bg)] shadow-sm' : 'hover:bg-foreground/5'}`}
                                         >
                                             <div className="flex items-start justify-between gap-3">
                                                 <div>
-                                                    <p className="text-[15px] font-semibold tracking-tight text-foreground/90">
+                                                    <p className="te-value">
                                                         {item.name}
                                                     </p>
-                                                    <p className="mt-1 text-[13px] leading-relaxed text-muted-foreground/75">
+                                                    <p className="mt-1 text-[11px] font-mono text-muted-foreground/70">
                                                         {item.description}
                                                     </p>
                                                 </div>
                                                 {active && (
-                                                    <Badge
-                                                        className="rounded-full border-0"
-                                                        style={{
-                                                            backgroundColor: `${accentColor}14`,
-                                                            color: accentColor,
-                                                        }}
-                                                    >
-                                                        Active
-                                                    </Badge>
+                                                    <div className="size-2 rounded-full bg-[var(--te-orange)]" />
                                                 )}
                                             </div>
                                         </button>
@@ -465,14 +436,14 @@ export function ShareDock({
                                     className="size-3.5"
                                     style={{ color: accentColor }}
                                 />
-                                <span className="text-micro">Export Options</span>
+                                <span className="te-label">FORMAT_SEL</span>
                             </div>
-                            <div className="space-y-3">
+                            <div className="space-y-3 te-recessed p-3">
                                 {[
                                     {
                                         id: "png" as const,
                                         title: "PNG",
-                                        description: "Best for static cards and clean social posts.",
+                                        description: "Static card",
                                         icon: <ImageIcon className="size-4" />,
                                         onClick: handleExportPNG,
                                         disabled: false,
@@ -481,7 +452,7 @@ export function ShareDock({
                                     {
                                         id: "gif" as const,
                                         title: "GIF",
-                                        description: "Short looping motion capture of the avatar.",
+                                        description: "Motion loop",
                                         icon: <Film className="size-4" />,
                                         onClick: handleExportGIF,
                                         disabled: false,
@@ -489,50 +460,33 @@ export function ShareDock({
                                     },
                                     {
                                         id: "webm" as const,
-                                        title: "WebM",
-                                        description: "Higher-fidelity video export for later polish.",
+                                        title: "WEBM",
+                                        description: "High-fi video",
                                         icon: <Video className="size-4" />,
                                         onClick: () => undefined,
                                         disabled: true,
-                                        badge: "Soon",
+                                        badge: "N/A",
                                     },
                                 ].map((item) => (
                                     <button
                                         key={item.id}
                                         onClick={item.onClick}
                                         disabled={item.disabled || status === "progress"}
-                                        className="w-full text-left p-4 rounded-[24px] border transition-all duration-300 bg-background/60 backdrop-blur-md shadow-sm hover:bg-background/80 disabled:opacity-60 disabled:cursor-not-allowed"
-                                        style={{
-                                            borderColor:
-                                                activeFormat === item.id
-                                                    ? `${accentColor}40`
-                                                    : "rgba(28,10,46,0.06)",
-                                        }}
+                                        className={`w-full text-left p-4 rounded-[12px] transition-all duration-150 ${activeFormat === item.id ? 'bg-[var(--key-bg)] shadow-sm' : 'hover:bg-foreground/5'} disabled:opacity-50`}
                                     >
                                         <div className="flex items-start justify-between gap-3">
-                                            <div className="flex items-start gap-3">
-                                                <div
-                                                    className="size-9 rounded-full flex items-center justify-center shrink-0"
-                                                    style={{
-                                                        backgroundColor: `${accentColor}12`,
-                                                        color: accentColor,
-                                                    }}
-                                                >
+                                            <div className="flex items-center gap-3">
+                                                <div className="text-foreground/50">
                                                     {item.icon}
                                                 </div>
                                                 <div>
-                                                    <p className="text-[15px] font-semibold tracking-tight text-foreground/90">
+                                                    <p className="te-value">
                                                         {item.title}
-                                                    </p>
-                                                    <p className="mt-1 text-[13px] leading-relaxed text-muted-foreground/75">
-                                                        {item.description}
                                                     </p>
                                                 </div>
                                             </div>
                                             {item.badge ? (
-                                                <Badge variant="outline" className="rounded-full">
-                                                    {item.badge}
-                                                </Badge>
+                                                <span className="te-label">{item.badge}</span>
                                             ) : null}
                                         </div>
                                     </button>
@@ -546,47 +500,27 @@ export function ShareDock({
                                     className="size-3.5"
                                     style={{ color: accentColor }}
                                 />
-                                <span className="text-micro">Share Target</span>
+                                <span className="te-label">TARGET_SYS</span>
                             </div>
-                            <div className="rounded-[28px] bg-background/60 backdrop-blur-md border border-foreground/[0.05] p-5 shadow-sm space-y-4">
+                            <div className="te-recessed p-4 space-y-4">
                                 <div className="flex items-start justify-between gap-4">
                                     <div className="space-y-1">
-                                        <p className="text-[15px] font-medium text-foreground/90">
-                                            Native share sheet
-                                        </p>
-                                        <p className="text-[13px] leading-relaxed text-muted-foreground/70">
-                                            {canNativeShare
-                                                ? "Share directly through your device after DOT prepares a PNG card."
-                                                : "Your browser does not expose native sharing here, so DOT will fall back to file downloads."}
+                                        <p className="te-value">
+                                            NATIVE_SHARE
                                         </p>
                                     </div>
-                                    <Badge
-                                        className="rounded-full border-0"
-                                        style={{
-                                            backgroundColor: canNativeShare
-                                                ? `${accentColor}14`
-                                                : "rgba(239,68,68,0.12)",
-                                            color: canNativeShare
-                                                ? accentColor
-                                                : "var(--destructive)",
-                                        }}
-                                    >
-                                        {canNativeShare ? "Available" : "Fallback"}
-                                    </Badge>
+                                    <span className="te-label" style={{ color: canNativeShare ? 'var(--te-green)' : 'var(--te-orange)' }}>
+                                        {canNativeShare ? "RDY" : "ERR"}
+                                    </span>
                                 </div>
 
                                 <button
                                     onClick={handleShareNative}
                                     disabled={!canNativeShare || status === "progress"}
-                                    className="w-full h-12 rounded-[20px] font-semibold text-[15px] transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] shadow-sm"
-                                    style={{
-                                        backgroundColor: accentColor,
-                                        color: "#fff",
-                                        boxShadow: `0 4px 14px ${accentColor}40`,
-                                    }}
+                                    className="w-full h-12 te-button text-[var(--te-blue)]"
                                 >
-                                    <Share2 className="size-[16px]" />
-                                    Open Share Sheet
+                                    <Share2 className="size-[16px] mr-2" />
+                                    EXECUTE
                                 </button>
                             </div>
                         </section>

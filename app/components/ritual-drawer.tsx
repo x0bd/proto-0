@@ -75,7 +75,7 @@ export function RitualDrawer({
         <Sheet open={open} onOpenChange={onOpenChange}>
             <SheetContent
                 side="right"
-                className="w-[calc(100vw-16px)] sm:w-[460px] sm:max-w-md p-0 flex flex-col right-2 sm:right-4 top-2 sm:top-4 bottom-2 sm:bottom-4 h-[calc(100svh-16px)] sm:h-[calc(100svh-32px)] rounded-[32px] border-0 shadow-premium overflow-hidden glass-card"
+                className="w-[calc(100vw-16px)] sm:w-[460px] sm:max-w-md p-0 flex flex-col right-2 sm:right-4 top-2 sm:top-4 bottom-2 sm:bottom-4 h-[calc(100svh-16px)] sm:h-[calc(100svh-32px)] rounded-[32px] border-0 overflow-hidden hardware-card"
                 style={
                     {
                         "--tw-glass-border": `${accentColor}20`,
@@ -84,16 +84,16 @@ export function RitualDrawer({
             >
                 {/* Subtle dynamic background wash */}
                 <div
-                    className="absolute inset-0 pointer-events-none opacity-[0.04] mix-blend-color-burn"
+                    className="absolute inset-0 pointer-events-none opacity-[0.02] mix-blend-color-burn"
                     style={{ backgroundColor: accentColor }}
                 />
-                <div className="absolute inset-0 bg-washi pointer-events-none opacity-[0.15]" />
+                <div className="absolute inset-0 bg-washi pointer-events-none opacity-[0.2]" />
 
                 {/* Header */}
                 <SheetHeader className="relative z-10 px-8 py-7 pb-4 shrink-0 flex-row items-center justify-between space-y-0">
                     <div className="flex items-center gap-3">
                         <div
-                            className="size-10 rounded-full flex items-center justify-center shadow-sm"
+                            className="size-10 rounded-[12px] flex items-center justify-center shadow-sm border border-foreground/[0.05]"
                             style={{
                                 backgroundColor: `${accentColor}15`,
                                 color: accentColor,
@@ -101,7 +101,7 @@ export function RitualDrawer({
                         >
                             <Calendar className="size-5" />
                         </div>
-                        <SheetTitle className="text-2xl font-semibold tracking-tight text-foreground/90">
+                        <SheetTitle className="text-xl font-semibold tracking-tight text-foreground/90">
                             Rituals
                         </SheetTitle>
                     </div>

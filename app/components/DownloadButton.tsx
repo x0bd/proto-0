@@ -272,7 +272,7 @@ export function DownloadButton({
 							onClick={handleDownloadPNG}
 							disabled={isExporting}
 							className={cn(
-								"flex items-center gap-3 px-4 py-2.5 rounded-[10px] bg-background border transition-all font-mono font-semibold tracking-wide group w-40",
+								"flex items-center gap-3 px-4 py-2.5 rounded-[14px] hardware-btn transition-all font-mono font-semibold tracking-wide group w-40",
 								"sm:gap-3.5 sm:px-5 sm:py-3 sm:text-[12px] sm:w-44 touch-manipulation",
 								"active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed",
 							)}
@@ -281,7 +281,7 @@ export function DownloadButton({
 							}}
 						>
 							<div
-								className="p-1.5 rounded-[6px] transition-all duration-200 group-hover:scale-110 shrink-0"
+								className="p-1.5 rounded-[8px] transition-all duration-200 group-hover:scale-110 shrink-0"
 								style={{
 									backgroundColor: `${accentColor}12`,
 									color: accentColor,
@@ -301,7 +301,7 @@ export function DownloadButton({
 							onClick={handleDownloadGIF}
 							disabled={isExporting}
 							className={cn(
-								"flex items-center gap-3 px-4 py-2.5 rounded-[10px] bg-background border transition-all font-mono font-semibold tracking-wide group w-40",
+								"flex items-center gap-3 px-4 py-2.5 rounded-[14px] hardware-btn transition-all font-mono font-semibold tracking-wide group w-40",
 								"sm:gap-3.5 sm:px-5 sm:py-3 sm:text-[12px] sm:w-44 touch-manipulation",
 								"active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed",
 							)}
@@ -310,7 +310,7 @@ export function DownloadButton({
 							}}
 						>
 							<div
-								className="p-1.5 rounded-[6px] transition-all duration-200 group-hover:scale-110 shrink-0"
+								className="p-1.5 rounded-[8px] transition-all duration-200 group-hover:scale-110 shrink-0"
 								style={{
 									backgroundColor: `${accentColor}12`,
 									color: accentColor,
@@ -334,7 +334,7 @@ export function DownloadButton({
 				whileTap={{ scale: 0.92 }}
 				onClick={() => setIsOpen(!isOpen)}
 				className={cn(
-					"size-12 sm:size-14 rounded-full flex items-center justify-center border-2 transition-all duration-200 z-50",
+					"size-12 sm:size-14 rounded-[16px] flex items-center justify-center transition-all duration-200 z-50 hardware-btn",
 					isExporting
 						? "border-amber-400/40"
 						: exportStatus === "success"

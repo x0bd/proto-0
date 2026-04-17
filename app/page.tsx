@@ -338,8 +338,7 @@ export default function Home() {
                                 damping: 25,
                                 stiffness: 300,
                             }}
-                            className="flex items-center gap-2.5 rounded-full px-4 sm:px-6 h-10 sm:h-12 bg-background border shadow-premium hover:shadow-lg transition-all duration-300 group cursor-default"
-                            style={{ borderColor: `${accentColor}40` }}
+                            className="flex items-center gap-2.5 px-4 sm:px-6 h-10 sm:h-12 te-button group cursor-default"
                         >
                             <span
                                 className="logo-font font-bold text-xs sm:text-sm leading-none tracking-[0.2em] pl-1 transition-colors"
@@ -358,15 +357,13 @@ export default function Home() {
                                 damping: 26,
                                 stiffness: 280,
                             }}
+                            className="te-lcd px-3 py-1.5"
                         >
-                            <ActivePersonaChip
-                                label={activePersonaId.replace("-", " ")}
-                                accentColor={accentColor}
-                            />
+                            <span className="text-[10px] tracking-widest">{activePersonaId.replace("-", " ")}</span>
                         </motion.div>
                     </div>
                 </div>
-                <div className="absolute top-[max(12px,env(safe-area-inset-top))] right-3 sm:top-8 sm:right-6 z-50 flex items-center gap-2 sm:gap-2.5">
+                <div className="absolute top-[max(12px,env(safe-area-inset-top))] right-3 sm:top-8 sm:right-6 z-50 flex items-center gap-2 sm:gap-2.5 te-recessed p-2">
                     {/* Theme Toggle */}
                     <motion.button
                         initial={{ opacity: 0, scale: 0.9 }}
@@ -380,18 +377,14 @@ export default function Home() {
                         onClick={() =>
                             setTheme(theme === "dark" ? "light" : "dark")
                         }
-                        className="size-10 sm:size-10 rounded-full flex items-center justify-center bg-background border-2 shadow-premium hover:shadow-lg transition-all duration-300 active:scale-95 touch-manipulation"
-                        style={{
-                            borderColor: `${accentColor}50`,
-                            color: accentColor,
-                        }}
+                        className="size-10 sm:size-10 flex items-center justify-center te-button touch-manipulation"
                         title="Toggle Theme"
                         aria-label="Toggle theme"
                     >
                         {mounted && theme === "dark" ? (
-                            <RiMoonFill className="size-[18px]" />
+                            <RiMoonFill className="size-[18px] text-foreground/70" />
                         ) : (
-                            <RiSunFill className="size-[18px]" />
+                            <RiSunFill className="size-[18px] text-foreground/70" />
                         )}
                     </motion.button>
                     {/* Memory Button */}
@@ -405,14 +398,10 @@ export default function Home() {
                             stiffness: 300,
                         }}
                         onClick={() => setIsMemoryOpen(true)}
-                        className="size-10 sm:size-10 rounded-full flex items-center justify-center bg-background border-2 shadow-premium hover:shadow-lg transition-all duration-300 active:scale-95 touch-manipulation"
-                        style={{
-                            borderColor: `${accentColor}50`,
-                            color: accentColor,
-                        }}
+                        className="size-10 sm:size-10 flex items-center justify-center te-button touch-manipulation"
                         title="Memory Core"
                     >
-                        <Database className="size-[18px]" />
+                        <Database className="size-[18px] text-foreground/70" />
                     </motion.button>
                     <motion.button
                         initial={{ opacity: 0, scale: 0.9 }}
@@ -424,14 +413,10 @@ export default function Home() {
                             stiffness: 300,
                         }}
                         onClick={() => setIsRitualOpen(true)}
-                        className="size-10 sm:size-10 rounded-full flex items-center justify-center bg-background border-2 shadow-premium hover:shadow-lg transition-all duration-300 active:scale-95 touch-manipulation"
-                        style={{
-                            borderColor: `${accentColor}50`,
-                            color: accentColor,
-                        }}
+                        className="size-10 sm:size-10 flex items-center justify-center te-button touch-manipulation"
                         title="Rituals"
                     >
-                        <Calendar className="size-[18px]" />
+                        <Calendar className="size-[18px] text-foreground/70" />
                     </motion.button>
                     {/* Settings Button */}
                     <motion.button
@@ -444,14 +429,10 @@ export default function Home() {
                             stiffness: 300,
                         }}
                         onClick={() => setIsCustomizationOpen(true)}
-                        className="size-10 sm:size-10 rounded-full flex items-center justify-center bg-background border-2 shadow-premium hover:shadow-lg transition-all duration-300 active:scale-95 touch-manipulation"
-                        style={{
-                            borderColor: `${accentColor}50`,
-                            color: accentColor,
-                        }}
+                        className="size-10 sm:size-10 flex items-center justify-center te-button touch-manipulation"
                         title="Settings"
                     >
-                        <RiSettings4Fill className="size-[18px]" />
+                        <RiSettings4Fill className="size-[18px] text-foreground/70" />
                     </motion.button>
                 </div>
                 {/* CENTER STAGE (Avatar) */}
@@ -539,7 +520,7 @@ export default function Home() {
                 />
                 {/* External links */}
                 <div className="absolute left-3 sm:left-6 bottom-[calc(max(16px,env(safe-area-inset-bottom))+78px)] sm:bottom-10 z-[70] pointer-events-auto">
-                    <div className="flex flex-col items-start gap-2">
+                    <div className="flex flex-col items-start gap-2 te-recessed p-2">
                         {[
                             {
                                 icon: (
@@ -576,8 +557,6 @@ export default function Home() {
                                     damping: 28,
                                     stiffness: 280,
                                 }}
-                                whileHover={{ scale: 1.04, x: 2 }}
-                                whileTap={{ scale: 0.96 }}
                                 onClick={() =>
                                     window.open(
                                         href,
@@ -585,11 +564,7 @@ export default function Home() {
                                         "noopener,noreferrer",
                                     )
                                 }
-                                className="h-11 sm:h-auto flex items-center justify-start gap-2 rounded-full px-3 sm:px-3.5 sm:py-2 bg-background border-2 shadow-premium hover:shadow-lg transition-shadow duration-200 cursor-pointer select-none touch-manipulation"
-                                style={{
-                                    borderColor: `${accentColor}35`,
-                                    color: accentColor,
-                                }}
+                                className="h-10 sm:h-auto flex items-center justify-start gap-2 px-3 sm:px-3.5 sm:py-2.5 te-button touch-manipulation text-foreground/70 hover:text-foreground"
                                 aria-label={`Open ${label}`}
                                 title={label}
                             >

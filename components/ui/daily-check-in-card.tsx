@@ -50,11 +50,11 @@ export function DailyCheckInCard({
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
-                    className="p-5 bg-background/60 backdrop-blur-md rounded-[28px] border border-foreground/[0.05] shadow-sm space-y-5"
+                    className="p-5 hardware-input rounded-[24px] space-y-5"
                 >
                     <div className="space-y-2">
                         <div
-                            className="size-11 rounded-full flex items-center justify-center"
+                            className="size-11 rounded-[12px] flex items-center justify-center border border-foreground/[0.05]"
                             style={{
                                 backgroundColor: `${accentColor}14`,
                                 color: accentColor,
@@ -62,10 +62,10 @@ export function DailyCheckInCard({
                         >
                             <Sparkles className="size-5" />
                         </div>
-                        <h4 className="text-[17px] font-semibold text-foreground/90 tracking-tight">
+                        <h4 className="text-[14px] font-mono font-bold uppercase tracking-widest text-foreground/90">
                             Start your first check-in
                         </h4>
-                        <p className="text-[14px] text-muted-foreground/80 leading-relaxed">
+                        <p className="text-[12px] font-mono text-muted-foreground/80 leading-relaxed">
                             Rituals help DOT reflect your day, build momentum,
                             and shape more personal responses over time.
                         </p>
@@ -73,11 +73,11 @@ export function DailyCheckInCard({
 
                     <button
                         onClick={onStart}
-                        className="w-full h-12 rounded-[20px] font-semibold text-[15px] transition-all flex items-center justify-center gap-2 active:scale-[0.98] shadow-sm"
+                        className="w-full h-12 rounded-[14px] font-mono font-bold uppercase tracking-widest text-[12px] transition-all flex items-center justify-center gap-2 active:scale-[0.98] hardware-btn"
                         style={{
                             backgroundColor: accentColor,
                             color: "#fff",
-                            boxShadow: `0 4px 14px ${accentColor}40`,
+                            borderColor: `${accentColor}40`,
                         }}
                     >
                         Begin Today&apos;s Ritual
@@ -91,13 +91,13 @@ export function DailyCheckInCard({
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95 }}
-                    className="p-5 bg-background/60 backdrop-blur-md rounded-[28px] border border-foreground/[0.05] shadow-sm space-y-5"
+                    className="p-5 hardware-input rounded-[24px] space-y-5"
                 >
                     <div className="space-y-1.5">
-                        <h4 className="text-[17px] font-semibold text-foreground/90 tracking-tight">
+                        <h4 className="text-[14px] font-mono font-bold uppercase tracking-widest text-foreground/90">
                             How are you feeling today?
                         </h4>
-                        <p className="text-[14px] text-muted-foreground/80 leading-relaxed">
+                        <p className="text-[12px] font-mono text-muted-foreground/80 leading-relaxed">
                             Take a moment to reflect. This helps DOT adapt to
                             your current state.
                         </p>
@@ -108,9 +108,9 @@ export function DailyCheckInCard({
                             <button
                                 key={mood.label}
                                 onClick={() => onMoodSelect(mood.id)}
-                                className={`flex flex-col items-center gap-2 p-2.5 rounded-2xl transition-all duration-200 flex-1 ${
+                                className={`flex flex-col items-center gap-2 p-2.5 rounded-[12px] transition-all duration-200 flex-1 ${
                                     selectedMood === mood.id
-                                        ? "bg-foreground/5 scale-110 shadow-sm"
+                                        ? "bg-background shadow-sm border border-foreground/[0.05] scale-110"
                                         : "hover:bg-foreground/[0.03] hover:scale-105 opacity-60 hover:opacity-100"
                                 }`}
                                 style={{
@@ -129,19 +129,20 @@ export function DailyCheckInCard({
                         value={note}
                         onChange={(e) => onNoteChange(e.target.value)}
                         placeholder="Add a private note (optional)..."
-                        className="w-full h-20 p-3 rounded-[16px] bg-foreground/[0.03] hover:bg-foreground/[0.04] focus:bg-foreground/[0.05] border border-transparent focus:border-foreground/10 outline-none transition-all text-[14px] placeholder:text-muted-foreground/50 resize-none"
+                        className="w-full h-20 p-4 rounded-[16px] bg-background border border-foreground/[0.05] focus:border-foreground/15 outline-none transition-all text-[13px] font-mono placeholder:text-muted-foreground/50 resize-none shadow-sm focus:ring-1"
+                        style={{ outlineColor: `${accentColor}50` }}
                     />
 
                     <button
                         onClick={onSubmit}
                         disabled={!selectedMood}
-                        className="w-full h-12 rounded-[20px] font-semibold text-[15px] transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] shadow-sm"
+                        className="w-full h-12 rounded-[14px] font-mono font-bold uppercase tracking-widest text-[12px] transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] hardware-btn"
                         style={
                             selectedMood
                                 ? {
                                       backgroundColor: accentColor,
                                       color: "#fff",
-                                      boxShadow: `0 4px 14px ${accentColor}40`,
+                                      borderColor: `${accentColor}40`,
                                   }
                                 : {
                                       backgroundColor: "var(--foreground)",
@@ -161,16 +162,21 @@ export function DailyCheckInCard({
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, y: -10 }}
-                    className="p-5 bg-success/10 border border-success/20 rounded-[28px] shadow-sm flex items-start gap-4"
+                    className="p-5 hardware-input rounded-[24px] flex items-start gap-4"
+                    style={{
+                        backgroundColor: "var(--success)",
+                        color: "var(--success-foreground)",
+                        opacity: 0.9
+                    }}
                 >
-                    <div className="mt-1 bg-success text-success-foreground rounded-full p-1 shadow-sm">
+                    <div className="mt-1 bg-white/20 rounded-[8px] p-1 shadow-sm">
                         <CheckCircle2 className="size-5" />
                     </div>
                     <div className="space-y-1">
-                        <h4 className="text-[16px] font-semibold text-success tracking-tight">
+                        <h4 className="text-[14px] font-mono font-bold uppercase tracking-widest">
                             Checked in for today
                         </h4>
-                        <p className="text-[14px] text-success/80 leading-relaxed">
+                        <p className="text-[12px] font-mono leading-relaxed opacity-90">
                             Your streak is growing. Come back tomorrow to keep
                             it alive.
                         </p>

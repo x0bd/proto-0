@@ -112,7 +112,7 @@ export function MemoryDrawer({
         <Sheet open={open} onOpenChange={onOpenChange}>
             <SheetContent
                 side="right"
-                className="w-[calc(100vw-16px)] sm:w-[460px] sm:max-w-md p-0 flex flex-col right-2 sm:right-4 top-2 sm:top-4 bottom-2 sm:bottom-4 h-[calc(100svh-16px)] sm:h-[calc(100svh-32px)] rounded-[32px] border-0 shadow-premium overflow-hidden glass-card"
+                className="w-[calc(100vw-16px)] sm:w-[460px] sm:max-w-md p-0 flex flex-col right-2 sm:right-4 top-2 sm:top-4 bottom-2 sm:bottom-4 h-[calc(100svh-16px)] sm:h-[calc(100svh-32px)] rounded-[32px] border-0 overflow-hidden hardware-card"
                 style={
                     {
                         "--tw-glass-border": `${accentColor}20`,
@@ -121,16 +121,16 @@ export function MemoryDrawer({
             >
                 {/* Subtle dynamic background wash */}
                 <div
-                    className="absolute inset-0 pointer-events-none opacity-[0.04] mix-blend-color-burn"
+                    className="absolute inset-0 pointer-events-none opacity-[0.02] mix-blend-color-burn"
                     style={{ backgroundColor: accentColor }}
                 />
-                <div className="absolute inset-0 bg-washi pointer-events-none opacity-[0.15]" />
+                <div className="absolute inset-0 bg-washi pointer-events-none opacity-[0.2]" />
 
                 {/* Header */}
                 <SheetHeader className="relative z-10 px-8 py-7 pb-4 shrink-0">
                     <div className="flex items-center gap-3">
                         <div
-                            className="size-10 rounded-full flex items-center justify-center shadow-sm"
+                            className="size-10 rounded-[12px] flex items-center justify-center shadow-sm border border-foreground/[0.05]"
                             style={{
                                 backgroundColor: `${accentColor}15`,
                                 color: accentColor,
@@ -138,8 +138,8 @@ export function MemoryDrawer({
                         >
                             <Database className="size-5" />
                         </div>
-                        <SheetTitle className="text-2xl font-semibold tracking-tight text-foreground/90">
-                            Memory
+                        <SheetTitle className="text-xl font-semibold tracking-tight text-foreground/90">
+                            Memory Core
                         </SheetTitle>
                     </div>
                 </SheetHeader>
@@ -148,7 +148,7 @@ export function MemoryDrawer({
                 <div className="relative z-10 flex-1 overflow-y-auto px-6 pb-8 space-y-8 custom-scrollbar">
                     {/* Top Controls Group (Search + Engine Toggle) */}
                     <div className="space-y-4 pt-2">
-                        {/* Search Bar - iOS Style */}
+                        {/* Search Bar - Hardware Style */}
                         <div className="relative group">
                             <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-[18px] text-muted-foreground/60 transition-colors group-focus-within:text-foreground/80" />
                             <input
@@ -156,7 +156,8 @@ export function MemoryDrawer({
                                 placeholder="Search memories..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full h-12 pl-12 pr-4 rounded-2xl bg-foreground/[0.03] hover:bg-foreground/[0.05] focus:bg-foreground/[0.04] border border-transparent focus:border-foreground/10 outline-none transition-all text-[15px] placeholder:text-muted-foreground/50"
+                                className="w-full h-12 pl-12 pr-4 rounded-[16px] hardware-input outline-none transition-all text-[15px] font-mono placeholder:text-muted-foreground/50 focus:ring-1"
+                                style={{ outlineColor: `${accentColor}50` }}
                             />
                             {searchQuery && (
                                 <button
@@ -173,7 +174,7 @@ export function MemoryDrawer({
                             <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none px-1">
                                 <Badge
                                     variant="outline"
-                                    className="cursor-pointer transition-all duration-200 rounded-full px-4 py-1.5 text-xs font-medium border-transparent"
+                                    className="cursor-pointer transition-all duration-200 rounded-[8px] px-3 py-1 text-[10px] font-mono uppercase tracking-widest border-transparent"
                                     style={
                                         activeFilter === null
                                             ? {
@@ -204,7 +205,7 @@ export function MemoryDrawer({
                                     <Badge
                                         key={tag}
                                         variant="outline"
-                                        className="cursor-pointer transition-all duration-200 rounded-full px-4 py-1.5 text-xs font-medium border-transparent"
+                                        className="cursor-pointer transition-all duration-200 rounded-[8px] px-3 py-1 text-[10px] font-mono uppercase tracking-widest border-transparent"
                                         style={
                                             activeFilter === tag
                                                 ? {
@@ -239,14 +240,14 @@ export function MemoryDrawer({
                         )}
                     </div>
 
-                    {/* Engine Settings Group (iOS Settings Style) */}
-                    <div className="bg-background/60 backdrop-blur-md rounded-[24px] border border-foreground/[0.05] overflow-hidden shadow-sm">
+                    {/* Engine Settings Group */}
+                    <div className="hardware-input rounded-[20px] overflow-hidden">
                         <div className="flex items-center justify-between p-5">
                             <div className="flex flex-col gap-1">
-                                <span className="text-[15px] font-medium text-foreground/90">
+                                <span className="text-[14px] font-mono font-bold uppercase tracking-widest text-foreground/90">
                                     Memory Engine
                                 </span>
-                                <span className="text-[13px] text-muted-foreground/70">
+                                <span className="text-[12px] text-muted-foreground/70 font-mono">
                                     Allow learning from conversations
                                 </span>
                             </div>
@@ -269,10 +270,10 @@ export function MemoryDrawer({
                                 <Database className="size-5 opacity-80" />
                             </div>
                             <div className="flex flex-col gap-1">
-                                <p className="text-[14px] font-semibold tracking-tight">
+                                <p className="text-[13px] font-mono font-bold uppercase tracking-widest">
                                     Engine Paused
                                 </p>
-                                <p className="text-[13px] opacity-80 leading-relaxed">
+                                <p className="text-[12px] opacity-80 leading-relaxed font-mono">
                                     I am currently not storing any new memories.
                                     Re-enable to resume personalization.
                                 </p>
@@ -282,17 +283,17 @@ export function MemoryDrawer({
 
                     {/* Memory List Group */}
                     <div className="space-y-3">
-                        <h3 className="text-micro pl-2">
+                        <h3 className="text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-muted-foreground/60 pl-2">
                             Stored Context ({filteredMemories.length})
                         </h3>
 
                         {filteredMemories.length === 0 ? (
                             <div className="py-16 text-center flex flex-col items-center gap-4 text-muted-foreground">
-                                <div className="size-16 rounded-full bg-foreground/5 flex items-center justify-center">
+                                <div className="size-16 rounded-[16px] hardware-input flex items-center justify-center">
                                     <Database className="size-6 opacity-40" />
                                 </div>
-                                <p className="text-[15px] font-medium">
-                                    Nothing to show
+                                <p className="text-[13px] font-mono uppercase tracking-widest font-bold">
+                                    Empty Bank
                                 </p>
                             </div>
                         ) : (
@@ -300,15 +301,15 @@ export function MemoryDrawer({
                                 {filteredMemories.map((memory) => (
                                     <div
                                         key={memory.id}
-                                        className="group relative flex flex-col p-5 bg-background/60 backdrop-blur-md rounded-[28px] border border-foreground/[0.05] shadow-sm hover:shadow-md transition-all hover:bg-foreground/[0.02]"
+                                        className="group relative flex flex-col p-5 rounded-[24px] hardware-btn transition-all hover:bg-foreground/[0.02]"
                                     >
-                                        <p className="text-[15px] leading-relaxed text-foreground/90 pr-8">
+                                        <p className="text-[14px] leading-relaxed text-foreground/90 pr-8">
                                             {memory.content}
                                         </p>
 
                                         <div className="flex items-center gap-3 mt-4">
                                             <div
-                                                className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold tracking-wide uppercase"
+                                                className="flex items-center gap-1.5 px-2.5 py-1 rounded-[6px] text-[10px] font-mono font-bold tracking-widest uppercase"
                                                 style={{
                                                     backgroundColor: `${accentColor}12`,
                                                     color: accentColor,
@@ -317,13 +318,13 @@ export function MemoryDrawer({
                                                 {getSourceIcon(memory.source)}
                                                 {memory.source}
                                             </div>
-                                            <span className="text-[12px] text-muted-foreground/40">
+                                            <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground/40">
                                                 {memory.date}
                                             </span>
                                         </div>
 
                                         <button
-                                            className="absolute top-5 right-5 size-8 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 bg-destructive/10 text-destructive hover:bg-destructive hover:text-white active:scale-90"
+                                            className="absolute top-5 right-5 size-8 rounded-[8px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 bg-destructive/10 text-destructive hover:bg-destructive hover:text-white active:scale-90"
                                             onClick={() =>
                                                 setDeleteId(memory.id)
                                             }
@@ -343,10 +344,10 @@ export function MemoryDrawer({
                     <div className="relative z-20 p-5 pt-4 bg-background/80 backdrop-blur-xl shrink-0">
                         <button
                             onClick={() => setClearAllConfirm(true)}
-                            className="w-full h-14 rounded-[20px] bg-foreground/5 hover:bg-destructive/10 text-destructive font-semibold text-[15px] transition-colors flex items-center justify-center gap-2 active:scale-[0.98]"
+                            className="w-full h-14 rounded-[16px] hardware-btn hover:bg-destructive/10 text-destructive font-mono font-bold uppercase tracking-widest text-[12px] transition-colors flex items-center justify-center gap-2 active:scale-[0.98]"
                         >
-                            <Trash2 className="size-[18px]" />
-                            Purge All Memory
+                            <Trash2 className="size-[16px]" />
+                            Purge All
                         </button>
                     </div>
                 )}

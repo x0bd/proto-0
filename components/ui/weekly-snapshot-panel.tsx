@@ -26,12 +26,12 @@ export function WeeklySnapshotPanel({
 }: WeeklySnapshotPanelProps) {
     return (
         <section className="space-y-3">
-            <h3 className="text-micro pl-2 flex items-center justify-between">
+            <h3 className="text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-muted-foreground/60 pl-2 flex items-center justify-between">
                 <span>Weekly Snapshot</span>
                 <TrendingUp className="size-3.5 opacity-50" />
             </h3>
 
-            <div className="p-5 bg-background/60 backdrop-blur-md rounded-[28px] border border-foreground/[0.05] shadow-sm">
+            <div className="p-5 hardware-input rounded-[24px]">
                 <div className="flex justify-between items-end gap-2">
                     {weekDays.map((day, idx) => {
                         const mood = weeklyData[day];
@@ -46,7 +46,7 @@ export function WeeklySnapshotPanel({
                                 key={day}
                                 className="flex flex-col items-center gap-3"
                             >
-                                <div className="w-8 flex justify-center items-end h-24 rounded-full bg-foreground/[0.02] relative">
+                                <div className="w-8 flex justify-center items-end h-24 rounded-full bg-background border border-foreground/[0.05] relative shadow-sm">
                                     {mood && (
                                         <motion.div
                                             initial={{ height: 0 }}
@@ -69,7 +69,7 @@ export function WeeklySnapshotPanel({
                                     />
                                 </div>
                                 <span
-                                    className={`text-[12px] font-medium ${
+                                    className={`text-[10px] font-mono font-bold uppercase tracking-widest ${
                                         isToday
                                             ? "text-foreground"
                                             : "text-muted-foreground/50"
@@ -84,7 +84,7 @@ export function WeeklySnapshotPanel({
 
                 {empty && (
                     <div className="mt-6 pt-5 border-t border-foreground/[0.05] flex items-center justify-center">
-                        <p className="text-[13px] text-muted-foreground/60 text-center">
+                        <p className="text-[11px] font-mono uppercase tracking-widest text-muted-foreground/60 text-center">
                             Check in today to start building your weekly chart.
                         </p>
                     </div>

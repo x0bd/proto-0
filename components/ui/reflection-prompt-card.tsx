@@ -13,7 +13,7 @@ export function ReflectionPromptCard({
     accentColor = "#7c3aed",
 }: ReflectionPromptCardProps) {
     return (
-        <div className="p-5 bg-background/60 backdrop-blur-md rounded-[28px] border border-foreground/[0.05] shadow-sm relative overflow-hidden group">
+        <div className="p-5 hardware-input rounded-[24px] relative overflow-hidden group">
             <div className="absolute -right-4 -top-4 opacity-[0.03] group-hover:opacity-[0.06] transition-opacity duration-500">
                 <Sparkles className="w-24 h-24" />
             </div>
@@ -23,15 +23,15 @@ export function ReflectionPromptCard({
                         className="size-4"
                         style={{ color: accentColor }}
                     />
-                    <span className="text-[13px] font-medium uppercase tracking-wider">
+                    <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-muted-foreground/60">
                         Suggested for you
                     </span>
                 </div>
-                <p className="text-[16px] font-medium leading-snug text-foreground/90">
+                <p className="text-[14px] font-mono font-medium leading-relaxed text-foreground/90">
                     {prompt}
                 </p>
                 <button
-                    className="text-[14px] font-semibold flex items-center gap-1.5 transition-colors mt-2"
+                    className="text-[11px] font-mono font-bold uppercase tracking-widest flex items-center gap-1.5 transition-colors mt-2"
                     style={{ color: accentColor }}
                 >
                     Discuss with DOT
