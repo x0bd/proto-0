@@ -98,12 +98,6 @@ export function AudioLab({
     const fileInputRef = React.useRef<HTMLInputElement | null>(null);
     const visualizerDataRef = React.useRef<Float32Array | null>(null);
 
-    // Perf: throttle refs
-    const lastStateUpdateRef = React.useRef(0);
-    const lastEmotionUpdateRef = React.useRef(0);
-    const STATE_THROTTLE_MS = 100;   // 10fps for React state
-    const EMOTION_THROTTLE_MS = 250; // 4fps for emotion → avatar
-
     const FFT_SIZE = 512;
 
     // Lazily initialise the AudioContext + analyser (never close it)
@@ -168,21 +162,6 @@ export function AudioLab({
         };
     }, []);
 
-    // Perf: cache parsed RGB from accent color
-    const rgb = React.useMemo(() => {
-        const r = parseInt(accentColor.slice(1, 3), 16) || 124;
-        const g = parseInt(accentColor.slice(3, 5), 16) || 58;
-        const b = parseInt(accentColor.slice(5, 7), 16) || 237;
-        return { r, g, b };
-    }, [accentColor]);
-
-    // Perf: pre-build color strings once per accent change
-    const colorStrings = React.useMemo(() => ({
-        dim: `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.06)`,
-        glow: `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.3)`,
-        solid: `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`,
-    }), [rgb]);
-
     const drawSpectrum = React.useCallback(
         (freqData: Uint8Array) => {
             const canvas = canvasRef.current;
@@ -203,101 +182,82 @@ export function AudioLab({
             ctx.fillStyle = "#020202";
             ctx.fillRect(0, 0, w, h);
 
+            const r = parseInt(accentColor.slice(1, 3), 16);
+            const g = parseInt(accentColor.slice(3, 5), 16);
+            const b = parseInt(accentColor.slice(5, 7), 16);
+
             const barWidth = 4;
             const gap = 2;
             const barCount = Math.floor(w / (barWidth + gap));
             const startX = Math.floor((w - (barCount * (barWidth + gap) - gap)) / 2);
             const dotHeight = 2;
             const dotGap = 1;
-            const maxDots = Math.floor(h / (dotHeight + dotGap));
-            const maxBin = Math.floor(freqData.length * 0.6);
 
             const visData = visualizerDataRef.current;
             if (!visData) return;
 
-            // Perf: no per-dot shadowBlur — single glow pass via globalCompositeOperation
-            // Pass 1: dim background grid
-            ctx.fillStyle = colorStrings.dim;
             for (let i = 0; i < barCount; i++) {
-                const x = startX + i * (barWidth + gap);
-                for (let d = 0; d < maxDots; d++) {
-                    ctx.fillRect(x, h - (d + 1) * (dotHeight + dotGap), barWidth, dotHeight);
-                }
-            }
-
-            // Pass 2: active dots (no shadow, no alpha changes per dot)
-            ctx.fillStyle = colorStrings.solid;
-            for (let i = 0; i < barCount; i++) {
+                const maxBin = Math.floor(freqData.length * 0.6);
                 const ratio = i / (barCount - 1);
                 const mapIdx = Math.min(Math.floor(Math.pow(ratio, 1.5) * maxBin), freqData.length - 1);
+
                 const rawVal = freqData[mapIdx] / 255;
                 const val = Math.pow(rawVal, 1.2);
+
                 visData[i] = visData[i] * 0.6 + val * 0.4;
 
-                const activeDots = Math.floor(visData[i] * maxDots);
-                if (activeDots === 0) continue;
-
+                const amplitude = visData[i];
+                const maxDots = Math.floor(h / (dotHeight + dotGap));
+                const activeDots = Math.floor(amplitude * maxDots);
                 const x = startX + i * (barWidth + gap);
-                for (let d = 0; d < activeDots; d++) {
-                    ctx.globalAlpha = 0.5 + (d / activeDots) * 0.5;
-                    ctx.fillRect(x, h - (d + 1) * (dotHeight + dotGap), barWidth, dotHeight);
+
+                // Dim matrix background dots
+                ctx.fillStyle = `rgba(${r}, ${g}, ${b}, 0.06)`;
+                for (let d = 0; d < maxDots; d++) {
+                    const y = h - (d + 1) * (dotHeight + dotGap);
+                    ctx.fillRect(x, y, barWidth, dotHeight);
+                }
+
+                if (activeDots > 0) {
+                    ctx.shadowColor = `rgba(${r}, ${g}, ${b}, 0.5)`;
+                    ctx.shadowBlur = 4;
+                    for (let d = 0; d < activeDots; d++) {
+                        const y = h - (d + 1) * (dotHeight + dotGap);
+                        ctx.globalAlpha = 0.4 + (d / activeDots) * 0.6;
+                        ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+                        ctx.fillRect(x, y, barWidth, dotHeight);
+                    }
+                    ctx.globalAlpha = 1.0;
+                    ctx.shadowBlur = 0;
                 }
             }
-            ctx.globalAlpha = 1.0;
-
-            // Pass 3: soft glow overlay (cheap alternative to per-dot shadowBlur)
-            ctx.globalCompositeOperation = "lighter";
-            ctx.fillStyle = colorStrings.glow;
-            for (let i = 0; i < barCount; i++) {
-                const activeDots = Math.floor(visData[i] * maxDots);
-                if (activeDots < 2) continue;
-                const x = startX + i * (barWidth + gap);
-                const barH = activeDots * (dotHeight + dotGap);
-                ctx.fillRect(x - 1, h - barH, barWidth + 2, barH);
-            }
-            ctx.globalCompositeOperation = "source-over";
         },
-        [colorStrings],
+        [accentColor],
     );
 
-    // ---- Analysis RAF loop (perf-optimized) ----
+    // ---- Analysis RAF loop ----
     const analysisLoop = React.useCallback(() => {
-        const now = performance.now();
         const result = extractBands();
-
         if (result) {
-            // Canvas always at 60fps (cheap native draw)
+            setBands({
+                bass: result.bass,
+                lowMid: result.lowMid,
+                mid: result.mid,
+                highMid: result.highMid,
+                presence: result.presence,
+                overall: result.overall,
+            });
+            onAudioLevelsChange?.(result);
+            const { emotion, label } = deriveEmotion(result);
+            setEmotionLabel(label);
+            onEmotionChange?.(emotion);
             if (result.frequencyData) drawSpectrum(result.frequencyData);
-
-            // Throttle React state updates to ~10fps
-            if (now - lastStateUpdateRef.current > STATE_THROTTLE_MS) {
-                lastStateUpdateRef.current = now;
-                setBands({
-                    bass: result.bass,
-                    lowMid: result.lowMid,
-                    mid: result.mid,
-                    highMid: result.highMid,
-                    presence: result.presence,
-                    overall: result.overall,
-                });
-                onAudioLevelsChange?.(result);
-            }
-
-            // Debounce emotion derivation to ~4fps
-            if (now - lastEmotionUpdateRef.current > EMOTION_THROTTLE_MS) {
-                lastEmotionUpdateRef.current = now;
-                const { emotion, label } = deriveEmotion(result);
-                setEmotionLabel(label);
-                onEmotionChange?.(emotion);
-            }
         }
 
-        // Track playback time (~10fps is fine for the timer display)
+        // Track playback time
         if (audioContextRef.current && sourceRef.current) {
-            if (now - lastStateUpdateRef.current < 20) { // piggyback on state throttle
-                const elapsed = audioContextRef.current.currentTime - startTimeRef.current + pauseOffsetRef.current;
-                setCurrentTime(Math.min(elapsed, audioBufferRef.current?.duration ?? elapsed));
-            }
+            const elapsed = audioContextRef.current.currentTime - startTimeRef.current + pauseOffsetRef.current;
+            setCurrentTime(Math.min(elapsed, audioBufferRef.current?.duration ?? elapsed));
         }
 
         rafRef.current = requestAnimationFrame(analysisLoop);
@@ -316,35 +276,41 @@ export function AudioLab({
     }, [isPlaying, analysisLoop]);
 
     // ---- File Upload: decode to AudioBuffer ----
-    // Uses OfflineAudioContext for decoding — no user gesture needed, can't suspend
     const handleFileUpload = React.useCallback(
         (file: File) => {
+            // Immediately show filename so user gets visual feedback
             setFileName(file.name);
             setCurrentTime(0);
             setIsPlaying(false);
             setEmotionLabel("DECODING");
             pauseOffsetRef.current = 0;
 
+            // Stop any current playback
             try { sourceRef.current?.stop(); } catch { /* noop */ }
             sourceRef.current = null;
 
+            // Read and decode async
             const reader = new FileReader();
-            reader.onload = async () => {
-                try {
+            reader.onload = () => {
+                const ctx = getAudioContext();
+                ctx.resume().then(() => {
                     const arrayBuf = reader.result as ArrayBuffer;
-
-                    // OfflineAudioContext just for decoding — doesn't need user gesture
-                    const offlineCtx = new OfflineAudioContext(2, 44100, 44100);
-                    const audioBuffer = await offlineCtx.decodeAudioData(arrayBuf);
-
-                    audioBufferRef.current = audioBuffer;
-                    setDuration(audioBuffer.duration);
-                    setEmotionLabel("LOADED");
-                    console.log("[FREQ_LAB] Decoded:", file.name, "duration:", audioBuffer.duration.toFixed(1) + "s");
-                } catch (err) {
-                    console.error("[FREQ_LAB] Decode failed:", err);
-                    setEmotionLabel("ERR_DECODE");
-                }
+                    ctx.decodeAudioData(
+                        arrayBuf,
+                        (audioBuffer) => {
+                            // Success
+                            audioBufferRef.current = audioBuffer;
+                            setDuration(audioBuffer.duration);
+                            setEmotionLabel("LOADED");
+                            console.log("[FREQ_LAB] Decoded:", file.name, "duration:", audioBuffer.duration.toFixed(1) + "s");
+                        },
+                        (err) => {
+                            // Decode error
+                            console.error("[FREQ_LAB] decodeAudioData failed:", err);
+                            setEmotionLabel("ERR_DECODE");
+                        }
+                    );
+                });
             };
             reader.onerror = () => {
                 console.error("[FREQ_LAB] FileReader error:", reader.error);
@@ -352,21 +318,16 @@ export function AudioLab({
             };
             reader.readAsArrayBuffer(file);
         },
-        [],
+        [getAudioContext],
     );
 
     // ---- Transport ----
-    // AudioContext created HERE on first play — a real user gesture with immediate use
     const handlePlay = React.useCallback(() => {
         const buffer = audioBufferRef.current;
-        if (!buffer) {
-            console.warn("[FREQ_LAB] handlePlay: no buffer");
-            return;
-        }
+        if (!buffer) return;
 
-        // Create AudioContext on first play (user gesture = auto-runs, no suspend)
         const ctx = getAudioContext();
-        console.log("[FREQ_LAB] handlePlay: ctx.state =", ctx.state);
+        ctx.resume();
 
         // Create a fresh BufferSource each time (they're one-shot by spec)
         const src = ctx.createBufferSource();
@@ -384,7 +345,6 @@ export function AudioLab({
 
         setIsPlaying(true);
         setEmotionLabel("ANALYZING");
-        console.log("[FREQ_LAB] handlePlay: started at offset", offset.toFixed(1) + "s");
     }, [getAudioContext]);
 
     const handlePause = React.useCallback(() => {
