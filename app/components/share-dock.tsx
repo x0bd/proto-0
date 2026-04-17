@@ -383,13 +383,15 @@ export function ShareDock({
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.9, y: 20 }}
                     transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                    className="absolute top-24 right-[400px] w-[340px] h-[500px] te-module z-[100]"
+                    className="absolute top-24 right-[400px] w-[280px] h-auto pb-3 te-module z-[100]"
                 >
                     {/* Header / Drag Handle */}
                     <div className="te-module-header">
                         <div className="flex items-center gap-2">
                             <div className="size-2 rounded-full bg-[var(--te-orange)]" />
-                            <span className="font-mono text-[10px] font-bold uppercase tracking-widest text-foreground">EXPORT_MOD</span>
+                            <span className="font-mono text-[10px] font-bold uppercase tracking-widest text-foreground">
+                                EXPORT_MOD <span className="opacity-40 ml-1 font-sans tracking-normal">出力</span>
+                            </span>
                         </div>
                         <div className="w-16 h-2 te-grip opacity-50" />
                         <button onClick={() => setIsOpen(false)} className="size-5 te-button !rounded-full !border-b-2 flex items-center justify-center text-foreground hover:text-[var(--te-orange)]">
@@ -397,122 +399,121 @@ export function ShareDock({
                         </button>
                     </div>
 
-                    <div className="relative z-10 flex-1 overflow-y-auto px-5 py-6 space-y-8 custom-scrollbar bg-[var(--panel-bg)]">
-                        {/* CFG // TEMPLATE */}
-                        <section>
-                            <div className="flex items-center justify-between mb-4 px-1">
-                                <div className="flex items-center gap-2">
-                                    <div className="size-1.5 rounded-full" style={{ backgroundColor: accentColor, boxShadow: `0 0 6px ${accentColor}80` }} />
-                                    <span className="te-label">CFG // TEMPLATE</span>
-                                </div>
-                                <span className="te-label opacity-30">01</span>
+                    <div className="relative z-10 flex flex-col px-4 py-4 space-y-4 bg-[var(--panel-bg)] h-full">
+                        
+                        {/* LCD Status Display */}
+                        <div className="te-lcd p-3 flex flex-col justify-center relative overflow-hidden shrink-0 h-[56px]">
+                            <div className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/10 to-transparent pointer-events-none" />
+                            <div className="absolute inset-0 pointer-events-none opacity-[0.04] dark:opacity-[0.08]" style={{ backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 1px, currentColor 1px, currentColor 2px)' }} />
+                            <div className="flex items-center justify-between relative z-10">
+                                <span className="text-[8px] opacity-50 tracking-[0.2em] font-bold">STATUS</span>
+                                <span className="text-[8px] opacity-30 tracking-[0.2em] font-bold">SYS_01</span>
                             </div>
-                            
-                            <div className="flex flex-col gap-2">
+                            <div className="flex items-center gap-2 mt-1 relative z-10">
+                                {status === "idle" ? (
+                                    <>
+                                        <div className="size-2 rounded-full bg-current opacity-20" />
+                                        <span className="text-[12px] font-bold opacity-80">READY</span>
+                                    </>
+                                ) : status === "progress" ? (
+                                    <>
+                                        <div className="size-2 rounded-full bg-[var(--te-orange)] animate-pulse shadow-[0_0_8px_var(--te-orange)]" />
+                                        <span className="text-[12px] font-bold">{statusMessage.toUpperCase()}</span>
+                                    </>
+                                ) : status === "success" ? (
+                                    <>
+                                        <div className="size-2 rounded-full bg-[var(--te-green)] shadow-[0_0_8px_var(--te-green)]" />
+                                        <span className="text-[12px] font-bold">{statusMessage.toUpperCase()}</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <div className="size-2 rounded-full bg-[var(--te-orange)] shadow-[0_0_8px_var(--te-orange)]" />
+                                        <span className="text-[12px] font-bold">ERROR</span>
+                                    </>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* CFG // TEMPLATE */}
+                        <section className="flex flex-col gap-1.5 shrink-0">
+                            <div className="flex items-center justify-between px-1">
+                                <span className="te-label">TEMPLATE <span className="opacity-40 tracking-normal ml-1 font-sans">型</span></span>
+                            </div>
+                            <div className="te-recessed p-1.5 flex gap-1.5">
                                 {TEMPLATES.map((item) => {
                                     const active = item.id === template;
+                                    const shortName = item.id === "mood-card" ? "MOOD" : item.id === "reflection-card" ? "REFL" : "CLIP";
+                                    const btnColor = item.id === "mood-card" ? "var(--te-blue)" : item.id === "reflection-card" ? "var(--te-yellow)" : "var(--te-orange)";
+                                    const textColor = item.id === "reflection-card" ? "#1c1c1e" : "#ffffff";
+                                    
                                     return (
                                         <button
                                             key={item.id}
                                             onClick={() => setTemplate(item.id)}
-                                            className={cn(
-                                                "group relative flex items-center justify-between p-3.5 rounded-[10px] transition-all duration-200 border",
-                                                active 
-                                                    ? "bg-[var(--key-bg)] border-[var(--key-border)] shadow-[0_2px_8px_rgba(0,0,0,0.06)]" 
-                                                    : "bg-transparent border-transparent hover:border-[var(--panel-border)] hover:bg-foreground/5"
-                                            )}
+                                            className="flex-1 h-9 te-button rounded-[8px] text-[10px] transition-all duration-150"
+                                            style={active ? {
+                                                "--key-bg": btnColor,
+                                                "--key-border": `color-mix(in srgb, ${btnColor} 80%, black)`,
+                                                "--key-shadow": `color-mix(in srgb, ${btnColor} 60%, black)`,
+                                                color: textColor
+                                            } as React.CSSProperties : undefined}
                                         >
-                                            <div className="flex flex-col items-start text-left gap-1">
-                                                <span className={cn("te-value text-[12px] transition-colors", active ? "text-foreground" : "text-foreground/60 group-hover:text-foreground/80")}>
-                                                    {item.name}
-                                                </span>
-                                                <span className="text-[9px] font-mono text-muted-foreground/50 tracking-widest uppercase">
-                                                    {item.description}
-                                                </span>
-                                            </div>
-                                            
-                                            {/* Hardware Radio Indicator */}
-                                            <div className="relative flex items-center justify-center size-[18px] rounded-full border border-[var(--panel-border)] bg-[var(--panel-bg)] shadow-inner shrink-0 ml-4">
-                                                <div 
-                                                    className={cn("size-2.5 rounded-full transition-all duration-300", active ? "scale-100" : "scale-0")}
-                                                    style={{ backgroundColor: accentColor, boxShadow: `0 0 6px ${accentColor}` }}
-                                                />
-                                            </div>
+                                            {shortName}
                                         </button>
                                     );
                                 })}
                             </div>
                         </section>
 
-                        <div className="h-[1px] w-full bg-[var(--panel-border)] opacity-40" />
-
                         {/* EXE // RENDER */}
-                        <section className="pb-4">
-                            <div className="flex items-center justify-between mb-4 px-1">
-                                <div className="flex items-center gap-2">
-                                    <div className="size-1.5 rounded-full" style={{ backgroundColor: accentColor, boxShadow: `0 0 6px ${accentColor}80` }} />
-                                    <span className="te-label">EXE // RENDER</span>
-                                </div>
-                                <span className="te-label opacity-30">02</span>
+                        <section className="flex flex-col gap-1.5 shrink-0">
+                            <div className="flex items-center justify-between px-1">
+                                <span className="te-label">FORMAT <span className="opacity-40 tracking-normal ml-1 font-sans">形式</span></span>
                             </div>
-
-                            <div className="grid grid-cols-2 gap-3">
-                                {/* PNG Button */}
-                                <button
-                                    onClick={handleExportPNG}
-                                    disabled={status === "progress"}
-                                    className="te-button flex flex-col items-center justify-center gap-3 h-24 disabled:opacity-50 group hover:border-[var(--panel-border)]"
-                                >
-                                    <ImageIcon className="size-6 opacity-70 group-hover:opacity-100 transition-opacity" />
-                                    <div className="flex flex-col items-center gap-1">
-                                        <span className="te-value text-[11px]">PNG</span>
-                                        <span className="te-label !text-[8px] opacity-50">STATIC</span>
-                                    </div>
-                                </button>
-
-                                {/* GIF Button */}
-                                <button
-                                    onClick={handleExportGIF}
-                                    disabled={status === "progress"}
-                                    className="te-button flex flex-col items-center justify-center gap-3 h-24 disabled:opacity-50 group hover:border-[var(--panel-border)]"
-                                >
-                                    <Film className="size-6 opacity-70 group-hover:opacity-100 transition-opacity" />
-                                    <div className="flex flex-col items-center gap-1">
-                                        <span className="te-value text-[11px]">GIF</span>
-                                        <span className="te-label !text-[8px] opacity-50">MOTION</span>
-                                    </div>
-                                </button>
-
-                                {/* WEBM Button - Disabled slot for hardware realism */}
-                                <button
-                                    disabled={true}
-                                    className="te-button flex flex-col items-center justify-center gap-3 h-24 opacity-40 grayscale cursor-not-allowed"
-                                >
-                                    <Video className="size-6 opacity-50" />
-                                    <div className="flex flex-col items-center gap-1">
-                                        <span className="te-value text-[11px]">WEBM</span>
-                                        <span className="te-label !text-[8px] opacity-50">N/A</span>
-                                    </div>
-                                </button>
-
-                                {/* NATIVE SHARE Button */}
-                                <button
-                                    onClick={handleShareNative}
-                                    disabled={!canNativeShare || status === "progress"}
-                                    className="te-button flex flex-col items-center justify-center gap-3 h-24 disabled:opacity-50 relative overflow-hidden group hover:border-[var(--panel-border)]"
-                                    style={{ color: canNativeShare ? accentColor : undefined }}
-                                >
-                                    {canNativeShare && (
-                                        <div className="absolute top-0 left-0 w-full h-[3px]" style={{ backgroundColor: accentColor }} />
-                                    )}
-                                    <Share2 className="size-6 opacity-80 group-hover:opacity-100 transition-opacity" />
-                                    <div className="flex flex-col items-center gap-1">
-                                        <span className="te-value text-[11px]">SHARE</span>
-                                        <span className="te-label !text-[8px] opacity-50">NATIVE</span>
-                                    </div>
-                                </button>
+                            <div className="te-recessed p-1.5 flex gap-1.5">
+                                {[
+                                    { id: "png" as const, label: "PNG", onClick: handleExportPNG, disabled: false, color: "var(--te-green)" },
+                                    { id: "gif" as const, label: "GIF", onClick: handleExportGIF, disabled: false, color: "var(--te-blue)" },
+                                    { id: "webm" as const, label: "WEBM", onClick: () => undefined, disabled: true, color: "var(--te-orange)" },
+                                ].map((item) => {
+                                    const active = activeFormat === item.id;
+                                    return (
+                                        <button
+                                            key={item.id}
+                                            onClick={item.onClick}
+                                            disabled={item.disabled || status === "progress"}
+                                            className="flex-1 h-9 te-button rounded-[8px] text-[10px] transition-all duration-150 disabled:opacity-30"
+                                            style={active ? {
+                                                "--key-bg": item.color,
+                                                "--key-border": `color-mix(in srgb, ${item.color} 80%, black)`,
+                                                "--key-shadow": `color-mix(in srgb, ${item.color} 60%, black)`,
+                                                color: "#ffffff"
+                                            } as React.CSSProperties : undefined}
+                                        >
+                                            {item.label}
+                                        </button>
+                                    );
+                                })}
                             </div>
                         </section>
+
+                        <div className="flex-1" /> {/* Spacer */}
+
+                        {/* NATIVE SHARE Button */}
+                        <button
+                            onClick={handleShareNative}
+                            disabled={!canNativeShare || status === "progress"}
+                            className="w-full h-12 te-button rounded-[10px] text-[12px] flex items-center justify-between px-4 group"
+                            style={canNativeShare ? { 
+                                color: accentColor,
+                            } as React.CSSProperties : undefined}
+                        >
+                            <div className="flex items-center gap-2">
+                                <Share2 className="size-[14px]" />
+                                <span className="font-bold tracking-widest">TRANSMIT</span>
+                            </div>
+                            <span className="text-[10px] opacity-40 font-mono tracking-widest group-hover:opacity-100 transition-opacity">送信</span>
+                        </button>
                     </div>
                 </motion.div>
                 )}
