@@ -9,9 +9,10 @@ import { ShareDock } from "./components/share-dock";
 import { FloatingDock } from "@/components/floating-dock";
 import { MemoryDrawer } from "./components/memory-drawer";
 import { RitualDrawer } from "./components/ritual-drawer";
+import { AudioLab } from "./components/audio-lab";
 import { TranscriptPanel } from "@/components/ui/transcript-panel";
 import { ActivePersonaChip } from "@/components/ui/active-persona-chip";
-import { Database, Calendar } from "lucide-react";
+import { Database, Calendar, AudioWaveform } from "lucide-react";
 import {
 	RiMoonFill,
 	RiSunFill,
@@ -105,6 +106,7 @@ export default function Home() {
 
 	const [isMemoryOpen, setIsMemoryOpen] = useState(false);
 	const [isRitualOpen, setIsRitualOpen] = useState(false);
+	const [isAudioLabOpen, setIsAudioLabOpen] = useState(false);
 	const [showTranscript, setShowTranscript] = useState(true);
 	const [activePersonaId, setActivePersonaId] = useState<string>(() => {
 		if (typeof window !== "undefined") {
@@ -424,6 +426,22 @@ export default function Home() {
 					>
 						<Calendar className="size-[18px] text-foreground/70" />
 					</motion.button>
+					{/* Audio Lab Button */}
+					<motion.button
+						initial={{ opacity: 0, scale: 0.9 }}
+						animate={{ opacity: 1, scale: 1 }}
+						transition={{
+							delay: 0.295,
+							type: "spring",
+							damping: 25,
+							stiffness: 300,
+						}}
+						onClick={() => setIsAudioLabOpen(true)}
+						className="size-10 sm:size-10 flex items-center justify-center te-button touch-manipulation"
+						title="Audio Lab"
+					>
+						<AudioWaveform className="size-[18px] text-foreground/70" />
+					</motion.button>
 					{/* Settings Button */}
 					<motion.button
 						initial={{ opacity: 0, scale: 0.9 }}
@@ -520,6 +538,19 @@ export default function Home() {
 				<RitualDrawer
 					open={isRitualOpen}
 					onOpenChange={setIsRitualOpen}
+					accentColor={accentColor}
+					constraintsRef={constraintsRef}
+				/>
+				{/* Audio Lab */}
+				<AudioLab
+					open={isAudioLabOpen}
+					onOpenChange={setIsAudioLabOpen}
+					onEmotionChange={(emotion) => {
+						setBaseEmotion(emotion);
+						baseEmotionRef.current = emotion;
+						targetEmotionRef.current = emotion;
+					}}
+					onAudioLevelsChange={setAudioLevels}
 					accentColor={accentColor}
 					constraintsRef={constraintsRef}
 				/>
