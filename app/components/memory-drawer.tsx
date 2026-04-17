@@ -1,10 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { motion, AnimatePresence } from "motion/react";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
     Search,
     Database,
@@ -13,7 +11,6 @@ import {
     Mic,
     CalendarDays,
     Sparkles,
-    Filter,
     X,
     ChevronLeft,
     ChevronRight
@@ -26,36 +23,71 @@ interface MemoryDrawerProps {
     constraintsRef?: React.RefObject<Element>;
 }
 
-const MOCK_MEMORIES = [
-    {
-        id: "1",
-        content: "User prefers concise answers over long explanations.",
-        tags: ["preference"],
-        source: "chat",
-        date: "2 hours ago",
-    },
-    {
-        id: "2",
-        content: "Working on a new Next.js project called DOT.",
-        tags: ["project"],
-        source: "voice",
-        date: "Yesterday",
-    },
-    {
-        id: "3",
-        content: "Feeling stressed about upcoming deadlines.",
-        tags: ["mood"],
-        source: "ritual",
-        date: "2 days ago",
-    },
-    {
-        id: "4",
-        content: "Loves minimalist UI design and smooth animations.",
-        tags: ["preference", "design"],
-        source: "chat",
-        date: "Last week",
-    },
-];
+export interface MemoryEntry {
+    id: string;
+    content: string;
+    tags: string[];
+    source: "chat" | "voice" | "ritual" | "system";
+    date: string;       // ISO string
+    dateLabel?: string;  // Display label
+}
+
+const STORAGE_KEY = "dot_memory_core";
+
+// --- Persistence helpers ---
+
+function loadMemories(): MemoryEntry[] {
+    if (typeof window === "undefined") return [];
+    try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) return JSON.parse(raw);
+    } catch { /* fall through */ }
+    return [];
+}
+
+function saveMemories(memories: MemoryEntry[]): void {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(memories));
+}
+
+/** Add a memory from anywhere in the app */
+export function addMemory(entry: Omit<MemoryEntry, "id" | "date">): void {
+    const memories = loadMemories();
+    const newEntry: MemoryEntry = {
+        ...entry,
+        id: Date.now().toString() + Math.random().toString(36).slice(2, 6),
+        date: new Date().toISOString(),
+    };
+    memories.unshift(newEntry); // newest first
+    saveMemories(memories);
+}
+
+function formatDateLabel(iso: string): string {
+    const d = new Date(iso);
+    const now = new Date();
+    const diffMs = now.getTime() - d.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return "Just now";
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays === 1) return "Yesterday";
+    if (diffDays < 7) return `${diffDays}d ago`;
+    return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+
+function loadMemoryEnabled(): boolean {
+    if (typeof window === "undefined") return true;
+    try {
+        const val = localStorage.getItem("dot_memory_enabled");
+        return val !== "false";
+    } catch { return true; }
+}
+
+function saveMemoryEnabled(val: boolean): void {
+    localStorage.setItem("dot_memory_enabled", val.toString());
+}
 
 export function MemoryDrawer({
     open,
@@ -65,14 +97,25 @@ export function MemoryDrawer({
 }: MemoryDrawerProps) {
     const [searchQuery, setSearchQuery] = React.useState("");
     const [activeFilter, setActiveFilter] = React.useState<string | null>(null);
-    const [memories, setMemories] = React.useState(MOCK_MEMORIES);
+    const [memories, setMemories] = React.useState<MemoryEntry[]>([]);
     const [memoryEnabled, setMemoryEnabled] = React.useState(true);
     const [deleteId, setDeleteId] = React.useState<string | null>(null);
     const [clearAllConfirm, setClearAllConfirm] = React.useState(false);
     const [currentPage, setCurrentPage] = React.useState(1);
     const ITEMS_PER_PAGE = 4;
 
-    const tags = Array.from(new Set(MOCK_MEMORIES.flatMap((m) => m.tags)));
+    // Load from localStorage on mount
+    React.useEffect(() => {
+        setMemories(loadMemories());
+        setMemoryEnabled(loadMemoryEnabled());
+    }, []);
+
+    // Reload when panel opens (in case memories were added externally)
+    React.useEffect(() => {
+        if (open) setMemories(loadMemories());
+    }, [open]);
+
+    const tags = Array.from(new Set(memories.flatMap((m) => m.tags)));
 
     const filteredMemories = memories.filter((m) => {
         const matchesSearch = m.content
@@ -109,14 +152,23 @@ export function MemoryDrawer({
 
     const handleDelete = () => {
         if (deleteId) {
-            setMemories(memories.filter((m) => m.id !== deleteId));
+            const updated = memories.filter((m) => m.id !== deleteId);
+            setMemories(updated);
+            saveMemories(updated);
             setDeleteId(null);
         }
     };
 
     const handleClearAll = () => {
         setMemories([]);
+        saveMemories([]);
         setClearAllConfirm(false);
+    };
+
+    const toggleMemoryEnabled = () => {
+        const next = !memoryEnabled;
+        setMemoryEnabled(next);
+        saveMemoryEnabled(next);
     };
 
     return (
@@ -251,7 +303,7 @@ export function MemoryDrawer({
                                     <span className="te-label">LEARNING_ENG</span>
                                 </div>
                                 <button
-                                    onClick={() => setMemoryEnabled(!memoryEnabled)}
+                                    onClick={toggleMemoryEnabled}
                                     className="h-8 px-4 te-button rounded-[6px] text-[9px] transition-all duration-150"
                                     style={memoryEnabled ? {
                                         "--key-bg": "var(--te-green)",
@@ -314,7 +366,7 @@ export function MemoryDrawer({
                                                                 {memory.source}
                                                             </span>
                                                             <span className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground/40">
-                                                                {memory.date}
+                                                                {formatDateLabel(memory.date)}
                                                             </span>
                                                         </div>
                                                     </div>

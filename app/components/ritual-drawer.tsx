@@ -27,6 +27,69 @@ const MOODS: {
 ];
 
 const WEEK_DAYS = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
+const STORAGE_KEY = "dot_sync_mod";
+
+// --- Persistence helpers ---
+
+interface SyncData {
+    entries: Record<string, { mood: CheckInMood; note: string }>; // keyed by "YYYY-MM-DD"
+    streak: number;
+}
+
+function getTodayKey(): string {
+    return new Date().toISOString().slice(0, 10);
+}
+
+function getDayOfWeek(): number {
+    const d = new Date().getDay();
+    return d === 0 ? 6 : d - 1; // 0=Mon ... 6=Sun
+}
+
+function loadSyncData(): SyncData {
+    if (typeof window === "undefined") return { entries: {}, streak: 0 };
+    try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) return JSON.parse(raw);
+    } catch { /* fall through */ }
+    return { entries: {}, streak: 0 };
+}
+
+function saveSyncData(data: SyncData): void {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+function calculateStreak(entries: Record<string, { mood: CheckInMood; note: string }>): number {
+    let streak = 0;
+    const d = new Date();
+    while (true) {
+        const key = d.toISOString().slice(0, 10);
+        if (entries[key]) {
+            streak++;
+            d.setDate(d.getDate() - 1);
+        } else {
+            break;
+        }
+    }
+    return streak;
+}
+
+function getWeekEntries(entries: Record<string, { mood: CheckInMood; note: string }>): Record<string, CheckInMood> {
+    const result: Record<string, CheckInMood> = {};
+    const today = new Date();
+    const dayOfWeek = getDayOfWeek();
+
+    // Walk back to Monday of this week
+    const monday = new Date(today);
+    monday.setDate(today.getDate() - dayOfWeek);
+
+    for (let i = 0; i < 7; i++) {
+        const d = new Date(monday);
+        d.setDate(monday.getDate() + i);
+        const key = d.toISOString().slice(0, 10);
+        result[WEEK_DAYS[i]] = entries[key]?.mood ?? null;
+    }
+    return result;
+}
 
 export function RitualDrawer({
     open,
@@ -34,26 +97,40 @@ export function RitualDrawer({
     accentColor = "#7c3aed",
     constraintsRef,
 }: RitualDrawerProps) {
-    const [hasCheckedInToday, setHasCheckedInToday] = React.useState(false);
+    const [syncData, setSyncData] = React.useState<SyncData>(() => loadSyncData());
     const [selectedMood, setSelectedMood] = React.useState<CheckInMood>(null);
     const [note, setNote] = React.useState("");
-    const [hasHistory, setHasHistory] = React.useState(false);
 
-    // Mock history logic
-    const weeklyData: Record<string, CheckInMood> = {
-        MON: hasCheckedInToday ? selectedMood : hasHistory ? "good" : null,
-        TUE: hasHistory ? "okay" : null,
-        WED: hasHistory ? "great" : null,
-        THU: null,
-        FRI: null,
-        SAT: null,
-        SUN: null,
-    };
+    const todayKey = getTodayKey();
+    const todayEntry = syncData.entries[todayKey];
+    const hasCheckedInToday = !!todayEntry;
+    const streak = calculateStreak(syncData.entries);
+    const weeklyData = getWeekEntries(syncData.entries);
+
+    // Load today's entry into local form state when opening
+    React.useEffect(() => {
+        if (open && todayEntry) {
+            setSelectedMood(todayEntry.mood);
+            setNote(todayEntry.note);
+        } else if (open) {
+            setSelectedMood(null);
+            setNote("");
+        }
+    }, [open, todayEntry]);
 
     const handleCheckIn = () => {
         if (!selectedMood) return;
-        setHasCheckedInToday(true);
-        setHasHistory(true);
+        const updated: SyncData = {
+            ...syncData,
+            entries: {
+                ...syncData.entries,
+                [todayKey]: { mood: selectedMood, note },
+            },
+            streak: 0, // will be recalculated
+        };
+        updated.streak = calculateStreak(updated.entries);
+        setSyncData(updated);
+        saveSyncData(updated);
     };
 
     return (
@@ -102,9 +179,9 @@ export function RitualDrawer({
                                 </div>
                                 <div className="flex items-center justify-between mt-1 pt-1 border-t border-current/20">
                                     <span className="text-[10px] font-bold opacity-70 tracking-widest">
-                                        STREAK: {hasCheckedInToday ? "[003]" : "[000]"}
+                                        STREAK: [{String(streak).padStart(3, "0")}]
                                     </span>
-                                    <span className="text-[10px] font-bold opacity-70 tracking-widest" style={{ color: selectedMood ? MOODS.find(m => m.id === selectedMood)?.color : "inherit" }}>
+                                    <span className="text-[10px] font-bold opacity-70 tracking-widest" style={{ color: hasCheckedInToday && todayEntry?.mood ? MOODS.find(m => m.id === todayEntry.mood)?.color : "inherit" }}>
                                         {hasCheckedInToday ? "SYNC_OK" : "PENDING"}
                                     </span>
                                 </div>
@@ -204,14 +281,14 @@ export function RitualDrawer({
                                     </div>
                                     <div className="te-recessed p-3 flex-1 flex flex-col h-[115px]">
                                         <div className="flex items-center gap-2 mb-2">
-                                            <div className="size-2 rounded-full" style={{ backgroundColor: selectedMood ? MOODS.find(m => m.id === selectedMood)?.color : "var(--te-green)", boxShadow: `0 0 8px ${selectedMood ? MOODS.find(m => m.id === selectedMood)?.color : "var(--te-green)"}` }} />
+                                            <div className="size-2 rounded-full" style={{ backgroundColor: todayEntry?.mood ? MOODS.find(m => m.id === todayEntry.mood)?.color : "var(--te-green)", boxShadow: `0 0 8px ${todayEntry?.mood ? MOODS.find(m => m.id === todayEntry.mood)?.color : "var(--te-green)"}` }} />
                                             <span className="text-[10px] font-bold font-mono tracking-widest opacity-70">
-                                                {selectedMood ? MOODS.find(m => m.id === selectedMood)?.label.toUpperCase() : "SYNC"}
+                                                {todayEntry?.mood ? MOODS.find(m => m.id === todayEntry.mood)?.label.toUpperCase() : "SYNC"}
                                             </span>
                                         </div>
-                                        {note ? (
+                                        {todayEntry?.note ? (
                                             <p className="text-[11px] font-mono font-bold tracking-wider opacity-90 custom-scrollbar overflow-y-auto">
-                                                {note}
+                                                {todayEntry.note}
                                             </p>
                                         ) : (
                                             <p className="text-[11px] font-mono font-bold tracking-wider opacity-40 italic">
