@@ -3,7 +3,7 @@
 import * as React from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { X, Send, MessageSquare, Loader2 } from "lucide-react";
-import { useChat } from "ai/react";
+import { useChat, type Message } from "@ai-sdk/react";
 import { getKey, hasKey, DEFAULT_MODELS, type Provider } from "@/lib/key-store";
 import type { EmotionState } from "../components/face/types";
 
@@ -102,7 +102,7 @@ export function ChatModule({
             apiKey: providerInfo?.key,
             persona: activePersonaId,
         },
-        onFinish: (message) => {
+        onFinish: (message: Message) => {
             // Drive avatar emotion from assistant response sentiment
             if (message.role === "assistant" && onEmotionChange) {
                 const emotion = sentimentToEmotion(message.content);
@@ -211,7 +211,7 @@ export function ChatModule({
                                             </div>
                                         ) : (
                                             <div className="flex flex-col gap-2 py-1">
-                                                {messages.map((msg) => (
+                                                {messages.map((msg: Message) => (
                                                     <div
                                                         key={msg.id}
                                                         className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
