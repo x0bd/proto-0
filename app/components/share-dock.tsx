@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "motion/react";
 import {
     Sheet,
@@ -396,40 +397,46 @@ export function ShareDock({
                         </button>
                     </div>
 
-                    <div className="relative z-10 flex-1 overflow-y-auto px-4 py-5 space-y-6 custom-scrollbar bg-[var(--panel-bg)]">
-                        <section className="space-y-2">
-                            <div className="flex items-center gap-2 px-1">
-                                <Sparkles
-                                    className="size-[10px]"
-                                    style={{ color: accentColor }}
-                                />
-                                <span className="te-label">TEMPLATE_SEL</span>
+                    <div className="relative z-10 flex-1 overflow-y-auto px-5 py-6 space-y-8 custom-scrollbar bg-[var(--panel-bg)]">
+                        {/* CFG // TEMPLATE */}
+                        <section>
+                            <div className="flex items-center justify-between mb-4 px-1">
+                                <div className="flex items-center gap-2">
+                                    <div className="size-1.5 rounded-full" style={{ backgroundColor: accentColor, boxShadow: `0 0 6px ${accentColor}80` }} />
+                                    <span className="te-label">CFG // TEMPLATE</span>
+                                </div>
+                                <span className="te-label opacity-30">01</span>
                             </div>
-                            <div className="space-y-2 te-recessed p-2">
+                            
+                            <div className="flex flex-col gap-2">
                                 {TEMPLATES.map((item) => {
                                     const active = item.id === template;
                                     return (
                                         <button
                                             key={item.id}
                                             onClick={() => setTemplate(item.id)}
-                                            className={`w-full text-left p-3 transition-all duration-150 te-button !border-b-[2px] !rounded-[8px] ${active ? 'bg-[var(--key-bg)] shadow-sm' : 'hover:bg-foreground/5 bg-transparent border-transparent'}`}
-                                            style={active ? {
-                                                borderColor: `color-mix(in srgb, ${accentColor} 40%, var(--key-border))`,
-                                                borderBottomColor: `color-mix(in srgb, ${accentColor} 30%, var(--key-shadow))`
-                                            } : undefined}
+                                            className={cn(
+                                                "group relative flex items-center justify-between p-3.5 rounded-[10px] transition-all duration-200 border",
+                                                active 
+                                                    ? "bg-[var(--key-bg)] border-[var(--key-border)] shadow-[0_2px_8px_rgba(0,0,0,0.06)]" 
+                                                    : "bg-transparent border-transparent hover:border-[var(--panel-border)] hover:bg-foreground/5"
+                                            )}
                                         >
-                                            <div className="flex items-start justify-between gap-3">
-                                                <div>
-                                                    <p className="te-value text-[11px]">
-                                                        {item.name}
-                                                    </p>
-                                                    <p className="mt-0.5 text-[9px] font-mono text-muted-foreground/70 tracking-widest uppercase">
-                                                        {item.description}
-                                                    </p>
-                                                </div>
-                                                {active && (
-                                                    <div className="size-1.5 rounded-full shadow-[0_0_6px_currentColor]" style={{ backgroundColor: accentColor, color: accentColor }} />
-                                                )}
+                                            <div className="flex flex-col items-start text-left gap-1">
+                                                <span className={cn("te-value text-[12px] transition-colors", active ? "text-foreground" : "text-foreground/60 group-hover:text-foreground/80")}>
+                                                    {item.name}
+                                                </span>
+                                                <span className="text-[9px] font-mono text-muted-foreground/50 tracking-widest uppercase">
+                                                    {item.description}
+                                                </span>
+                                            </div>
+                                            
+                                            {/* Hardware Radio Indicator */}
+                                            <div className="relative flex items-center justify-center size-[18px] rounded-full border border-[var(--panel-border)] bg-[var(--panel-bg)] shadow-inner shrink-0 ml-4">
+                                                <div 
+                                                    className={cn("size-2.5 rounded-full transition-all duration-300", active ? "scale-100" : "scale-0")}
+                                                    style={{ backgroundColor: accentColor, boxShadow: `0 0 6px ${accentColor}` }}
+                                                />
                                             </div>
                                         </button>
                                     );
@@ -437,103 +444,72 @@ export function ShareDock({
                             </div>
                         </section>
 
-                        <section className="space-y-2">
-                            <div className="flex items-center gap-2 px-1">
-                                <Download
-                                    className="size-[10px]"
-                                    style={{ color: accentColor }}
-                                />
-                                <span className="te-label">FORMAT_SEL</span>
-                            </div>
-                            <div className="space-y-2 te-recessed p-2">
-                                {[
-                                    {
-                                        id: "png" as const,
-                                        title: "PNG",
-                                        description: "STATIC",
-                                        icon: <ImageIcon className="size-3.5" />,
-                                        onClick: handleExportPNG,
-                                        disabled: false,
-                                        badge: null,
-                                    },
-                                    {
-                                        id: "gif" as const,
-                                        title: "GIF",
-                                        description: "MOTION",
-                                        icon: <Film className="size-3.5" />,
-                                        onClick: handleExportGIF,
-                                        disabled: false,
-                                        badge: null,
-                                    },
-                                    {
-                                        id: "webm" as const,
-                                        title: "WEBM",
-                                        description: "VIDEO",
-                                        icon: <Video className="size-3.5" />,
-                                        onClick: () => undefined,
-                                        disabled: true,
-                                        badge: "N/A",
-                                    },
-                                ].map((item) => (
-                                    <button
-                                        key={item.id}
-                                        onClick={item.onClick}
-                                        disabled={item.disabled || status === "progress"}
-                                        className={`w-full text-left p-3 transition-all duration-150 te-button !border-b-[2px] !rounded-[8px] ${activeFormat === item.id ? 'bg-[var(--key-bg)] shadow-sm' : 'hover:bg-foreground/5 bg-transparent border-transparent'} disabled:opacity-30`}
-                                        style={activeFormat === item.id ? {
-                                            borderColor: `color-mix(in srgb, ${accentColor} 40%, var(--key-border))`,
-                                            borderBottomColor: `color-mix(in srgb, ${accentColor} 30%, var(--key-shadow))`
-                                        } : undefined}
-                                    >
-                                        <div className="flex items-center justify-between gap-3">
-                                            <div className="flex items-center gap-3">
-                                                <div className="text-foreground/50">
-                                                    {item.icon}
-                                                </div>
-                                                <div>
-                                                    <p className="te-value text-[11px]">
-                                                        {item.title}
-                                                    </p>
-                                                    <p className="text-[9px] font-mono text-muted-foreground/70 tracking-widest uppercase">
-                                                        {item.description}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                            {item.badge ? (
-                                                <span className="te-label opacity-40">{item.badge}</span>
-                                            ) : null}
-                                        </div>
-                                    </button>
-                                ))}
-                            </div>
-                        </section>
+                        <div className="h-[1px] w-full bg-[var(--panel-border)] opacity-40" />
 
-                        <section className="space-y-2 pb-4">
-                            <div className="flex items-center gap-2 px-1">
-                                <Smartphone
-                                    className="size-[10px]"
-                                    style={{ color: accentColor }}
-                                />
-                                <span className="te-label">TARGET_SYS</span>
-                            </div>
-                            <div className="te-recessed p-3 space-y-3">
-                                <div className="flex items-center justify-between gap-4 px-1">
-                                    <p className="te-value text-[11px]">
-                                        NATIVE_SHARE
-                                    </p>
-                                    <span className="te-label" style={{ color: canNativeShare ? 'var(--te-green)' : 'var(--te-orange)' }}>
-                                        {canNativeShare ? "RDY" : "ERR"}
-                                    </span>
+                        {/* EXE // RENDER */}
+                        <section className="pb-4">
+                            <div className="flex items-center justify-between mb-4 px-1">
+                                <div className="flex items-center gap-2">
+                                    <div className="size-1.5 rounded-full" style={{ backgroundColor: accentColor, boxShadow: `0 0 6px ${accentColor}80` }} />
+                                    <span className="te-label">EXE // RENDER</span>
                                 </div>
+                                <span className="te-label opacity-30">02</span>
+                            </div>
 
+                            <div className="grid grid-cols-2 gap-3">
+                                {/* PNG Button */}
+                                <button
+                                    onClick={handleExportPNG}
+                                    disabled={status === "progress"}
+                                    className="te-button flex flex-col items-center justify-center gap-3 h-24 disabled:opacity-50 group hover:border-[var(--panel-border)]"
+                                >
+                                    <ImageIcon className="size-6 opacity-70 group-hover:opacity-100 transition-opacity" />
+                                    <div className="flex flex-col items-center gap-1">
+                                        <span className="te-value text-[11px]">PNG</span>
+                                        <span className="te-label !text-[8px] opacity-50">STATIC</span>
+                                    </div>
+                                </button>
+
+                                {/* GIF Button */}
+                                <button
+                                    onClick={handleExportGIF}
+                                    disabled={status === "progress"}
+                                    className="te-button flex flex-col items-center justify-center gap-3 h-24 disabled:opacity-50 group hover:border-[var(--panel-border)]"
+                                >
+                                    <Film className="size-6 opacity-70 group-hover:opacity-100 transition-opacity" />
+                                    <div className="flex flex-col items-center gap-1">
+                                        <span className="te-value text-[11px]">GIF</span>
+                                        <span className="te-label !text-[8px] opacity-50">MOTION</span>
+                                    </div>
+                                </button>
+
+                                {/* WEBM Button - Disabled slot for hardware realism */}
+                                <button
+                                    disabled={true}
+                                    className="te-button flex flex-col items-center justify-center gap-3 h-24 opacity-40 grayscale cursor-not-allowed"
+                                >
+                                    <Video className="size-6 opacity-50" />
+                                    <div className="flex flex-col items-center gap-1">
+                                        <span className="te-value text-[11px]">WEBM</span>
+                                        <span className="te-label !text-[8px] opacity-50">N/A</span>
+                                    </div>
+                                </button>
+
+                                {/* NATIVE SHARE Button */}
                                 <button
                                     onClick={handleShareNative}
                                     disabled={!canNativeShare || status === "progress"}
-                                    className="w-full h-10 te-button"
-                                    style={{ color: accentColor }}
+                                    className="te-button flex flex-col items-center justify-center gap-3 h-24 disabled:opacity-50 relative overflow-hidden group hover:border-[var(--panel-border)]"
+                                    style={{ color: canNativeShare ? accentColor : undefined }}
                                 >
-                                    <Share2 className="size-[14px] mr-2" />
-                                    EXECUTE
+                                    {canNativeShare && (
+                                        <div className="absolute top-0 left-0 w-full h-[3px]" style={{ backgroundColor: accentColor }} />
+                                    )}
+                                    <Share2 className="size-6 opacity-80 group-hover:opacity-100 transition-opacity" />
+                                    <div className="flex flex-col items-center gap-1">
+                                        <span className="te-value text-[11px]">SHARE</span>
+                                        <span className="te-label !text-[8px] opacity-50">NATIVE</span>
+                                    </div>
                                 </button>
                             </div>
                         </section>
