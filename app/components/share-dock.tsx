@@ -390,7 +390,7 @@ export function ShareDock({
                         <div className="flex items-center gap-2">
                             <div className="size-2 rounded-full bg-[var(--te-orange)]" />
                             <span className="font-mono text-[10px] font-bold uppercase tracking-widest text-foreground">
-                                EXPORT_MOD <span className="opacity-40 ml-1 font-sans tracking-normal">出力</span>
+                                EXPORT_MOD
                             </span>
                         </div>
                         <div className="w-16 h-2 te-grip opacity-50" />
@@ -437,7 +437,7 @@ export function ShareDock({
                         {/* CFG // TEMPLATE */}
                         <section className="flex flex-col gap-1.5 shrink-0">
                             <div className="flex items-center justify-between px-1">
-                                <span className="te-label">TEMPLATE <span className="opacity-40 tracking-normal ml-1 font-sans">型</span></span>
+                                <span className="te-label">TEMPLATE</span>
                             </div>
                             <div className="te-recessed p-1.5 flex gap-1.5">
                                 {TEMPLATES.map((item) => {
@@ -468,7 +468,7 @@ export function ShareDock({
                         {/* EXE // RENDER */}
                         <section className="flex flex-col gap-1.5 shrink-0">
                             <div className="flex items-center justify-between px-1">
-                                <span className="te-label">FORMAT <span className="opacity-40 tracking-normal ml-1 font-sans">形式</span></span>
+                                <span className="te-label">FORMAT</span>
                             </div>
                             <div className="te-recessed p-1.5 flex gap-1.5">
                                 {[
@@ -503,16 +503,13 @@ export function ShareDock({
                         <button
                             onClick={handleShareNative}
                             disabled={!canNativeShare || status === "progress"}
-                            className="w-full h-12 te-button rounded-[10px] text-[12px] flex items-center justify-between px-4 group"
+                            className="w-full h-12 te-button rounded-[10px] text-[12px] flex items-center justify-center gap-2 group"
                             style={canNativeShare ? { 
                                 color: accentColor,
                             } as React.CSSProperties : undefined}
                         >
-                            <div className="flex items-center gap-2">
-                                <Share2 className="size-[14px]" />
-                                <span className="font-bold tracking-widest">TRANSMIT</span>
-                            </div>
-                            <span className="text-[10px] opacity-40 font-mono tracking-widest group-hover:opacity-100 transition-opacity">送信</span>
+                            <Share2 className="size-[14px]" />
+                            <span className="font-bold tracking-widest">TRANSMIT</span>
                         </button>
                     </div>
                 </motion.div>

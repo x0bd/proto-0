@@ -199,11 +199,11 @@ function SpectrumPicker({
     const pureHue = `hsl(${h}, 100%, 50%)`;
 
     return (
-        <div className="space-y-2.5">
+        <div className="space-y-1.5 w-full">
             {/* SV plane */}
             <div
                 ref={svRef}
-                className="relative w-full h-[140px] rounded-[10px] cursor-crosshair touch-none select-none overflow-hidden"
+                className="relative w-full h-[100px] rounded-[6px] cursor-crosshair touch-none select-none overflow-hidden border-[1px] border-[var(--panel-border)] shadow-[inset_0_2px_8px_rgba(0,0,0,0.1)] dark:shadow-[inset_0_2px_8px_rgba(0,0,0,0.8)]"
                 style={{ backgroundColor: pureHue }}
                 onPointerDown={(e) => {
                     e.preventDefault();
@@ -226,7 +226,7 @@ function SpectrumPicker({
                     }}
                 />
                 <div
-                    className="absolute size-4 rounded-full border-2 border-white -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+                    className="absolute size-3.5 rounded-full border-[1.5px] border-white -translate-x-1/2 -translate-y-1/2 pointer-events-none"
                     style={{
                         left: `${s * 100}%`,
                         top: `${(1 - v) * 100}%`,
@@ -240,7 +240,7 @@ function SpectrumPicker({
             {/* Hue rail */}
             <div
                 ref={hueRef}
-                className="relative w-full h-3 rounded-full cursor-pointer touch-none select-none"
+                className="relative w-full h-3.5 rounded-[4px] cursor-pointer touch-none select-none border-[1px] border-[var(--panel-border)] shadow-[inset_0_1px_4px_rgba(0,0,0,0.1)] dark:shadow-[inset_0_1px_4px_rgba(0,0,0,0.8)]"
                 style={{
                     background:
                         "linear-gradient(to right, #ff0000 0%, #ffff00 17%, #00ff00 33%, #00ffff 50%, #0000ff 67%, #ff00ff 83%, #ff0000 100%)",
@@ -252,12 +252,9 @@ function SpectrumPicker({
                 }}
             >
                 <div
-                    className="absolute top-1/2 size-4 rounded-full border-2 border-white -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+                    className="absolute top-1/2 w-1.5 h-4 bg-white border border-black/20 rounded-[2px] -translate-x-1/2 -translate-y-1/2 pointer-events-none shadow-sm"
                     style={{
                         left: `${(h / 360) * 100}%`,
-                        backgroundColor: pureHue,
-                        boxShadow:
-                            "0 0 0 1px rgba(0,0,0,0.1), 0 2px 5px rgba(0,0,0,0.2)",
                     }}
                 />
             </div>
@@ -326,208 +323,188 @@ export const CustomizationModal = React.memo(function CustomizationModal({
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.9, y: 20 }}
                     transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                    className="absolute top-24 right-12 w-[340px] h-[500px] te-module z-[100]"
+                    className="absolute top-24 right-12 w-[320px] h-auto pb-3 te-module z-[100]"
                 >
                     {/* Header / Drag Handle */}
                     <div className="te-module-header">
                         <div className="flex items-center gap-2">
-                            <div className="size-2 rounded-full bg-[var(--te-orange)]" />
+                            <div className="size-2 rounded-full bg-[var(--te-blue)]" />
                             <span className="font-mono text-[10px] font-bold uppercase tracking-widest text-foreground">SYS_CONFIG</span>
                         </div>
                         <div className="w-16 h-2 te-grip opacity-50" />
-                        <button onClick={onClose} className="size-5 te-button !rounded-full !border-b-2 flex items-center justify-center text-foreground hover:text-[var(--te-orange)]">
+                        <button onClick={onClose} className="size-5 te-button !rounded-full !border-b-2 flex items-center justify-center text-foreground hover:text-[var(--te-blue)]">
                             <X className="size-3" />
                         </button>
                     </div>
 
-                    {/* Scrollable Content */}
-                    <div className="relative z-10 flex-1 overflow-y-auto px-5 py-6 custom-scrollbar bg-[var(--panel-bg)]">
+                    {/* Content */}
+                    <div className="relative z-10 flex flex-col px-4 py-4 space-y-4 bg-[var(--panel-bg)] h-full">
                         <Tabs defaultValue="appearance" className="w-full">
-                                <TabsList
-                                    className="mb-8 w-full flex p-1.5 te-recessed"
-                                >
+                            <TabsList className="mb-4 w-full flex p-1.5 te-recessed gap-1.5">
                                 <TabsTrigger
                                     value="appearance"
-                                    className="data-[state=active]:bg-[var(--key-bg)] data-[state=active]:shadow-sm relative h-10 rounded-[10px] transition-all data-[state=active]:text-foreground text-foreground/50 font-mono text-[11px] uppercase tracking-widest font-bold flex-1"
+                                    className="data-[state=active]:bg-[var(--te-blue)] data-[state=active]:text-white data-[state=active]:border-b-[var(--key-shadow)] relative h-9 rounded-[8px] transition-all text-foreground/50 font-mono text-[10px] uppercase tracking-widest font-bold flex-1 te-button !border-b-2"
                                 >
                                     SHELL
                                 </TabsTrigger>
                                 <TabsTrigger
                                     value="keys"
-                                    className="data-[state=active]:bg-[var(--key-bg)] data-[state=active]:shadow-sm relative h-10 rounded-[10px] transition-all data-[state=active]:text-foreground text-foreground/50 font-mono text-[11px] uppercase tracking-widest font-bold flex-1"
+                                    className="data-[state=active]:bg-[var(--te-orange)] data-[state=active]:text-white data-[state=active]:border-b-[var(--key-shadow)] relative h-9 rounded-[8px] transition-all text-foreground/50 font-mono text-[10px] uppercase tracking-widest font-bold flex-1 te-button !border-b-2"
                                 >
                                     KEYS
                                 </TabsTrigger>
                                 <TabsTrigger
                                     value="persona"
-                                    className="data-[state=active]:bg-[var(--key-bg)] data-[state=active]:shadow-sm relative h-10 rounded-[10px] transition-all data-[state=active]:text-foreground text-foreground/50 font-mono text-[11px] uppercase tracking-widest font-bold flex-1"
+                                    className="data-[state=active]:bg-[var(--te-green)] data-[state=active]:text-white data-[state=active]:border-b-[var(--key-shadow)] relative h-9 rounded-[8px] transition-all text-foreground/50 font-mono text-[10px] uppercase tracking-widest font-bold flex-1 te-button !border-b-2"
                                 >
                                     CORE
                                 </TabsTrigger>
                             </TabsList>
 
-                        <TabsContent
-                            value="appearance"
-                            className="space-y-10"
-                        >
-                            {/* ── name ── */}
-                            <div className="space-y-3">
-                                <label className="te-label flex items-center gap-2">
-                                    <div className="size-2 rounded-full bg-[var(--te-blue)]" />
-                                    IDENTITY_STR
-                                </label>
-                                <div className="te-recessed p-2">
-                                    <input
-                                        type="text"
-                                        value={nameVal}
-                                        onChange={(e) =>
-                                            setNameVal(e.target.value)
-                                        }
-                                        onBlur={commitName}
-                                        onKeyDown={(e) => {
-                                            if (e.key === "Enter")
-                                                e.currentTarget.blur();
-                                        }}
-                                        maxLength={20}
-                                        spellCheck={false}
-                                        placeholder="NAME"
-                                        className="w-full h-12 rounded-[10px] px-4 text-[14px] font-bold text-foreground focus:outline-none transition-all font-mono placeholder:text-foreground/30 bg-[var(--key-bg)] border border-[var(--key-border)] shadow-sm"
-                                    />
-                                </div>
-                            </div>
+                            <TabsContent value="appearance" className="space-y-4 mt-0">
+                                {/* ── name ── */}
+                                <section className="flex flex-col gap-1.5 shrink-0">
+                                    <div className="flex items-center justify-between px-1">
+                                        <span className="te-label">IDENTITY_STR</span>
+                                    </div>
+                                    <div className="te-recessed p-1.5">
+                                        <input
+                                            type="text"
+                                            value={nameVal}
+                                            onChange={(e) => setNameVal(e.target.value)}
+                                            onBlur={commitName}
+                                            onKeyDown={(e) => {
+                                                if (e.key === "Enter") e.currentTarget.blur();
+                                            }}
+                                            maxLength={20}
+                                            spellCheck={false}
+                                            placeholder="NAME"
+                                            className="w-full h-10 rounded-[8px] px-3 text-[12px] font-bold text-[var(--lcd-text)] focus:outline-none transition-all font-mono uppercase tracking-widest placeholder:text-[var(--lcd-text)]/30 bg-[var(--lcd-bg)] shadow-[inset_0_2px_8px_rgba(0,0,0,0.15),inset_0_0_0_1px_rgba(0,0,0,0.1),0_1px_1px_rgba(255,255,255,0.5)] dark:shadow-[inset_0_2px_8px_rgba(0,0,0,0.8),inset_0_0_0_1px_rgba(0,0,0,0.5),0_1px_1px_rgba(255,255,255,0.05)]"
+                                        />
+                                    </div>
+                                </section>
 
-                            {/* ── style ── */}
-                            <div className="space-y-3">
-                                <label className="te-label flex items-center gap-2">
-                                    <div className="size-2 rounded-full bg-[var(--te-orange)]" />
-                                    HARDWARE_MODEL
-                                </label>
-                                <div className="grid grid-cols-3 gap-3 te-recessed p-3">
-                                    {FACES.map((face) => {
-                                        const active = currentVariant === face.id;
-                                        return (
-                                            <button
-                                                key={face.id}
-                                                onClick={() => onVariantChange(face.id)}
-                                                className={`h-14 te-button ${active ? 'border-b-[1px] translate-y-[3px] text-[var(--te-orange)]' : 'text-foreground/60 hover:text-foreground'}`}
-                                            >
-                                                {face.name}
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-                            </div>
+                                {/* ── style ── */}
+                                <section className="flex flex-col gap-1.5 shrink-0">
+                                    <div className="flex items-center justify-between px-1">
+                                        <span className="te-label">HARDWARE_MODEL</span>
+                                    </div>
+                                    <div className="te-recessed p-1.5 flex gap-1.5">
+                                        {FACES.map((face) => {
+                                            const active = currentVariant === face.id;
+                                            const btnColor = face.id === "minimal" ? "var(--te-blue)" : face.id === "tron" ? "var(--te-green)" : "var(--te-orange)";
+                                            const shortName = face.id === "minimal" ? "PURE" : face.id === "tron" ? "DIGI" : "SKET";
+                                            return (
+                                                <button
+                                                    key={face.id}
+                                                    onClick={() => onVariantChange(face.id)}
+                                                    className="flex-1 h-9 te-button rounded-[8px] text-[10px] transition-all duration-150"
+                                                    style={active ? {
+                                                        "--key-bg": btnColor,
+                                                        "--key-border": `color-mix(in srgb, ${btnColor} 80%, black)`,
+                                                        "--key-shadow": `color-mix(in srgb, ${btnColor} 60%, black)`,
+                                                        color: "#ffffff"
+                                                    } as React.CSSProperties : undefined}
+                                                >
+                                                    {shortName}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </section>
 
-                            {/* ── accent color ── */}
-                            <div className="space-y-3">
-                                <label className="te-label flex items-center gap-2">
-                                    <div className="size-2 rounded-full bg-[var(--te-green)]" />
-                                    AURA_HEX
-                                </label>
-                                <div className="p-5 te-recessed space-y-6">
-                                    <div className="flex items-center justify-between">
-                                        <div className="te-lcd px-3 py-1.5 min-w-[80px] text-center">
+                                {/* ── accent color ── */}
+                                <section className="flex flex-col gap-1.5 shrink-0">
+                                    <div className="flex items-center justify-between px-1">
+                                        <span className="te-label">AURA_HEX</span>
+                                        <div className="te-lcd px-2 py-0.5 text-[8px] min-w-[50px] text-center">
                                             {accentColor}
                                         </div>
                                     </div>
                                     
-                                    <SpectrumPicker
-                                        color={accentColor}
-                                        onChange={onAccentColorChange}
-                                    />
+                                    {/* Dedicated Color Module */}
+                                    <div className="te-recessed p-2 flex flex-col gap-2 border-[1px] border-[var(--panel-border)] shadow-[inset_0_2px_8px_rgba(0,0,0,0.05)]">
+                                        <SpectrumPicker
+                                            color={accentColor}
+                                            onChange={onAccentColorChange}
+                                        />
+                                        
+                                        <div className="h-[1px] w-full bg-[var(--panel-border)] opacity-30 my-1" />
 
-                                    {/* quick-pick swatches */}
-                                    <div className="flex flex-wrap items-center gap-3 pt-2">
-                                        {SWATCHES.map((hex) => {
-                                            const active = accentColor.toUpperCase() === hex;
+                                        {/* Hardware Swatches */}
+                                        <div className="grid grid-cols-5 gap-1.5">
+                                            {SWATCHES.map((hex) => {
+                                                const active = accentColor.toUpperCase() === hex;
+                                                return (
+                                                    <button
+                                                        key={hex}
+                                                        onClick={() => onAccentColorChange(hex)}
+                                                        className="h-6 te-button rounded-[6px] transition-all duration-150"
+                                                        style={{
+                                                            "--key-bg": hex,
+                                                            "--key-border": `color-mix(in srgb, ${hex} 80%, black)`,
+                                                            "--key-shadow": `color-mix(in srgb, ${hex} 60%, black)`,
+                                                            transform: active ? "translateY(2px)" : "none",
+                                                            borderBottomWidth: active ? "1px" : "4px"
+                                                        } as React.CSSProperties}
+                                                    />
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                </section>
+                            </TabsContent>
+
+                            <TabsContent value="keys" className="mt-0">
+                                <KeyVaultPanel accentColor={accentColor} />
+                            </TabsContent>
+
+                            <TabsContent value="persona" className="mt-0 space-y-4">
+                                <section className="flex flex-col gap-1.5 shrink-0">
+                                    <div className="flex items-center justify-between px-1">
+                                        <span className="te-label">PERSONA_CORE</span>
+                                    </div>
+                                    <div className="te-recessed p-1.5 flex flex-col gap-1.5">
+                                        {PERSONAS.map((persona) => {
+                                            const active = activePersonaId === persona.id;
+                                            const btnColor = persona.id === "coach" ? "var(--te-orange)" : persona.id === "playful" ? "var(--te-yellow)" : persona.id === "deep-thinker" ? "var(--te-blue)" : "var(--te-green)";
+                                            const textColor = persona.id === "playful" ? "#1c1c1e" : "#ffffff";
+
                                             return (
                                                 <button
-                                                    key={hex}
-                                                    onClick={() => onAccentColorChange(hex)}
-                                                    className={`relative size-8 rounded-[8px] transition-all duration-150 border-2 ${active ? 'border-foreground scale-110' : 'border-transparent hover:scale-105'}`}
-                                                    style={{
-                                                        backgroundColor: hex,
-                                                        boxShadow: active ? 'none' : 'inset 0 2px 4px rgba(0,0,0,0.2)'
-                                                    }}
-                                                />
+                                                    key={persona.id}
+                                                    onClick={() => !persona.unavailable && onPersonaChange(persona.id)}
+                                                    disabled={persona.unavailable}
+                                                    className="w-full h-10 te-button rounded-[8px] text-[10px] transition-all duration-150 flex items-center justify-between px-3 disabled:opacity-30"
+                                                    style={active ? {
+                                                        "--key-bg": btnColor,
+                                                        "--key-border": `color-mix(in srgb, ${btnColor} 80%, black)`,
+                                                        "--key-shadow": `color-mix(in srgb, ${btnColor} 60%, black)`,
+                                                        color: textColor
+                                                    } as React.CSSProperties : undefined}
+                                                >
+                                                    <span className="font-bold tracking-widest">{persona.name.toUpperCase()}</span>
+                                                    {persona.unavailable && <span className="text-[8px] opacity-50">ERR_LOCKED</span>}
+                                                </button>
                                             );
                                         })}
                                     </div>
-                                </div>
-                            </div>
-                        </TabsContent>
+                                </section>
 
-                        <TabsContent value="keys" className="mt-0">
-                            <KeyVaultPanel accentColor={accentColor} />
-                        </TabsContent>
-
-                        <TabsContent value="persona" className="mt-0 space-y-6 px-2">
-                            <div className="space-y-3">
-                                <label className="flex items-center gap-2 text-[11px] font-mono font-semibold uppercase tracking-widest text-muted-foreground/70">
-                                    <div
-                                        className="w-1.5 h-1.5 rounded-full"
-                                        style={{ backgroundColor: accentColor }}
-                                    />
-                                    Persona Packs
-                                </label>
-                                <div className="rounded-[28px] bg-background/60 backdrop-blur-md border border-foreground/[0.05] p-5 shadow-sm">
-                                    <div className="flex items-center gap-3 mb-4">
-                                        <div
-                                            className="size-10 rounded-full flex items-center justify-center shadow-sm"
-                                            style={{
-                                                backgroundColor: `${accentColor}15`,
-                                                color: accentColor,
-                                            }}
-                                        >
-                                            <WandSparkles className="size-5" />
-                                        </div>
-                                        <div>
-                                            <p className="text-[16px] font-semibold tracking-tight text-foreground/90">
-                                                Shape how DOT feels
-                                            </p>
-                                            <p className="text-[13px] leading-relaxed text-muted-foreground/75">
-                                                Personality affects tone, rhythm, and how companion-like the product feels.
-                                            </p>
-                                        </div>
+                                <section className="flex flex-col gap-1.5 shrink-0">
+                                    <div className="flex items-center justify-between px-1">
+                                        <span className="te-label">PREVIEW</span>
                                     </div>
-                                    <PersonaPicker
-                                        personas={[...PERSONAS]}
-                                        activePersonaId={activePersonaId}
-                                        onSelect={onPersonaChange}
-                                        accentColor={accentColor}
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="space-y-3">
-                                <label className="flex items-center gap-2 text-[11px] font-mono font-semibold uppercase tracking-widest text-muted-foreground/70">
-                                    <div
-                                        className="w-1.5 h-1.5 rounded-full"
-                                        style={{ backgroundColor: accentColor }}
-                                    />
-                                    Live Preview
-                                </label>
-                                <PersonaPreview
-                                    name={activePersona.name}
-                                    sample={activePersona.preview}
-                                    accentColor={accentColor}
-                                />
-                            </div>
-
-                            <div className="space-y-3">
-                                <label className="flex items-center gap-2 text-[11px] font-mono font-semibold uppercase tracking-widest text-muted-foreground/70">
-                                    <div
-                                        className="w-1.5 h-1.5 rounded-full"
-                                        style={{ backgroundColor: accentColor }}
-                                    />
-                                    Persona Tuning
-                                </label>
-                                <PersonaSettingsPanel accentColor={accentColor} />
-                            </div>
-                        </TabsContent>
-                    </Tabs>
-                </div>
-            </motion.div>
+                                    <div className="te-lcd p-3 min-h-[60px] flex items-center justify-center text-center">
+                                        <span className="text-[10px] leading-relaxed opacity-80">
+                                            {activePersona.preview.toUpperCase()}
+                                        </span>
+                                    </div>
+                                </section>
+                            </TabsContent>
+                        </Tabs>
+                    </div>
+                </motion.div>
             )}
         </AnimatePresence>
     );
