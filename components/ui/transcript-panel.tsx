@@ -32,58 +32,54 @@ export function TranscriptPanel({
                 exit={{ opacity: 0, y: 10, scale: 0.98 }}
                 transition={{ type: "spring", damping: 25, stiffness: 400 }}
                 className={cn(
-                    "relative w-full max-w-lg p-5 rounded-[28px] bg-background/85 backdrop-blur-2xl border shadow-premium flex flex-col gap-3",
+                    "relative w-full max-w-lg p-4 te-panel flex flex-col gap-3 pointer-events-auto",
                     className,
                 )}
-                style={{ borderColor: `${accentColor}25` }}
             >
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between border-b border-[var(--panel-border)] pb-2 mb-1">
                     <div className="flex items-center gap-2">
                         <div
-                            className="size-[22px] rounded-full flex items-center justify-center"
-                            style={{
-                                backgroundColor: `${accentColor}15`,
-                                color: accentColor,
-                            }}
+                            className="size-[20px] rounded-[4px] flex items-center justify-center bg-[var(--key-bg)] border border-[var(--key-border)] shadow-sm"
+                            style={{ color: accentColor }}
                         >
                             <BrainCircuit className="size-[11px]" />
                         </div>
                         <span
-                            className="text-[10px] font-mono font-bold uppercase tracking-widest"
+                            className="te-label"
                             style={{ color: accentColor }}
                         >
-                            DOT
+                            SYS_LOG
                         </span>
                     </div>
 
                     {onClose && (
                         <button
                             onClick={onClose}
-                            className="size-7 rounded-full flex items-center justify-center text-muted-foreground/60 hover:text-foreground hover:bg-foreground/5 transition-colors pointer-events-auto"
+                            className="size-6 te-button !rounded-[4px] !border-b-[2px] flex items-center justify-center text-muted-foreground/60 hover:text-foreground"
                         >
-                            <X className="size-3.5" />
+                            <X className="size-3" />
                         </button>
                     )}
                 </div>
 
-                <div className="min-h-[48px] px-1 pointer-events-auto">
+                <div className="min-h-[48px] px-1 te-lcd p-3 flex flex-col justify-center">
                     {isThinking && !text ? (
-                        <div className="flex items-center gap-2.5 text-muted-foreground h-full py-1">
+                        <div className="flex items-center gap-2.5 text-[var(--lcd-text)] opacity-70 h-full py-1">
                             <Loader2
                                 className="size-4 animate-spin"
                                 style={{ color: accentColor }}
                             />
-                            <span className="text-[14px] font-medium tracking-tight">
-                                Thinking...
+                            <span className="text-[12px] font-bold tracking-widest uppercase">
+                                PROC_DATA...
                             </span>
                         </div>
                     ) : (
                         <p
                             className={cn(
-                                "text-[16px] leading-relaxed transition-opacity duration-300 tracking-tight",
+                                "text-[12px] leading-relaxed transition-opacity duration-300 font-bold uppercase tracking-widest",
                                 isFinal
-                                    ? "text-foreground font-medium"
-                                    : "text-foreground/80",
+                                    ? "text-[var(--lcd-text)]"
+                                    : "text-[var(--lcd-text)] opacity-80",
                             )}
                         >
                             {text}
@@ -94,8 +90,7 @@ export function TranscriptPanel({
                                         repeat: Infinity,
                                         duration: 0.8,
                                     }}
-                                    className="inline-block w-[5px] h-[18px] ml-1.5 align-middle rounded-[2px]"
-                                    style={{ backgroundColor: accentColor }}
+                                    className="inline-block w-[6px] h-[12px] ml-2 align-middle bg-[var(--lcd-text)]"
                                 />
                             )}
                         </p>

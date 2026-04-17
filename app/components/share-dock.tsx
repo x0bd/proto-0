@@ -396,35 +396,39 @@ export function ShareDock({
                         </button>
                     </div>
 
-                    <div className="relative z-10 flex-1 overflow-y-auto px-5 py-6 space-y-8 custom-scrollbar bg-[var(--panel-bg)]">
-                        <section className="space-y-3">
-                            <div className="flex items-center gap-2 px-2">
+                    <div className="relative z-10 flex-1 overflow-y-auto px-4 py-5 space-y-6 custom-scrollbar bg-[var(--panel-bg)]">
+                        <section className="space-y-2">
+                            <div className="flex items-center gap-2 px-1">
                                 <Sparkles
-                                    className="size-3.5"
+                                    className="size-[10px]"
                                     style={{ color: accentColor }}
                                 />
                                 <span className="te-label">TEMPLATE_SEL</span>
                             </div>
-                            <div className="space-y-3 te-recessed p-3">
+                            <div className="space-y-2 te-recessed p-2">
                                 {TEMPLATES.map((item) => {
                                     const active = item.id === template;
                                     return (
                                         <button
                                             key={item.id}
                                             onClick={() => setTemplate(item.id)}
-                                            className={`w-full text-left p-4 rounded-[12px] transition-all duration-150 ${active ? 'bg-[var(--key-bg)] shadow-sm' : 'hover:bg-foreground/5'}`}
+                                            className={`w-full text-left p-3 transition-all duration-150 te-button !border-b-[2px] !rounded-[8px] ${active ? 'bg-[var(--key-bg)] shadow-sm' : 'hover:bg-foreground/5 bg-transparent border-transparent'}`}
+                                            style={active ? {
+                                                borderColor: `color-mix(in srgb, ${accentColor} 40%, var(--key-border))`,
+                                                borderBottomColor: `color-mix(in srgb, ${accentColor} 30%, var(--key-shadow))`
+                                            } : undefined}
                                         >
                                             <div className="flex items-start justify-between gap-3">
                                                 <div>
-                                                    <p className="te-value">
+                                                    <p className="te-value text-[11px]">
                                                         {item.name}
                                                     </p>
-                                                    <p className="mt-1 text-[11px] font-mono text-muted-foreground/70">
+                                                    <p className="mt-0.5 text-[9px] font-mono text-muted-foreground/70 tracking-widest uppercase">
                                                         {item.description}
                                                     </p>
                                                 </div>
                                                 {active && (
-                                                    <div className="size-2 rounded-full bg-[var(--te-orange)]" />
+                                                    <div className="size-1.5 rounded-full shadow-[0_0_6px_currentColor]" style={{ backgroundColor: accentColor, color: accentColor }} />
                                                 )}
                                             </div>
                                         </button>
@@ -433,21 +437,21 @@ export function ShareDock({
                             </div>
                         </section>
 
-                        <section className="space-y-3">
-                            <div className="flex items-center gap-2 px-2">
+                        <section className="space-y-2">
+                            <div className="flex items-center gap-2 px-1">
                                 <Download
-                                    className="size-3.5"
+                                    className="size-[10px]"
                                     style={{ color: accentColor }}
                                 />
                                 <span className="te-label">FORMAT_SEL</span>
                             </div>
-                            <div className="space-y-3 te-recessed p-3">
+                            <div className="space-y-2 te-recessed p-2">
                                 {[
                                     {
                                         id: "png" as const,
                                         title: "PNG",
-                                        description: "Static card",
-                                        icon: <ImageIcon className="size-4" />,
+                                        description: "STATIC",
+                                        icon: <ImageIcon className="size-3.5" />,
                                         onClick: handleExportPNG,
                                         disabled: false,
                                         badge: null,
@@ -455,8 +459,8 @@ export function ShareDock({
                                     {
                                         id: "gif" as const,
                                         title: "GIF",
-                                        description: "Motion loop",
-                                        icon: <Film className="size-4" />,
+                                        description: "MOTION",
+                                        icon: <Film className="size-3.5" />,
                                         onClick: handleExportGIF,
                                         disabled: false,
                                         badge: null,
@@ -464,8 +468,8 @@ export function ShareDock({
                                     {
                                         id: "webm" as const,
                                         title: "WEBM",
-                                        description: "High-fi video",
-                                        icon: <Video className="size-4" />,
+                                        description: "VIDEO",
+                                        icon: <Video className="size-3.5" />,
                                         onClick: () => undefined,
                                         disabled: true,
                                         badge: "N/A",
@@ -475,21 +479,28 @@ export function ShareDock({
                                         key={item.id}
                                         onClick={item.onClick}
                                         disabled={item.disabled || status === "progress"}
-                                        className={`w-full text-left p-4 rounded-[12px] transition-all duration-150 ${activeFormat === item.id ? 'bg-[var(--key-bg)] shadow-sm' : 'hover:bg-foreground/5'} disabled:opacity-50`}
+                                        className={`w-full text-left p-3 transition-all duration-150 te-button !border-b-[2px] !rounded-[8px] ${activeFormat === item.id ? 'bg-[var(--key-bg)] shadow-sm' : 'hover:bg-foreground/5 bg-transparent border-transparent'} disabled:opacity-30`}
+                                        style={activeFormat === item.id ? {
+                                            borderColor: `color-mix(in srgb, ${accentColor} 40%, var(--key-border))`,
+                                            borderBottomColor: `color-mix(in srgb, ${accentColor} 30%, var(--key-shadow))`
+                                        } : undefined}
                                     >
-                                        <div className="flex items-start justify-between gap-3">
+                                        <div className="flex items-center justify-between gap-3">
                                             <div className="flex items-center gap-3">
                                                 <div className="text-foreground/50">
                                                     {item.icon}
                                                 </div>
                                                 <div>
-                                                    <p className="te-value">
+                                                    <p className="te-value text-[11px]">
                                                         {item.title}
+                                                    </p>
+                                                    <p className="text-[9px] font-mono text-muted-foreground/70 tracking-widest uppercase">
+                                                        {item.description}
                                                     </p>
                                                 </div>
                                             </div>
                                             {item.badge ? (
-                                                <span className="te-label">{item.badge}</span>
+                                                <span className="te-label opacity-40">{item.badge}</span>
                                             ) : null}
                                         </div>
                                     </button>
@@ -497,21 +508,19 @@ export function ShareDock({
                             </div>
                         </section>
 
-                        <section className="space-y-3">
-                            <div className="flex items-center gap-2 px-2">
+                        <section className="space-y-2 pb-4">
+                            <div className="flex items-center gap-2 px-1">
                                 <Smartphone
-                                    className="size-3.5"
+                                    className="size-[10px]"
                                     style={{ color: accentColor }}
                                 />
                                 <span className="te-label">TARGET_SYS</span>
                             </div>
-                            <div className="te-recessed p-4 space-y-4">
-                                <div className="flex items-start justify-between gap-4">
-                                    <div className="space-y-1">
-                                        <p className="te-value">
-                                            NATIVE_SHARE
-                                        </p>
-                                    </div>
+                            <div className="te-recessed p-3 space-y-3">
+                                <div className="flex items-center justify-between gap-4 px-1">
+                                    <p className="te-value text-[11px]">
+                                        NATIVE_SHARE
+                                    </p>
                                     <span className="te-label" style={{ color: canNativeShare ? 'var(--te-green)' : 'var(--te-orange)' }}>
                                         {canNativeShare ? "RDY" : "ERR"}
                                     </span>
@@ -520,9 +529,10 @@ export function ShareDock({
                                 <button
                                     onClick={handleShareNative}
                                     disabled={!canNativeShare || status === "progress"}
-                                    className="w-full h-12 te-button text-[var(--te-blue)]"
+                                    className="w-full h-10 te-button"
+                                    style={{ color: accentColor }}
                                 >
-                                    <Share2 className="size-[16px] mr-2" />
+                                    <Share2 className="size-[14px] mr-2" />
                                     EXECUTE
                                 </button>
                             </div>

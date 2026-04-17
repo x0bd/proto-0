@@ -4,245 +4,265 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-    --color-background: var(--background);
-    --color-foreground: var(--foreground);
+	--color-background: var(--background);
+	--color-foreground: var(--foreground);
 
-    /* Playful type stack */
-    --font-sans: var(--font-geist-sans), system-ui, sans-serif;
-    --font-mono: var(--font-geist-mono), ui-monospace, monospace;
-    --font-display: "Doto", sans-serif;
-    --font-mochiy: "Mochiy Pop One", system-ui, sans-serif;
-    --font-carbon: var(--font-carbon), monospace;
+	/* Playful type stack */
+	--font-sans: var(--font-geist-sans), system-ui, sans-serif;
+	--font-mono: var(--font-geist-mono), ui-monospace, monospace;
+	--font-display: "Doto", sans-serif;
+	--font-mochiy: "Mochiy Pop One", system-ui, sans-serif;
+	--font-carbon: var(--font-carbon), monospace;
 }
 
 :root {
-    /* === TE x APPLE: LIGHT MODE === */
-    --background: #E5E5EA; /* Classic Apple Mac beige/grey */
-    --foreground: #1C1C1E;
-    
-    /* Hardware Materials */
-    --panel-bg: #F2F2F7;
-    --panel-border: #D1D1D6;
-    --key-bg: #FFFFFF;
-    --key-border: #E5E5EA;
-    --key-shadow: #C7C7CC;
-    
-    /* LCD Screen */
-    --lcd-bg: #D4D8C9; /* Classic LCD green/grey */
-    --lcd-text: #1E291B;
-    --lcd-glow: rgba(212, 216, 201, 0.5);
+	/* === TE x APPLE: LIGHT MODE === */
+	--background: #e5e5ea; /* Classic Apple Mac beige/grey */
+	--foreground: #1c1c1e;
 
-    /* Accents (TE style) */
-    --te-orange: #FF3B30;
-    --te-yellow: #FFCC00;
-    --te-blue: #007AFF;
-    --te-green: #34C759;
+	/* Hardware Materials */
+	--panel-bg: #f2f2f7;
+	--panel-border: #d1d1d6;
+	--key-bg: #ffffff;
+	--key-border: #e5e5ea;
+	--key-shadow: #c7c7cc;
 
-    --face-color: #FF3B30;
-    --face-glow: rgba(255, 59, 48, 0.35);
-    --face-bg-tint: rgba(255, 59, 48, 0.04);
-    
-    /* Radix / Shadcn fallbacks */
-    --muted: #E5E5EA;
-    --muted-foreground: #8E8E93;
-    --destructive: #FF3B30;
-    --destructive-foreground: #FFFFFF;
-    --success: #34C759;
-    --success-foreground: #FFFFFF;
-    --warning: #FFCC00;
-    --warning-foreground: #1C1C1E;
-    --info: #007AFF;
-    --info-foreground: #FFFFFF;
+	/* LCD Screen */
+	--lcd-bg: #d4d8c9; /* Classic LCD green/grey */
+	--lcd-text: #1e291b;
+	--lcd-glow: rgba(212, 216, 201, 0.5);
+
+	/* Accents (TE style) */
+	--te-orange: #ff3b30;
+	--te-yellow: #ffcc00;
+	--te-blue: #007aff;
+	--te-green: #34c759;
+
+	--face-color: #ff3b30;
+	--face-glow: rgba(255, 59, 48, 0.35);
+	--face-bg-tint: rgba(255, 59, 48, 0.04);
+
+	/* Radix / Shadcn fallbacks */
+	--muted: #e5e5ea;
+	--muted-foreground: #8e8e93;
+	--destructive: #ff3b30;
+	--destructive-foreground: #ffffff;
+	--success: #34c759;
+	--success-foreground: #ffffff;
+	--warning: #ffcc00;
+	--warning-foreground: #1c1c1e;
+	--info: #007aff;
+	--info-foreground: #ffffff;
 }
 
 .dark {
-    /* === TE x APPLE: DARK MODE === */
-    --background: #000000;
-    --foreground: #F2F2F7;
+	/* === TE x APPLE: DARK MODE === */
+	--background: #000000;
+	--foreground: #f2f2f7;
 
-    /* Hardware Materials */
-    --panel-bg: #1C1C1E;
-    --panel-border: #2C2C2E;
-    --key-bg: #2C2C2E;
-    --key-border: #3A3A3C;
-    --key-shadow: #000000;
+	/* Hardware Materials */
+	--panel-bg: #1c1c1e;
+	--panel-border: #2c2c2e;
+	--key-bg: #2c2c2e;
+	--key-border: #3a3a3c;
+	--key-shadow: #000000;
 
-    /* LCD Screen */
-    --lcd-bg: #0A100D;
-    --lcd-text: #34C759; /* Bright terminal green */
-    --lcd-glow: rgba(52, 199, 89, 0.2);
+	/* LCD Screen */
+	--lcd-bg: #0a100d;
+	--lcd-text: #34c759; /* Bright terminal green */
+	--lcd-glow: rgba(52, 199, 89, 0.2);
 
-    /* Accents */
-    --te-orange: #FF453A;
-    --te-yellow: #FFD60A;
-    --te-blue: #0A84FF;
-    --te-green: #30D158;
+	/* Accents */
+	--te-orange: #ff453a;
+	--te-yellow: #ffd60a;
+	--te-blue: #0a84ff;
+	--te-green: #30d158;
 
-    --face-color: #FF453A;
-    --face-glow: rgba(255, 69, 58, 0.4);
-    --face-bg-tint: rgba(255, 69, 58, 0.06);
-    
-    /* Radix / Shadcn fallbacks */
-    --muted: #1C1C1E;
-    --muted-foreground: #8E8E93;
-    --destructive: #FF453A;
-    --destructive-foreground: #FFFFFF;
-    --success: #30D158;
-    --success-foreground: #FFFFFF;
-    --warning: #FFD60A;
-    --warning-foreground: #000000;
-    --info: #0A84FF;
-    --info-foreground: #FFFFFF;
+	--face-color: #ff453a;
+	--face-glow: rgba(255, 69, 58, 0.4);
+	--face-bg-tint: rgba(255, 69, 58, 0.06);
+
+	/* Radix / Shadcn fallbacks */
+	--muted: #1c1c1e;
+	--muted-foreground: #8e8e93;
+	--destructive: #ff453a;
+	--destructive-foreground: #ffffff;
+	--success: #30d158;
+	--success-foreground: #ffffff;
+	--warning: #ffd60a;
+	--warning-foreground: #000000;
+	--info: #0a84ff;
+	--info-foreground: #ffffff;
 }
 
 @layer base {
-    * {
-        @apply border-[var(--panel-border)];
-    }
-    body {
-        @apply bg-background text-foreground antialiased font-sans;
-        selection-color: #ffffff;
-        -webkit-font-smoothing: antialiased;
-    }
-    ::selection {
-        background-color: var(--te-blue);
-        color: #ffffff;
-    }
+	* {
+		@apply border-[var(--panel-border)];
+	}
+	body {
+		@apply bg-background text-foreground antialiased font-sans;
+		selection-color: #ffffff;
+		-webkit-font-smoothing: antialiased;
+	}
+	::selection {
+		background-color: var(--te-blue);
+		color: #ffffff;
+	}
 }
 
 /* === TE x APPLE HARDWARE DESIGN SYSTEM === */
 @layer utilities {
-    /* 1. The Chassis (Milled Aluminum / Matte Plastic) */
-    .te-panel {
-        background-color: var(--panel-bg);
-        border: 1px solid var(--panel-border);
-        box-shadow: 
-            0 24px 48px -12px rgba(0, 0, 0, 0.15),
-            0 12px 24px -8px rgba(0, 0, 0, 0.1),
-            inset 0 1px 1px rgba(255, 255, 255, 0.4),
-            inset 0 -1px 1px rgba(0, 0, 0, 0.05);
-        @apply rounded-[24px];
-    }
-    .dark .te-panel {
-        box-shadow: 
-            0 24px 48px -12px rgba(0, 0, 0, 0.8),
-            0 12px 24px -8px rgba(0, 0, 0, 0.6),
-            inset 0 1px 1px rgba(255, 255, 255, 0.05),
-            inset 0 -1px 1px rgba(0, 0, 0, 0.4);
-    }
+	/* 1. The Chassis (Milled Aluminum / Matte Plastic) */
+	.te-panel {
+		background-color: var(--panel-bg);
+		border: 1px solid var(--panel-border);
+		box-shadow:
+			0 24px 48px -12px rgba(0, 0, 0, 0.15),
+			0 12px 24px -8px rgba(0, 0, 0, 0.1),
+			inset 0 1px 1px rgba(255, 255, 255, 0.4),
+			inset 0 -1px 1px rgba(0, 0, 0, 0.05);
+		@apply rounded-[16px];
+	}
+	.dark .te-panel {
+		box-shadow:
+			0 24px 48px -12px rgba(0, 0, 0, 0.8),
+			0 12px 24px -8px rgba(0, 0, 0, 0.6),
+			inset 0 1px 1px rgba(255, 255, 255, 0.05),
+			inset 0 -1px 1px rgba(0, 0, 0, 0.4);
+	}
 
-    /* 2. Mechanical Keys (OP-1 Style) */
-    .te-button {
-        background-color: var(--key-bg);
-        border: 1px solid var(--key-border);
-        border-bottom-width: 4px;
-        border-bottom-color: var(--key-shadow);
-        @apply rounded-[12px] transition-all duration-75 flex items-center justify-center font-mono font-bold uppercase tracking-widest active:border-b-[1px] active:translate-y-[3px];
-    }
-    .te-button:disabled {
-        @apply opacity-50 cursor-not-allowed active:border-b-[4px] active:translate-y-0;
-    }
+	/* 2. Mechanical Keys (OP-1 Style) */
+	.te-button {
+		background-color: var(--key-bg);
+		border: 1px solid var(--key-border);
+		border-bottom-width: 4px;
+		border-bottom-color: var(--key-shadow);
+		@apply rounded-[8px] transition-all duration-75 flex items-center justify-center font-mono font-bold uppercase tracking-widest active:border-b-[1px] active:translate-y-[3px];
+	}
+	.te-button:disabled {
+		@apply opacity-50 cursor-not-allowed active:border-b-[4px] active:translate-y-0;
+	}
 
-    /* 3. LCD / Segmented Displays */
-    .te-lcd {
-        background-color: var(--lcd-bg);
-        color: var(--lcd-text);
-        box-shadow: 
-            inset 0 2px 8px rgba(0, 0, 0, 0.15),
-            inset 0 0 0 1px rgba(0, 0, 0, 0.1),
-            0 1px 1px rgba(255, 255, 255, 0.5);
-        @apply font-mono uppercase tracking-widest rounded-[8px];
-    }
-    .dark .te-lcd {
-        box-shadow: 
-            inset 0 2px 8px rgba(0, 0, 0, 0.8),
-            inset 0 0 0 1px rgba(0, 0, 0, 0.5),
-            0 1px 1px rgba(255, 255, 255, 0.05);
-        text-shadow: 0 0 8px var(--lcd-glow);
-    }
+	/* 3. LCD / Segmented Displays */
+	.te-lcd {
+		background-color: var(--lcd-bg);
+		color: var(--lcd-text);
+		box-shadow:
+			inset 0 2px 8px rgba(0, 0, 0, 0.15),
+			inset 0 0 0 1px rgba(0, 0, 0, 0.1),
+			0 1px 1px rgba(255, 255, 255, 0.5);
+		@apply font-mono uppercase tracking-widest rounded-[6px];
+	}
+	.dark .te-lcd {
+		box-shadow:
+			inset 0 2px 8px rgba(0, 0, 0, 0.8),
+			inset 0 0 0 1px rgba(0, 0, 0, 0.5),
+			0 1px 1px rgba(255, 255, 255, 0.05);
+		text-shadow: 0 0 8px var(--lcd-glow);
+	}
 
-    /* 4. Recessed Modules (Patchbays, Input slots) */
-    .te-recessed {
-        background-color: var(--background);
-        box-shadow: 
-            inset 0 2px 6px rgba(0, 0, 0, 0.08),
-            inset 0 0 0 1px rgba(0, 0, 0, 0.05),
-            0 1px 0 rgba(255, 255, 255, 0.6);
-        @apply rounded-[16px];
-    }
-    .dark .te-recessed {
-        box-shadow: 
-            inset 0 2px 6px rgba(0, 0, 0, 0.4),
-            inset 0 0 0 1px rgba(0, 0, 0, 0.3),
-            0 1px 0 rgba(255, 255, 255, 0.05);
-    }
+	/* 4. Recessed Modules (Patchbays, Input slots) */
+	.te-recessed {
+		background-color: var(--background);
+		box-shadow:
+			inset 0 2px 6px rgba(0, 0, 0, 0.08),
+			inset 0 0 0 1px rgba(0, 0, 0, 0.05),
+			0 1px 0 rgba(255, 255, 255, 0.6);
+		@apply rounded-[12px];
+	}
+	.dark .te-recessed {
+		box-shadow:
+			inset 0 2px 6px rgba(0, 0, 0, 0.4),
+			inset 0 0 0 1px rgba(0, 0, 0, 0.3),
+			0 1px 0 rgba(255, 255, 255, 0.05);
+	}
 
-    /* 4.5 Draggable Hardware Modules */
-    .te-module {
-        background-color: var(--panel-bg);
-        border: 1px solid var(--panel-border);
-        box-shadow: 
-            0 32px 64px -16px rgba(0, 0, 0, 0.3),
-            0 16px 32px -8px rgba(0, 0, 0, 0.2),
-            0 0 0 1px rgba(0, 0, 0, 0.05),
-            inset 0 1px 1px rgba(255, 255, 255, 0.5),
-            inset 0 -1px 1px rgba(0, 0, 0, 0.1);
-        @apply rounded-[16px] overflow-hidden flex flex-col;
-    }
-    .dark .te-module {
-        box-shadow: 
-            0 32px 64px -16px rgba(0, 0, 0, 0.9),
-            0 16px 32px -8px rgba(0, 0, 0, 0.7),
-            0 0 0 1px rgba(0, 0, 0, 0.5),
-            inset 0 1px 1px rgba(255, 255, 255, 0.05),
-            inset 0 -1px 1px rgba(0, 0, 0, 0.4);
-    }
-    .te-module-header {
-        @apply flex items-center justify-between px-3 py-2 border-b border-[var(--panel-border)] cursor-grab active:cursor-grabbing select-none shrink-0;
-        background: linear-gradient(to bottom, var(--key-bg), var(--panel-bg));
-    }
-    .dark .te-module-header {
-        background: linear-gradient(to bottom, #3A3A3C, var(--panel-bg));
-    }
-    .te-grip {
-        background-image: repeating-linear-gradient(
-            90deg,
-            var(--panel-border),
-            var(--panel-border) 2px,
-            transparent 2px,
-            transparent 4px
-        );
-    }
+	/* 4.5 Draggable Hardware Modules */
+	.te-module {
+		background-color: var(--panel-bg);
+		border: 1px solid var(--panel-border);
+		box-shadow:
+			0 32px 64px -16px rgba(0, 0, 0, 0.3),
+			0 16px 32px -8px rgba(0, 0, 0, 0.2),
+			0 0 0 1px rgba(0, 0, 0, 0.05),
+			inset 0 1px 1px rgba(255, 255, 255, 0.5),
+			inset 0 -1px 1px rgba(0, 0, 0, 0.1);
+		@apply rounded-[12px] overflow-hidden flex flex-col;
+	}
+	.dark .te-module {
+		box-shadow:
+			0 32px 64px -16px rgba(0, 0, 0, 0.9),
+			0 16px 32px -8px rgba(0, 0, 0, 0.7),
+			0 0 0 1px rgba(0, 0, 0, 0.5),
+			inset 0 1px 1px rgba(255, 255, 255, 0.05),
+			inset 0 -1px 1px rgba(0, 0, 0, 0.4);
+	}
+	.te-module-header {
+		@apply flex items-center justify-between px-3 py-2 border-b border-[var(--panel-border)] cursor-grab active:cursor-grabbing select-none shrink-0;
+		background: linear-gradient(to bottom, var(--key-bg), var(--panel-bg));
+	}
+	.dark .te-module-header {
+		background: linear-gradient(to bottom, #3a3a3c, var(--panel-bg));
+	}
+	.te-grip {
+		background-image: repeating-linear-gradient(
+			90deg,
+			var(--panel-border),
+			var(--panel-border) 2px,
+			transparent 2px,
+			transparent 4px
+		);
+	}
 
-    /* 5. Typography */
-    .te-label {
-        @apply font-mono text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.25em] text-foreground/50;
-    }
-    .te-value {
-        @apply font-mono text-[13px] font-bold uppercase tracking-widest text-foreground;
-    }
+	/* 5. Typography */
+	.te-label {
+		@apply font-mono text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.25em] text-foreground/50;
+	}
+	.te-value {
+		@apply font-mono text-[13px] font-bold uppercase tracking-widest text-foreground;
+	}
+}
+
+/* Minimal Custom Scrollbar for Hardware Modules */
+.custom-scrollbar {
+	scrollbar-width: thin;
+	scrollbar-color: var(--panel-border) transparent;
+}
+.custom-scrollbar::-webkit-scrollbar {
+	width: 6px;
+	height: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+	background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+	background-color: var(--panel-border);
+	border-radius: 6px;
+}
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+	background-color: #3a3a3c;
 }
 
 /* Washi Paper Texture (Keep for the background atmosphere) */
 .bg-washi {
-    position: relative;
-    background-color: var(--background);
+	position: relative;
+	background-color: var(--background);
 }
 .bg-washi::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    z-index: 0;
-    background-image:
-        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='washi'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.04 0.7' numOctaves='5' seed='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23washi)' opacity='1'/%3E%3C/svg%3E"),
-        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='grain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8 0.8' numOctaves='2' seed='7' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23grain)' opacity='1'/%3E%3C/svg%3E");
-    opacity: 0.08;
-    mix-blend-mode: multiply;
+	content: "";
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	pointer-events: none;
+	z-index: 0;
+	background-image:
+		url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='washi'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.04 0.7' numOctaves='5' seed='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23washi)' opacity='1'/%3E%3C/svg%3E"),
+		url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='grain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8 0.8' numOctaves='2' seed='7' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23grain)' opacity='1'/%3E%3C/svg%3E");
+	opacity: 0.08;
+	mix-blend-mode: multiply;
 }
 .dark .bg-washi::before {
-    opacity: 0.04;
-    mix-blend-mode: screen;
+	opacity: 0.04;
+	mix-blend-mode: screen;
 }
