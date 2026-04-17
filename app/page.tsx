@@ -10,9 +10,10 @@ import { FloatingDock } from "@/components/floating-dock";
 import { MemoryDrawer } from "./components/memory-drawer";
 import { RitualDrawer } from "./components/ritual-drawer";
 import { AudioLab } from "./components/audio-lab";
+import { ChatModule } from "./components/chat-module";
 import { TranscriptPanel } from "@/components/ui/transcript-panel";
 import { ActivePersonaChip } from "@/components/ui/active-persona-chip";
-import { Database, Calendar, AudioWaveform } from "lucide-react";
+import { Database, Calendar, AudioWaveform, MessageSquare } from "lucide-react";
 import {
 	RiMoonFill,
 	RiSunFill,
@@ -107,6 +108,7 @@ export default function Home() {
 	const [isMemoryOpen, setIsMemoryOpen] = useState(false);
 	const [isRitualOpen, setIsRitualOpen] = useState(false);
 	const [isAudioLabOpen, setIsAudioLabOpen] = useState(false);
+	const [isChatOpen, setIsChatOpen] = useState(false);
 	const [showTranscript, setShowTranscript] = useState(true);
 	const [activePersonaId, setActivePersonaId] = useState<string>(() => {
 		if (typeof window !== "undefined") {
@@ -442,6 +444,22 @@ export default function Home() {
 					>
 						<AudioWaveform className="size-[18px] text-foreground/70" />
 					</motion.button>
+					{/* Chat Button */}
+					<motion.button
+						initial={{ opacity: 0, scale: 0.9 }}
+						animate={{ opacity: 1, scale: 1 }}
+						transition={{
+							delay: 0.298,
+							type: "spring",
+							damping: 25,
+							stiffness: 300,
+						}}
+						onClick={() => setIsChatOpen(true)}
+						className="size-10 sm:size-10 flex items-center justify-center te-button touch-manipulation"
+						title="Chat"
+					>
+						<MessageSquare className="size-[18px] text-foreground/70" />
+					</motion.button>
 					{/* Settings Button */}
 					<motion.button
 						initial={{ opacity: 0, scale: 0.9 }}
@@ -551,6 +569,19 @@ export default function Home() {
 						targetEmotionRef.current = emotion;
 					}}
 					onAudioLevelsChange={setAudioLevels}
+					accentColor={accentColor}
+					constraintsRef={constraintsRef}
+				/>
+				{/* Chat Module */}
+				<ChatModule
+					open={isChatOpen}
+					onOpenChange={setIsChatOpen}
+					onEmotionChange={(emotion) => {
+						setBaseEmotion(emotion);
+						baseEmotionRef.current = emotion;
+						targetEmotionRef.current = emotion;
+					}}
+					activePersonaId={activePersonaId}
 					accentColor={accentColor}
 					constraintsRef={constraintsRef}
 				/>

@@ -1,94 +1,74 @@
-import { NextResponse } from 'next/server';
-
-const MAX_RETRIES = 3;
-const RETRY_DELAY_MS = 1000;
-
-async function callGemini(apiKey: string, contents: { role: string; parts: { text: string }[] }[], systemPrompt: string, attempt: number = 1): Promise<Response> {
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        system_instruction: {
-          parts: [{ text: systemPrompt }],
-        },
-        contents,
-        generationConfig: {
-          temperature: 0.7,
-          maxOutputTokens: 80, // Reduced for faster responses and lower quota usage
-        },
-      }),
-    }
-  );
-
-  // If rate limited (429), retry with exponential backoff
-  if (response.status === 429 && attempt < MAX_RETRIES) {
-    const delay = RETRY_DELAY_MS * Math.pow(2, attempt - 1);
-    console.log(`Rate limited. Retrying in ${delay}ms (attempt ${attempt + 1}/${MAX_RETRIES})`);
-    await new Promise(resolve => setTimeout(resolve, delay));
-    return callGemini(apiKey, contents, systemPrompt, attempt + 1);
-  }
-
-  return response;
-}
+import { createOpenAI } from "@ai-sdk/openai";
+import { createGoogleGenerativeAI } from "@ai-sdk/google";
+import { streamText } from "ai";
 
 export async function POST(req: Request) {
-  try {
-    const { messages } = await req.json();
+    try {
+        const { messages, provider, model, apiKey, persona } = await req.json();
 
-    const apiKey = process.env.GOOGLE_AI_API_KEY;
-    if (!apiKey) {
-      return NextResponse.json(
-        { error: 'GOOGLE_AI_API_KEY not configured. Add it to .env.local' },
-        { status: 500 }
-      );
-    }
+        if (!apiKey) {
+            return new Response(
+                JSON.stringify({ error: "No API key provided. Add one in Settings → KEYS." }),
+                { status: 400, headers: { "Content-Type": "application/json" } }
+            );
+        }
 
-    // Tighter system prompt for shorter responses
-    const systemPrompt = "You are Dot. Reply in 1 sentence max. Be poetic but brief.";
-    
-    // Only keep last 4 messages to reduce token usage
-    const recentMessages = messages.slice(-4);
-    
-    const contents = recentMessages
-      .filter((m: { role: string }) => m.role !== 'system')
-      .map((m: { role: string; content: string }) => ({
-        role: m.role === 'user' ? 'user' : 'model',
-        parts: [{ text: m.content }],
-      }));
+        // Build system prompt from persona
+        const systemPrompt = buildSystemPrompt(persona);
 
-    const response = await callGemini(apiKey, contents, systemPrompt);
+        // Only keep last 8 messages to control costs
+        const recentMessages = messages.slice(-8);
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Gemini API Error:', errorText);
-      
-      // User-friendly error messages
-      if (response.status === 429) {
-        return NextResponse.json(
-          { error: 'Rate limit reached. Please wait a moment and try again.' },
-          { status: 429 }
+        // Construct the provider-specific model instance
+        const aiModel = getModel(provider, model, apiKey);
+
+        const result = streamText({
+            model: aiModel,
+            system: systemPrompt,
+            messages: recentMessages,
+            maxTokens: 150,
+            temperature: 0.7,
+        });
+
+        return result.toDataStreamResponse();
+    } catch (error: any) {
+        console.error("[chat/route] Error:", error);
+        
+        const status = error?.status ?? error?.statusCode ?? 500;
+        const message = error?.message ?? "Connection failed. Check your API key.";
+        
+        return new Response(
+            JSON.stringify({ error: message }),
+            { status, headers: { "Content-Type": "application/json" } }
         );
-      }
-      
-      return NextResponse.json(
-        { error: `AI Error: ${response.status}` },
-        { status: response.status }
-      );
     }
+}
 
-    const data = await response.json();
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '...';
+function getModel(provider: string, model: string, apiKey: string) {
+    switch (provider) {
+        case "openai": {
+            const openai = createOpenAI({ apiKey });
+            return openai(model || "gpt-4o-mini");
+        }
+        case "google": {
+            const google = createGoogleGenerativeAI({ apiKey });
+            return google(model || "gemini-2.0-flash");
+        }
+        default:
+            throw new Error(`Unsupported provider: ${provider}`);
+    }
+}
 
-    return NextResponse.json({ text });
-  } catch (error) {
-    console.error('Chat Error:', error);
-    return NextResponse.json(
-      { error: 'Connection failed. Check your API key.' },
-      { status: 500 }
-    );
-  }
+function buildSystemPrompt(persona?: string): string {
+    const base = `You are Dot, a warm and thoughtful AI companion. You speak in short, considered sentences. You are poetic but never verbose. Max 2-3 sentences per reply.`;
+
+    const tones: Record<string, string> = {
+        coach: "You are driven and focused. You push the user toward clarity and momentum.",
+        playful: "You are light and charming. You add a little bounce to the conversation.",
+        "deep-thinker": "You are reflective and calm. You care about meaning over speed.",
+        "focus-buddy": "You are minimal and practical. You support deep work with low friction.",
+    };
+
+    const personaTone = persona && tones[persona] ? `\n${tones[persona]}` : "";
+    return base + personaTone;
 }

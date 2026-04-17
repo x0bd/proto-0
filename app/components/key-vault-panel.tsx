@@ -1,158 +1,105 @@
 "use client";
 
 import * as React from "react";
-import { SectionCard } from "@/components/ui/section-card";
-import { SettingsRow } from "@/components/ui/settings-row";
-import { StatusBadge } from "@/components/ui/status-badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { InlineHint } from "@/components/ui/inline-hint";
-import { EmptyState } from "@/components/ui/empty-state";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import {
-    Eye,
-    EyeOff,
-    Lock,
-    KeyRound,
-    Plus,
-    Trash2,
-    Check,
-    AlertCircle,
-} from "lucide-react";
-
-// Mock types for UI only
-type ProviderStatus = "configured" | "missing" | "invalid";
-
-interface KeyEntry {
-    id: string;
-    provider: string;
-    status: ProviderStatus;
-    isSessionOnly: boolean;
-    lastUsed?: string;
-}
+import { KeyRound, Eye, EyeOff, Check, X, Plus } from "lucide-react";
+import { setKey, getKey, clearKey, type Provider, DEFAULT_MODELS } from "@/lib/key-store";
 
 interface KeyVaultPanelProps {
     accentColor?: string;
 }
 
+const PROVIDERS: { id: Provider; label: string; placeholder: string }[] = [
+    { id: "openai", label: "OPENAI", placeholder: "sk-..." },
+    { id: "google", label: "GOOGLE", placeholder: "AIza..." },
+    { id: "elevenlabs", label: "11LABS", placeholder: "xi-..." },
+];
+
 export function KeyVaultPanel({ accentColor = "#7c3aed" }: KeyVaultPanelProps) {
-    const [isUnlocked, setIsUnlocked] = React.useState(false);
-    const [passphrase, setPassphrase] = React.useState("");
-
-    const [keys, setKeys] = React.useState<KeyEntry[]>([
-        {
-            id: "1",
-            provider: "OpenAI",
-            status: "configured",
-            isSessionOnly: false,
-            lastUsed: "Just now",
-        },
-        {
-            id: "2",
-            provider: "ElevenLabs",
-            status: "configured",
-            isSessionOnly: true,
-            lastUsed: "2 mins ago",
-        },
-    ]);
-
-    const [editingProvider, setEditingProvider] = React.useState<string | null>(
-        null,
-    );
-    const [newKeyValue, setNewKeyValue] = React.useState("");
+    const [keyStates, setKeyStates] = React.useState<Record<Provider, boolean>>({
+        openai: false,
+        google: false,
+        elevenlabs: false,
+    });
+    const [editingProvider, setEditingProvider] = React.useState<Provider | null>(null);
+    const [inputValue, setInputValue] = React.useState("");
     const [showKey, setShowKey] = React.useState(false);
-    const [isSessionOnly, setIsSessionOnly] = React.useState(false);
 
-    const [deleteId, setDeleteId] = React.useState<string | null>(null);
+    // Load saved keys on mount
+    React.useEffect(() => {
+        setKeyStates({
+            openai: !!getKey("openai"),
+            google: !!getKey("google"),
+            elevenlabs: !!getKey("elevenlabs"),
+        });
+    }, []);
 
-    const handleUnlock = () => {
-        if (passphrase) {
-            setIsUnlocked(true);
-            setPassphrase("");
-        }
-    };
-
-    const handleLock = () => {
-        setIsUnlocked(false);
-    };
-
-    const handleSaveKey = () => {
-        if (!editingProvider || !newKeyValue) return;
-
-        // Check if it exists
-        const existing = keys.find((k) => k.provider === editingProvider);
-        if (existing) {
-            setKeys(
-                keys.map((k) =>
-                    k.provider === editingProvider
-                        ? { ...k, status: "configured", isSessionOnly }
-                        : k,
-                ),
-            );
-        } else {
-            setKeys([
-                ...keys,
-                {
-                    id: Math.random().toString(),
-                    provider: editingProvider,
-                    status: "configured",
-                    isSessionOnly,
-                },
-            ]);
-        }
-
+    const handleSave = () => {
+        if (!editingProvider || !inputValue.trim()) return;
+        setKey(editingProvider, inputValue.trim());
+        setKeyStates((prev) => ({ ...prev, [editingProvider]: true }));
         setEditingProvider(null);
-        setNewKeyValue("");
-        setIsSessionOnly(false);
+        setInputValue("");
+        setShowKey(false);
     };
 
-    const handleDelete = () => {
-        if (deleteId) {
-            setKeys(keys.filter((k) => k.id !== deleteId));
-            setDeleteId(null);
-        }
+    const handleDelete = (provider: Provider) => {
+        clearKey(provider);
+        setKeyStates((prev) => ({ ...prev, [provider]: false }));
     };
 
-    if (!isUnlocked) {
+    if (editingProvider) {
+        const providerMeta = PROVIDERS.find((p) => p.id === editingProvider)!;
         return (
-            <div className="space-y-6 p-6">
-                <div className="flex flex-col items-center justify-center py-12 text-center space-y-4">
-                    <div
-                        className="size-16 rounded-full flex items-center justify-center mb-2"
-                        style={{ backgroundColor: `${accentColor}15` }}
-                    >
-                        <Lock
-                            className="size-8"
-                            style={{ color: accentColor }}
-                        />
+            <div className="flex flex-col gap-3">
+                <div className="flex items-center justify-between px-1">
+                    <span className="te-label">ADD_KEY · {providerMeta.label}</span>
+                </div>
+
+                {/* Key Input */}
+                <div className="te-recessed p-2 flex flex-col gap-2">
+                    <div className="flex items-center gap-1.5">
+                        <div className="flex-1 relative">
+                            <input
+                                type={showKey ? "text" : "password"}
+                                value={inputValue}
+                                onChange={(e) => setInputValue(e.target.value)}
+                                onKeyDown={(e) => { if (e.key === "Enter") handleSave(); }}
+                                placeholder={providerMeta.placeholder}
+                                autoFocus
+                                className="w-full h-9 px-3 pr-9 rounded-[6px] text-[11px] font-mono font-bold tracking-wider text-foreground placeholder:text-foreground/25 bg-[var(--lcd-bg)] shadow-[inset_0_2px_6px_rgba(0,0,0,0.15)] dark:shadow-[inset_0_2px_6px_rgba(0,0,0,0.6)] border-none outline-none"
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowKey(!showKey)}
+                                className="absolute right-2 top-1/2 -translate-y-1/2 size-5 flex items-center justify-center text-foreground/30 hover:text-foreground/60"
+                            >
+                                {showKey ? <EyeOff className="size-3" /> : <Eye className="size-3" />}
+                            </button>
+                        </div>
                     </div>
-                    <h2 className="text-xl font-semibold">Vault Locked</h2>{" "}
-                    <p className="text-muted-foreground text-sm max-w-sm">
-                        Enter your passphrase to decrypt your keys. Your keys
-                        never leave this device.
-                    </p>
-                    <div className="flex w-full max-w-sm items-center space-x-2 mt-4">
-                        <Input
-                            type="password"
-                            placeholder="Passphrase..."
-                            value={passphrase}
-                            onChange={(e) => setPassphrase(e.target.value)}
-                            onKeyDown={(e) =>
-                                e.key === "Enter" && handleUnlock()
-                            }
-                        />
-                        <Button
-                            onClick={handleUnlock}
-                            style={{
-                                backgroundColor: accentColor,
-                                color: "#fff",
-                            }}
-                            className="hover:opacity-90 transition-opacity border-0"
+
+                    <div className="flex gap-1.5">
+                        <button
+                            onClick={() => { setEditingProvider(null); setInputValue(""); setShowKey(false); }}
+                            className="flex-1 h-8 te-button rounded-[6px] flex items-center justify-center gap-1 text-foreground/60"
                         >
-                            Unlock
-                        </Button>
+                            <X className="size-3" />
+                            <span className="text-[9px] font-bold tracking-widest">CANCEL</span>
+                        </button>
+                        <button
+                            onClick={handleSave}
+                            disabled={!inputValue.trim()}
+                            className="flex-1 h-8 te-button rounded-[6px] flex items-center justify-center gap-1 disabled:opacity-30 text-white"
+                            style={{
+                                "--key-bg": "var(--te-green)",
+                                "--key-border": "color-mix(in srgb, var(--te-green) 80%, black)",
+                                "--key-shadow": "color-mix(in srgb, var(--te-green) 60%, black)",
+                                color: "#ffffff",
+                            } as React.CSSProperties}
+                        >
+                            <Check className="size-3" />
+                            <span className="text-[9px] font-bold tracking-widest">SAVE</span>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -160,234 +107,75 @@ export function KeyVaultPanel({ accentColor = "#7c3aed" }: KeyVaultPanelProps) {
     }
 
     return (
-        <div className="space-y-6 p-1">
-            <div className="flex items-center justify-between">
-                <div>
-                    <h3 className="text-lg font-medium">API Keys</h3>
-                    <p className="text-sm text-muted-foreground">
-                        Manage your provider integrations.
-                    </p>
-                </div>
-                <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleLock}
-                    style={{
-                        borderColor: `${accentColor}40`,
-                        color: accentColor,
-                    }}
-                    className="hover:bg-foreground/5 transition-colors"
-                >
-                    <Lock className="size-4 mr-2" />
-                    Lock Vault
-                </Button>{" "}
+        <div className="flex flex-col gap-3">
+            <div className="flex items-center justify-between px-1">
+                <span className="te-label">KEY_VAULT</span>
+                <span className="te-label opacity-40">LOCAL_ONLY</span>
             </div>
 
-            <InlineHint type="info">
-                Keys are stored locally and encrypted. They are never sent to
-                our servers.
-            </InlineHint>
-
-            {editingProvider ? (
-                <SectionCard
-                    title={`Configure ${editingProvider}`}
-                    description="Enter your API key below."
-                >
-                    <div className="space-y-4 mt-4">
-                        <div className="space-y-2">
-                            <Label>API Key</Label>
-                            <div className="relative">
-                                <Input
-                                    type={showKey ? "text" : "password"}
-                                    value={newKeyValue}
-                                    onChange={(e) =>
-                                        setNewKeyValue(e.target.value)
+            {/* Provider list */}
+            <div className="te-recessed p-1.5 flex flex-col gap-1.5">
+                {PROVIDERS.map((provider) => {
+                    const isConfigured = keyStates[provider.id];
+                    return (
+                        <div key={provider.id} className="flex items-center gap-1.5">
+                            <button
+                                onClick={() => {
+                                    if (isConfigured) {
+                                        // Already configured — clicking edits
+                                        setEditingProvider(provider.id);
+                                    } else {
+                                        setEditingProvider(provider.id);
                                     }
-                                    placeholder="sk-..."
-                                    className="pr-10"
-                                />
-                                <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="icon"
-                                    className="absolute right-0 top-0 h-full px-3"
-                                    onClick={() => setShowKey(!showKey)}
-                                >
-                                    {showKey ? (
-                                        <EyeOff className="size-4 text-muted-foreground" />
-                                    ) : (
-                                        <Eye className="size-4 text-muted-foreground" />
-                                    )}
-                                </Button>
-                            </div>
-                        </div>
-
-                        <div className="flex items-center space-x-2 rounded-lg border p-4">
-                            <Switch
-                                id="session-mode"
-                                checked={isSessionOnly}
-                                onCheckedChange={setIsSessionOnly}
-                            />
-                            <div className="space-y-0.5">
-                                <Label htmlFor="session-mode">
-                                    Session-only mode
-                                </Label>
-                                <p className="text-sm text-muted-foreground">
-                                    Forget this key when the session ends.
-                                </p>
-                            </div>
-                        </div>
-
-                        <div className="flex justify-end gap-2 pt-4">
-                            <Button
-                                variant="outline"
-                                onClick={() => setEditingProvider(null)}
-                            >
-                                Cancel
-                            </Button>
-                            <Button
-                                onClick={handleSaveKey}
-                                style={{
-                                    backgroundColor: accentColor,
-                                    color: "#fff",
+                                    setInputValue("");
+                                    setShowKey(false);
                                 }}
-                                className="hover:opacity-90 transition-opacity border-0"
+                                className="flex-1 h-9 te-button rounded-[6px] flex items-center justify-between px-3 transition-all duration-150"
+                                style={isConfigured ? {
+                                    "--key-bg": "var(--te-green)",
+                                    "--key-border": "color-mix(in srgb, var(--te-green) 80%, black)",
+                                    "--key-shadow": "color-mix(in srgb, var(--te-green) 60%, black)",
+                                    color: "#ffffff",
+                                } as React.CSSProperties : undefined}
                             >
-                                Save Key
-                            </Button>
-                        </div>
-                    </div>
-                </SectionCard>
-            ) : (
-                <>
-                    {keys.length === 0 ? (
-                        <EmptyState
-                            icon={<KeyRound className="size-10" />}
-                            title="No Keys Configured"
-                            description="Add an API key to enable AI features."
-                        />
-                    ) : (
-                        <SectionCard
-                            title="Configured Providers"
-                            className="p-0"
-                        >
-                            <div className="flex flex-col">
-                                {keys.map((key) => (
-                                    <SettingsRow
-                                        key={key.id}
-                                        className="px-6 border-b last:border-0"
-                                        icon={
-                                            <Check className="size-5 text-success" />
-                                        }
-                                        title={key.provider}
-                                        description={
-                                            <div className="flex items-center gap-2 mt-1">
-                                                <StatusBadge
-                                                    status={
-                                                        key.status ===
-                                                        "configured"
-                                                            ? "success"
-                                                            : "error"
-                                                    }
-                                                >
-                                                    {key.status}
-                                                </StatusBadge>
-                                                {key.isSessionOnly && (
-                                                    <span className="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
-                                                        Session Only
-                                                    </span>
-                                                )}
-                                            </div>
-                                        }
-                                        action={
-                                            <div className="flex items-center gap-2">
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    onClick={() => {
-                                                        setEditingProvider(
-                                                            key.provider,
-                                                        );
-                                                        setNewKeyValue(
-                                                            "hidden-key-value",
-                                                        );
-                                                        setIsSessionOnly(
-                                                            key.isSessionOnly,
-                                                        );
-                                                    }}
-                                                >
-                                                    Edit
-                                                </Button>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                                                    onClick={() =>
-                                                        setDeleteId(key.id)
-                                                    }
-                                                >
-                                                    <Trash2 className="size-4" />
-                                                </Button>
-                                            </div>
-                                        }
-                                    />
-                                ))}
-                            </div>
-                        </SectionCard>
-                    )}
+                                <div className="flex items-center gap-2">
+                                    {isConfigured ? (
+                                        <Check className="size-3" />
+                                    ) : (
+                                        <KeyRound className="size-3 opacity-50" />
+                                    )}
+                                    <span className="text-[10px] font-bold tracking-widest">{provider.label}</span>
+                                </div>
+                                <span className="text-[8px] font-bold tracking-widest opacity-60">
+                                    {isConfigured ? "SET" : "ADD"}
+                                </span>
+                            </button>
 
-                    <SectionCard title="Available Integrations" className="p-0">
-                        <div className="flex flex-col">
-                            {["OpenAI", "Google", "ElevenLabs"]
-                                .filter(
-                                    (p) => !keys.find((k) => k.provider === p),
-                                )
-                                .map((provider) => (
-                                    <SettingsRow
-                                        key={provider}
-                                        className="px-6 border-b last:border-0"
-                                        icon={
-                                            <AlertCircle className="size-5 text-muted-foreground" />
-                                        }
-                                        title={provider}
-                                        description="Not configured"
-                                        action={
-                                            <Button
-                                                variant="secondary"
-                                                size="sm"
-                                                onClick={() => {
-                                                    setEditingProvider(
-                                                        provider,
-                                                    );
-                                                    setNewKeyValue("");
-                                                    setIsSessionOnly(false);
-                                                }}
-                                                style={{
-                                                    backgroundColor: `${accentColor}15`,
-                                                    color: accentColor,
-                                                }}
-                                                className="hover:opacity-80 transition-opacity border-0"
-                                            >
-                                                <Plus className="size-4 mr-1" />{" "}
-                                                Add
-                                            </Button>
-                                        }
-                                    />
-                                ))}
+                            {isConfigured && (
+                                <button
+                                    onClick={() => handleDelete(provider.id)}
+                                    className="size-9 shrink-0 te-button rounded-[6px] flex items-center justify-center transition-all"
+                                    style={{
+                                        "--key-bg": "var(--te-orange)",
+                                        "--key-border": "color-mix(in srgb, var(--te-orange) 80%, black)",
+                                        "--key-shadow": "color-mix(in srgb, var(--te-orange) 60%, black)",
+                                        color: "#ffffff",
+                                    } as React.CSSProperties}
+                                >
+                                    <X className="size-3" />
+                                </button>
+                            )}
                         </div>
-                    </SectionCard>
-                </>
-            )}
+                    );
+                })}
+            </div>
 
-            <ConfirmDialog
-                open={!!deleteId}
-                onOpenChange={(open) => !open && setDeleteId(null)}
-                title="Remove API Key?"
-                description="This will permanently delete the encrypted key from your device. You will need to re-enter it to use this provider."
-                confirmText="Remove Key"
-                destructive={true}
-                onConfirm={handleDelete}
-            />
+            {/* Info */}
+            <div className="te-lcd px-2 py-1.5 text-center">
+                <span className="text-[8px] opacity-50 tracking-[0.2em] font-bold leading-relaxed">
+                    KEYS STORED ON-DEVICE ONLY · NEVER SENT TO OUR SERVERS
+                </span>
+            </div>
         </div>
     );
 }
