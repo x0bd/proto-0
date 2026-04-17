@@ -277,28 +277,48 @@ export function AudioLab({
 
     // ---- File Upload: decode to AudioBuffer ----
     const handleFileUpload = React.useCallback(
-        async (file: File) => {
+        (file: File) => {
+            // Immediately show filename so user gets visual feedback
+            setFileName(file.name);
+            setCurrentTime(0);
+            setIsPlaying(false);
+            setEmotionLabel("DECODING");
+            pauseOffsetRef.current = 0;
+
             // Stop any current playback
             try { sourceRef.current?.stop(); } catch { /* noop */ }
             sourceRef.current = null;
 
-            const ctx = getAudioContext();
-            await ctx.resume();
-
-            const arrayBuffer = await file.arrayBuffer();
-            const audioBuffer = await ctx.decodeAudioData(arrayBuffer);
-            audioBufferRef.current = audioBuffer;
-
-            setFileName(file.name);
-            setDuration(audioBuffer.duration);
-            setCurrentTime(0);
-            setIsPlaying(false);
-            setEmotionLabel("LOADED");
-            pauseOffsetRef.current = 0;
-
-            drawSpectrum(new Uint8Array(FFT_SIZE / 2));
+            // Read and decode async
+            const reader = new FileReader();
+            reader.onload = () => {
+                const ctx = getAudioContext();
+                ctx.resume().then(() => {
+                    const arrayBuf = reader.result as ArrayBuffer;
+                    ctx.decodeAudioData(
+                        arrayBuf,
+                        (audioBuffer) => {
+                            // Success
+                            audioBufferRef.current = audioBuffer;
+                            setDuration(audioBuffer.duration);
+                            setEmotionLabel("LOADED");
+                            console.log("[FREQ_LAB] Decoded:", file.name, "duration:", audioBuffer.duration.toFixed(1) + "s");
+                        },
+                        (err) => {
+                            // Decode error
+                            console.error("[FREQ_LAB] decodeAudioData failed:", err);
+                            setEmotionLabel("ERR_DECODE");
+                        }
+                    );
+                });
+            };
+            reader.onerror = () => {
+                console.error("[FREQ_LAB] FileReader error:", reader.error);
+                setEmotionLabel("ERR_READ");
+            };
+            reader.readAsArrayBuffer(file);
         },
-        [getAudioContext, drawSpectrum],
+        [getAudioContext],
     );
 
     // ---- Transport ----
