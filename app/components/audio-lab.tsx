@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { X, Play, Pause, Square, Upload, Music2 } from "lucide-react";
+import { X, Play, Pause, Square, Upload, AudioLines } from "lucide-react";
 import type { EmotionState } from "../components/face/types";
 
 interface AudioLabProps {
@@ -14,7 +14,7 @@ interface AudioLabProps {
     constraintsRef?: React.RefObject<Element>;
 }
 
-// Simple emotion derivation from frequency bands
+// Advanced heuristic: maps spectral bands to pseudo Valence/Arousal space, then to discrete emotions.
 function deriveEmotion(bands: {
     bass: number;
     lowMid: number;
@@ -24,45 +24,53 @@ function deriveEmotion(bands: {
     overall: number;
 }): { emotion: EmotionState; label: string } {
     const { bass, lowMid, mid, highMid, presence, overall } = bands;
+    
+    // Smooth silence
+    if (overall < 0.02) {
+        return {
+            emotion: { joy: 0.3, sadness: 0, surprise: 0, anger: 0, curiosity: 0.2 }, // Neutral
+            label: "NEUTRAL"
+        };
+    }
 
-    // Energy metric
-    const energy = overall;
-    const brightness = (highMid + presence) / 2;
-    const warmth = (bass + lowMid) / 2;
-    const midPresence = mid;
+    // Arousal: Directly correlated to overall energy and sharp transients (presence/highMid)
+    const arousal = Math.min(1, overall * 1.5 + highMid * 0.5 + presence * 0.5);
+    
+    // Valence (Positivity): High warmth (lowMid+mid) vs screechy highs (presence)
+    const warmth = (lowMid + mid) / 2;
+    const dissonance = presence;
+    const valence = Math.max(0, Math.min(1, 0.5 + warmth * 0.8 - dissonance * 1.2)); 
 
     let joy = 0, sadness = 0, surprise = 0, anger = 0, curiosity = 0;
 
-    // High energy + bright = joy
-    joy = Math.min(1, (energy * 0.4 + brightness * 0.4 + midPresence * 0.2) * 2.5);
-    // Low energy + warm = sadness
-    sadness = Math.min(1, Math.max(0, (1 - energy) * 0.5 + warmth * 0.3 - brightness * 0.2) * 2);
-    // Sudden spikes = surprise (high presence/highMid)
-    surprise = Math.min(1, Math.max(0, (presence - 0.4) * 2 + (highMid - 0.35) * 1.5));
-    // High bass + high energy = anger
-    anger = Math.min(1, Math.max(0, (bass - 0.4) * 2 + (energy - 0.5) * 1.5 - brightness * 0.5));
-    // Mid-range dominant = curiosity
-    curiosity = Math.min(1, Math.max(0, midPresence * 1.8 - bass * 0.3));
+    // High arousal + High valence = JOY
+    joy = Math.max(0, arousal * 0.8 * (valence > 0.5 ? valence : 0));
+    
+    // Low arousal + Low/mid valence = SORROW
+    sadness = Math.max(0, (1 - arousal) * 0.8 * (1 - valence));
+    
+    // High arousal + Sudden high frequencies = SHOCK/SURPRISE
+    surprise = Math.max(0, arousal * 0.6 * (highMid > 0.4 ? highMid : 0));
+    
+    // High arousal + Low valence + heavy low-end = RAGE
+    anger = Math.max(0, arousal * 0.9 * (valence < 0.4 ? (1 - valence) : 0) * (bass > 0.3 ? bass * 1.5 : 1));
+    
+    // Moderate arousal + High warm mids = CURIOSITY/QUERY
+    curiosity = Math.max(0, (1 - Math.abs(arousal - 0.5) * 2) * warmth);
 
-    // Normalize so the dominant one is strong
-    const max = Math.max(joy, sadness, surprise, anger, curiosity, 0.01);
-    const scale = Math.min(1, 1.2 / max);
+    // Default to neutral base if everything is low
+    if (joy < 0.1 && sadness < 0.1 && surprise < 0.1 && anger < 0.1 && curiosity < 0.1) {
+        return {
+            emotion: { joy: 0.3, sadness: 0, surprise: 0, anger: 0, curiosity: 0.2 },
+            label: "NEUTRAL"
+        };
+    }
 
-    const emotion: EmotionState = {
-        joy: Math.min(1, joy * scale),
-        sadness: Math.min(1, sadness * scale),
-        surprise: Math.min(1, surprise * scale),
-        anger: Math.min(1, anger * scale),
-        curiosity: Math.min(1, curiosity * scale),
-    };
-
-    // Pick dominant label
+    const emotion: EmotionState = { joy, sadness, surprise, anger, curiosity };
+    
+    // Identify dominant
     const entries: [string, number][] = [
-        ["JOY", emotion.joy],
-        ["SORROW", emotion.sadness],
-        ["SHOCK", emotion.surprise],
-        ["RAGE", emotion.anger],
-        ["QUERY", emotion.curiosity],
+        ["JOY", joy], ["SORROW", sadness], ["SHOCK", surprise], ["RAGE", anger], ["QUERY", curiosity]
     ];
     entries.sort((a, b) => b[1] - a[1]);
     const label = entries[0][1] > 0.15 ? entries[0][0] : "NEUTRAL";
@@ -73,7 +81,7 @@ function deriveEmotion(bands: {
 function formatTime(seconds: number): string {
     const m = Math.floor(seconds / 60);
     const s = Math.floor(seconds % 60);
-    return `${m}:${s.toString().padStart(2, "0")}`;
+    return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
 }
 
 export function AudioLab({
@@ -100,12 +108,13 @@ export function AudioLab({
     const frequencyDataRef = React.useRef<Uint8Array | null>(null);
     const fileInputRef = React.useRef<HTMLInputElement | null>(null);
 
-    const FFT_SIZE = 256;
+    // Smoothing array for the visualizer to feel less jerky
+    const visualizerDataRef = React.useRef<Float32Array | null>(null);
 
-    // Setup audio context and connect element
+    const FFT_SIZE = 512; // Higher resolution for smoother dot matrix
+
     const connectAudio = React.useCallback((audioEl: HTMLAudioElement) => {
         if (audioContextRef.current) {
-            // Already connected, just resume
             audioContextRef.current.resume();
             return;
         }
@@ -115,10 +124,11 @@ export function AudioLab({
 
         const analyser = ctx.createAnalyser();
         analyser.fftSize = FFT_SIZE;
-        analyser.smoothingTimeConstant = 0.65;
+        analyser.smoothingTimeConstant = 0.8; // High smoothing for the visualizer
         analyserRef.current = analyser;
 
         frequencyDataRef.current = new Uint8Array(analyser.frequencyBinCount);
+        visualizerDataRef.current = new Float32Array(analyser.frequencyBinCount);
 
         const source = ctx.createMediaElementSource(audioEl);
         source.connect(analyser);
@@ -126,7 +136,6 @@ export function AudioLab({
         sourceRef.current = source;
     }, []);
 
-    // Extract frequency bands from analyser
     const extractBands = React.useCallback(() => {
         const analyser = analyserRef.current;
         const freqData = frequencyDataRef.current;
@@ -165,12 +174,10 @@ export function AudioLab({
         };
     }, []);
 
-    // Draw spectrum visualizer
     const drawSpectrum = React.useCallback((freqData: Uint8Array) => {
         const canvas = canvasRef.current;
         if (!canvas) return;
-
-        const ctx = canvas.getContext("2d");
+        const ctx = canvas.getContext("2d", { alpha: false });
         if (!ctx) return;
 
         const dpr = window.devicePixelRatio || 1;
@@ -183,36 +190,74 @@ export function AudioLab({
             ctx.scale(dpr, dpr);
         }
 
-        ctx.clearRect(0, 0, w, h);
+        // Draw pure black background
+        ctx.fillStyle = "#020202";
+        ctx.fillRect(0, 0, w, h);
 
-        const barCount = Math.min(freqData.length, 48);
+        const r = parseInt(accentColor.slice(1, 3), 16);
+        const g = parseInt(accentColor.slice(3, 5), 16);
+        const b = parseInt(accentColor.slice(5, 7), 16);
+
+        // Parameters for dot matrix
+        const barWidth = 4;
         const gap = 2;
-        const barWidth = (w - gap * (barCount - 1)) / barCount;
+        const barCount = Math.floor(w / (barWidth + gap));
+        const startX = Math.floor((w - (barCount * (barWidth + gap) - gap)) / 2);
+        
+        const dotHeight = 2;
+        const dotGap = 1;
+
+        // Smooth visualizer data heavily
+        const visData = visualizerDataRef.current;
+        if (!visData) return;
 
         for (let i = 0; i < barCount; i++) {
-            const val = freqData[i] / 255;
-            const barHeight = Math.max(1, val * h * 0.9);
-            const x = i * (barWidth + gap);
-            const y = h - barHeight;
+            // Use logarithmic frequency mapping so highs don't get squashed into 2 bins
+            // freqData.length is max bins (e.g. 256). We only care about the first ~60% of bins
+            const maxBin = Math.floor(freqData.length * 0.6);
+            const ratio = i / (barCount - 1);
+            // Logarithmic index mapping: x = Math.pow(ratio, 2)
+            const mapIdx = Math.floor(Math.pow(ratio, 1.5) * maxBin);
+            
+            const rawVal = freqData[mapIdx] / 255;
+            
+            // Apply exponential curve to make peaks pop
+            const val = Math.pow(rawVal, 1.4);
+            
+            // Smooth over time
+            visData[i] = visData[i] * 0.75 + val * 0.25;
+            
+            const amplitude = visData[i];
+            const maxDots = Math.floor(h / (dotHeight + dotGap));
+            const activeDots = Math.floor(amplitude * maxDots);
 
-            // Gradient from accent to dim
-            const intensity = val;
-            const r = parseInt(accentColor.slice(1, 3), 16);
-            const g = parseInt(accentColor.slice(3, 5), 16);
-            const b = parseInt(accentColor.slice(5, 7), 16);
+            const x = startX + i * (barWidth + gap);
 
-            ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${0.3 + intensity * 0.7})`;
-            ctx.fillRect(x, y, barWidth, barHeight);
+            // Draw base faint matrix columns
+            ctx.fillStyle = `rgba(${r}, ${g}, ${b}, 0.08)`;
+            for (let d = 0; d < maxDots; d++) {
+                const y = h - (d + 1) * (dotHeight + dotGap);
+                ctx.fillRect(x, y, barWidth, dotHeight);
+            }
 
-            // Peak dot
-            if (val > 0.1) {
-                ctx.fillStyle = `rgba(${r}, ${g}, ${b}, 1)`;
-                ctx.fillRect(x, y, barWidth, Math.min(2, barHeight));
+            if (activeDots > 0) {
+                // Draw glowing active dots
+                ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+                ctx.shadowColor = `rgba(${r}, ${g}, ${b}, 0.6)`;
+                ctx.shadowBlur = 4;
+                
+                for (let d = 0; d < activeDots; d++) {
+                    const y = h - (d + 1) * (dotHeight + dotGap);
+                    // Make top dots brighter, bottom dots slightly transparent
+                    ctx.globalAlpha = 0.4 + (d / activeDots) * 0.6;
+                    ctx.fillRect(x, y, barWidth, dotHeight);
+                }
+                ctx.globalAlpha = 1.0;
+                ctx.shadowBlur = 0;
             }
         }
     }, [accentColor]);
 
-    // Analysis loop
     const analysisLoop = React.useCallback(() => {
         const result = extractBands();
         if (result) {
@@ -225,51 +270,36 @@ export function AudioLab({
                 overall: result.overall,
             });
 
-            // Feed audio levels to avatar
             onAudioLevelsChange?.(result);
 
-            // Derive emotion from bands
             const { emotion, label } = deriveEmotion(result);
             setEmotionLabel(label);
             onEmotionChange?.(emotion);
 
-            // Draw spectrum
-            if (result.frequencyData) {
-                drawSpectrum(result.frequencyData);
-            }
+            if (result.frequencyData) drawSpectrum(result.frequencyData);
         }
 
-        // Update time
-        if (audioRef.current) {
-            setCurrentTime(audioRef.current.currentTime);
-        }
-
+        if (audioRef.current) setCurrentTime(audioRef.current.currentTime);
         rafRef.current = requestAnimationFrame(analysisLoop);
     }, [extractBands, drawSpectrum, onEmotionChange, onAudioLevelsChange]);
 
-    // Start/Stop analysis
     React.useEffect(() => {
         if (isPlaying) {
             rafRef.current = requestAnimationFrame(analysisLoop);
         } else {
-            if (rafRef.current) {
-                cancelAnimationFrame(rafRef.current);
-                rafRef.current = null;
-            }
+            if (rafRef.current) cancelAnimationFrame(rafRef.current);
+            rafRef.current = null;
         }
         return () => {
             if (rafRef.current) cancelAnimationFrame(rafRef.current);
         };
     }, [isPlaying, analysisLoop]);
 
-    // File upload handler
     const handleFileUpload = React.useCallback((file: File) => {
-        // Create or reuse audio element
         if (!audioRef.current) {
             audioRef.current = new Audio();
             audioRef.current.crossOrigin = "anonymous";
         }
-
         const url = URL.createObjectURL(file);
         audioRef.current.src = url;
         audioRef.current.load();
@@ -287,7 +317,6 @@ export function AudioLab({
         setCurrentTime(0);
         setEmotionLabel("LOADED");
 
-        // Reset audio context for new source
         if (sourceRef.current) {
             sourceRef.current.disconnect();
             sourceRef.current = null;
@@ -296,16 +325,15 @@ export function AudioLab({
             audioContextRef.current.close();
             audioContextRef.current = null;
         }
-    }, []);
+        
+        drawSpectrum(new Uint8Array(FFT_SIZE / 2));
+    }, [drawSpectrum]);
 
     const handlePlay = React.useCallback(() => {
         if (!audioRef.current || !fileName) return;
 
-        if (!sourceRef.current) {
-            connectAudio(audioRef.current);
-        } else {
-            audioContextRef.current?.resume();
-        }
+        if (!sourceRef.current) connectAudio(audioRef.current);
+        else audioContextRef.current?.resume();
 
         audioRef.current.play();
         setIsPlaying(true);
@@ -326,18 +354,11 @@ export function AudioLab({
         setCurrentTime(0);
         setEmotionLabel(fileName ? "LOADED" : "STANDBY");
         setBands({ bass: 0, lowMid: 0, mid: 0, highMid: 0, presence: 0, overall: 0 });
-        // Clear canvas
-        const canvas = canvasRef.current;
-        if (canvas) {
-            const ctx = canvas.getContext("2d");
-            ctx?.clearRect(0, 0, canvas.width, canvas.height);
-        }
-    }, [fileName]);
+        drawSpectrum(new Uint8Array(FFT_SIZE / 2));
+    }, [fileName, drawSpectrum]);
 
-    // Progress percentage
     const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
 
-    // Cleanup on unmount
     React.useEffect(() => {
         return () => {
             if (rafRef.current) cancelAnimationFrame(rafRef.current);
@@ -358,170 +379,177 @@ export function AudioLab({
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.9, y: 20 }}
                     transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                    className="absolute top-24 right-6 w-[360px] h-auto te-module z-[100] flex flex-col"
+                    className="absolute top-24 right-6 w-[380px] h-auto te-module z-[100] flex flex-col shadow-[0_30px_60px_rgba(0,0,0,0.4),0_0_0_1px_rgba(0,0,0,0.1),inset_0_1px_1px_rgba(255,255,255,0.1)]"
                 >
                     {/* Header / Drag Handle */}
-                    <div className="te-module-header">
+                    <div className="te-module-header px-4 h-10 border-b border-black/10 dark:border-white/5 relative bg-[var(--panel-bg)] rounded-t-[16px]">
                         <div className="flex items-center gap-2">
-                            <div className="size-2 rounded-full" style={{ backgroundColor: isPlaying ? "var(--te-green)" : "var(--te-orange)" }} />
-                            <span className="font-mono text-[10px] font-bold uppercase tracking-widest text-foreground">FREQ_MOD</span>
-                            <span className="font-mono text-[8px] uppercase tracking-widest text-foreground/30 ml-2">A-07</span>
+                            <div className="size-2 rounded-full" style={{ backgroundColor: isPlaying ? "var(--te-green)" : "var(--te-orange)", boxShadow: isPlaying ? "0 0 8px var(--te-green)" : "none" }} />
+                            <span className="font-mono text-[10px] font-bold uppercase tracking-widest text-foreground">FREQ_LAB</span>
+                            <span className="font-mono text-[8px] uppercase tracking-widest text-foreground/30 ml-2">TAPE-1</span>
                         </div>
-                        <div className="w-16 h-2 te-grip opacity-50" />
-                        <button onClick={() => onOpenChange(false)} className="size-5 te-button !rounded-full !border-b-2 flex items-center justify-center text-foreground hover:text-[var(--te-orange)]">
+                        <div className="w-16 h-2 te-grip opacity-40 shrink-0" />
+                        <button onClick={() => onOpenChange(false)} className="size-5 te-button !rounded-full flex items-center justify-center text-foreground hover:text-[var(--te-orange)]" aria-label="Close">
                             <X className="size-3" />
                         </button>
                     </div>
 
-                    <div className="relative z-10 flex flex-col p-4 gap-3 bg-[var(--panel-bg)] h-full">
-
-                        {/* LCD Status Display */}
-                        <div className="te-lcd p-3 flex flex-col justify-between relative overflow-hidden shrink-0 h-[70px] border border-black/10 dark:border-white/10">
-                            <div className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/10 to-transparent pointer-events-none" />
-                            <div className="absolute inset-0 pointer-events-none opacity-[0.04] dark:opacity-[0.08]" style={{ backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 1px, currentColor 1px, currentColor 2px)' }} />
-
-                            <div className="flex items-center justify-between relative z-10">
-                                <span className="text-[8px] opacity-50 tracking-[0.2em] font-bold">SOURCE</span>
-                                <span className="text-[8px] opacity-50 tracking-[0.2em] font-bold">EMOTION_STATE</span>
-                            </div>
-
-                            <div className="flex items-center justify-between mt-1 relative z-10">
-                                <div className="flex items-center gap-2 flex-1 min-w-0">
-                                    <Music2 className="size-3.5 opacity-50 shrink-0" />
-                                    <span className="text-[11px] font-bold opacity-90 tracking-wider truncate">
-                                        {fileName ? fileName.replace(/\.[^/.]+$/, "").toUpperCase().slice(0, 18) : "NO_FILE"}
-                                    </span>
+                    <div className="relative z-10 flex flex-col p-4 gap-4 bg-[var(--panel-bg)] rounded-b-[16px]">
+                        {/* Fake Screws */}
+                        <div className="absolute top-4 left-4 size-1.5 rounded-full bg-black/20 dark:bg-white/10 shadow-[inset_0_1px_2px_rgba(0,0,0,0.5)] pointer-events-none" />
+                        <div className="absolute top-4 right-4 size-1.5 rounded-full bg-black/20 dark:bg-white/10 shadow-[inset_0_1px_2px_rgba(0,0,0,0.5)] pointer-events-none" />
+                        
+                        {/* Main Display cluster */}
+                        <div className="te-recessed p-2 pt-3 flex flex-col gap-2 mt-2 relative border border-[var(--panel-border)] shadow-[inset_0_4px_10px_rgba(0,0,0,0.15)] bg-[#1a1a1a]">
+                            
+                            {/* LCD Status Block */}
+                            <div className="flex items-start justify-between px-2 mb-1">
+                                <div className="flex flex-col">
+                                    <span className="text-[7px] text-white/40 tracking-[0.3em] font-bold uppercase">TAPE TRACK</span>
+                                    <div className="flex items-center gap-2 mt-0.5">
+                                        <AudioLines className="size-3 text-white/80" />
+                                        <span className="text-[12px] text-white font-mono font-bold tracking-widest uppercase truncate max-w-[140px] drop-shadow-[0_0_8px_rgba(255,255,255,0.4)]">
+                                            {fileName ? fileName.replace(/\.[^/.]+$/, "").slice(0, 15) + (fileName.length > 15 ? ".." : "") : "NO_SRC"}
+                                        </span>
+                                    </div>
                                 </div>
-                                <span className="text-[12px] font-bold tracking-widest shrink-0 ml-2" style={{ color: isPlaying ? accentColor : "inherit", opacity: isPlaying ? 1 : 0.5 }}>
-                                    {emotionLabel}
-                                </span>
+                                <div className="flex flex-col items-end">
+                                    <span className="text-[7px] text-white/40 tracking-[0.3em] font-bold uppercase mb-0.5">SYS_EMOTION</span>
+                                    <div className="bg-black/60 px-2 py-[2px] rounded-[3px] border border-white/10">
+                                        <span className="text-[10px] font-bold tracking-widest" style={{ color: accentColor, textShadow: `0 0 8px ${accentColor}` }}>
+                                            {emotionLabel}
+                                        </span>
+                                    </div>
+                                </div>
                             </div>
 
-                            <div className="flex items-center justify-between mt-1 pt-1 border-t border-current/10 relative z-10">
-                                <span className="text-[10px] font-bold opacity-60 tracking-widest tabular-nums">
-                                    {formatTime(currentTime)} / {formatTime(duration)}
-                                </span>
-                                <span className="text-[10px] font-bold opacity-50 tracking-widest">
-                                    {isPlaying ? "▶ PLAY" : "■ STOP"}
-                                </span>
-                            </div>
-                        </div>
-
-                        {/* Spectrum Visualizer */}
-                        <section className="flex flex-col gap-1.5 shrink-0">
-                            <div className="flex items-center justify-between px-1">
-                                <span className="te-label">SPECTRUM_VIS</span>
-                                <span className="te-label opacity-50">48_BIN</span>
-                            </div>
-                            <div className="te-recessed p-2 h-[72px] relative overflow-hidden">
+                            {/* True Matrix Spectrum */}
+                            <div className="h-[80px] relative rounded-[4px] border border-black/50 overflow-hidden bg-[#050505] shadow-[inset_0_2px_8px_rgba(0,0,0,0.8)]">
                                 <canvas
                                     ref={canvasRef}
-                                    className="w-full h-full"
+                                    className="absolute inset-0 w-full h-full"
                                     style={{ imageRendering: "pixelated" }}
                                 />
                                 {!fileName && (
                                     <div className="absolute inset-0 flex items-center justify-center">
-                                        <span className="text-[10px] font-mono font-bold tracking-widest opacity-20">AWAITING_INPUT</span>
+                                        <span className="text-[9px] font-mono leading-tight tracking-[0.2em] text-[var(--te-orange)] opacity-50 text-center uppercase">
+                                            INSERT_TAPE<br/>TO_BEGIN_ANALYSIS
+                                        </span>
                                     </div>
                                 )}
+                                <div className="absolute top-1 left-1.5 opacity-30 flex items-center gap-1">
+                                    <div className={`size-1.5 rounded-full ${isPlaying ? 'bg-red-500 animate-pulse' : 'bg-white/30'}`} />
+                                    <span className="text-[6px] text-white font-mono tracking-widest font-bold">REC</span>
+                                </div>
                             </div>
-                        </section>
 
-                        {/* Progress Bar */}
-                        <div className="te-recessed p-1.5 h-3 relative overflow-hidden">
-                            <div
-                                className="h-full rounded-[2px] transition-all duration-75"
-                                style={{
-                                    width: `${progress}%`,
-                                    backgroundColor: accentColor,
-                                    boxShadow: isPlaying ? `0 0 8px ${accentColor}` : "none",
-                                }}
-                            />
+                            {/* Time / Progress */}
+                            <div className="flex items-center gap-2 px-1">
+                                <span className="text-[9px] text-[#00ff88] font-mono font-bold tracking-wider tabular-nums drop-shadow-[0_0_4px_#00ff88]">
+                                    {formatTime(currentTime)}
+                                </span>
+                                <div className="flex-1 h-1.5 bg-black rounded-full overflow-hidden border border-white/10 relative">
+                                    {/* Scanline overlay for bar */}
+                                    <div className="absolute inset-x-0 bottom-0 top-0 opacity-30 pointer-events-none z-20" style={{ backgroundImage: "repeating-linear-gradient(90deg, transparent, transparent 2px, #000 2px, #000 3px)" }} />
+                                    <div 
+                                        className="h-full bg-[#00ff88] shadow-[0_0_8px_#00ff88] transition-none absolute left-0 top-0 z-10" 
+                                        style={{ width: `${progress}%` }}
+                                    />
+                                </div>
+                                <span className="text-[9px] text-white/50 font-mono font-bold tracking-wider tabular-nums">
+                                    {formatTime(duration)}
+                                </span>
+                            </div>
                         </div>
 
-                        {/* Band Levels */}
-                        <section className="flex flex-col gap-1.5 shrink-0">
+                        {/* Band Levels (Hardware sliders style) */}
+                        <section className="flex flex-col gap-1.5 shrink-0 mt-1">
                             <div className="flex items-center justify-between px-1">
-                                <span className="te-label">BAND_LEVELS</span>
+                                <span className="te-label">EQ_BANDS</span>
+                                <span className="te-label opacity-40">METER</span>
                             </div>
-                            <div className="te-recessed p-2 flex gap-2">
+                            <div className="te-recessed p-2 py-3 flex gap-2">
                                 {[
-                                    { label: "BAS", value: bands.bass },
-                                    { label: "LMD", value: bands.lowMid },
-                                    { label: "MID", value: bands.mid },
-                                    { label: "HMD", value: bands.highMid },
-                                    { label: "PRS", value: bands.presence },
+                                    { label: "B", full: "BSS", value: bands.bass },
+                                    { label: "L", full: "L-M", value: bands.lowMid },
+                                    { label: "M", full: "MID", value: bands.mid },
+                                    { label: "H", full: "H-M", value: bands.highMid },
+                                    { label: "P", full: "PRE", value: bands.presence },
                                 ].map((band) => (
-                                    <div key={band.label} className="flex-1 flex flex-col items-center gap-1">
-                                        <div className="w-full h-10 rounded-[3px] relative overflow-hidden" style={{ backgroundColor: "var(--key-bg)", border: "1px solid var(--panel-border)" }}>
-                                            <div
-                                                className="absolute bottom-0 left-0 right-0 transition-all duration-75 rounded-[2px]"
-                                                style={{
-                                                    height: `${Math.min(100, band.value * 100)}%`,
+                                    <div key={band.label} className="flex-1 flex flex-col items-center gap-1.5">
+                                        <div className="w-5 h-[50px] relative" style={{ backgroundColor: "#111", border: "1px solid #000", borderRadius: "3px", boxShadow: "inset 0 2px 6px rgba(0,0,0,0.8)" }}>
+                                            <div className="absolute inset-x-0 bottom-0 top-0 opacity-20 pointer-events-none z-0" style={{ backgroundImage: "repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(255,255,255,0.2) 3px, rgba(255,255,255,0.2) 4px)" }} />
+                                            <div 
+                                                className="absolute inset-x-0 bottom-0 z-10 transition-all duration-75" 
+                                                style={{ 
+                                                    height: `${Math.min(100, band.value * 100)}%`, 
                                                     backgroundColor: accentColor,
-                                                    opacity: 0.4 + band.value * 0.6,
-                                                    boxShadow: band.value > 0.3 ? `0 0 6px ${accentColor}` : "none",
+                                                    boxShadow: band.value > 0.2 ? `0 0 10px ${accentColor}` : "none",
                                                 }}
                                             />
+                                            <div className="absolute inset-0 z-20 mix-blend-multiply pointer-events-none bg-repeat-y" style={{ backgroundImage: "repeating-linear-gradient(0deg, transparent, transparent 3px, #000 3px, #000 4px)" }} />
                                         </div>
-                                        <span className="text-[7px] font-mono font-bold tracking-widest opacity-50">{band.label}</span>
+                                        <span className="text-[9px] font-mono font-bold tracking-widest text-foreground/70 uppercase">
+                                            {band.full}
+                                        </span>
                                     </div>
                                 ))}
                             </div>
                         </section>
 
-                        {/* Transport + Upload */}
-                        <section className="flex gap-1.5 shrink-0">
-                            {/* Upload */}
-                            <button
-                                onClick={() => fileInputRef.current?.click()}
-                                className="h-11 flex-1 te-button rounded-[8px] flex items-center justify-center gap-2 text-foreground"
-                            >
-                                <Upload className="size-3.5" />
-                                <span className="text-[9px] font-bold tracking-[0.2em]">LOAD</span>
-                            </button>
-                            <input
-                                ref={fileInputRef}
-                                type="file"
-                                accept="audio/*"
-                                className="hidden"
-                                onChange={(e) => {
-                                    const file = e.target.files?.[0];
-                                    if (file) handleFileUpload(file);
-                                    e.target.value = "";
-                                }}
-                            />
+                        {/* Transport Block */}
+                        <section className="flex gap-2 shrink-0 mt-1">
+                            <div className="flex-1 p-1.5 te-recessed flex gap-1.5 items-center">
+                                <button
+                                    onClick={() => fileInputRef.current?.click()}
+                                    className="h-10 px-3 te-button rounded-[6px] flex items-center justify-center gap-1.5 text-foreground flex-1"
+                                >
+                                    <Upload className="size-3 opacity-70" />
+                                    <span className="text-[10px] font-bold tracking-widest">TAPE_IN</span>
+                                </button>
+                                <input
+                                    ref={fileInputRef}
+                                    type="file"
+                                    accept="audio/*"
+                                    className="hidden"
+                                    onChange={(e) => {
+                                        const file = e.target.files?.[0];
+                                        if (file) handleFileUpload(file);
+                                        e.target.value = "";
+                                    }}
+                                />
+                            </div>
 
-                            {/* Play / Pause */}
-                            <button
-                                onClick={isPlaying ? handlePause : handlePlay}
-                                disabled={!fileName}
-                                className="h-11 flex-1 te-button rounded-[8px] flex items-center justify-center gap-2 disabled:opacity-30 transition-all"
-                                style={isPlaying ? {
-                                    "--key-bg": "var(--te-green)",
-                                    "--key-border": "color-mix(in srgb, var(--te-green) 80%, black)",
-                                    "--key-shadow": "color-mix(in srgb, var(--te-green) 60%, black)",
-                                    color: "#ffffff",
-                                } as React.CSSProperties : undefined}
-                            >
-                                {isPlaying ? <Pause className="size-3.5" /> : <Play className="size-3.5" />}
-                                <span className="text-[9px] font-bold tracking-[0.2em]">{isPlaying ? "PAUSE" : "PLAY"}</span>
-                            </button>
+                            <div className="flex-1 p-1.5 te-recessed flex gap-1.5 items-center">
+                                <button
+                                    onClick={handleStop}
+                                    disabled={!fileName}
+                                    className="size-10 shrink-0 te-button rounded-[6px] flex items-center justify-center disabled:opacity-30 transition-all"
+                                    style={isPlaying ? {
+                                        "--key-bg": "var(--te-orange)",
+                                        "--key-border": "color-mix(in srgb, var(--te-orange) 80%, black)",
+                                        "--key-shadow": "color-mix(in srgb, var(--te-orange) 60%, black)",
+                                        color: "#ffffff",
+                                    } as React.CSSProperties : undefined}
+                                >
+                                    <Square className="size-3.5" fill="currentColor" />
+                                </button>
 
-                            {/* Stop */}
-                            <button
-                                onClick={handleStop}
-                                disabled={!fileName}
-                                className="h-11 w-11 te-button rounded-[8px] flex items-center justify-center disabled:opacity-30"
-                                style={isPlaying ? {
-                                    "--key-bg": "var(--te-orange)",
-                                    "--key-border": "color-mix(in srgb, var(--te-orange) 80%, black)",
-                                    "--key-shadow": "color-mix(in srgb, var(--te-orange) 60%, black)",
-                                    color: "#ffffff",
-                                } as React.CSSProperties : undefined}
-                            >
-                                <Square className="size-3" />
-                            </button>
+                                <button
+                                    onClick={isPlaying ? handlePause : handlePlay}
+                                    disabled={!fileName}
+                                    className="h-10 flex-1 te-button rounded-[6px] flex items-center justify-center gap-1.5 disabled:opacity-30 transition-all text-white"
+                                    style={fileName ? {
+                                        "--key-bg": isPlaying ? "var(--te-orange)" : "var(--te-green)",
+                                        "--key-border": `color-mix(in srgb, ${isPlaying ? 'var(--te-orange)' : 'var(--te-green)'} 80%, black)`,
+                                        "--key-shadow": `color-mix(in srgb, ${isPlaying ? 'var(--te-orange)' : 'var(--te-green)'} 60%, black)`,
+                                        color: "#ffffff",
+                                    } as React.CSSProperties : undefined}
+                                >
+                                    {isPlaying ? <Pause className="size-4" fill="currentColor" /> : <Play className="size-4" fill="currentColor" />}
+                                    <span className="text-[10px] font-bold tracking-widest">{isPlaying ? "PAUSE" : "PLAY"}</span>
+                                </button>
+                            </div>
                         </section>
 
                     </div>
