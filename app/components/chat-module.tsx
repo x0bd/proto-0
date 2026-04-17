@@ -3,8 +3,7 @@
 import * as React from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { X, Send, MessageSquare, Loader2 } from "lucide-react";
-import { useChat, type Message } from "@ai-sdk/react";
-import { getKey, hasKey, DEFAULT_MODELS, type Provider } from "@/lib/key-store";
+import { getKey, DEFAULT_MODELS, type Provider } from "@/lib/key-store";
 import type { EmotionState } from "../components/face/types";
 
 interface ChatModuleProps {
@@ -16,62 +15,50 @@ interface ChatModuleProps {
     constraintsRef?: React.RefObject<Element>;
 }
 
+interface ChatMessage {
+    id: string;
+    role: "user" | "assistant";
+    content: string;
+}
+
 // Lightweight text sentiment → emotion mapping
 function sentimentToEmotion(text: string): EmotionState {
     const lower = text.toLowerCase();
-
     let joy = 0, sadness = 0, surprise = 0, anger = 0, curiosity = 0;
 
-    // Joy signals
     const joyWords = ["happy", "great", "love", "wonderful", "beautiful", "bright", "warm", "light", "smile", "laugh", "glad", "brilliant", "enjoy", "fun", "delight", "hope", "joy", "excited"];
     joyWords.forEach(w => { if (lower.includes(w)) joy += 0.3; });
 
-    // Sadness signals
     const sadWords = ["sad", "sorry", "miss", "lost", "pain", "hurt", "alone", "quiet", "heavy", "weight", "dark", "shadow", "grief", "melancholy"];
     sadWords.forEach(w => { if (lower.includes(w)) sadness += 0.3; });
 
-    // Surprise / curiosity signals
     const surpriseWords = ["wow", "unexpected", "sudden", "surprise", "amazing", "incredible", "whoa"];
     surpriseWords.forEach(w => { if (lower.includes(w)) surprise += 0.3; });
 
     const curiosityWords = ["wonder", "curious", "think", "reflect", "ponder", "question", "consider", "imagine", "perhaps", "maybe", "explore"];
     curiosityWords.forEach(w => { if (lower.includes(w)) curiosity += 0.25; });
 
-    // Anger signals
     const angerWords = ["frustrat", "angry", "annoy", "hate", "rage", "furious", "stop", "enough"];
     angerWords.forEach(w => { if (lower.includes(w)) anger += 0.3; });
 
-    // Question mark = curiosity boost
     if (text.includes("?")) curiosity += 0.2;
-    // Exclamation = surprise/joy boost
     if (text.includes("!")) { surprise += 0.15; joy += 0.1; }
 
-    // Clamp
-    joy = Math.min(1, joy);
-    sadness = Math.min(1, sadness);
-    surprise = Math.min(1, surprise);
-    anger = Math.min(1, anger);
-    curiosity = Math.min(1, curiosity);
+    joy = Math.min(1, joy); sadness = Math.min(1, sadness);
+    surprise = Math.min(1, surprise); anger = Math.min(1, anger); curiosity = Math.min(1, curiosity);
 
-    // Default to gentle neutral if nothing triggers
     if (joy < 0.1 && sadness < 0.1 && surprise < 0.1 && anger < 0.1 && curiosity < 0.1) {
         return { joy: 0.3, sadness: 0, surprise: 0, anger: 0, curiosity: 0.15 };
     }
-
     return { joy, sadness, surprise, anger, curiosity };
 }
 
 // Detect which provider is configured
 function getActiveProvider(): { provider: Provider; key: string; model: string } | null {
-    // Priority: OpenAI > Google
     for (const p of ["openai", "google"] as Provider[]) {
         const stored = getKey(p);
         if (stored) {
-            return {
-                provider: p,
-                key: stored.key,
-                model: stored.model || DEFAULT_MODELS[p],
-            };
+            return { provider: p, key: stored.key, model: stored.model || DEFAULT_MODELS[p] };
         }
     }
     return null;
@@ -86,32 +73,21 @@ export function ChatModule({
     constraintsRef,
 }: ChatModuleProps) {
     const [providerInfo, setProviderInfo] = React.useState<ReturnType<typeof getActiveProvider>>(null);
+    const [messages, setMessages] = React.useState<ChatMessage[]>([]);
+    const [input, setInput] = React.useState("");
+    const [isLoading, setIsLoading] = React.useState(false);
+    const [error, setError] = React.useState<string | null>(null);
+
     const inputRef = React.useRef<HTMLInputElement>(null);
     const scrollRef = React.useRef<HTMLDivElement>(null);
+    const abortRef = React.useRef<AbortController | null>(null);
 
     // Re-check keys when panel opens
     React.useEffect(() => {
         if (open) setProviderInfo(getActiveProvider());
     }, [open]);
 
-    const { messages, input, handleInputChange, handleSubmit, isLoading, error } = useChat({
-        api: "/api/chat",
-        body: {
-            provider: providerInfo?.provider,
-            model: providerInfo?.model,
-            apiKey: providerInfo?.key,
-            persona: activePersonaId,
-        },
-        onFinish: (message: Message) => {
-            // Drive avatar emotion from assistant response sentiment
-            if (message.role === "assistant" && onEmotionChange) {
-                const emotion = sentimentToEmotion(message.content);
-                onEmotionChange(emotion);
-            }
-        },
-    });
-
-    // Auto-scroll to bottom
+    // Auto-scroll
     React.useEffect(() => {
         scrollRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages]);
@@ -120,6 +96,79 @@ export function ChatModule({
     React.useEffect(() => {
         if (open) setTimeout(() => inputRef.current?.focus(), 300);
     }, [open]);
+
+    const handleSubmit = React.useCallback(async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!input.trim() || !providerInfo || isLoading) return;
+
+        const userMsg: ChatMessage = {
+            id: Date.now().toString(),
+            role: "user",
+            content: input.trim(),
+        };
+
+        const newMessages = [...messages, userMsg];
+        setMessages(newMessages);
+        setInput("");
+        setIsLoading(true);
+        setError(null);
+
+        const assistantId = (Date.now() + 1).toString();
+
+        try {
+            abortRef.current = new AbortController();
+
+            const res = await fetch("/api/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    messages: newMessages.map(m => ({ role: m.role, content: m.content })),
+                    provider: providerInfo.provider,
+                    model: providerInfo.model,
+                    apiKey: providerInfo.key,
+                    persona: activePersonaId,
+                }),
+                signal: abortRef.current.signal,
+            });
+
+            if (!res.ok) {
+                const data = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
+                throw new Error(data.error || `HTTP ${res.status}`);
+            }
+
+            // Stream the text response
+            const reader = res.body?.getReader();
+            const decoder = new TextDecoder();
+            let fullText = "";
+
+            // Add empty assistant message
+            setMessages(prev => [...prev, { id: assistantId, role: "assistant", content: "" }]);
+
+            if (reader) {
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    const chunk = decoder.decode(value, { stream: true });
+                    fullText += chunk;
+                    setMessages(prev =>
+                        prev.map(m => m.id === assistantId ? { ...m, content: fullText } : m)
+                    );
+                }
+            }
+
+            // Drive avatar emotion
+            if (onEmotionChange && fullText) {
+                onEmotionChange(sentimentToEmotion(fullText));
+            }
+        } catch (err: any) {
+            if (err.name !== "AbortError") {
+                setError(err.message || "Connection failed");
+            }
+        } finally {
+            setIsLoading(false);
+            abortRef.current = null;
+        }
+    }, [input, messages, providerInfo, activePersonaId, isLoading, onEmotionChange]);
 
     const providerLabel = providerInfo
         ? `${providerInfo.provider.toUpperCase()} · ${providerInfo.model.split("/").pop()?.split("-").slice(0, 2).join("-") ?? providerInfo.model}`
@@ -189,7 +238,6 @@ export function ChatModule({
                         </div>
 
                         {!isConfigured ? (
-                            /* No key configured state */
                             <div className="px-4 pb-4">
                                 <div className="te-recessed p-4 flex flex-col items-center gap-2 text-center">
                                     <span className="text-[10px] font-mono font-bold tracking-widest text-foreground/40 uppercase">
@@ -211,16 +259,14 @@ export function ChatModule({
                                             </div>
                                         ) : (
                                             <div className="flex flex-col gap-2 py-1">
-                                                {messages.map((msg: Message) => (
+                                                {messages.map((msg) => (
                                                     <div
                                                         key={msg.id}
                                                         className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
                                                     >
                                                         <div
                                                             className={`max-w-[85%] px-2.5 py-1.5 rounded-[6px] text-[11px] font-mono leading-relaxed ${
-                                                                msg.role === "user"
-                                                                    ? "text-white/90"
-                                                                    : "text-white/70"
+                                                                msg.role === "user" ? "text-white/90" : "text-white/70"
                                                             }`}
                                                             style={{
                                                                 backgroundColor: msg.role === "user" ? `${accentColor}30` : "rgba(255,255,255,0.05)",
@@ -231,7 +277,7 @@ export function ChatModule({
                                                         </div>
                                                     </div>
                                                 ))}
-                                                {isLoading && (
+                                                {isLoading && messages[messages.length - 1]?.role !== "assistant" && (
                                                     <div className="flex justify-start">
                                                         <div className="px-2.5 py-1.5 rounded-[6px] bg-white/5 border border-white/8">
                                                             <Loader2 className="size-3 text-white/40 animate-spin" />
@@ -254,7 +300,7 @@ export function ChatModule({
                                             ref={inputRef}
                                             type="text"
                                             value={input}
-                                            onChange={handleInputChange}
+                                            onChange={(e) => setInput(e.target.value)}
                                             placeholder="TYPE_MSG..."
                                             disabled={isLoading}
                                             className="flex-1 h-9 px-3 rounded-[6px] text-[11px] font-mono font-bold tracking-wider text-foreground placeholder:text-foreground/25 bg-[var(--lcd-bg)] shadow-[inset_0_2px_6px_rgba(0,0,0,0.15)] dark:shadow-[inset_0_2px_6px_rgba(0,0,0,0.6)] border-none outline-none disabled:opacity-40 uppercase"
@@ -279,7 +325,7 @@ export function ChatModule({
                                 {error && (
                                     <div className="px-4 pb-3">
                                         <div className="text-[9px] font-mono text-[var(--te-orange)] tracking-wider bg-[var(--te-orange)]/10 px-2 py-1 rounded-[4px] border border-[var(--te-orange)]/20">
-                                            ERR: {error.message?.slice(0, 60)}
+                                            ERR: {error.slice(0, 60)}
                                         </div>
                                     </div>
                                 )}

@@ -8,8 +8,8 @@ interface FloatingDockProps {
     voiceEnabled: boolean;
     onVoiceToggle: () => void;
     presetLabel: string;
-    showTranscript: boolean;
-    onToggleTranscript: () => void;
+    isChatOpen: boolean;
+    onToggleChat: () => void;
     accentColor?: string;
     constraintsRef?: React.RefObject<Element>;
 }
@@ -18,8 +18,8 @@ export function FloatingDock({
     voiceEnabled,
     onVoiceToggle,
     presetLabel,
-    showTranscript,
-    onToggleTranscript,
+    isChatOpen,
+    onToggleChat,
     accentColor = "#7C3AED",
     constraintsRef,
 }: FloatingDockProps) {
@@ -38,8 +38,8 @@ export function FloatingDock({
                         )
                     }
                     onInterrupt={() => setVoiceState("idle")}
-                    showTranscript={showTranscript}
-                    onToggleTranscript={onToggleTranscript}
+                    isChatOpen={isChatOpen}
+                    onToggleChat={onToggleChat}
                     isMuted={!voiceEnabled}
                     onToggleMute={onVoiceToggle}
                     onOpenSettings={() => setIsVoiceSettingsOpen(true)}

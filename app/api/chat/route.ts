@@ -13,24 +13,18 @@ export async function POST(req: Request) {
             );
         }
 
-        // Build system prompt from persona
         const systemPrompt = buildSystemPrompt(persona);
-
-        // Only keep last 8 messages to control costs
         const recentMessages = messages.slice(-8);
-
-        // Construct the provider-specific model instance
         const aiModel = getModel(provider, model, apiKey);
 
         const result = streamText({
             model: aiModel,
             system: systemPrompt,
             messages: recentMessages,
-            maxTokens: 150,
             temperature: 0.7,
         });
 
-        return result.toDataStreamResponse();
+        return result.toTextStreamResponse();
     } catch (error: any) {
         console.error("[chat/route] Error:", error);
         

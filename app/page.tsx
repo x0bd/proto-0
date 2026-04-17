@@ -11,9 +11,8 @@ import { MemoryDrawer } from "./components/memory-drawer";
 import { RitualDrawer } from "./components/ritual-drawer";
 import { AudioLab } from "./components/audio-lab";
 import { ChatModule } from "./components/chat-module";
-import { TranscriptPanel } from "@/components/ui/transcript-panel";
 import { ActivePersonaChip } from "@/components/ui/active-persona-chip";
-import { Database, Calendar, AudioWaveform, MessageSquare } from "lucide-react";
+import { Database, Calendar, AudioWaveform } from "lucide-react";
 import {
 	RiMoonFill,
 	RiSunFill,
@@ -109,7 +108,6 @@ export default function Home() {
 	const [isRitualOpen, setIsRitualOpen] = useState(false);
 	const [isAudioLabOpen, setIsAudioLabOpen] = useState(false);
 	const [isChatOpen, setIsChatOpen] = useState(false);
-	const [showTranscript, setShowTranscript] = useState(true);
 	const [activePersonaId, setActivePersonaId] = useState<string>(() => {
 		if (typeof window !== "undefined") {
 			return localStorage.getItem("activePersonaId") || "coach";
@@ -444,22 +442,6 @@ export default function Home() {
 					>
 						<AudioWaveform className="size-[18px] text-foreground/70" />
 					</motion.button>
-					{/* Chat Button */}
-					<motion.button
-						initial={{ opacity: 0, scale: 0.9 }}
-						animate={{ opacity: 1, scale: 1 }}
-						transition={{
-							delay: 0.298,
-							type: "spring",
-							damping: 25,
-							stiffness: 300,
-						}}
-						onClick={() => setIsChatOpen(true)}
-						className="size-10 sm:size-10 flex items-center justify-center te-button touch-manipulation"
-						title="Chat"
-					>
-						<MessageSquare className="size-[18px] text-foreground/70" />
-					</motion.button>
 					{/* Settings Button */}
 					<motion.button
 						initial={{ opacity: 0, scale: 0.9 }}
@@ -507,18 +489,6 @@ export default function Home() {
 						/>
 					</div>
 				</motion.div>
-				<div className="absolute bottom-[100px] sm:bottom-[120px] w-full flex justify-center z-50 px-4 pointer-events-none">
-					<AnimatePresence>
-						{showTranscript && (
-							<TranscriptPanel
-								text="I remember you told me you prefer concise answers."
-								isFinal={false}
-								accentColor={accentColor}
-								onClose={() => setShowTranscript(false)}
-							/>
-						)}
-					</AnimatePresence>
-				</div>
 				{/* BOTTOM UI (Playful Dock) */}{" "}
 				<FloatingDock
 					voiceEnabled={voiceEnabled}
@@ -527,8 +497,8 @@ export default function Home() {
 						EMOTION_PRESETS.find((p) => p.id === activePresetId)
 							?.label ?? "NEUTRAL"
 					}
-					showTranscript={showTranscript}
-					onToggleTranscript={() => setShowTranscript((v) => !v)}
+					isChatOpen={isChatOpen}
+					onToggleChat={() => setIsChatOpen((v) => !v)}
 					accentColor={accentColor}
 					constraintsRef={constraintsRef}
 				/>

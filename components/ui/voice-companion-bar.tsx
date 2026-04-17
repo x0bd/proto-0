@@ -23,8 +23,8 @@ interface VoiceCompanionBarProps {
 	state: VoiceState;
 	onToggleMic: () => void;
 	onInterrupt: () => void;
-	showTranscript: boolean;
-	onToggleTranscript: () => void;
+	isChatOpen: boolean;
+	onToggleChat: () => void;
 	isMuted: boolean;
 	onToggleMute: () => void;
 	onOpenSettings: () => void;
@@ -36,8 +36,8 @@ export function VoiceCompanionBar({
 	state,
 	onToggleMic,
 	onInterrupt,
-	showTranscript,
-	onToggleTranscript,
+	isChatOpen,
+	onToggleChat,
 	isMuted,
 	onToggleMute,
 	onOpenSettings,
@@ -132,12 +132,12 @@ export function VoiceCompanionBar({
 					)}
 				</button>
 
-				{/* Transcript Toggle */}
+				{/* Chat Toggle */}
 				<button
-					onClick={onToggleTranscript}
+					onClick={onToggleChat}
 					className="w-12 h-10 te-button text-foreground/70 rounded-[10px]"
 					style={
-						showTranscript
+						isChatOpen
 							? ({
 									"--key-bg": "var(--te-blue)",
 									"--key-border": "color-mix(in srgb, var(--te-blue) 80%, black)",
@@ -147,7 +147,7 @@ export function VoiceCompanionBar({
 							: undefined
 					}
 					title={
-						showTranscript ? "Hide Transcript" : "Show Transcript"
+						isChatOpen ? "Close Chat" : "Open Chat"
 					}
 				>
 					<MessageSquareText className="size-[16px]" />
