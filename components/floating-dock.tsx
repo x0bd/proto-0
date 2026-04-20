@@ -12,6 +12,9 @@ interface FloatingDockProps {
     onToggleChat: () => void;
     accentColor?: string;
     constraintsRef?: React.RefObject<Element>;
+    voiceState: VoiceState;
+    onToggleMic: () => void;
+    onInterrupt: () => void;
 }
 
 export function FloatingDock({
@@ -22,9 +25,10 @@ export function FloatingDock({
     onToggleChat,
     accentColor = "#7C3AED",
     constraintsRef,
+    voiceState,
+    onToggleMic,
+    onInterrupt,
 }: FloatingDockProps) {
-    // Temporary mock state to demonstrate the UI
-    const [voiceState, setVoiceState] = React.useState<VoiceState>("idle");
     const [isVoiceSettingsOpen, setIsVoiceSettingsOpen] = React.useState(false);
 
     return (
@@ -32,12 +36,8 @@ export function FloatingDock({
             <div className="absolute bottom-[max(16px,env(safe-area-inset-bottom))] sm:bottom-6 md:bottom-10 left-1/2 -translate-x-1/2 z-60 flex flex-col items-center gap-4 w-full max-w-[calc(100vw-2rem)] px-4">
                 <VoiceCompanionBar
                     state={voiceState}
-                    onToggleMic={() =>
-                        setVoiceState(
-                            voiceState === "idle" ? "listening" : "idle",
-                        )
-                    }
-                    onInterrupt={() => setVoiceState("idle")}
+                    onToggleMic={onToggleMic}
+                    onInterrupt={onInterrupt}
                     isChatOpen={isChatOpen}
                     onToggleChat={onToggleChat}
                     isMuted={!voiceEnabled}

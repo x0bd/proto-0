@@ -23,6 +23,7 @@ import { SiNpm, SiGithub } from "react-icons/si";
 import { FaceVariant, EmotionState } from "./components/face/types";
 import { VARIANT_COLORS } from "./components/face/themes";
 import { useAudioAnalysis, type AudioLevels } from "@/hooks/useAudioAnalysis";
+import { useVoiceConversation } from "@/hooks/useVoiceConversation";
 import { useTheme } from "next-themes";
 
 const NEUTRAL_EMOTION: EmotionState = {
@@ -151,8 +152,23 @@ export default function Home() {
 		disconnect: disconnectAudio,
 	} = useAudioAnalysis();
 
-	// Pass levels to avatar
+	const { voiceState, toggleMic, interrupt } = useVoiceConversation({
+		activePersonaId,
+		onAudioLevelsChange: (ttsLevels) => {
+			setAudioLevels(ttsLevels);
+			setVoiceLevel(ttsLevels.overall);
+		},
+	});
+
+	// Ref mirror so the mic-levels effect below never reads stale voiceState
+	const voiceStateRef = useRef(voiceState);
 	useEffect(() => {
+		voiceStateRef.current = voiceState;
+	}, [voiceState]);
+
+	// Pass mic levels to avatar — skip while TTS is playing (hook drives them)
+	useEffect(() => {
+		if (voiceStateRef.current === "speaking") return;
 		setAudioLevels(levels);
 	}, [levels]);
 
@@ -194,13 +210,10 @@ export default function Home() {
 		return () => cancelAnimationFrame(frameId);
 	}, []);
 
-	// Voice level from real audio analysis
+	// Voice level from mic — skip while TTS is playing
 	useEffect(() => {
-		if (levels?.overall) {
-			setVoiceLevel(levels.overall);
-		} else {
-			setVoiceLevel(0);
-		}
+		if (voiceStateRef.current === "speaking") return;
+		setVoiceLevel(levels?.overall ?? 0);
 	}, [levels]);
 
 	// Debug / Rapid Switch: Cycle variants with 'v' key
@@ -501,6 +514,9 @@ export default function Home() {
 					onToggleChat={() => setIsChatOpen((v) => !v)}
 					accentColor={accentColor}
 					constraintsRef={constraintsRef}
+					voiceState={voiceState}
+					onToggleMic={toggleMic}
+					onInterrupt={interrupt}
 				/>
 				{/* Settings Modal */}
 				<CustomizationModal

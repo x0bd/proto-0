@@ -3,15 +3,18 @@ import { NextResponse } from 'next/server';
 
 export async function POST(req: Request) {
   try {
-    const { text, voiceId = "21m00Tcm4TlvDq8ikWAM" } = await req.json(); // Default to Rachel
+    const { text, voiceId = "21m00Tcm4TlvDq8ikWAM", apiKey: bodyApiKey } = await req.json();
 
     if (!text) {
       return NextResponse.json({ error: 'Text is required' }, { status: 400 });
     }
 
-    const apiKey = process.env.ELEVENLABS_API_KEY;
+    const apiKey = bodyApiKey || process.env.ELEVENLABS_API_KEY;
     if (!apiKey) {
-      return NextResponse.json({ error: 'ELEVENLABS_API_KEY not configured' }, { status: 500 });
+      return NextResponse.json(
+        { error: 'No ElevenLabs key. Add one in Settings → KEYS or set ELEVENLABS_API_KEY.' },
+        { status: 400 },
+      );
     }
 
     // Call ElevenLabs API
