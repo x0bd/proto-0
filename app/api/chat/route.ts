@@ -4,7 +4,7 @@ import { streamText } from "ai";
 
 export async function POST(req: Request) {
     try {
-        const { messages, provider, model, apiKey, persona } = await req.json();
+        const { messages, provider, model, apiKey, persona, memoryContext } = await req.json();
 
         if (!apiKey) {
             return new Response(
@@ -13,7 +13,7 @@ export async function POST(req: Request) {
             );
         }
 
-        const systemPrompt = buildSystemPrompt(persona);
+        const systemPrompt = buildSystemPrompt(persona, memoryContext);
         const recentMessages = messages.slice(-8);
         const aiModel = getModel(provider, model, apiKey);
 
@@ -53,7 +53,7 @@ function getModel(provider: string, model: string, apiKey: string) {
     }
 }
 
-function buildSystemPrompt(persona?: string): string {
+function buildSystemPrompt(persona?: string, memoryContext?: string): string {
     const base = `You are Dot, a warm and thoughtful AI companion. You speak in short, considered sentences. You are poetic but never verbose. Max 2-3 sentences per reply.`;
 
     const tones: Record<string, string> = {
@@ -64,5 +64,8 @@ function buildSystemPrompt(persona?: string): string {
     };
 
     const personaTone = persona && tones[persona] ? `\n${tones[persona]}` : "";
-    return base + personaTone;
+    const memory = memoryContext
+        ? `\n\nWhat you remember about this person (weave in naturally — never say "I remember" unless directly asked):\n${memoryContext}`
+        : "";
+    return base + personaTone + memory;
 }

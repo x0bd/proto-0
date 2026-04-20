@@ -36,7 +36,7 @@ const STORAGE_KEY = "dot_memory_core";
 
 // --- Persistence helpers ---
 
-function loadMemories(): MemoryEntry[] {
+export function loadMemories(): MemoryEntry[] {
     if (typeof window === "undefined") return [];
     try {
         const raw = localStorage.getItem(STORAGE_KEY);
@@ -47,6 +47,11 @@ function loadMemories(): MemoryEntry[] {
 
 function saveMemories(memories: MemoryEntry[]): void {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(memories));
+}
+
+export function isMemoryEnabled(): boolean {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem("dot_memory_enabled") !== "false";
 }
 
 /** Add a memory from anywhere in the app */

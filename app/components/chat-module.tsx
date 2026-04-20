@@ -4,6 +4,7 @@ import * as React from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { X, Send, MessageSquare, Loader2 } from "lucide-react";
 import { getKey, DEFAULT_MODELS, type Provider } from "@/lib/key-store";
+import { loadMemories, addMemory, isMemoryEnabled } from "./memory-drawer";
 import type { EmotionState } from "../components/face/types";
 
 interface ChatModuleProps {
@@ -51,6 +52,26 @@ function sentimentToEmotion(text: string): EmotionState {
         return { joy: 0.3, sadness: 0, surprise: 0, anger: 0, curiosity: 0.15 };
     }
     return { joy, sadness, surprise, anger, curiosity };
+}
+
+function autoTags(content: string): string[] {
+    const lower = content.toLowerCase();
+    const tags: string[] = [];
+    if (/\b(goal|want to|trying to|plan|aim|working on|building)\b/.test(lower)) tags.push("goals");
+    if (/\b(feel|feeling|emotion|mood|anxious|happy|sad|stress|nervous|excited)\b/.test(lower)) tags.push("feelings");
+    if (/\b(work|job|project|career|boss|colleague|client)\b/.test(lower)) tags.push("work");
+    if (/\b(friend|family|partner|relationship|mom|dad|brother|sister)\b/.test(lower)) tags.push("people");
+    if (/\b(like|love|enjoy|prefer|favorite|hate|dislike)\b/.test(lower)) tags.push("preferences");
+    return tags.length > 0 ? tags : ["general"];
+}
+
+function buildMemoryContext(): string {
+    const memories = loadMemories();
+    if (memories.length === 0) return "";
+    return memories
+        .slice(0, 8)
+        .map((m) => `- ${m.content.slice(0, 120)}`)
+        .join("\n");
 }
 
 // Detect which provider is configured
@@ -113,7 +134,14 @@ export function ChatModule({
         setIsLoading(true);
         setError(null);
 
+        // Persist user message as a memory entry if learning is enabled
+        const trimmed = userMsg.content;
+        if (isMemoryEnabled() && trimmed.length > 20) {
+            addMemory({ content: trimmed, tags: autoTags(trimmed), source: "chat" });
+        }
+
         const assistantId = (Date.now() + 1).toString();
+        const memoryContext = buildMemoryContext();
 
         try {
             abortRef.current = new AbortController();
@@ -127,6 +155,7 @@ export function ChatModule({
                     model: providerInfo.model,
                     apiKey: providerInfo.key,
                     persona: activePersonaId,
+                    memoryContext: memoryContext || undefined,
                 }),
                 signal: abortRef.current.signal,
             });

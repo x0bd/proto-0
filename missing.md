@@ -1,17 +1,17 @@
 # DOT — Missing / Incomplete Features
 
-## 1. Voice Pipeline Not Wired
-- `FloatingDock` uses a **mock** `voiceState` — mic button toggles local state only
-- `useVoiceSynthesis` is implemented but never used in the UI
-- Full loop unbuilt: mic → transcript → `/api/chat` → TTS → avatar animation
-- No barge-in / interruption handling
-- No speech-to-text integration (no Whisper / browser SpeechRecognition wired up)
+## ~~1. Voice Pipeline Not Wired~~ ✅ Fixed
+- `useVoiceConversation` hook implements full loop: SpeechRecognition → `/api/chat` → ElevenLabs TTS → avatar audio analysis
+- `FloatingDock` now accepts real `voiceState`, `onToggleMic`, `onInterrupt` props
+- TTS audio drives avatar during speaking; mic levels resume on idle
+- Browser `SpeechSynthesis` fallback when no ElevenLabs key is set
+- `/api/tts` route now accepts BYOK `apiKey` from request body, falls back to env var
 
-## 2. Memory Never Influences AI Responses
-- `addMemory()` is exported from `memory-drawer.tsx` but never called anywhere
-- `ChatModule` does not write to memory after conversations
-- `/api/chat/route.ts` receives no memory context — responses are stateless
-- Memory drawer stores entries but they are purely display-only
+## ~~2. Memory Never Influences AI Responses~~ ✅ Fixed
+- `loadMemories` and `isMemoryEnabled` exported from `memory-drawer.tsx`
+- `ChatModule` writes user messages (>20 chars) as memories with auto-tags when learning is enabled
+- `ChatModule` reads the 8 most recent memories and passes them as `memoryContext` to `/api/chat`
+- `/api/chat/route.ts` injects memory context into the system prompt — DOT now personalises responses
 
 ## 3. TTS Route is Not BYOK
 - `/api/tts/route.ts` reads `process.env.ELEVENLABS_API_KEY` from the server env
