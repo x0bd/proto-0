@@ -4,7 +4,23 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import type { VoiceState } from "@/components/ui/voice-companion-bar";
 import type { AudioLevels } from "./useAudioAnalysis";
 import { getKey } from "@/lib/key-store";
-import { addMemory, isMemoryEnabled } from "@/app/components/memory-drawer";
+
+function saveVoiceMemory(text: string): void {
+  if (typeof window === "undefined") return;
+  try {
+    if (localStorage.getItem("dot_memory_enabled") === "false") return;
+    const raw = localStorage.getItem("dot_memory_core");
+    const memories: unknown[] = raw ? JSON.parse(raw) : [];
+    memories.unshift({
+      id: `${Date.now()}${Math.random().toString(36).slice(2, 6)}`,
+      content: text,
+      tags: ["voice"],
+      source: "voice",
+      date: new Date().toISOString(),
+    });
+    localStorage.setItem("dot_memory_core", JSON.stringify(memories));
+  } catch { /* noop */ }
+}
 
 interface UseVoiceConversationOptions {
   activePersonaId?: string;
@@ -202,9 +218,7 @@ export function useVoiceConversation({
         }
 
         if (fullText) {
-          if (isMemoryEnabled() && text.length > 10) {
-            addMemory({ content: text, tags: ["voice"], source: "voice" });
-          }
+          if (text.length > 10) saveVoiceMemory(text);
           await speak(fullText);
         } else {
           setVoiceState("idle");
