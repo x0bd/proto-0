@@ -24,6 +24,7 @@ import {
     X,
 } from "lucide-react";
 import GIF from "gif.js";
+import { usePanelPosition } from "@/hooks/usePanelPosition";
 
 interface ShareDockProps {
     targetRef: React.RefObject<HTMLDivElement | null>;
@@ -234,6 +235,67 @@ export function ShareDock({
         }
     }, [resetStatus, status, targetRef, template, triggerDownload]);
 
+    const handleExportWebM = React.useCallback(async () => {
+        if (!targetRef.current || status === "progress") return;
+
+        const mimeType = ["video/webm;codecs=vp9", "video/webm;codecs=vp8", "video/webm"].find(
+            (t) => MediaRecorder.isTypeSupported(t),
+        );
+        if (!mimeType) {
+            setStatus("error");
+            setStatusMessage("WebM not supported");
+            resetStatus();
+            return;
+        }
+
+        try {
+            setStatus("progress");
+            setStatusMessage("Recording WebM");
+            setActiveFormat("webm");
+
+            const outputSize = 512;
+            const canvas = document.createElement("canvas");
+            canvas.width = outputSize;
+            canvas.height = outputSize;
+            const ctx2d = canvas.getContext("2d")!;
+
+            const stream = canvas.captureStream(12);
+            const recorder = new MediaRecorder(stream, { mimeType });
+            const chunks: BlobPart[] = [];
+
+            recorder.ondataavailable = (e) => {
+                if (e.data.size > 0) chunks.push(e.data);
+            };
+            recorder.onstop = () => {
+                const blob = new Blob(chunks, { type: "video/webm" });
+                triggerDownload(blob, `dot-${template}-${Date.now()}.webm`);
+                setStatus("success");
+                setStatusMessage("WebM saved");
+                resetStatus();
+            };
+
+            recorder.start();
+
+            const fps = 12;
+            const totalFrames = Math.ceil(3 * fps);
+            for (let i = 0; i < totalFrames; i++) {
+                const { dataUrl } = await captureAvatarPNG(targetRef.current!, outputSize);
+                const img = new Image();
+                img.src = dataUrl;
+                await new Promise<void>((r) => { img.onload = () => r(); });
+                ctx2d.drawImage(img, 0, 0, outputSize, outputSize);
+                await new Promise((r) => setTimeout(r, 1000 / fps));
+            }
+
+            recorder.stop();
+        } catch (error) {
+            console.error("WebM export failed", error);
+            setStatus("error");
+            setStatusMessage("WebM export failed");
+            resetStatus();
+        }
+    }, [resetStatus, status, targetRef, template, triggerDownload]);
+
     const handleExportGIF = React.useCallback(async () => {
         if (!targetRef.current || status === "progress") return;
         try {
@@ -325,6 +387,8 @@ export function ShareDock({
         }
     }, [canNativeShare, resetStatus, status, targetRef, template]);
 
+    const { x, y, onDragEnd } = usePanelPosition("share-dock");
+
     return (
         <>
             <div className="absolute bottom-[max(16px,env(safe-area-inset-bottom))] right-3 sm:bottom-10 sm:right-6 z-[70] flex flex-col items-end gap-3 pointer-events-auto">
@@ -379,9 +443,11 @@ export function ShareDock({
                     drag
                     dragConstraints={constraintsRef}
                     dragMomentum={false}
-                    initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                    style={{ x, y }}
+                    onDragEnd={onDragEnd}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
                     transition={{ type: "spring", damping: 25, stiffness: 300 }}
                     className="absolute top-24 right-[400px] w-[280px] h-auto pb-3 te-module z-[100]"
                 >
@@ -474,7 +540,7 @@ export function ShareDock({
                                 {[
                                     { id: "png" as const, label: "PNG", onClick: handleExportPNG, disabled: false, color: "var(--te-green)" },
                                     { id: "gif" as const, label: "GIF", onClick: handleExportGIF, disabled: false, color: "var(--te-blue)" },
-                                    { id: "webm" as const, label: "WEBM", onClick: () => undefined, disabled: true, color: "var(--te-orange)" },
+                                    { id: "webm" as const, label: "WEBM", onClick: handleExportWebM, disabled: false, color: "var(--te-orange)" },
                                 ].map((item) => {
                                     const active = activeFormat === item.id;
                                     return (

@@ -3,6 +3,7 @@
 import * as React from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { X, Mic2, Settings2 } from "lucide-react";
+import { usePanelPosition } from "@/hooks/usePanelPosition";
 
 interface VoiceSettingsSheetProps {
     open: boolean;
@@ -30,6 +31,8 @@ export function VoiceSettingsSheet({
     const [autoSpeak, setAutoSpeak] = React.useState(true);
     const [interruptible, setInterruptible] = React.useState(true);
 
+    const { x, y, onDragEnd } = usePanelPosition("voice-settings");
+
     return (
         <AnimatePresence>
             {open && (
@@ -37,9 +40,11 @@ export function VoiceSettingsSheet({
                     drag
                     dragConstraints={constraintsRef}
                     dragMomentum={false}
-                    initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                    style={{ x, y }}
+                    onDragEnd={onDragEnd}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
                     transition={{ type: "spring", damping: 25, stiffness: 300 }}
                     className="absolute top-24 left-1/2 -translate-x-1/2 w-[340px] h-auto te-module z-[100] flex flex-col"
                 >

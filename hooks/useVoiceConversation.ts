@@ -4,6 +4,7 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import type { VoiceState } from "@/components/ui/voice-companion-bar";
 import type { AudioLevels } from "./useAudioAnalysis";
 import { getKey } from "@/lib/key-store";
+import { addMemory, isMemoryEnabled } from "@/app/components/memory-drawer";
 
 interface UseVoiceConversationOptions {
   activePersonaId?: string;
@@ -201,6 +202,9 @@ export function useVoiceConversation({
         }
 
         if (fullText) {
+          if (isMemoryEnabled() && text.length > 10) {
+            addMemory({ content: text, tags: ["voice"], source: "voice" });
+          }
           await speak(fullText);
         } else {
           setVoiceState("idle");

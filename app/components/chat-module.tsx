@@ -2,7 +2,8 @@
 
 import * as React from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { X, Send, MessageSquare, Loader2 } from "lucide-react";
+import { X, Send, MessageSquare, Loader2, Settings2 } from "lucide-react";
+import { usePanelPosition } from "@/hooks/usePanelPosition";
 import { getKey, DEFAULT_MODELS, type Provider } from "@/lib/key-store";
 import { loadMemories, addMemory, isMemoryEnabled } from "./memory-drawer";
 import type { EmotionState } from "../components/face/types";
@@ -14,6 +15,7 @@ interface ChatModuleProps {
     activePersonaId?: string;
     accentColor?: string;
     constraintsRef?: React.RefObject<Element>;
+    onOpenSettings?: () => void;
 }
 
 interface ChatMessage {
@@ -92,6 +94,7 @@ export function ChatModule({
     activePersonaId = "coach",
     accentColor = "#7c3aed",
     constraintsRef,
+    onOpenSettings,
 }: ChatModuleProps) {
     const [providerInfo, setProviderInfo] = React.useState<ReturnType<typeof getActiveProvider>>(null);
     const [messages, setMessages] = React.useState<ChatMessage[]>([]);
@@ -204,6 +207,7 @@ export function ChatModule({
         : "NO_KEY";
 
     const isConfigured = !!providerInfo;
+    const { x, y, onDragEnd } = usePanelPosition("chat");
 
     return (
         <AnimatePresence>
@@ -212,9 +216,11 @@ export function ChatModule({
                     drag
                     dragConstraints={constraintsRef}
                     dragMomentum={false}
-                    initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                    style={{ x, y }}
+                    onDragEnd={onDragEnd}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
                     transition={{ type: "spring", damping: 25, stiffness: 300 }}
                     className="absolute top-24 left-6 w-[380px] h-auto te-module z-[100] flex flex-col shadow-[0_30px_60px_rgba(0,0,0,0.4),0_0_0_1px_rgba(0,0,0,0.1),inset_0_1px_1px_rgba(255,255,255,0.1)]"
                 >
@@ -268,13 +274,28 @@ export function ChatModule({
 
                         {!isConfigured ? (
                             <div className="px-4 pb-4">
-                                <div className="te-recessed p-4 flex flex-col items-center gap-2 text-center">
+                                <div className="te-recessed p-4 flex flex-col items-center gap-3 text-center">
                                     <span className="text-[10px] font-mono font-bold tracking-widest text-foreground/40 uppercase">
                                         NO_AI_KEY_FOUND
                                     </span>
                                     <span className="text-[9px] font-mono text-foreground/30 leading-relaxed">
                                         Add an OpenAI or Google key in<br />Settings → KEYS tab to begin.
                                     </span>
+                                    {onOpenSettings && (
+                                        <button
+                                            onClick={() => { onOpenSettings(); onOpenChange(false); }}
+                                            className="h-8 px-4 te-button rounded-[6px] flex items-center gap-1.5 text-foreground/70 hover:text-foreground"
+                                            style={{
+                                                "--key-bg": "var(--te-orange)",
+                                                "--key-border": "color-mix(in srgb, var(--te-orange) 80%, black)",
+                                                "--key-shadow": "color-mix(in srgb, var(--te-orange) 60%, black)",
+                                                color: "#ffffff",
+                                            } as React.CSSProperties}
+                                        >
+                                            <Settings2 className="size-3" />
+                                            <span className="text-[9px] font-bold tracking-widest">OPEN_SETTINGS</span>
+                                        </button>
+                                    )}
                                 </div>
                             </div>
                         ) : (

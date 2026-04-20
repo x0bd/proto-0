@@ -17,6 +17,19 @@ const PROVIDERS: { id: Provider; label: string; placeholder: string; purpose: st
     { id: "elevenlabs", label: "11LABS", placeholder: "sk_...",  purpose: "TTS_ENGINE"   },
 ];
 
+const PROVIDER_MODELS: Partial<Record<Provider, { id: string; label: string }[]>> = {
+    openai: [
+        { id: "gpt-4o-mini",  label: "4O-MINI" },
+        { id: "gpt-4o",       label: "4O"      },
+        { id: "o1-mini",      label: "O1-MINI" },
+    ],
+    google: [
+        { id: "gemini-2.0-flash", label: "2.0-FLASH" },
+        { id: "gemini-1.5-flash", label: "1.5-FLASH" },
+        { id: "gemini-1.5-pro",   label: "1.5-PRO"   },
+    ],
+};
+
 type View = "list" | "edit" | "unlock";
 
 export function KeyVaultPanel({ accentColor = "#7c3aed" }: KeyVaultPanelProps) {
@@ -36,6 +49,7 @@ export function KeyVaultPanel({ accentColor = "#7c3aed" }: KeyVaultPanelProps) {
     const [passphraseValue, setPassphraseValue] = React.useState("");
     const [showPassphrase, setShowPassphrase] = React.useState(false);
     const [isSessionOnly, setIsSessionOnly] = React.useState(false);
+    const [modelValue, setModelValue] = React.useState("");
     const [saving, setSaving] = React.useState(false);
 
     // Unlock state
@@ -69,6 +83,7 @@ export function KeyVaultPanel({ accentColor = "#7c3aed" }: KeyVaultPanelProps) {
         setShowKey(false);
         setShowPassphrase(false);
         setIsSessionOnly(false);
+        setModelValue(DEFAULT_MODELS[provider]);
         setView("edit");
     };
 
@@ -83,6 +98,7 @@ export function KeyVaultPanel({ accentColor = "#7c3aed" }: KeyVaultPanelProps) {
         await setKey(editingProvider, inputValue.trim(), {
             sessionOnly: isSessionOnly,
             passphrase: !isSessionOnly && passphraseValue.trim() ? passphraseValue.trim() : undefined,
+            model: modelValue || DEFAULT_MODELS[editingProvider],
         });
         refreshState();
         setSaving(false);
@@ -244,6 +260,31 @@ export function KeyVaultPanel({ accentColor = "#7c3aed" }: KeyVaultPanelProps) {
                             >
                                 {showPassphrase ? <EyeOff className="size-3" /> : <Eye className="size-3" />}
                             </button>
+                        </div>
+                    )}
+
+                    {/* Model picker — only for providers that have model options */}
+                    {editingProvider && PROVIDER_MODELS[editingProvider] && (
+                        <div className="flex flex-col gap-1">
+                            <span className="text-[9px] font-mono font-bold tracking-widest text-foreground/40 px-1">MODEL_VER</span>
+                            <div className="flex gap-1.5 flex-wrap">
+                                {PROVIDER_MODELS[editingProvider]!.map((m) => (
+                                    <button
+                                        key={m.id}
+                                        type="button"
+                                        onClick={() => setModelValue(m.id)}
+                                        className="h-7 px-2 te-button rounded-[6px] text-[8px] flex-1"
+                                        style={modelValue === m.id ? {
+                                            "--key-bg": "var(--te-blue)",
+                                            "--key-border": "color-mix(in srgb, var(--te-blue) 80%, black)",
+                                            "--key-shadow": "color-mix(in srgb, var(--te-blue) 60%, black)",
+                                            color: "#ffffff",
+                                        } as React.CSSProperties : undefined}
+                                    >
+                                        {m.label}
+                                    </button>
+                                ))}
+                            </div>
                         </div>
                     )}
 

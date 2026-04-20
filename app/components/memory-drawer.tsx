@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { motion, AnimatePresence } from "motion/react";
+import { usePanelPosition } from "@/hooks/usePanelPosition";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
     Search,
@@ -176,6 +177,8 @@ export function MemoryDrawer({
         saveMemoryEnabled(next);
     };
 
+    const { x, y, onDragEnd } = usePanelPosition("memory");
+
     return (
         <AnimatePresence>
             {open && (
@@ -183,9 +186,11 @@ export function MemoryDrawer({
                     drag
                     dragConstraints={constraintsRef}
                     dragMomentum={false}
-                    initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                    style={{ x, y }}
+                    onDragEnd={onDragEnd}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
                     transition={{ type: "spring", damping: 25, stiffness: 300 }}
                     className="absolute top-24 left-12 w-[600px] h-auto te-module z-[100] flex flex-col"
                 >

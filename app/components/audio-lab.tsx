@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { motion, AnimatePresence } from "motion/react";
+import { usePanelPosition } from "@/hooks/usePanelPosition";
 import { X, Play, Pause, Square, Upload, AudioLines } from "lucide-react";
 import type { EmotionState } from "../components/face/types";
 
@@ -378,6 +379,8 @@ export function AudioLab({
         };
     }, []);
 
+    const { x, y, onDragEnd } = usePanelPosition("audio-lab");
+
     return (
         <AnimatePresence>
             {open && (
@@ -385,9 +388,11 @@ export function AudioLab({
                     drag
                     dragConstraints={constraintsRef}
                     dragMomentum={false}
-                    initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                    style={{ x, y }}
+                    onDragEnd={onDragEnd}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
                     transition={{ type: "spring", damping: 25, stiffness: 300 }}
                     className="absolute top-24 right-6 w-[380px] h-auto te-module z-[100] flex flex-col shadow-[0_30px_60px_rgba(0,0,0,0.4),0_0_0_1px_rgba(0,0,0,0.1),inset_0_1px_1px_rgba(255,255,255,0.1)]"
                 >

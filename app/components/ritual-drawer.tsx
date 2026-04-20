@@ -3,6 +3,8 @@
 import * as React from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { X, Check } from "lucide-react";
+import { usePanelPosition } from "@/hooks/usePanelPosition";
+import { addMemory, isMemoryEnabled } from "./memory-drawer";
 
 interface RitualDrawerProps {
     open: boolean;
@@ -131,7 +133,16 @@ export function RitualDrawer({
         updated.streak = calculateStreak(updated.entries);
         setSyncData(updated);
         saveSyncData(updated);
+        if (isMemoryEnabled()) {
+            const moodLabel = MOODS.find((m) => m.id === selectedMood)?.label ?? selectedMood;
+            const content = note.trim()
+                ? `Mood check-in: ${moodLabel}. ${note.trim()}`
+                : `Mood check-in: ${moodLabel}`;
+            addMemory({ content, tags: ["ritual", "mood"], source: "ritual" });
+        }
     };
+
+    const { x, y, onDragEnd } = usePanelPosition("ritual");
 
     return (
         <AnimatePresence>
@@ -140,9 +151,11 @@ export function RitualDrawer({
                     drag
                     dragConstraints={constraintsRef}
                     dragMomentum={false}
-                    initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                    style={{ x, y }}
+                    onDragEnd={onDragEnd}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
                     transition={{ type: "spring", damping: 25, stiffness: 300 }}
                     className="absolute top-24 left-1/2 -translate-x-1/2 w-[360px] h-auto te-module z-[100] flex flex-col"
                 >

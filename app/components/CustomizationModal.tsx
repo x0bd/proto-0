@@ -103,7 +103,6 @@ const PERSONAS = [
 			"Gentle, philosophical, and more interested in meaning than raw speed.",
 		preview:
 			'"There is usually a quieter layer beneath the first reaction."',
-		unavailable: true,
 	},
 	{
 		id: "focus-buddy",
@@ -267,6 +266,7 @@ import { PersonaPicker } from "@/components/ui/persona-picker";
 import { PersonaPreview } from "@/components/ui/persona-preview";
 import { PersonaSettingsPanel } from "@/components/ui/persona-settings-panel";
 import { Settings2, WandSparkles, X } from "lucide-react";
+import { usePanelPosition } from "@/hooks/usePanelPosition";
 
 interface CustomizationModalProps {
 	isOpen: boolean;
@@ -310,6 +310,8 @@ export const CustomizationModal = React.memo(function CustomizationModal({
 		else setNameVal(avatarName);
 	};
 
+	const { x, y, onDragEnd } = usePanelPosition("customization");
+
 	return (
 		<AnimatePresence>
 			{isOpen && (
@@ -317,9 +319,11 @@ export const CustomizationModal = React.memo(function CustomizationModal({
 					drag
 					dragConstraints={constraintsRef}
 					dragMomentum={false}
-					initial={{ opacity: 0, scale: 0.9, y: 20 }}
-					animate={{ opacity: 1, scale: 1, y: 0 }}
-					exit={{ opacity: 0, scale: 0.9, y: 20 }}
+					style={{ x, y }}
+					onDragEnd={onDragEnd}
+					initial={{ opacity: 0, scale: 0.9 }}
+					animate={{ opacity: 1, scale: 1 }}
+					exit={{ opacity: 0, scale: 0.9 }}
 					transition={{ type: "spring", damping: 25, stiffness: 300 }}
 					className="absolute top-24 right-12 w-[320px] h-auto pb-3 te-module z-[100]"
 				>
@@ -537,16 +541,8 @@ export const CustomizationModal = React.memo(function CustomizationModal({
 											return (
 												<button
 													key={persona.id}
-													onClick={() =>
-														!persona.unavailable &&
-														onPersonaChange(
-															persona.id,
-														)
-													}
-													disabled={
-														persona.unavailable
-													}
-													className="w-full h-10 te-button rounded-[8px] text-[10px] transition-all duration-150 flex items-center justify-between px-3 disabled:opacity-30"
+													onClick={() => onPersonaChange(persona.id)}
+													className="w-full h-10 te-button rounded-[8px] text-[10px] transition-all duration-150 flex items-center justify-between px-3"
 													style={
 														active
 															? ({
@@ -562,11 +558,6 @@ export const CustomizationModal = React.memo(function CustomizationModal({
 													<span className="font-bold tracking-widest">
 														{persona.name.toUpperCase()}
 													</span>
-													{persona.unavailable && (
-														<span className="text-[8px] opacity-50">
-															ERR_LOCKED
-														</span>
-													)}
 												</button>
 											);
 										})}

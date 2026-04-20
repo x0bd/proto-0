@@ -25,6 +25,7 @@ import { VARIANT_COLORS } from "./components/face/themes";
 import { useAudioAnalysis, type AudioLevels } from "@/hooks/useAudioAnalysis";
 import { useVoiceConversation } from "@/hooks/useVoiceConversation";
 import { useTheme } from "next-themes";
+import { getAllKeys } from "@/lib/key-store";
 
 const NEUTRAL_EMOTION: EmotionState = {
 	joy: 0.3,
@@ -103,6 +104,7 @@ export default function Home() {
 	const baseEmotionRef = useRef<EmotionState>(NEUTRAL_EMOTION);
 	const constraintsRef = useRef<HTMLDivElement>(null);
 	const [mounted, setMounted] = useState(false);
+	const [hasKeys, setHasKeys] = useState(true);
 	const { theme, setTheme } = useTheme();
 
 	const [isMemoryOpen, setIsMemoryOpen] = useState(false);
@@ -183,6 +185,7 @@ export default function Home() {
 
 	useEffect(() => {
 		setMounted(true);
+		setHasKeys(getAllKeys().length > 0);
 	}, []);
 
 	useEffect(() => {
@@ -465,11 +468,14 @@ export default function Home() {
 							damping: 25,
 							stiffness: 300,
 						}}
-						onClick={() => setIsCustomizationOpen(true)}
-						className="size-10 sm:size-10 flex items-center justify-center te-button touch-manipulation"
+						onClick={() => { setIsCustomizationOpen(true); setHasKeys(true); }}
+						className="relative size-10 sm:size-10 flex items-center justify-center te-button touch-manipulation"
 						title="Settings"
 					>
 						<RiSettings4Fill className="size-[18px] text-foreground/70" />
+						{mounted && !hasKeys && (
+							<span className="absolute top-1 right-1 size-2 rounded-full bg-[var(--te-orange)] animate-pulse shadow-[0_0_6px_var(--te-orange)]" />
+						)}
 					</motion.button>
 				</div>
 				{/* CENTER STAGE (Avatar) */}
@@ -570,6 +576,7 @@ export default function Home() {
 					activePersonaId={activePersonaId}
 					accentColor={accentColor}
 					constraintsRef={constraintsRef}
+					onOpenSettings={() => { setIsChatOpen(false); setIsCustomizationOpen(true); }}
 				/>
 				{/* Share Dock */}
 				<ShareDock
