@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
+import { getKey } from "@/lib/key-store";
 
 interface UseVoiceSynthesisOptions {
   onAudioStart?: () => void;
@@ -21,10 +22,11 @@ export function useVoiceSynthesis(options: UseVoiceSynthesisOptions = {}) {
       setIsSpeaking(true);
       options.onAudioStart?.();
 
+      const elevenlabsStored = getKey("elevenlabs");
       const response = await fetch("/api/tts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text, voiceId }),
+        body: JSON.stringify({ text, voiceId, apiKey: elevenlabsStored?.key ?? null }),
       });
 
       if (!response.ok) {

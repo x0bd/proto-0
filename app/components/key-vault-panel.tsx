@@ -8,10 +8,10 @@ interface KeyVaultPanelProps {
     accentColor?: string;
 }
 
-const PROVIDERS: { id: Provider; label: string; placeholder: string }[] = [
-    { id: "openai", label: "OPENAI", placeholder: "sk-..." },
-    { id: "google", label: "GOOGLE", placeholder: "AIza..." },
-    { id: "elevenlabs", label: "11LABS", placeholder: "xi-..." },
+const PROVIDERS: { id: Provider; label: string; placeholder: string; purpose: string }[] = [
+    { id: "openai",      label: "OPENAI", placeholder: "sk-...",   purpose: "CHAT · VOICE" },
+    { id: "google",      label: "GOOGLE", placeholder: "AIza...",  purpose: "CHAT · VOICE" },
+    { id: "elevenlabs",  label: "11LABS", placeholder: "sk_...",   purpose: "TTS_ENGINE"   },
 ];
 
 export function KeyVaultPanel({ accentColor = "#7c3aed" }: KeyVaultPanelProps) {
@@ -145,6 +145,7 @@ export function KeyVaultPanel({ accentColor = "#7c3aed" }: KeyVaultPanelProps) {
                                         <KeyRound className="size-3 opacity-50" />
                                     )}
                                     <span className="text-[10px] font-bold tracking-widest">{provider.label}</span>
+                                    <span className="text-[7px] font-bold tracking-widest opacity-40">{provider.purpose}</span>
                                 </div>
                                 <span className="text-[8px] font-bold tracking-widest opacity-60">
                                     {isConfigured ? "SET" : "ADD"}

@@ -13,10 +13,10 @@
 - `ChatModule` reads the 8 most recent memories and passes them as `memoryContext` to `/api/chat`
 - `/api/chat/route.ts` injects memory context into the system prompt — DOT now personalises responses
 
-## 3. TTS Route is Not BYOK
-- `/api/tts/route.ts` reads `process.env.ELEVENLABS_API_KEY` from the server env
-- Key vault stores an ElevenLabs key in localStorage but it is never forwarded to the TTS route
-- Contradicts the core product principle of BYOK-first
+## ~~3. TTS Route is Not BYOK~~ ✅ Fixed
+- `/api/tts/route.ts` accepts `apiKey` from request body, falls back to env var (done in #1)
+- `useVoiceSynthesis` now reads ElevenLabs key from key-store and forwards it on every TTS call
+- Key vault panel rows now show a purpose label (`CHAT · VOICE` / `TTS_ENGINE`) so users know what each key powers
 
 ## 4. Keys Stored in Plaintext
 - `lib/key-store.ts` uses raw `localStorage.setItem` with no encryption
