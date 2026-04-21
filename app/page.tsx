@@ -5,6 +5,8 @@ import Avatar from "./components/Avatar";
 import { EmotionState } from "./components/face/types";
 import Link from "next/link";
 import { motion } from "motion/react";
+import { SiGithub, SiNpm } from "react-icons/si";
+import { RiPlayFill } from "react-icons/ri";
 
 const NEUTRAL_EMOTION: EmotionState = {
     joy: 0.3,
@@ -35,7 +37,6 @@ export default function LandingPage() {
         if (typeof window === "undefined") return;
         const { innerWidth, innerHeight } = window;
 
-        // Normalized coordinates between -1 and 1
         const nx = Math.max(
             -1,
             Math.min(1, (e.clientX - innerWidth / 2) / (innerWidth * 0.4)),
@@ -70,105 +71,218 @@ export default function LandingPage() {
 
     return (
         <div
-            className="dark flex flex-col items-center justify-center w-screen h-screen bg-[#111111] text-foreground font-sans overflow-hidden relative"
+            className="min-h-screen flex items-center justify-center p-4 sm:p-8 bg-background text-foreground font-sans overflow-hidden bg-washi selection:bg-[var(--te-blue)] selection:text-white"
             onMouseMove={handleMouseMove}
             onMouseLeave={handleMouseLeave}
         >
-            {/* Subtle background glow */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60vw] h-[40vh] bg-[#3b82f6]/10 blur-[120px] rounded-full pointer-events-none" />
-
-            {/* Window Container */}
             <motion.div
-                initial={{ opacity: 0, y: 20, scale: 0.98 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-                className="relative w-[90vw] max-w-[1000px] aspect-[16/10] sm:aspect-[21/10] mb-10 rounded-xl border border-white/10 bg-[#0a0a0a] shadow-2xl overflow-hidden z-10"
-                style={{
-                    boxShadow:
-                        "0 0 0 1px rgba(255,255,255,0.05), 0 30px 60px rgba(0,0,0,0.4), 0 15px 20px rgba(0,0,0,0.4)",
-                }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, type: "spring", bounce: 0.3 }}
+                className="te-module w-full max-w-[900px] shadow-2xl relative z-10"
             >
-                {/* macOS Header */}
-                <div className="flex items-center px-4 h-11 w-full bg-[#0a0a0a] border-b border-white/[0.04]">
-                    <div className="flex gap-2 absolute left-4">
-                        <div className="w-3 h-3 rounded-full bg-[#ff5f56]" />
-                        <div className="w-3 h-3 rounded-full bg-[#ffbd2e]" />
-                        <div className="w-3 h-3 rounded-full bg-[#27c93f]" />
-                    </div>
-
-                    {/* Header Title */}
-                    <div className="w-full flex justify-center items-center gap-2 opacity-80 select-none">
-                        <div className="w-4 h-4 rounded-full bg-white flex items-center justify-center overflow-hidden">
-                            <div className="w-2 h-2 rounded-full bg-black translate-x-[-1px] translate-y-[-1px]" />
+                {/* Top Bezel / Header */}
+                <div className="te-module-header h-12 px-4 flex justify-between items-center bg-[var(--key-bg)] border-b border-[var(--panel-border)]">
+                    <div className="flex items-center gap-4">
+                        {/* Hardware Status Dots */}
+                        <div className="flex gap-1.5">
+                            <div className="size-2.5 rounded-full bg-[var(--te-orange)] shadow-[inset_0_1px_2px_rgba(0,0,0,0.3)]" />
+                            <div className="size-2.5 rounded-full bg-[var(--te-yellow)] shadow-[inset_0_1px_2px_rgba(0,0,0,0.3)]" />
+                            <div className="size-2.5 rounded-full bg-[var(--te-green)] shadow-[inset_0_1px_2px_rgba(0,0,0,0.3)] animate-pulse" />
                         </div>
-                        <span className="text-[#a1a1aa] text-sm font-medium tracking-wide">
-                            DOT
+                        <div className="h-3 w-px bg-[var(--panel-border)]" />
+                        <span className="font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-foreground/50">
+                            DOT_OS
                         </span>
                     </div>
+                    <div className="w-24 h-2 te-grip opacity-40 hidden sm:block" />
                 </div>
 
-                {/* Window Content */}
-                <div className="w-full h-[calc(100%-44px)] flex items-center justify-center bg-[#050505] relative">
-                    {/* Scanline overlay for that retro terminal feel */}
-                    <div
-                        className="absolute inset-0 pointer-events-none opacity-5"
-                        style={{
-                            background:
-                                "repeating-linear-gradient(0deg, transparent, transparent 2px, #fff 2px, #fff 4px)",
-                        }}
-                    />
+                {/* Main Chassis */}
+                <div className="p-4 sm:p-6 bg-[var(--panel-bg)] flex flex-col gap-6">
+                    {/* The Screen Module */}
+                    <div className="w-full aspect-[4/3] sm:aspect-[21/9] te-lcd relative flex flex-col items-center justify-center overflow-hidden border-2 border-[var(--panel-border)]">
+                        {/* Screen overlay effects */}
+                        <div className="absolute inset-0 pointer-events-none opacity-10 bg-[url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%224%22 height=%224%22%3E%3Crect width=%224%22 height=%224%22 fill=%22%23fff%22 fill-opacity=%220.05%22/%3E%3C/svg%3E')] mix-blend-overlay" />
+                        <div className="absolute inset-0 shadow-[inset_0_0_60px_rgba(0,0,0,0.4)] pointer-events-none" />
 
-                    <div className="w-[65%] max-w-[500px] aspect-square relative z-10 flex items-center justify-center">
-                        <Avatar
-                            emotion={emotion}
-                            variant="tron"
-                            accentColor="#3b82f6"
-                        />
+                        {/* Top Screen HUD */}
+                        <div className="absolute top-4 left-4 sm:top-5 sm:left-5 flex flex-col gap-1 z-10">
+                            <span className="te-label opacity-50">
+                                SYS.STATE
+                            </span>
+                            <span className="te-value text-[var(--te-blue)] drop-shadow-[0_0_8px_rgba(0,122,255,0.4)] animate-pulse">
+                                ONLINE
+                            </span>
+                        </div>
+
+                        <div className="absolute top-4 right-4 sm:top-5 sm:right-5 flex flex-col items-end gap-1 z-10">
+                            <span className="te-label opacity-50">
+                                EMOTION_CORE
+                            </span>
+                            <span className="te-value">ACTIVE</span>
+                        </div>
+
+                        {/* The Avatar */}
+                        <div className="w-[80%] max-w-[450px] aspect-[4/3] relative z-10 flex items-center justify-center">
+                            <Avatar
+                                emotion={emotion}
+                                variant="minimal"
+                                accentColor="var(--te-orange)"
+                            />
+                        </div>
+
+                        {/* Bottom Screen HUD */}
+                        <div className="absolute bottom-4 left-4 sm:bottom-5 sm:left-5 flex gap-4 sm:gap-6 z-10">
+                            <div className="flex flex-col gap-0.5">
+                                <span className="te-label opacity-50">JOY</span>
+                                <div className="h-1 w-8 bg-foreground/20 rounded-full overflow-hidden mt-1">
+                                    <div
+                                        className="h-full bg-[var(--te-orange)]"
+                                        style={{
+                                            width: `${emotion.joy * 100}%`,
+                                        }}
+                                    />
+                                </div>
+                            </div>
+                            <div className="flex flex-col gap-0.5">
+                                <span className="te-label opacity-50">ANG</span>
+                                <div className="h-1 w-8 bg-foreground/20 rounded-full overflow-hidden mt-1">
+                                    <div
+                                        className="h-full bg-[var(--te-orange)]"
+                                        style={{
+                                            width: `${emotion.anger * 100}%`,
+                                        }}
+                                    />
+                                </div>
+                            </div>
+                            <div className="flex flex-col gap-0.5">
+                                <span className="te-label opacity-50">CUR</span>
+                                <div className="h-1 w-8 bg-foreground/20 rounded-full overflow-hidden mt-1">
+                                    <div
+                                        className="h-full bg-[var(--te-orange)]"
+                                        style={{
+                                            width: `${emotion.curiosity * 100}%`,
+                                        }}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Control Panel (Info & Buttons) */}
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 items-stretch">
+                        {/* Info Panel (Left) */}
+                        <div className="te-recessed col-span-1 lg:col-span-7 p-5 sm:p-6 flex flex-col justify-between gap-4 relative overflow-hidden h-full">
+                            {/* Hardware Speaker Grill Detail */}
+                            <div
+                                className="absolute right-4 top-4 bottom-4 w-12 opacity-[0.03] dark:opacity-10 pointer-events-none"
+                                style={{
+                                    background:
+                                        "repeating-linear-gradient(90deg, transparent, transparent 2px, var(--foreground) 2px, var(--foreground) 4px)",
+                                }}
+                            />
+
+                            <div className="relative z-10">
+                                <div className="flex items-center gap-3 mb-2">
+                                    <h2 className="font-display text-2xl sm:text-3xl font-bold tracking-tight">
+                                        DOT
+                                    </h2>
+                                    <div className="px-2 py-0.5 bg-[var(--te-green)] text-white font-mono text-[9px] font-bold uppercase tracking-widest rounded-sm">
+                                        V 0.1
+                                    </div>
+                                </div>
+                                <p className="text-[14px] sm:text-[15px] font-medium text-foreground/70 leading-relaxed max-w-[90%]">
+                                    An expressive, real-time AI companion.
+                                    Procedural geometry mapped to emotion. No
+                                    text, no icons, no chrome. Just shape and
+                                    motion.
+                                </p>
+                            </div>
+
+                            <div className="flex flex-wrap gap-2 relative z-10 mt-2">
+                                <span className="te-label px-2.5 py-1.5 bg-[var(--panel-bg)] rounded-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.1),0_1px_2px_rgba(0,0,0,0.05)] border border-[var(--panel-border)]">
+                                    REACT 18
+                                </span>
+                                <span className="te-label px-2.5 py-1.5 bg-[var(--panel-bg)] rounded-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.1),0_1px_2px_rgba(0,0,0,0.05)] border border-[var(--panel-border)]">
+                                    GSAP 3
+                                </span>
+                                <span className="te-label px-2.5 py-1.5 bg-[var(--panel-bg)] rounded-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.1),0_1px_2px_rgba(0,0,0,0.05)] border border-[var(--panel-border)]">
+                                    WEB_AUDIO
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* Action Buttons (Right) */}
+                        <div className="col-span-1 lg:col-span-5 flex flex-col gap-3 sm:gap-4 h-full">
+                            {/* Giant Blue Launch Button */}
+                            <Link
+                                href="/companion"
+                                className="te-button flex-1 min-h-[80px] w-full group relative overflow-hidden flex-col gap-1"
+                                style={{
+                                    backgroundColor: "var(--te-blue)",
+                                    borderColor: "rgba(0,0,0,0.2)",
+                                    borderBottomColor: "#005bb5",
+                                    color: "white",
+                                }}
+                            >
+                                <div className="absolute inset-0 bg-white/0 group-hover:bg-white/10 transition-colors" />
+                                <div className="flex items-center justify-center gap-2">
+                                    <RiPlayFill className="size-5" />
+                                    <span className="text-lg sm:text-xl tracking-[0.2em] translate-y-[1px]">
+                                        INITIALIZE
+                                    </span>
+                                </div>
+                                <span className="font-mono text-[9px] opacity-70 tracking-widest uppercase">
+                                    Launch Application
+                                </span>
+                            </Link>
+
+                            {/* Secondary Colorful Hardware Buttons */}
+                            <div className="flex gap-3 sm:gap-4 h-[60px]">
+                                {/* Github Button (Yellow) */}
+                                <a
+                                    href="https://github.com/x0bd/proto-0"
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="te-button flex-1 gap-2 relative group"
+                                    style={{
+                                        backgroundColor: "var(--te-yellow)",
+                                        borderColor: "rgba(0,0,0,0.1)",
+                                        borderBottomColor: "#cca300",
+                                        color: "#111",
+                                    }}
+                                >
+                                    <div className="absolute inset-0 bg-white/0 group-hover:bg-white/20 transition-colors rounded-[7px]" />
+                                    <SiGithub className="size-4" />
+                                    <span className="text-[11px] translate-y-px">
+                                        SOURCE
+                                    </span>
+                                </a>
+
+                                {/* NPM Button (Orange) */}
+                                <a
+                                    href="https://www.npmjs.com/package/@xoboid/avatar"
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="te-button flex-1 gap-2 relative group"
+                                    style={{
+                                        backgroundColor: "var(--te-orange)",
+                                        borderColor: "rgba(0,0,0,0.1)",
+                                        borderBottomColor: "#cc2f26",
+                                        color: "white",
+                                    }}
+                                >
+                                    <div className="absolute inset-0 bg-white/0 group-hover:bg-white/20 transition-colors rounded-[7px]" />
+                                    <SiNpm className="size-5" />
+                                    <span className="text-[11px] translate-y-px">
+                                        PACKAGE
+                                    </span>
+                                </a>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </motion.div>
-
-            {/* Description */}
-            <motion.p
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{
-                    duration: 0.7,
-                    delay: 0.2,
-                    ease: [0.16, 1, 0.3, 1],
-                }}
-                className="text-[#a1a1aa] text-sm sm:text-[15px] font-medium max-w-[800px] text-center px-6 mb-8 z-10"
-            >
-                DOT is an expressive, real-time AI companion that uses
-                procedural geometry to express emotions. Built with
-                platform-native UI and sub-frame precision.
-            </motion.p>
-
-            {/* Action Buttons */}
-            <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{
-                    duration: 0.7,
-                    delay: 0.3,
-                    ease: [0.16, 1, 0.3, 1],
-                }}
-                className="flex items-center justify-center gap-4 z-10"
-            >
-                <Link
-                    href="/companion"
-                    className="px-6 py-2.5 rounded-lg border border-[#27272a] bg-[#18181b]/50 hover:bg-[#27272a]/50 text-white text-[13px] font-medium transition-all"
-                >
-                    Launch App
-                </Link>
-                <a
-                    href="https://github.com/x0bd/proto-0"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="px-6 py-2.5 rounded-lg border border-[#27272a] bg-[#18181b]/50 hover:bg-[#27272a]/50 text-white text-[13px] font-medium transition-all"
-                >
-                    Documentation
-                </a>
             </motion.div>
         </div>
     );
