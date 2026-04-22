@@ -113,7 +113,7 @@ export default function LandingPage() {
     if (!mounted) return null;
 
     return (
-        <div className="min-h-screen bg-[#f4f4f0] text-[#111111] font-sans selection:bg-[#007aff] selection:text-white bg-washi overflow-x-hidden">
+        <div className="min-h-screen bg-[#f4f4f0] text-[#111111] font-mono selection:bg-[var(--te-blue)] selection:text-white bg-washi overflow-x-hidden">
             {/* The Island Navbar */}
             <motion.nav
                 initial={{ y: -100, opacity: 0, x: "-50%" }}
@@ -124,30 +124,34 @@ export default function LandingPage() {
                     stiffness: 200,
                     delay: 0.1,
                 }}
-                className="fixed top-6 left-1/2 w-[90%] max-w-[800px] h-14 bg-white/70 backdrop-blur-2xl border border-white/50 shadow-[0_8px_32px_rgba(0,0,0,0.06),0_2px_8px_rgba(0,0,0,0.04)] rounded-full z-50 flex items-center justify-between px-5"
+                className="fixed top-6 left-1/2 w-[90%] max-w-[800px] h-14 bg-[var(--panel-bg)] border border-[var(--panel-border)] rounded-full z-50 flex items-center justify-between px-5"
+                style={{
+                    boxShadow:
+                        "0 8px 32px rgba(0,0,0,0.06),0 2px 8px rgba(0,0,0,0.04),inset 0 1px 1px rgba(255,255,255,0.8)",
+                }}
             >
                 <div className="flex items-center gap-3 pl-2">
                     <div className="size-3 bg-[#111] rounded-full shadow-sm" />
-                    <span className="font-sans text-[15px] font-bold tracking-tight text-[#111]">
+                    <span className="font-mono text-[11px] font-black tracking-[0.2em] uppercase">
                         DOT
                     </span>
                 </div>
                 <div className="hidden md:flex items-center gap-8">
                     <a
                         href="#interactive"
-                        className="text-[13px] font-medium tracking-tight text-[#555] hover:text-[#111] transition-colors"
+                        className="te-label hover:text-foreground transition-colors"
                     >
                         Playground
                     </a>
                     <a
                         href="#features"
-                        className="text-[13px] font-medium tracking-tight text-[#555] hover:text-[#111] transition-colors"
+                        className="te-label hover:text-foreground transition-colors"
                     >
                         Features
                     </a>
                     <a
                         href="#faq"
-                        className="text-[13px] font-medium tracking-tight text-[#555] hover:text-[#111] transition-colors"
+                        className="te-label hover:text-foreground transition-colors"
                     >
                         FAQ
                     </a>
@@ -157,15 +161,19 @@ export default function LandingPage() {
                         href="https://github.com/x0bd/proto-0"
                         target="_blank"
                         rel="noreferrer"
-                        className="hidden sm:flex size-8 rounded-full items-center justify-center text-[#555] hover:bg-black/5 hover:text-[#111] transition-colors"
+                        className="hidden sm:flex size-8 rounded-full items-center justify-center te-label hover:bg-black/5 transition-colors"
                     >
                         <SiGithub className="size-4" />
                     </a>
                     <Link
                         href="/companion"
-                        className="px-5 py-2 bg-[#111] text-white rounded-full text-[13px] font-semibold tracking-tight shadow-[0_4px_12px_rgba(0,0,0,0.15)] hover:shadow-[0_6px_16px_rgba(0,0,0,0.2)] hover:scale-[1.02] transition-all active:scale-95"
+                        className="te-button px-5 py-2 text-[10px] tracking-[0.2em] bg-[#111] text-white"
+                        style={{
+                            borderColor: "#111",
+                            borderBottomColor: "#333",
+                        }}
                     >
-                        Initialize
+                        BOOT_UP
                     </Link>
                 </div>
             </motion.nav>
@@ -176,17 +184,20 @@ export default function LandingPage() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6 }}
-                    className="px-4 py-1.5 bg-white border border-[#e5e5e5] shadow-sm rounded-full font-sans text-[12px] font-semibold tracking-tight mb-8 text-[#555] flex items-center gap-2"
+                    className="te-lcd px-4 py-1.5 text-[10px] tracking-[0.3em] mb-8 flex items-center gap-2"
                 >
-                    <div className="size-1.5 rounded-full bg-[#007aff] animate-pulse" />
-                    v0.1.0 Experimental
+                    <div
+                        className="size-1.5 rounded-full bg-[var(--te-blue)] animate-pulse"
+                        style={{ boxShadow: "0 0 6px var(--te-blue)" }}
+                    />
+                    V0.1.0 // EXPERIMENTAL
                 </motion.div>
 
                 <motion.h1
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6, delay: 0.1 }}
-                    className="text-[48px] sm:text-[72px] md:text-[88px] font-bold tracking-tight text-[#111111] max-w-[900px] leading-[1.05] mb-8 drop-shadow-sm"
+                    className="text-[48px] sm:text-[72px] md:text-[88px] font-mono font-black tracking-[-0.02em] text-[#111111] max-w-[900px] leading-[1.05] mb-8"
                 >
                     Machine emotion, <br className="hidden sm:block" />
                     mapped to geometry.
@@ -196,10 +207,10 @@ export default function LandingPage() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6, delay: 0.2 }}
-                    className="text-[18px] sm:text-[22px] font-medium text-[#555555] max-w-[640px] mb-12 leading-relaxed"
+                    className="font-mono text-[16px] sm:text-[18px] text-[#555555] max-w-[600px] mb-12 leading-relaxed"
                 >
-                    Create an expressive, real-time AI companion. No text, no
-                    generic icons, no chrome. Just responsive shape and motion.
+                    An expressive, real-time AI companion. No text, no generic
+                    icons, no chrome. Just responsive shape and motion.
                 </motion.p>
 
                 <motion.div
@@ -210,23 +221,25 @@ export default function LandingPage() {
                 >
                     <Link
                         href="/companion"
-                        className="w-full sm:w-auto bg-[#007aff] text-white px-8 py-4 rounded-full flex items-center justify-center gap-2.5 shadow-[0_8px_24px_rgba(0,122,255,0.3)] hover:shadow-[0_12px_32px_rgba(0,122,255,0.4)] hover:-translate-y-0.5 transition-all active:translate-y-0 active:scale-95"
+                        className="te-button w-full sm:w-auto px-8 py-4 gap-2.5 text-[12px] tracking-[0.15em]"
+                        style={{
+                            backgroundColor: "var(--te-blue)",
+                            color: "white",
+                            borderColor: "var(--te-blue)",
+                            borderBottomColor: "#0055bb",
+                        }}
                     >
                         <RiPlayFill className="size-5" />
-                        <span className="text-[16px] font-bold tracking-tight">
-                            Launch App
-                        </span>
+                        LAUNCH_APP
                     </Link>
                     <a
                         href="https://www.npmjs.com/package/@xoboid/avatar"
                         target="_blank"
                         rel="noreferrer"
-                        className="w-full sm:w-auto bg-white text-[#111] border border-[#e5e5e5] px-8 py-4 rounded-full flex items-center justify-center gap-2.5 shadow-[0_4px_12px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] hover:-translate-y-0.5 transition-all active:translate-y-0 active:scale-95"
+                        className="te-button w-full sm:w-auto px-8 py-4 gap-2.5 text-[12px] tracking-[0.15em]"
                     >
                         <SiNpm className="size-5" />
-                        <span className="text-[16px] font-bold tracking-tight">
-                            NPM Package
-                        </span>
+                        NPM_PKG
                     </a>
                 </motion.div>
             </section>
@@ -245,36 +258,49 @@ export default function LandingPage() {
                 >
                     {/* Left: The Avatar Screen Module */}
                     <div
-                        className="w-full lg:w-[60%] aspect-square sm:aspect-[4/3] lg:aspect-square bg-white rounded-[32px] sm:rounded-[40px] relative flex flex-col justify-between overflow-hidden shadow-[0_24px_48px_rgba(0,0,0,0.06),0_8px_16px_rgba(0,0,0,0.03)] p-6 sm:p-8 border border-white/50"
+                        className="w-full lg:w-[60%] aspect-square sm:aspect-[4/3] lg:aspect-square bg-[#111] rounded-[16px] relative flex flex-col justify-between overflow-hidden p-6 sm:p-8 border border-[#2a2a2a]"
+                        style={{
+                            boxShadow:
+                                "0 32px 64px -16px rgba(0,0,0,0.25),0 16px 32px -8px rgba(0,0,0,0.15),inset 0 1px 0 rgba(255,255,255,0.04)",
+                        }}
                         onMouseMove={handleMouseMove}
                         onMouseLeave={handleMouseLeave}
                     >
-                        {/* Subtle Inner Shadow instead of harsh borders */}
-                        <div className="absolute inset-0 shadow-[inset_0_2px_12px_rgba(0,0,0,0.02)] rounded-[32px] sm:rounded-[40px] pointer-events-none" />
-
-                        {/* Screen overlay effects */}
-                        <div className="absolute inset-0 pointer-events-none opacity-[0.03] bg-[url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%224%22 height=%224%22%3E%3Crect width=%224%22 height=%224%22 fill=%22%23000%22 fill-opacity=%221%22/%3E%3C/svg%3E')] mix-blend-overlay" />
+                        {/* Scanline overlay */}
+                        <div
+                            className="absolute inset-0 pointer-events-none"
+                            style={{
+                                backgroundImage:
+                                    "repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(255,255,255,0.012) 3px,rgba(255,255,255,0.012) 4px)",
+                            }}
+                        />
 
                         {/* HUD Top */}
                         <div className="flex justify-between items-start z-20 relative pointer-events-none">
                             <div className="flex flex-col gap-1">
-                                <span className="font-sans text-[11px] font-semibold tracking-widest uppercase text-[#8e8e93]">
-                                    State
+                                <span className="te-label text-white/40">
+                                    STATE
                                 </span>
-                                <div className="flex items-center gap-1.5">
-                                    <div className="size-2 rounded-full bg-[#34c759] shadow-[0_0_8px_rgba(52,199,89,0.8)]" />
-                                    <span className="font-sans text-[13px] font-bold tracking-tight text-[#111]">
-                                        Online
-                                    </span>
+                                <div
+                                    className="te-lcd flex items-center gap-1.5 px-2 py-1 text-[10px] bg-[#1a1a1a] text-white border-[#2a2a2a]"
+                                >
+                                    <div
+                                        className="size-1.5 rounded-full bg-[var(--te-green)] shrink-0"
+                                        style={{
+                                            boxShadow:
+                                                "0 0 6px var(--te-green)",
+                                        }}
+                                    />
+                                    ONLINE
                                 </div>
                             </div>
                             <div className="flex flex-col items-end gap-1">
-                                <span className="font-sans text-[11px] font-semibold tracking-widest uppercase text-[#8e8e93]">
-                                    Status
+                                <span className="te-label text-white/40">
+                                    INPUT
                                 </span>
-                                <span className="font-sans text-[13px] font-bold tracking-tight text-[#111]">
-                                    Tracking
-                                </span>
+                                <div className="te-lcd px-2 py-1 text-[10px] bg-[#1a1a1a] text-white border-[#2a2a2a]">
+                                    {isTracking ? "CURSOR" : "OVERRIDE"}
+                                </div>
                             </div>
                         </div>
 
@@ -310,104 +336,173 @@ export default function LandingPage() {
                     </div>
 
                     {/* Right: Controls Console */}
-                    <div className="w-full lg:w-[40%] bg-white/60 backdrop-blur-xl rounded-[32px] sm:rounded-[40px] p-8 sm:p-10 flex flex-col border border-[#e5e5e5] shadow-[0_12px_32px_rgba(0,0,0,0.03)]">
-                        <div className="flex items-center justify-between mb-10">
-                            <h3 className="font-sans text-[28px] sm:text-[32px] leading-none font-bold tracking-tight text-[#111111]">
-                                Playground
-                            </h3>
+                    <div className="w-full lg:w-[40%] te-panel flex flex-col overflow-hidden rounded-[16px]">
+                        {/* Module header */}
+                        <div className="te-module-header">
+                            <div className="flex items-center gap-2">
+                                <div className="te-grip w-8 h-3" />
+                                <span className="te-label">SYS.CTRL</span>
+                            </div>
+                            <span className="te-label">PLAYGROUND_v1</span>
                         </div>
 
-                        <div className="flex flex-col gap-8 flex-1">
-                            {/* Variant Toggle */}
-                            <div className="flex flex-col gap-3">
-                                <span className="font-sans text-[12px] font-semibold uppercase tracking-widest text-[#8e8e93]">
-                                    Architecture
-                                </span>
-                                <div className="flex flex-wrap gap-2 bg-[#f4f4f0] p-1.5 rounded-[16px] shadow-inner">
-                                    {(
-                                        [
-                                            "minimal",
-                                            "analogue",
-                                            "tron",
-                                        ] as FaceVariant[]
-                                    ).map((v) => (
-                                        <button
-                                            key={v}
-                                            onClick={() => setVariant(v)}
-                                            className={`flex-1 px-3 py-3 rounded-[12px] font-sans text-[13px] font-semibold tracking-tight transition-all ${variant === v ? "bg-white text-[#111] shadow-[0_2px_8px_rgba(0,0,0,0.08)]" : "text-[#8e8e93] hover:text-[#111] hover:bg-white/50"}`}
-                                        >
-                                            {v.charAt(0).toUpperCase() +
-                                                v.slice(1)}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* Color Toggle */}
-                            <div className="flex flex-col gap-3">
-                                <span className="font-sans text-[12px] font-semibold uppercase tracking-widest text-[#8e8e93]">
-                                    Accent Color
-                                </span>
-                                <div className="flex gap-4">
-                                    {[
-                                        { id: "red", hex: "#ff3b30" },
-                                        { id: "blue", hex: "#007aff" },
-                                        { id: "green", hex: "#34c759" },
-                                        { id: "yellow", hex: "#ffcc00" },
-                                    ].map((c) => (
-                                        <button
-                                            key={c.id}
-                                            onClick={() =>
-                                                setAccentColor(c.hex)
-                                            }
-                                            className={`w-12 h-12 rounded-full transition-all shadow-[inset_0_2px_6px_rgba(0,0,0,0.2)] ${accentColor === c.hex ? "scale-110 shadow-[inset_0_2px_6px_rgba(0,0,0,0.2),0_0_0_4px_#fff,0_0_0_6px_#111]" : "hover:scale-105"}`}
-                                            style={{ backgroundColor: c.hex }}
-                                        />
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* Emotion Toggle */}
-                            <div className="flex flex-col gap-3">
-                                <span className="font-sans text-[12px] font-semibold uppercase tracking-widest text-[#8e8e93]">
-                                    Override
-                                </span>
-                                <div className="flex flex-wrap gap-2">
-                                    <button
-                                        onClick={() => setIsTracking(true)}
-                                        className={`px-5 py-2.5 rounded-full font-sans text-[13px] font-semibold tracking-tight transition-all ${isTracking ? "bg-[#111] text-white shadow-md" : "bg-white border border-[#e5e5e5] text-[#555] hover:text-[#111] hover:shadow-sm"}`}
-                                    >
-                                        Cursor Track
-                                    </button>
-                                    {Object.keys(EMOTION_PRESETS)
-                                        .filter((k) => k !== "Neutral")
-                                        .map((m) => (
+                        <div className="p-8 sm:p-10 flex flex-col flex-1">
+                            <div className="flex flex-col gap-8 flex-1">
+                                {/* Variant Toggle */}
+                                <div className="flex flex-col gap-3">
+                                    <span className="te-label">
+                                        ARCHITECTURE
+                                    </span>
+                                    <div className="te-recessed p-1.5 flex flex-wrap gap-2">
+                                        {(
+                                            [
+                                                "minimal",
+                                                "analogue",
+                                                "tron",
+                                            ] as FaceVariant[]
+                                        ).map((v) => (
                                             <button
-                                                key={m}
-                                                onClick={() =>
-                                                    setEmotionPreset(m)
+                                                key={v}
+                                                onClick={() => setVariant(v)}
+                                                className="te-button flex-1 px-3 py-3 text-[10px] tracking-[0.15em] transition-all"
+                                                style={
+                                                    variant === v
+                                                        ? {
+                                                              backgroundColor:
+                                                                  "#111",
+                                                              color: "white",
+                                                              borderColor:
+                                                                  "#111",
+                                                              borderBottomColor:
+                                                                  "#333",
+                                                          }
+                                                        : {}
                                                 }
-                                                className={`px-5 py-2.5 rounded-full font-sans text-[13px] font-semibold tracking-tight transition-all ${!isTracking && emotion === EMOTION_PRESETS[m] ? "bg-[#111] text-white shadow-md" : "bg-white border border-[#e5e5e5] text-[#555] hover:text-[#111] hover:shadow-sm"}`}
                                             >
-                                                {m}
+                                                {v}
                                             </button>
                                         ))}
+                                    </div>
+                                </div>
+
+                                {/* Color Toggle */}
+                                <div className="flex flex-col gap-3">
+                                    <span className="te-label">ACCENT_CLR</span>
+                                    <div className="flex gap-3">
+                                        {[
+                                            {
+                                                id: "red",
+                                                hex: "#ff3b30",
+                                                shadow: "#b32200",
+                                            },
+                                            {
+                                                id: "blue",
+                                                hex: "#007aff",
+                                                shadow: "#0055bb",
+                                            },
+                                            {
+                                                id: "green",
+                                                hex: "#34c759",
+                                                shadow: "#1e8c3a",
+                                            },
+                                            {
+                                                id: "yellow",
+                                                hex: "#ffcc00",
+                                                shadow: "#b38f00",
+                                            },
+                                        ].map((c) => (
+                                            <button
+                                                key={c.id}
+                                                onClick={() =>
+                                                    setAccentColor(c.hex)
+                                                }
+                                                className="te-button w-12 h-12 transition-all"
+                                                style={{
+                                                    backgroundColor: c.hex,
+                                                    borderColor: c.hex,
+                                                    borderBottomColor: c.shadow,
+                                                    transform:
+                                                        accentColor === c.hex
+                                                            ? "scale(1.1)"
+                                                            : "",
+                                                    outline:
+                                                        accentColor === c.hex
+                                                            ? "2px solid #111"
+                                                            : "none",
+                                                    outlineOffset: "2px",
+                                                }}
+                                            />
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Emotion Toggle */}
+                                <div className="flex flex-col gap-3">
+                                    <span className="te-label">OVERRIDE</span>
+                                    <div className="flex flex-wrap gap-2">
+                                        <button
+                                            onClick={() => setIsTracking(true)}
+                                            className="te-button px-4 py-2.5 text-[10px] tracking-[0.15em]"
+                                            style={
+                                                isTracking
+                                                    ? {
+                                                          backgroundColor:
+                                                              "#111",
+                                                          color: "white",
+                                                          borderColor: "#111",
+                                                          borderBottomColor:
+                                                              "#333",
+                                                      }
+                                                    : {}
+                                            }
+                                        >
+                                            Cursor
+                                        </button>
+                                        {Object.keys(EMOTION_PRESETS)
+                                            .filter((k) => k !== "Neutral")
+                                            .map((m) => (
+                                                <button
+                                                    key={m}
+                                                    onClick={() =>
+                                                        setEmotionPreset(m)
+                                                    }
+                                                    className="te-button px-4 py-2.5 text-[10px] tracking-[0.15em]"
+                                                    style={
+                                                        !isTracking &&
+                                                        emotion ===
+                                                            EMOTION_PRESETS[m]
+                                                            ? {
+                                                                  backgroundColor:
+                                                                      "#111",
+                                                                  color: "white",
+                                                                  borderColor:
+                                                                      "#111",
+                                                                  borderBottomColor:
+                                                                      "#333",
+                                                              }
+                                                            : {}
+                                                    }
+                                                >
+                                                    {m}
+                                                </button>
+                                            ))}
+                                    </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <div className="mt-12 flex items-center justify-between border-t border-[#e5e5e5] pt-8">
-                            <span className="font-sans text-[13px] font-medium text-[#8e8e93]">
-                                Crafted by{" "}
-                                <a
-                                    href="https://xoboid.com"
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    className="font-bold text-[#111] hover:text-[#007aff] transition-colors"
-                                >
-                                    xoboid.com
-                                </a>
-                            </span>
+                            <div className="mt-12 border-t border-[var(--panel-border)] pt-6">
+                                <span className="te-label">
+                                    CRAFTED BY{" "}
+                                    <a
+                                        href="https://xoboid.com"
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="te-value hover:text-[var(--te-orange)] transition-colors"
+                                    >
+                                        XOBOID.COM
+                                    </a>
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </motion.div>
@@ -420,11 +515,19 @@ export default function LandingPage() {
             >
                 <div className="max-w-[1200px] mx-auto px-6">
                     <div className="text-center mb-16 sm:mb-20">
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            className="inline-block te-lcd px-3 py-1 text-[10px] tracking-[0.3em] mb-6 bg-[#1a1a1a] text-white/50 border-[#2a2a2a]"
+                        >
+                            // SYS.MODULES
+                        </motion.div>
                         <motion.h2
                             initial={{ opacity: 0, y: 20 }}
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
-                            className="text-[36px] sm:text-[48px] md:text-[56px] font-bold tracking-tight mb-6"
+                            className="font-mono font-black text-[36px] sm:text-[48px] md:text-[56px] tracking-[-0.02em] mb-6"
                         >
                             Designed for pure expression.
                         </motion.h2>
@@ -433,10 +536,10 @@ export default function LandingPage() {
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
                             transition={{ delay: 0.1 }}
-                            className="text-[18px] sm:text-[20px] text-white/60 max-w-[600px] mx-auto font-medium"
+                            className="font-mono text-[16px] sm:text-[18px] text-white/50 max-w-[600px] mx-auto"
                         >
-                            Under the hood, DOT is powered by sub-frame
-                            precision math and robust web APIs.
+                            Powered by sub-frame precision math and robust web
+                            APIs.
                         </motion.p>
                     </div>
 
@@ -447,30 +550,51 @@ export default function LandingPage() {
                             initial={{ opacity: 0, y: 30 }}
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
-                            className="col-span-1 md:col-span-2 row-span-1 md:row-span-2 min-h-[400px] md:min-h-0 bg-[#1c1c1e] rounded-[32px] p-8 sm:p-10 flex flex-col relative overflow-hidden group border border-white/10"
+                            className="col-span-1 md:col-span-2 row-span-1 md:row-span-2 min-h-[400px] md:min-h-0 bg-[#141414] border border-[#2a2a2a] rounded-[12px] overflow-hidden flex flex-col group"
+                            style={{
+                                boxShadow:
+                                    "0 32px 64px -16px rgba(0,0,0,0.95),0 16px 32px -8px rgba(0,0,0,0.8),inset 0 1px 0 rgba(255,255,255,0.04)",
+                            }}
                         >
-                            {/* Ambient Background Glow */}
-                            <div className="absolute top-[-20%] right-[-20%] w-[80%] h-[80%] bg-[#007aff]/30 blur-[100px] rounded-full pointer-events-none transition-transform duration-1000 group-hover:scale-110" />
-
-                            <div className="size-14 rounded-full bg-[#007aff] flex items-center justify-center mb-auto shadow-[0_8px_24px_-4px_rgba(0,122,255,0.6)] relative z-10">
-                                <RiShapeFill className="size-6 text-white" />
+                            <div className="flex items-center justify-between px-4 py-2.5 border-b border-[#2a2a2a] bg-[#1a1a1a] shrink-0">
+                                <span className="te-label text-white/40">
+                                    MODULE_01
+                                </span>
+                                <span className="te-label text-white/20">
+                                    PROC.GEO
+                                </span>
                             </div>
+                            <div className="relative flex flex-col flex-1 p-8 sm:p-10">
+                                <div className="absolute top-[-20%] right-[-20%] w-[80%] h-[80%] bg-[var(--te-blue)]/20 blur-[100px] rounded-full pointer-events-none transition-transform duration-1000 group-hover:scale-110" />
 
-                            {/* Abstract SVG Geometry Visual */}
-                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[40%] w-[120%] aspect-square border border-white/10 rounded-full opacity-50 pointer-events-none transition-transform duration-1000 group-hover:rotate-12" />
-                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[40%] w-[80%] aspect-square border border-white/10 rounded-full opacity-50 pointer-events-none transition-transform duration-1000 group-hover:-rotate-12" />
-                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[40%] w-[40%] aspect-square border border-white/20 rounded-full opacity-50 pointer-events-none transition-transform duration-700 group-hover:scale-110" />
+                                <button
+                                    className="te-button size-14 mb-auto relative z-10"
+                                    style={{
+                                        backgroundColor: "var(--te-blue)",
+                                        borderColor: "var(--te-blue)",
+                                        borderBottomColor: "#0055bb",
+                                    }}
+                                >
+                                    <RiShapeFill className="size-6 text-white" />
+                                </button>
 
-                            <div className="relative z-10 mt-32">
-                                <h4 className="font-sans text-[28px] sm:text-[32px] font-bold tracking-tight text-white mb-4">
-                                    Procedural Geometry
-                                </h4>
-                                <p className="text-[16px] text-white/60 leading-relaxed font-medium max-w-[400px]">
-                                    No baked keyframes or snapping. Every
-                                    expression is interpolated across a 5-axis
-                                    emotion engine rendering crisp, scalable SVG
-                                    paths in real time.
-                                </p>
+                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[40%] w-[120%] aspect-square border border-white/10 rounded-full opacity-50 pointer-events-none transition-transform duration-1000 group-hover:rotate-12" />
+                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[40%] w-[80%] aspect-square border border-white/10 rounded-full opacity-50 pointer-events-none transition-transform duration-1000 group-hover:-rotate-12" />
+                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[40%] w-[40%] aspect-square border border-white/20 rounded-full opacity-50 pointer-events-none transition-transform duration-700 group-hover:scale-110" />
+
+                                <div className="relative z-10 mt-32">
+                                    <h4 className="font-mono font-black text-[26px] sm:text-[30px] tracking-[-0.01em] uppercase text-white mb-3">
+                                        Procedural
+                                        <br />
+                                        Geometry
+                                    </h4>
+                                    <p className="font-mono text-[14px] text-white/50 leading-relaxed max-w-[400px]">
+                                        No baked keyframes or snapping. Every
+                                        expression is interpolated across a
+                                        5-axis emotion engine rendering crisp
+                                        SVG paths in real time.
+                                    </p>
+                                </div>
                             </div>
                         </motion.div>
 
@@ -480,38 +604,65 @@ export default function LandingPage() {
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
                             transition={{ delay: 0.1 }}
-                            className="col-span-1 md:col-span-2 row-span-1 min-h-[300px] md:min-h-0 bg-[#1c1c1e] rounded-[32px] p-8 sm:p-10 flex flex-col justify-between relative overflow-hidden border border-white/10 group"
+                            className="col-span-1 md:col-span-2 row-span-1 min-h-[300px] md:min-h-0 bg-[#141414] border border-[#2a2a2a] rounded-[12px] overflow-hidden flex flex-col group"
+                            style={{
+                                boxShadow:
+                                    "0 32px 64px -16px rgba(0,0,0,0.95),inset 0 1px 0 rgba(255,255,255,0.04)",
+                            }}
                         >
-                            <div className="absolute right-8 md:right-12 top-1/2 -translate-y-1/2 flex items-center gap-1.5 opacity-30 group-hover:opacity-60 transition-opacity">
-                                {[40, 70, 40, 100, 60, 80, 30].map((h, i) => (
-                                    <motion.div
-                                        key={i}
-                                        className="w-3 bg-white rounded-full"
-                                        animate={{
-                                            height: [h * 0.5, h, h * 0.5],
-                                        }}
-                                        transition={{
-                                            duration: 1.5,
-                                            repeat: Infinity,
-                                            ease: "easeInOut",
-                                            delay: i * 0.1,
-                                        }}
-                                    />
-                                ))}
+                            <div className="flex items-center justify-between px-4 py-2.5 border-b border-[#2a2a2a] bg-[#1a1a1a] shrink-0">
+                                <span className="te-label text-white/40">
+                                    MODULE_02
+                                </span>
+                                <span className="te-label text-white/20">
+                                    AUDIO.SYS
+                                </span>
                             </div>
+                            <div className="relative flex flex-col justify-between flex-1 p-8 sm:p-10">
+                                <div className="absolute right-8 md:right-12 top-1/2 -translate-y-1/2 flex items-center gap-1.5 opacity-30 group-hover:opacity-60 transition-opacity">
+                                    {[40, 70, 40, 100, 60, 80, 30].map(
+                                        (h, i) => (
+                                            <motion.div
+                                                key={i}
+                                                className="w-3 bg-white rounded-sm"
+                                                animate={{
+                                                    height: [
+                                                        h * 0.5,
+                                                        h,
+                                                        h * 0.5,
+                                                    ],
+                                                }}
+                                                transition={{
+                                                    duration: 1.5,
+                                                    repeat: Infinity,
+                                                    ease: "easeInOut",
+                                                    delay: i * 0.1,
+                                                }}
+                                            />
+                                        ),
+                                    )}
+                                </div>
 
-                            <div className="size-14 rounded-full bg-[#ffcc00] flex items-center justify-center shadow-[0_8px_24px_-4px_rgba(255,204,0,0.4)] relative z-10 mb-6">
-                                <RiVoiceprintFill className="size-6 text-[#111111]" />
-                            </div>
+                                <button
+                                    className="te-button size-14 relative z-10 mb-6"
+                                    style={{
+                                        backgroundColor: "var(--te-yellow)",
+                                        borderColor: "var(--te-yellow)",
+                                        borderBottomColor: "#b38f00",
+                                    }}
+                                >
+                                    <RiVoiceprintFill className="size-6 text-[#111]" />
+                                </button>
 
-                            <div className="relative z-10 max-w-[320px]">
-                                <h4 className="font-sans text-[24px] font-bold tracking-tight text-white mb-3">
-                                    Voice Reactive
-                                </h4>
-                                <p className="text-[16px] text-white/60 leading-relaxed font-medium">
-                                    Harnesses the Web Audio API for real-time
-                                    multi-band frequency analysis.
-                                </p>
+                                <div className="relative z-10 max-w-[320px]">
+                                    <h4 className="font-mono font-black text-[22px] tracking-[-0.01em] uppercase text-white mb-2">
+                                        Voice Reactive
+                                    </h4>
+                                    <p className="font-mono text-[13px] text-white/50 leading-relaxed">
+                                        Real-time multi-band frequency analysis
+                                        via Web Audio API.
+                                    </p>
+                                </div>
                             </div>
                         </motion.div>
 
@@ -521,20 +672,41 @@ export default function LandingPage() {
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
                             transition={{ delay: 0.2 }}
-                            className="col-span-1 row-span-1 min-h-[300px] md:min-h-0 bg-[#1c1c1e] rounded-[32px] p-8 flex flex-col justify-between relative overflow-hidden border border-white/10 group"
+                            className="col-span-1 row-span-1 min-h-[300px] md:min-h-0 bg-[#141414] border border-[#2a2a2a] rounded-[12px] overflow-hidden flex flex-col group"
+                            style={{
+                                boxShadow:
+                                    "0 32px 64px -16px rgba(0,0,0,0.95),inset 0 1px 0 rgba(255,255,255,0.04)",
+                            }}
                         >
-                            <div className="size-14 rounded-full bg-[#34c759] flex items-center justify-center shadow-[0_8px_24px_-4px_rgba(52,199,89,0.4)] relative z-10">
-                                <RiShieldKeyholeFill className="size-6 text-white" />
+                            <div className="flex items-center justify-between px-4 py-2.5 border-b border-[#2a2a2a] bg-[#1a1a1a] shrink-0">
+                                <span className="te-label text-white/40">
+                                    MODULE_03
+                                </span>
+                                <span className="te-label text-white/20">
+                                    KEY.VAULT
+                                </span>
                             </div>
+                            <div className="relative flex flex-col justify-between flex-1 p-8">
+                                <button
+                                    className="te-button size-14 relative z-10"
+                                    style={{
+                                        backgroundColor: "var(--te-green)",
+                                        borderColor: "var(--te-green)",
+                                        borderBottomColor: "#1e8c3a",
+                                    }}
+                                >
+                                    <RiShieldKeyholeFill className="size-6 text-white" />
+                                </button>
 
-                            <div className="relative z-10 mt-6">
-                                <h4 className="font-sans text-[20px] font-bold tracking-tight text-white mb-2">
-                                    BYOK Privacy
-                                </h4>
-                                <p className="text-[15px] text-white/60 leading-relaxed font-medium">
-                                    Local-first encrypted key vault. Keys never
-                                    touch a server.
-                                </p>
+                                <div className="relative z-10 mt-6">
+                                    <h4 className="font-mono font-black text-[18px] uppercase tracking-tight text-white mb-2">
+                                        BYOK Privacy
+                                    </h4>
+                                    <p className="font-mono text-[13px] text-white/50 leading-relaxed">
+                                        Local-first encrypted key vault. Keys
+                                        never touch a server.
+                                    </p>
+                                </div>
                             </div>
                         </motion.div>
 
@@ -544,22 +716,43 @@ export default function LandingPage() {
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
                             transition={{ delay: 0.3 }}
-                            className="col-span-1 row-span-1 min-h-[300px] md:min-h-0 bg-[#1c1c1e] rounded-[32px] p-8 flex flex-col justify-between relative overflow-hidden border border-white/10 group"
+                            className="col-span-1 row-span-1 min-h-[300px] md:min-h-0 bg-[#141414] border border-[#2a2a2a] rounded-[12px] overflow-hidden flex flex-col group"
+                            style={{
+                                boxShadow:
+                                    "0 32px 64px -16px rgba(0,0,0,0.95),inset 0 1px 0 rgba(255,255,255,0.04)",
+                            }}
                         >
-                            <div className="size-14 rounded-full bg-[#ff3b30] flex items-center justify-center shadow-[0_8px_24px_-4px_rgba(255,59,48,0.4)] relative z-10">
-                                <div className="font-mono text-white font-bold text-[16px] translate-y-px">
-                                    60
-                                </div>
+                            <div className="flex items-center justify-between px-4 py-2.5 border-b border-[#2a2a2a] bg-[#1a1a1a] shrink-0">
+                                <span className="te-label text-white/40">
+                                    MODULE_04
+                                </span>
+                                <span className="te-label text-white/20">
+                                    GSAP.ENG
+                                </span>
                             </div>
+                            <div className="relative flex flex-col justify-between flex-1 p-8">
+                                <button
+                                    className="te-button size-14 relative z-10"
+                                    style={{
+                                        backgroundColor: "var(--te-orange)",
+                                        borderColor: "var(--te-orange)",
+                                        borderBottomColor: "#b32200",
+                                    }}
+                                >
+                                    <div className="font-mono text-white font-black text-[16px]">
+                                        60
+                                    </div>
+                                </button>
 
-                            <div className="relative z-10 mt-6">
-                                <h4 className="font-sans text-[20px] font-bold tracking-tight text-white mb-2">
-                                    GSAP Powered
-                                </h4>
-                                <p className="text-[15px] text-white/60 leading-relaxed font-medium">
-                                    Sub-frame precision. Smooth interpolation
-                                    out of the box.
-                                </p>
+                                <div className="relative z-10 mt-6">
+                                    <h4 className="font-mono font-black text-[18px] uppercase tracking-tight text-white mb-2">
+                                        GSAP Powered
+                                    </h4>
+                                    <p className="font-mono text-[13px] text-white/50 leading-relaxed">
+                                        Sub-frame precision. Smooth
+                                        interpolation out of the box.
+                                    </p>
+                                </div>
                             </div>
                         </motion.div>
                     </div>
@@ -570,12 +763,15 @@ export default function LandingPage() {
             <section id="faq" className="py-24 sm:py-32 bg-[#f4f4f0]">
                 <div className="max-w-[800px] mx-auto px-6">
                     <div className="text-center mb-16">
-                        <h2 className="text-[36px] sm:text-[48px] font-bold tracking-tight text-[#111] mb-6">
-                            Frequently Asked Questions
+                        <div className="inline-block te-lcd px-3 py-1 text-[10px] tracking-[0.3em] mb-6">
+                            SYS.FAQ
+                        </div>
+                        <h2 className="font-mono font-black text-[36px] sm:text-[48px] tracking-[-0.02em] text-[#111] mb-6">
+                            Freq. Asked Questions
                         </h2>
                     </div>
 
-                    <div className="flex flex-col divide-y divide-[#e5e5e5] border-y border-[#e5e5e5]">
+                    <div className="flex flex-col gap-3">
                         {FAQS.map((faq, idx) => (
                             <FAQItem
                                 key={idx}
@@ -588,13 +784,13 @@ export default function LandingPage() {
             </section>
 
             {/* Footer */}
-            <footer className="bg-[#111111] text-white py-12 px-6">
+            <footer className="bg-[#111111] text-white py-12 px-6 border-t border-[#2a2a2a]">
                 <div className="max-w-[1200px] mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
                     <div className="flex items-center gap-3">
                         <div className="size-5 bg-white rounded-full flex items-center justify-center">
                             <div className="size-2 bg-[#111] rounded-full" />
                         </div>
-                        <span className="font-sans text-[15px] font-bold tracking-tight">
+                        <span className="font-mono text-[11px] font-black tracking-[0.2em] uppercase">
                             DOT
                         </span>
                     </div>
@@ -603,15 +799,15 @@ export default function LandingPage() {
                             href="https://github.com/x0bd/proto-0"
                             target="_blank"
                             rel="noreferrer"
-                            className="text-[13px] font-medium tracking-tight text-white/60 hover:text-white transition-colors"
+                            className="te-label text-white/40 hover:text-white transition-colors"
                         >
-                            GitHub
+                            GITHUB
                         </a>
                         <a
                             href="https://www.npmjs.com/package/@xoboid/avatar"
                             target="_blank"
                             rel="noreferrer"
-                            className="text-[13px] font-medium tracking-tight text-white/60 hover:text-white transition-colors"
+                            className="te-label text-white/40 hover:text-white transition-colors"
                         >
                             NPM
                         </a>
@@ -619,9 +815,9 @@ export default function LandingPage() {
                             href="https://xoboid.com"
                             target="_blank"
                             rel="noreferrer"
-                            className="text-[13px] font-medium tracking-tight text-white/60 hover:text-white transition-colors"
+                            className="te-label text-white/40 hover:text-white transition-colors"
                         >
-                            xoboid.com
+                            XOBOID.COM
                         </a>
                     </div>
                 </div>
@@ -637,20 +833,20 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
 
     return (
         <div
-            className="py-6 sm:py-8 cursor-pointer group"
+            className="te-recessed px-5 py-5 cursor-pointer group"
             onClick={() => setIsOpen(!isOpen)}
         >
             <div className="flex items-center justify-between gap-4">
-                <h4 className="text-[18px] sm:text-[22px] font-semibold tracking-tight text-[#111] group-hover:text-[#007aff] transition-colors">
+                <h4 className="font-mono font-bold text-[15px] sm:text-[17px] text-[#111] group-hover:text-[var(--te-orange)] transition-colors">
                     {question}
                 </h4>
                 <div
-                    className="size-8 sm:size-10 rounded-full bg-white border border-[#e5e5e5] shadow-sm flex items-center justify-center shrink-0 transition-transform duration-300 ease-out"
+                    className="te-button size-8 shrink-0"
                     style={{
                         transform: isOpen ? "rotate(45deg)" : "rotate(0deg)",
+                        transition: "transform 300ms ease",
                     }}
                 >
-                    {/* Plus icon made of div strips */}
                     <div className="relative size-3.5">
                         <div className="absolute top-1/2 left-0 w-full h-[2px] -translate-y-1/2 bg-[#111] rounded-full" />
                         <div className="absolute top-0 left-1/2 h-full w-[2px] -translate-x-1/2 bg-[#111] rounded-full" />
@@ -666,7 +862,7 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
                         transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
                         className="overflow-hidden"
                     >
-                        <p className="pt-4 sm:pt-6 text-[16px] sm:text-[18px] text-[#555] leading-relaxed font-medium max-w-[90%]">
+                        <p className="pt-4 font-mono text-[13px] sm:text-[14px] text-[#555] leading-relaxed max-w-[90%]">
                             {answer}
                         </p>
                     </motion.div>
@@ -687,12 +883,10 @@ function Meter({
 }) {
     return (
         <div className="flex flex-col gap-1.5 w-16 sm:w-20">
-            <span className="font-sans text-[11px] font-semibold uppercase tracking-widest text-[#8e8e93]">
-                {label}
-            </span>
-            <div className="h-1.5 w-full bg-[#e5e5e5] rounded-full overflow-hidden">
+            <span className="te-label text-white/40">{label}</span>
+            <div className="h-1.5 w-full bg-[#2a2a2a] rounded-sm overflow-hidden">
                 <div
-                    className="h-full transition-all duration-300 ease-out rounded-full"
+                    className="h-full transition-all duration-300 ease-out rounded-sm"
                     style={{
                         width: `${Math.max(5, value * 100)}%`,
                         backgroundColor: color,
