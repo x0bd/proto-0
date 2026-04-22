@@ -196,104 +196,209 @@ export default function LandingPage() {
             </motion.nav>
 
             {/* ── Hero ─────────────────────────────────────────────────────── */}
-            <section className="relative pt-44 pb-24 sm:pt-52 sm:pb-36 px-6 w-full max-w-[1200px] mx-auto flex flex-col items-center text-center overflow-hidden">
-                {/* Decorative grid backdrop */}
+            <section className="relative pt-40 pb-16 sm:pt-48 sm:pb-24 px-6 w-full max-w-[1200px] mx-auto overflow-hidden">
+                {/* Grid backdrop */}
                 <div
-                    className="absolute inset-x-0 top-0 h-[500px] pointer-events-none"
+                    className="absolute inset-x-0 top-0 h-full pointer-events-none"
                     style={{
-                        backgroundImage: "linear-gradient(rgba(0,0,0,0.035) 1px,transparent 1px),linear-gradient(90deg,rgba(0,0,0,0.035) 1px,transparent 1px)",
-                        backgroundSize: "40px 40px",
-                        maskImage: "radial-gradient(ellipse 60% 60% at 50% 30%,black 30%,transparent 100%)",
-                        WebkitMaskImage: "radial-gradient(ellipse 60% 60% at 50% 30%,black 30%,transparent 100%)",
+                        backgroundImage: "linear-gradient(rgba(0,0,0,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,0,0,0.03) 1px,transparent 1px)",
+                        backgroundSize: "48px 48px",
+                        maskImage: "radial-gradient(ellipse 70% 80% at 30% 40%,black 20%,transparent 80%)",
+                        WebkitMaskImage: "radial-gradient(ellipse 70% 80% at 30% 40%,black 20%,transparent 80%)",
                     }}
                 />
 
-                <motion.div
-                    initial={{ opacity: 0, y: 16 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5 }}
-                    className="relative flex items-center gap-2 te-lcd px-3.5 py-1.5 text-[10px] tracking-[0.28em] mb-10"
-                >
-                    <span
-                        className="size-1.5 rounded-full bg-[var(--te-green)] shrink-0 animate-pulse"
-                        style={{ boxShadow: "0 0 8px var(--te-green)" }}
-                    />
-                    V0.1.0&nbsp;&nbsp;//&nbsp;&nbsp;EXPERIMENTAL
-                </motion.div>
-
-                <motion.h1
-                    initial={{ opacity: 0, y: 24 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.65, delay: 0.08 }}
-                    className="relative font-mono font-black tracking-[-0.03em] text-[#0a0a0a] max-w-[960px] leading-[1.0] mb-8"
-                    style={{ fontSize: "clamp(52px, 9vw, 108px)" }}
-                >
-                    Machine emotion,
-                    <br className="hidden sm:block" />
-                    <span className="text-[var(--te-orange)]"> mapped</span> to geometry.
-                </motion.h1>
-
-                <motion.p
-                    initial={{ opacity: 0, y: 16 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.55, delay: 0.18 }}
-                    className="relative font-mono text-[15px] sm:text-[17px] text-[#666] max-w-[560px] mb-14 leading-[1.7]"
-                >
-                    An expressive, real-time AI companion. No text, no generic icons.
-                    Just responsive shape and motion.
-                </motion.p>
-
-                <motion.div
-                    initial={{ opacity: 0, y: 16 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.55, delay: 0.26 }}
-                    className="relative flex flex-col sm:flex-row items-center gap-3 w-full justify-center max-w-[480px]"
-                >
-                    <HwButton
-                        as={Link}
-                        href="/companion"
-                        bg="var(--te-orange)"
-                        borderColor="var(--te-orange)"
-                        shadowColor="#b32200"
-                        color="white"
-                        className="w-full sm:w-auto px-8 py-3.5 text-[11px] tracking-[0.18em] gap-2 hover:brightness-110 transition-all"
-                    >
-                        <RiPlayFill className="size-4" />
-                        LAUNCH_APP
-                    </HwButton>
-                    <HwButton
-                        as="a"
-                        href="https://www.npmjs.com/package/@xoboid/avatar"
-                        target="_blank"
-                        rel="noreferrer"
-                        className="w-full sm:w-auto px-8 py-3.5 text-[11px] tracking-[0.18em] gap-2"
-                    >
-                        <SiNpm className="size-4" />
-                        NPM_PKG
-                    </HwButton>
-                </motion.div>
-
-                {/* Stat strip */}
+                {/* Top identity bar */}
                 <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    transition={{ duration: 0.6, delay: 0.45 }}
-                    className="relative mt-20 flex items-center gap-6 sm:gap-12"
+                    transition={{ duration: 0.4 }}
+                    className="relative flex items-center justify-between mb-14 sm:mb-20"
                 >
-                    {[
-                        { val: "5-AXIS", label: "Emotion Engine" },
-                        { val: "60FPS", label: "Sub-frame Render" },
-                        { val: "BYOK", label: "Local Key Vault" },
-                    ].map((s, i) => (
-                        <React.Fragment key={s.val}>
-                            {i > 0 && <div className="w-px h-8 bg-[#ddd]" />}
-                            <div className="flex flex-col items-center gap-1">
-                                <span className="font-mono font-black text-[22px] sm:text-[26px] tracking-[-0.02em] text-[#111]">{s.val}</span>
-                                <span className="te-label">{s.label}</span>
-                            </div>
-                        </React.Fragment>
-                    ))}
+                    <div className="flex items-center gap-3 text-[#999]">
+                        <span className="te-label">XOBOID.SYS</span>
+                        <span className="te-label opacity-40">——</span>
+                        <span className="te-label">PROTO.0</span>
+                        <span className="te-label opacity-40">——</span>
+                        <span className="te-label">ANNO&nbsp;2025</span>
+                    </div>
+                    <div
+                        className="hidden sm:flex items-center gap-2 te-lcd px-3 py-1.5 text-[10px] tracking-[0.22em]"
+                    >
+                        <span
+                            className="size-1.5 rounded-full bg-[var(--te-green)] shrink-0 animate-pulse"
+                            style={{ boxShadow: "0 0 6px var(--te-green)" }}
+                        />
+                        STATUS&nbsp;:&nbsp;NOMINAL
+                    </div>
                 </motion.div>
+
+                {/* Two-column layout */}
+                <div className="relative flex flex-col lg:flex-row gap-10 lg:gap-16 items-start">
+
+                    {/* Left: Headline + copy + CTAs */}
+                    <div className="flex-1 min-w-0">
+
+                        {/* Category label */}
+                        <motion.div
+                            initial={{ opacity: 0, x: -12 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ duration: 0.4, delay: 0.05 }}
+                            className="flex items-center gap-2 mb-5"
+                        >
+                            <div className="w-4 h-px bg-[var(--te-orange)]" />
+                            <span className="te-label text-[var(--te-orange)]">REAL-TIME AI COMPANION</span>
+                        </motion.div>
+
+                        {/* Staggered headline */}
+                        <motion.h1
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ duration: 0.5, delay: 0.1 }}
+                            className="relative font-mono font-black leading-[1.0] tracking-[-0.025em] mb-8"
+                        >
+                            <motion.span
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.5, delay: 0.12 }}
+                                className="block text-[#bbb]"
+                                style={{ fontSize: "clamp(32px, 4.5vw, 52px)" }}
+                            >
+                                Five emotions.
+                            </motion.span>
+                            <motion.span
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.5, delay: 0.2 }}
+                                className="block text-[#111]"
+                                style={{ fontSize: "clamp(56px, 9vw, 112px)" }}
+                            >
+                                One face.
+                            </motion.span>
+                            <motion.span
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.5, delay: 0.28 }}
+                                className="block text-[var(--te-orange)]"
+                                style={{ fontSize: "clamp(56px, 9vw, 112px)" }}
+                            >
+                                Real time.
+                            </motion.span>
+                        </motion.h1>
+
+                        {/* Description — specific, opinionated */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 12 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.5, delay: 0.36 }}
+                            className="max-w-[480px] mb-10 space-y-3"
+                        >
+                            <p className="font-mono text-[14px] sm:text-[15px] text-[#444] leading-[1.8]">
+                                DOT maps five independent emotion axes —{" "}
+                                <span className="text-[#111] font-bold">joy, sadness, surprise, anger, curiosity</span>{" "}
+                                — to real-time procedural SVG geometry. No baked keyframes. No preset animations.
+                            </p>
+                            <p className="font-mono text-[13px] text-[#888] leading-[1.7]">
+                                Sub-frame interpolation via GSAP. Multi-band frequency analysis
+                                via Web Audio API. Voice synthesis via ElevenLabs. Keys encrypted
+                                locally via AES-GCM. Everything runs in your browser.
+                            </p>
+                        </motion.div>
+
+                        {/* CTAs */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.45, delay: 0.44 }}
+                            className="flex flex-wrap gap-3"
+                        >
+                            <HwButton
+                                as={Link}
+                                href="/companion"
+                                bg="var(--te-orange)"
+                                borderColor="var(--te-orange)"
+                                shadowColor="#b32200"
+                                color="white"
+                                className="px-7 py-3.5 text-[11px] tracking-[0.18em] gap-2"
+                            >
+                                <RiPlayFill className="size-4" />
+                                LAUNCH_APP
+                            </HwButton>
+                            <HwButton
+                                as="a"
+                                href="https://www.npmjs.com/package/@xoboid/avatar"
+                                target="_blank"
+                                rel="noreferrer"
+                                className="px-7 py-3.5 text-[11px] tracking-[0.18em] gap-2"
+                            >
+                                <SiNpm className="size-4" />
+                                NPM_PKG
+                            </HwButton>
+                            <HwButton
+                                as="a"
+                                href="https://github.com/x0bd/proto-0"
+                                target="_blank"
+                                rel="noreferrer"
+                                className="px-5 py-3.5 text-[11px] tracking-[0.18em] gap-2"
+                            >
+                                <SiGithub className="size-4" />
+                            </HwButton>
+                        </motion.div>
+                    </div>
+
+                    {/* Right: Hardware spec sheet */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.55, delay: 0.3 }}
+                        className="relative w-full lg:w-[260px] shrink-0"
+                    >
+                        {/* Spec panel */}
+                        <div className="te-panel rounded-[14px] overflow-hidden">
+                            <div className="te-module-header px-4 py-2.5">
+                                <span className="te-label">DOT_SPEC.v1</span>
+                                <span className="te-label opacity-40">TXT</span>
+                            </div>
+                            <div className="divide-y divide-[var(--panel-border)]">
+                                {[
+                                    { k: "FACE_ENGINE", v: "SVG_PROC" },
+                                    { k: "ANIM_RATE", v: "GSAP@60FPS" },
+                                    { k: "EMOTION_DIM", v: "5-AXIS" },
+                                    { k: "VOICE_SYS", v: "ELEVENLABS" },
+                                    { k: "KEY_ENC", v: "AES-GCM_256" },
+                                    { k: "RUNTIME", v: "BROWSER" },
+                                    { k: "LICENSE", v: "OPEN_SOURCE" },
+                                ].map(({ k, v }, i) => (
+                                    <motion.div
+                                        key={k}
+                                        initial={{ opacity: 0, x: 8 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        transition={{ duration: 0.3, delay: 0.38 + i * 0.04 }}
+                                        className="flex items-center justify-between px-4 py-2.5 group hover:bg-black/[0.02] transition-colors"
+                                    >
+                                        <span className="te-label">{k}</span>
+                                        <span className="font-mono text-[10px] font-black tracking-[0.1em] text-[#111] group-hover:text-[var(--te-orange)] transition-colors">{v}</span>
+                                    </motion.div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Build status LCD below spec sheet */}
+                        <div className="mt-2.5 te-lcd px-4 py-3 flex items-center justify-between text-[10px] tracking-[0.14em]">
+                            <span className="text-foreground/40">BUILD</span>
+                            <div className="flex items-center gap-2">
+                                <span className="size-1.5 rounded-full bg-[var(--te-green)]" style={{ boxShadow: "0 0 5px var(--te-green)" }} />
+                                <span className="font-black text-foreground/70">PASSING</span>
+                            </div>
+                        </div>
+
+                        {/* Small note */}
+                        <p className="mt-3 font-mono text-[10px] text-[#bbb] leading-[1.6] px-1 tracking-[0.04em]">
+                            All processing runs client-side.
+                            Your keys never leave the device.
+                        </p>
+                    </motion.div>
+                </div>
             </section>
 
             {/* ── Interactive Showcase ──────────────────────────────────────── */}
