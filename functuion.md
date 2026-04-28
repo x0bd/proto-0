@@ -1,82 +1,83 @@
 # DOT Functionality TODO Plan
 
 ## F0 Contracts and Types
-- [ ] Define `ProviderId` type and provider enum mapping.
-- [ ] Define `KeyVaultEntry` and key metadata interfaces.
-- [ ] Define `MemoryItem` and `MemoryPolicy` interfaces.
-- [ ] Define `VoiceSessionState` interfaces and status model.
-- [ ] Define `CheckIn` and `StreakState` interfaces.
+- [x] Define provider type and provider mapping via `Provider` / `DEFAULT_MODELS` in `lib/key-store.ts`.
+- [x] Define stored key and key metadata interfaces via `StoredKey` / `StoredEntry` in `lib/key-store.ts`.
+- [ ] Centralize `MemoryItem` and `MemoryPolicy` interfaces outside the UI drawer.
+- [x] Define voice session status model through the shared `VoiceState` UI contract.
+- [x] Define local check-in and streak data structures in `app/components/ritual-drawer.tsx`.
 - [ ] Define `PersonaConfig` interface.
-- [ ] Define `ExportJob` and export status interfaces.
+- [x] Define export format/status/template types in `app/components/share-dock.tsx`.
 - [ ] Define shared API request/response contracts for all new routes.
 
 ## F1 BYOK Key Vault Logic
-- [ ] Implement `lib/security/key-vault.ts`.
-- [ ] Implement passphrase-based key derivation using Web Crypto.
-- [ ] Implement API key encryption/decryption using AES-GCM.
-- [ ] Implement persistent encrypted blob format.
-- [ ] Implement session-only key mode with no persistence.
-- [ ] Implement in-memory decrypted key cache with timeout.
-- [ ] Implement lock/unlock and clear-cache behavior.
-- [ ] Implement strict no-server-persistence policy for user keys.
+- [x] Implement BYOK key store in `lib/key-store.ts` (planned `lib/security/key-vault.ts` path not created).
+- [x] Implement passphrase-based key derivation using Web Crypto PBKDF2.
+- [x] Implement API key encryption/decryption using AES-GCM.
+- [x] Implement persistent encrypted blob format.
+- [x] Implement session-only key mode with no persistence beyond the current tab.
+- [ ] Add a timeout to the in-memory decrypted key cache.
+- [x] Implement lock/unlock and clear-cache behavior.
+- [x] Implement no-server-persistence policy for user keys; keys are forwarded only to proxy routes for provider calls.
 
 ## F2 AI Route and Orchestration (AI SDK)
-- [ ] Create `POST /api/ai/respond`.
-- [ ] Add provider routing logic using `x-dot-provider`.
-- [ ] Read user-provided API key from request headers.
-- [ ] Implement OpenAI provider execution with AI SDK.
-- [ ] Implement Google provider execution with AI SDK.
-- [ ] Implement streaming responses to client.
-- [ ] Inject persona context into request prompt stack.
-- [ ] Inject memory retrieval context into request prompt stack.
+- [x] Create current `POST /api/chat` route (planned `/api/ai/respond` route not created).
+- [x] Add provider routing logic from the request body provider field.
+- [x] Read user-provided API key from the `x-dot-api-key` request header.
+- [x] Implement OpenAI provider execution with AI SDK.
+- [x] Implement Google provider execution with AI SDK.
+- [x] Implement streaming responses to client.
+- [x] Inject persona context into request prompt stack.
+- [x] Inject recent memory context into request prompt stack.
 - [ ] Add normalized error mapping for missing/invalid keys.
 
 ## F3 ElevenLabs Voice Runtime
-- [ ] Create or normalize `POST /api/tts/speak`.
-- [ ] Read ElevenLabs key from request headers only.
-- [ ] Stream audio response payload to client.
-- [ ] Upgrade voice client hook for interrupt/cancel support.
-- [ ] Implement barge-in behavior to stop active playback.
-- [ ] Expose analyzer node for avatar audio reactivity.
-- [ ] Add fallback to browser SpeechSynthesis when key is missing.
+- [x] Create current `POST /api/tts` route (planned `/api/tts/speak` route not created).
+- [ ] Read ElevenLabs key from request headers only; route still accepts legacy body/env fallbacks.
+- [x] Stream audio response payload from the API route to client.
+- [x] Upgrade voice client hook for interrupt/cancel support.
+- [x] Implement barge-in behavior to stop active playback.
+- [x] Expose analyzer node for avatar audio reactivity.
+- [x] Add fallback to browser SpeechSynthesis when key is missing or TTS fails.
 - [ ] Add unified error states for voice failures.
 
 ## F4 Memory Engine
-- [ ] Implement local persistence adapter (IndexedDB) for memory.
-- [ ] Implement memory write pipeline from chat interactions.
-- [ ] Implement memory write pipeline from voice interactions.
-- [ ] Implement explicit manual save path.
-- [ ] Implement memory search and filtering logic.
+- [x] Implement local persistence adapter with localStorage for memory (IndexedDB not implemented).
+- [x] Implement memory write pipeline from chat interactions.
+- [x] Implement memory write pipeline from voice interactions.
+- [x] Implement explicit save path from ritual check-ins.
+- [x] Implement memory search and filtering logic.
 - [ ] Implement memory retrieval scoring for relevance.
-- [ ] Implement policy enforcement for read/write toggles.
+- [x] Implement policy enforcement for read/write toggles.
 - [ ] Implement retention handling and purge behavior.
-- [ ] Implement clear-all and category purge operations.
+- [x] Implement clear-all purge operation.
+- [ ] Implement category purge operations.
 
 ## F5 Check-ins and Streak Engine
-- [ ] Implement check-in storage model and adapter.
-- [ ] Implement one-check-in-per-day guard.
+- [x] Implement check-in storage model and localStorage adapter.
+- [x] Implement one-check-in-per-day guard.
 - [ ] Implement timezone-aware day boundary utility.
-- [ ] Implement current streak calculation.
+- [x] Implement current streak calculation.
 - [ ] Implement longest streak calculation.
-- [ ] Implement weekly mood aggregation metrics.
+- [x] Implement weekly mood aggregation metrics.
 - [ ] Provide check-in summary context for AI responses.
 
 ## F6 Persona Runtime
-- [ ] Create persona registry config (Coach, Playful, Deep Thinker, Focus Buddy).
-- [ ] Implement active persona persistence.
-- [ ] Implement runtime persona switch logic.
-- [ ] Apply persona prompt profile to AI requests.
+- [x] Create persona registry config (Coach, Playful, Deep Thinker, Focus Buddy).
+- [x] Implement active persona persistence.
+- [x] Implement runtime persona switch logic.
+- [x] Apply persona prompt profile to AI requests.
 - [ ] Apply persona voice defaults to TTS requests.
 - [ ] Apply persona-driven avatar behavior tuning hooks.
 
 ## F7 Share and Export Runtime
-- [ ] Harden PNG export pipeline.
-- [ ] Harden GIF/WebM export pipeline.
+- [x] Harden PNG export pipeline.
+- [x] Harden GIF/WebM export pipeline.
 - [ ] Add export cancellation and failure recovery.
-- [ ] Add deterministic output sizing and template overlays.
-- [ ] Integrate Web Share API path where available.
-- [ ] Add download fallback for unsupported share environments.
-- [ ] Add progress and completion events for UI feedback.
+- [x] Add deterministic output sizing and template overlays.
+- [x] Integrate Web Share API path where available.
+- [x] Add download fallback for unsupported share environments.
+- [x] Add progress and completion events for UI feedback.
 
 ## F8 Integrations (Optional Post-Core)
 - [ ] Define integration connector interface contract.
@@ -106,4 +107,3 @@
 - [ ] Complete F6.
 - [ ] Complete F7.
 - [ ] Complete F9.
-

@@ -9,8 +9,8 @@ Scope: static code audit of the current project against `ui.md`, `functuion.md`,
 - [x] BYOK AI chat is partially real: keys can be stored in the local key vault, read by chat/voice clients, and sent to `/api/chat`, which uses the AI SDK with OpenAI and Google providers.
 - [x] ElevenLabs TTS is partially real: the app can read the ElevenLabs key from the vault and send it to `/api/tts`, which calls ElevenLabs with `xi-api-key`.
 - [ ] The implemented API contracts still use `/api/chat` and `/api/tts` rather than the originally planned `/api/ai/respond` and `/api/tts/speak`, but BYOK key forwarding now uses request headers.
-- [ ] Several polished UI surfaces are still local-only or settings-only. They look like complete product features, but they do not yet control the runtime AI/voice behavior.
-- [ ] `functuion.md` is still unchecked, while the code already contains partial implementations. The plan docs and code are now out of sync.
+- [ ] Several polished UI surfaces are still local-only or partially wired. They look like complete product features, but a few still do not control runtime AI/voice behavior.
+- [x] `functuion.md` and `ui.md` now reflect the current partial implementations instead of showing everything as pending.
 
 ## BYOK AI Findings
 
@@ -48,18 +48,18 @@ Scope: static code audit of the current project against `ui.md`, `functuion.md`,
 - [ ] Text chat uses memory context, but only a shallow recent-memory slice. There is no ranking, summarization, dedupe, consent review, or memory editing beyond deleting stored blocks.
 - [x] Voice memory capture now uses the shared memory helpers. Spoken transcripts are stored as `source: "voice"` when learning is enabled, and recent memories are sent with voice prompts.
 - [ ] Rituals are local-only. Mood check-ins persist to localStorage and can write memory entries, but there are no reminders, notifications, calendar integration, timezone controls, or multi-day analytics beyond local streak math.
-- [ ] Share/export is partially functional. PNG, GIF, WebM, and native share have real client code, but templates only change labels/filenames. There is no actual designed mood-card/reflection-card/reaction-clip layout layer.
+- [x] Share/export now has real client renderers for PNG, GIF, WebM, and native share. Mood card, reflection card, and reaction clip templates composite the avatar into distinct designed canvas layouts.
 - [ ] Export cancellation is missing. Long GIF/WebM capture can be started, but there is no cancel control once in progress.
 - [ ] Audio Lab is functional locally, but it is not integrated as a reusable product feature. Uploaded audio can drive emotion/levels, but there is no saved session, no generated insight, no export, and no connection to AI chat.
 - [ ] Onboarding is minimal. There is a settings-key indicator and no-key chat action, but no guided first-run setup for AI provider, ElevenLabs, memory consent, mic permission, and voice test.
 - [x] Key deletion now has confirmation. `key-vault-panel.tsx` opens a destructive confirmation dialog before clearing a provider key.
-- [ ] Key vault copy is misleading for unencrypted storage. Without a passphrase, keys can be stored plainly in localStorage. The edit UI does say `PLAIN · NO PASSPHRASE SET`, but the list footer says `LOCAL_ONLY` / `NEVER SENT TO OUR SERVERS`, which can read safer than reality.
+- [x] Key vault copy has been tightened. The footer now says `LOCAL_VAULT · PROXY_HEADER_ONLY · SERVER_NOT_STORED`, while the edit UI still distinguishes encrypted, session-only, and plain local storage modes.
 - [ ] Legacy/parallel components still exist. `ChatWindow.tsx`, `DownloadButton.tsx`, `components/audio-panel.tsx`, and unused persona UI components may now be dead or stale surfaces unless they are intentionally kept for reference.
 
 ## Plan / Docs Drift
 
-- [ ] `functuion.md` still shows all functionality tasks unchecked even though the repo now has partial AI chat, BYOK key storage, TTS, memory, rituals, panel persistence, and exports.
-- [ ] `ui.md` still has U7 unchecked. The main app is integrated under `app/companion/page.tsx`, while `app/page.tsx` is now a landing page. The docs should name `/companion` as the actual product shell.
+- [x] `functuion.md` now checks the implemented slices for BYOK key storage, AI routing, voice, memory, rituals, persona runtime, and share/export while leaving incomplete items unchecked.
+- [x] `ui.md` now names `app/companion/page.tsx` as the product shell and marks the integrated/local-store UI work that is already present.
 - [ ] The route names in the plans do not match the code. Current implementation uses `/api/chat` and `/api/tts`, though key forwarding now matches the header-based plan.
 - [ ] The privacy/security language needs a pass now that keys are sent from browser to app routes for proxying.
 
@@ -70,5 +70,5 @@ Scope: static code audit of the current project against `ui.md`, `functuion.md`,
 - [x] Add provider key validation/test buttons for OpenAI, Google, and ElevenLabs.
 - [x] Add key deletion confirmation and update vault copy to be precise about local storage, encryption, and proxy-route usage.
 - [x] Add memory context and memory writes to voice conversations.
-- [ ] Replace template-only export labels with real template renderers for mood/reflection/reaction outputs.
-- [ ] Update `functuion.md` and `ui.md` so the project plan reflects what is now implemented vs still missing.
+- [x] Replace template-only export labels with real template renderers for mood/reflection/reaction outputs.
+- [x] Update `functuion.md` and `ui.md` so the project plan reflects what is now implemented vs still missing.

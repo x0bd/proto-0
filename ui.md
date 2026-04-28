@@ -79,8 +79,8 @@
 - [x] Add share API unavailable fallback state.
 
 ## U7 Integration and QA
-- [ ] Integrate all UI sections into `app/page.tsx` shell flow.
-- [ ] Add mock stores so all views are navigable without backend.
+- [x] Integrate all UI sections into the `app/companion/page.tsx` product shell flow.
+- [x] Add local/mock stores so all core views are navigable without backend.
 - [ ] Validate safe-area spacing for mobile.
 - [ ] Validate touch targets and overlap behavior on small screens.
 - [ ] Validate keyboard/focus states for controls and dialogs.
