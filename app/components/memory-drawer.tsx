@@ -5,6 +5,10 @@ import { motion, AnimatePresence } from "motion/react";
 import { usePanelPosition } from "@/hooks/usePanelPosition";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
+    DEFAULT_MEMORY_POLICY,
+    type MemoryEntry,
+} from "@/lib/memory-types";
+import {
     Search,
     Database,
     Trash2,
@@ -24,17 +28,8 @@ interface MemoryDrawerProps {
     constraintsRef?: React.RefObject<Element>;
 }
 
-export interface MemoryEntry {
-    id: string;
-    content: string;
-    tags: string[];
-    source: "chat" | "voice" | "ritual" | "system";
-    date: string;       // ISO string
-    dateLabel?: string;  // Display label
-}
-
 const STORAGE_KEY = "dot_memory_core";
-const MAX_MEMORY_ENTRIES = 200;
+const MAX_MEMORY_ENTRIES = DEFAULT_MEMORY_POLICY.retentionLimit;
 const MEMORY_STOP_WORDS = new Set([
     "about",
     "after",

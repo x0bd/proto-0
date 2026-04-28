@@ -1,7 +1,11 @@
 "use client";
 
 import * as React from "react";
-import { VoiceCompanionBar, VoiceState } from "./ui/voice-companion-bar";
+import {
+    VoiceCompanionBar,
+    VoiceState,
+    type VoiceErrorCode,
+} from "./ui/voice-companion-bar";
 import { VoiceSettingsSheet } from "./ui/voice-settings-sheet";
 
 interface FloatingDockProps {
@@ -13,6 +17,7 @@ interface FloatingDockProps {
     accentColor?: string;
     constraintsRef?: React.RefObject<Element>;
     voiceState: VoiceState;
+    voiceError?: VoiceErrorCode | null;
     onToggleMic: () => void;
     onInterrupt: () => void;
 }
@@ -26,6 +31,7 @@ export function FloatingDock({
     accentColor = "#7C3AED",
     constraintsRef,
     voiceState,
+    voiceError,
     onToggleMic,
     onInterrupt,
 }: FloatingDockProps) {
@@ -36,6 +42,7 @@ export function FloatingDock({
             <div className="absolute bottom-[max(16px,env(safe-area-inset-bottom))] sm:bottom-6 md:bottom-10 left-1/2 -translate-x-1/2 z-60 flex flex-col items-center gap-4 w-full max-w-[calc(100vw-2rem)] px-4">
                 <VoiceCompanionBar
                     state={voiceState}
+                    errorCode={voiceError}
                     onToggleMic={onToggleMic}
                     onInterrupt={onInterrupt}
                     isChatOpen={isChatOpen}

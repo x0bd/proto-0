@@ -3,7 +3,7 @@
 ## F0 Contracts and Types
 - [x] Define provider type and provider mapping via `Provider` / `DEFAULT_MODELS` in `lib/key-store.ts`.
 - [x] Define stored key and key metadata interfaces via `StoredKey` / `StoredEntry` in `lib/key-store.ts`.
-- [ ] Centralize `MemoryItem` and `MemoryPolicy` interfaces outside the UI drawer.
+- [x] Centralize `MemoryItem` and `MemoryPolicy` interfaces outside the UI drawer.
 - [x] Define voice session status model through the shared `VoiceState` UI contract.
 - [x] Define local check-in and streak data structures in `app/components/ritual-drawer.tsx`.
 - [x] Define persona tuning settings contract in `hooks/usePersonaSettings.ts`.
@@ -16,7 +16,7 @@
 - [x] Implement API key encryption/decryption using AES-GCM.
 - [x] Implement persistent encrypted blob format.
 - [x] Implement session-only key mode with no persistence beyond the current tab.
-- [ ] Add a timeout to the in-memory decrypted key cache.
+- [x] Add a timeout to the in-memory decrypted key cache.
 - [x] Implement lock/unlock and clear-cache behavior.
 - [x] Implement no-server-persistence policy for user keys; keys are forwarded only to proxy routes for provider calls.
 
@@ -41,7 +41,7 @@
 - [x] Implement barge-in behavior to stop active playback.
 - [x] Expose analyzer node for avatar audio reactivity.
 - [x] Add fallback to browser SpeechSynthesis when key is missing or TTS fails.
-- [ ] Add unified error states for voice failures.
+- [x] Add unified error states for voice failures.
 
 ## F4 Memory Engine
 - [x] Implement local persistence adapter with localStorage for memory (IndexedDB not implemented).
@@ -62,7 +62,7 @@
 - [x] Implement current streak calculation.
 - [x] Implement longest streak calculation.
 - [x] Implement weekly mood aggregation metrics.
-- [ ] Provide check-in summary context for AI responses.
+- [x] Provide check-in summary context for AI responses.
 
 ## F6 Persona Runtime
 - [x] Create persona registry config (Coach, Playful, Deep Thinker, Focus Buddy).

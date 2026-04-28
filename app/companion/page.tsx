@@ -162,7 +162,7 @@ export default function Home() {
 		disconnect: disconnectAudio,
 	} = useAudioAnalysis();
 
-	const { voiceState, toggleMic, interrupt } = useVoiceConversation({
+	const { voiceState, voiceError, toggleMic, interrupt } = useVoiceConversation({
 		activePersonaId,
 		personaTuning,
 		onAudioLevelsChange: (ttsLevels) => {
@@ -544,6 +544,7 @@ export default function Home() {
 					accentColor={accentColor}
 					constraintsRef={constraintsRef}
 					voiceState={voiceState}
+					voiceError={voiceError}
 					onToggleMic={toggleMic}
 					onInterrupt={interrupt}
 				/>

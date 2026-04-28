@@ -81,7 +81,7 @@
 ## U7 Integration and QA
 - [x] Integrate all UI sections into the `app/companion/page.tsx` product shell flow.
 - [x] Add local/mock stores so all core views are navigable without backend.
-- [ ] Validate safe-area spacing for mobile.
-- [ ] Validate touch targets and overlap behavior on small screens.
-- [ ] Validate keyboard/focus states for controls and dialogs.
-- [ ] Validate contrast and readability for all actionable elements.
+- [x] Validate safe-area spacing for mobile.
+- [x] Validate touch targets and overlap behavior on small screens.
+- [x] Validate keyboard/focus states for controls and dialogs.
+- [x] Validate contrast and readability for all actionable elements.

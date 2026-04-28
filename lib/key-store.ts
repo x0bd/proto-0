@@ -3,6 +3,7 @@
 // Keys never leave the device except when forwarded to the app's own API routes.
 
 const STORAGE_PREFIX = "dot_key_";
+const DECRYPTED_CACHE_TTL_MS = 15 * 60 * 1000;
 
 export type Provider = "openai" | "google" | "elevenlabs";
 
@@ -30,11 +31,55 @@ interface StoredEntry {
   updatedAt: number;
 }
 
-// In-memory cache — populated on setKey or unlockVault, cleared on page reload
-const memCache = new Map<Provider, StoredKey>();
+interface MemCacheEntry {
+  key: StoredKey;
+  expiresAt?: number;
+}
+
+// In-memory cache — encrypted vault unlocks expire, session/plain keys clear on reload
+const memCache = new Map<Provider, MemCacheEntry>();
+const memCacheTimers = new Map<Provider, ReturnType<typeof setTimeout>>();
 
 function storageKey(provider: Provider): string {
   return `${STORAGE_PREFIX}${provider}`;
+}
+
+function clearCacheTimer(provider: Provider): void {
+  const timer = memCacheTimers.get(provider);
+  if (timer) clearTimeout(timer);
+  memCacheTimers.delete(provider);
+}
+
+function setCache(
+  provider: Provider,
+  key: StoredKey,
+  opts?: { decryptedVaultKey?: boolean },
+): void {
+  clearCacheTimer(provider);
+  const expiresAt = opts?.decryptedVaultKey
+    ? Date.now() + DECRYPTED_CACHE_TTL_MS
+    : undefined;
+  memCache.set(provider, { key, expiresAt });
+
+  if (expiresAt) {
+    const timer = setTimeout(() => {
+      const cached = memCache.get(provider);
+      if (cached?.expiresAt === expiresAt) memCache.delete(provider);
+      memCacheTimers.delete(provider);
+    }, DECRYPTED_CACHE_TTL_MS);
+    memCacheTimers.set(provider, timer);
+  }
+}
+
+function getCachedKey(provider: Provider): StoredKey | null {
+  const cached = memCache.get(provider);
+  if (!cached) return null;
+  if (cached.expiresAt && cached.expiresAt <= Date.now()) {
+    memCache.delete(provider);
+    clearCacheTimer(provider);
+    return null;
+  }
+  return cached.key;
 }
 
 // ── Web Crypto helpers ──────────────────────────────────────────────────────
@@ -122,7 +167,7 @@ export async function setKey(
     };
     sessionStorage.setItem(storageKey(provider), JSON.stringify(entry));
     localStorage.removeItem(storageKey(provider));
-    memCache.set(provider, { provider, key: apiKey, model: opts?.model, sessionOnly: true, updatedAt: Date.now() });
+    setCache(provider, { provider, key: apiKey, model: opts?.model, sessionOnly: true, updatedAt: Date.now() });
     return;
   }
 
@@ -133,7 +178,11 @@ export async function setKey(
       model: opts?.model, sessionOnly: false, updatedAt: Date.now(),
     };
     localStorage.setItem(storageKey(provider), JSON.stringify(entry));
-    memCache.set(provider, { provider, key: apiKey, model: opts?.model, sessionOnly: false, updatedAt: Date.now() });
+    setCache(
+      provider,
+      { provider, key: apiKey, model: opts?.model, sessionOnly: false, updatedAt: Date.now() },
+      { decryptedVaultKey: true },
+    );
     return;
   }
 
@@ -143,12 +192,12 @@ export async function setKey(
     model: opts?.model, sessionOnly: false, updatedAt: Date.now(),
   };
   localStorage.setItem(storageKey(provider), JSON.stringify(entry));
-  memCache.set(provider, { provider, key: apiKey, model: opts?.model, sessionOnly: false, updatedAt: Date.now() });
+  setCache(provider, { provider, key: apiKey, model: opts?.model, sessionOnly: false, updatedAt: Date.now() });
 }
 
 /** Read a key. Returns from memory cache first, then sessionStorage, then plain localStorage. Returns null for encrypted keys that haven't been unlocked. */
 export function getKey(provider: Provider): StoredKey | null {
-  const cached = memCache.get(provider);
+  const cached = getCachedKey(provider);
   if (cached) return cached;
 
   for (const store of [sessionStorage, localStorage]) {
@@ -160,7 +209,7 @@ export function getKey(provider: Provider): StoredKey | null {
       if (entry.encrypted) continue; // locked — must call unlockVault first
       if (!entry.key) continue;
       const stored: StoredKey = { provider, key: entry.key, model: entry.model, sessionOnly: entry.sessionOnly, updatedAt: entry.updatedAt };
-      memCache.set(provider, stored);
+      setCache(provider, stored);
       return stored;
     } catch { /* fall through */ }
   }
@@ -171,6 +220,7 @@ export function clearKey(provider: Provider): void {
   localStorage.removeItem(storageKey(provider));
   sessionStorage.removeItem(storageKey(provider));
   memCache.delete(provider);
+  clearCacheTimer(provider);
 }
 
 export function getAllKeys(): StoredKey[] {
@@ -186,7 +236,7 @@ export function hasKey(provider: Provider): boolean {
 export function vaultIsLocked(): boolean {
   const providers: Provider[] = ["openai", "google", "elevenlabs"];
   return providers.some((p) => {
-    if (memCache.has(p)) return false;
+    if (getCachedKey(p)) return false;
     try {
       const raw = localStorage.getItem(storageKey(p));
       if (!raw) return false;
@@ -215,14 +265,18 @@ export async function unlockVault(passphrase: string): Promise<{ success: boolea
   let anyFailed = false;
 
   for (const p of providers) {
-    if (memCache.has(p)) continue;
+    if (getCachedKey(p)) continue;
     try {
       const raw = localStorage.getItem(storageKey(p));
       if (!raw) continue;
       const entry: StoredEntry = JSON.parse(raw);
       if (!entry.encrypted || !entry.blob) continue;
       const plainKey = await decryptValue(entry.blob, passphrase);
-      memCache.set(p, { provider: p, key: plainKey, model: entry.model, sessionOnly: false, updatedAt: entry.updatedAt });
+      setCache(
+        p,
+        { provider: p, key: plainKey, model: entry.model, sessionOnly: false, updatedAt: entry.updatedAt },
+        { decryptedVaultKey: true },
+      );
       unlocked++;
     } catch {
       anyFailed = true;

@@ -47,19 +47,24 @@ Scope: static code audit of the current project against `ui.md`, `functuion.md`,
 - [ ] Memory is local-only. `MemoryDrawer` persists localStorage memories, search, filters, delete, clear-all, tag purge, and a local 200-block retention cap, but there is no backend memory API, embeddings, import/export, or cloud sync.
 - [x] Text and voice chat now use local relevance-ranked memory context instead of only taking the newest entries. Recall scores prompt/token/tag overlap with recency as a tiebreaker, while embeddings, summarization, dedupe, and richer editing remain future work.
 - [x] Voice memory capture now uses the shared memory helpers. Spoken transcripts are stored as `source: "voice"` when learning is enabled, and recent memories are sent with voice prompts.
+- [x] Memory contracts are centralized in `lib/memory-types.ts`, so memory entries/policy are no longer typed only inside the UI drawer.
 - [ ] Rituals are local-only. Mood check-ins persist to localStorage, use local-calendar day keys, track current/best streaks, show weekly mood history, and can write memory entries, but there are no reminders, notifications, calendar integration, or configurable timezone controls.
+- [x] Ritual context now feeds existing AI personalization. Text and voice chat append a local daily check-in summary, current streak, best streak, timezone, and recent check-ins to the existing `/api/chat` memory context.
 - [x] Share/export now has real client renderers for PNG, GIF, WebM, and native share. Mood card, reflection card, and reaction clip templates composite the avatar into distinct designed canvas layouts.
 - [x] Export cancellation is now available. PNG/GIF/WebM/native share jobs share an abort flag, GIF/WebM loops stop on cancel, WebM recorder streams are cleaned up, and the export UI exposes `ABORT` / `ABORT_RENDER` controls while rendering.
 - [ ] Audio Lab is functional locally, but it is not integrated as a reusable product feature. Uploaded audio can drive emotion/levels, but there is no saved session, no generated insight, no export, and no connection to AI chat.
 - [ ] Onboarding is minimal. There is a settings-key indicator and no-key chat action, but no guided first-run setup for AI provider, ElevenLabs, memory consent, mic permission, and voice test.
 - [x] Key deletion now has confirmation. `key-vault-panel.tsx` opens a destructive confirmation dialog before clearing a provider key.
 - [x] Key vault copy has been tightened. The footer now says `LOCAL_VAULT · PROXY_HEADER_ONLY · SERVER_NOT_STORED`, while the edit UI still distinguishes encrypted, session-only, and plain local storage modes.
+- [x] Encrypted key unlocks now expire from the in-memory decrypted cache after 15 minutes. Plain/session keys keep their existing reload/session behavior.
+- [x] Voice failures now surface reasoned local error states (`NO_KEY`, `NO_MIC`, `MIC_ERR`, `AI_ERR`, `TTS_ERR`) in the voice companion bar instead of one generic error label.
 - [ ] Legacy/parallel components still exist. `ChatWindow.tsx`, `DownloadButton.tsx`, `components/audio-panel.tsx`, and unused persona UI components may now be dead or stale surfaces unless they are intentionally kept for reference.
 
 ## Plan / Docs Drift
 
 - [x] `functuion.md` now checks the implemented slices for BYOK key storage, AI routing, voice, memory, rituals, persona runtime, and share/export while leaving incomplete items unchecked.
 - [x] `ui.md` now names `app/companion/page.tsx` as the product shell and marks the integrated/local-store UI work that is already present.
+- [x] `ui.md` UI QA is now checked off after adding mobile-safe panel bounds, coarse-pointer target sizing, visible focus rings, and higher-readability subtle text treatments.
 - [ ] The route names in the plans do not match the code. Current implementation uses `/api/chat` and `/api/tts`, though key forwarding now matches the header-based plan.
 - [ ] The privacy/security language needs a pass now that keys are sent from browser to app routes for proxying.
 
@@ -79,3 +84,4 @@ Scope: static code audit of the current project against `ui.md`, `functuion.md`,
 - [x] Add local memory retention cap and tag-level purge controls.
 - [x] Harden local check-in day boundaries and longest-streak tracking.
 - [x] Wire persona tuning into settings UI, AI prompt behavior, voice defaults, and avatar behavior bias.
+- [x] Centralize memory contracts, add encrypted vault cache timeout, add voice error codes, and pass ritual summaries into AI context.

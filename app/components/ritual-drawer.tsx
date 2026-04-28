@@ -152,6 +152,39 @@ function getWeekEntries(entries: Record<string, { mood: CheckInMood; note: strin
     return result;
 }
 
+export function buildRitualContextForPrompt(limit: number = 7): string {
+    const data = loadSyncData();
+    const entryKeys = Object.keys(data.entries)
+        .filter((key) => data.entries[key]?.mood)
+        .sort((a, b) => b.localeCompare(a))
+        .slice(0, limit);
+
+    if (entryKeys.length === 0) return "";
+
+    const todayKey = getDateKey();
+    const streak = calculateCurrentStreak(data.entries, todayKey);
+    const longestStreak = Math.max(
+        data.longestStreak || 0,
+        calculateLongestStreak(data.entries),
+        streak,
+    );
+
+    const rows = entryKeys.map((key) => {
+        const entry = data.entries[key];
+        const moodLabel =
+            MOODS.find((mood) => mood.id === entry.mood)?.label ??
+            entry.mood ??
+            "Unknown";
+        const note = entry.note.trim() ? ` - ${entry.note.trim().slice(0, 120)}` : "";
+        return `- ${key}: ${moodLabel}${note}`;
+    });
+
+    return [
+        `Daily check-in summary: current streak ${streak}, best streak ${longestStreak}, timezone ${data.timezone}.`,
+        ...rows,
+    ].join("\n");
+}
+
 export function RitualDrawer({
     open,
     onOpenChange,

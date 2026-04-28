@@ -19,6 +19,13 @@ export type VoiceState =
 	| "speaking"
 	| "error";
 
+export type VoiceErrorCode =
+	| "NO_AI_KEY"
+	| "MIC_UNSUPPORTED"
+	| "MIC_ERROR"
+	| "AI_ERROR"
+	| "TTS_ERROR";
+
 interface VoiceCompanionBarProps {
 	state: VoiceState;
 	onToggleMic: () => void;
@@ -28,9 +35,18 @@ interface VoiceCompanionBarProps {
 	isMuted: boolean;
 	onToggleMute: () => void;
 	onOpenSettings: () => void;
+	errorCode?: VoiceErrorCode | null;
 	accentColor?: string;
 	className?: string;
 }
+
+const VOICE_ERROR_LABELS: Record<VoiceErrorCode, string> = {
+	NO_AI_KEY: "NO_KEY",
+	MIC_UNSUPPORTED: "NO_MIC",
+	MIC_ERROR: "MIC_ERR",
+	AI_ERROR: "AI_ERR",
+	TTS_ERROR: "TTS_ERR",
+};
 
 export function VoiceCompanionBar({
 	state,
@@ -41,6 +57,7 @@ export function VoiceCompanionBar({
 	isMuted,
 	onToggleMute,
 	onOpenSettings,
+	errorCode,
 	accentColor = "#7c3aed",
 	className,
 }: VoiceCompanionBarProps) {
@@ -82,7 +99,11 @@ export function VoiceCompanionBar({
 					) : isError ? (
 						<>
 							<div className="size-2 rounded-full bg-[var(--te-orange)] shadow-[0_0_8px_var(--te-orange)]" />
-							<span className="text-[12px] font-bold">ERR_01</span>
+							<span className="text-[12px] font-bold">
+								{errorCode
+									? VOICE_ERROR_LABELS[errorCode]
+									: "ERR_01"}
+							</span>
 						</>
 					) : (
 						<>

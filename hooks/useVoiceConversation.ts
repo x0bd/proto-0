@@ -1,7 +1,10 @@
 "use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
-import type { VoiceState } from "@/components/ui/voice-companion-bar";
+import type {
+  VoiceErrorCode,
+  VoiceState,
+} from "@/components/ui/voice-companion-bar";
 import type { AudioLevels } from "./useAudioAnalysis";
 import { getKey } from "@/lib/key-store";
 import {
@@ -10,10 +13,11 @@ import {
 	useVoiceSettings,
 } from "@/hooks/useVoiceSettings";
 import {
-	resolvePersonaVoiceSettings,
-	type PersonaTuningSettings,
+  resolvePersonaVoiceSettings,
+  type PersonaTuningSettings,
 } from "@/hooks/usePersonaSettings";
 import { addMemory, buildMemoryContextForPrompt, isMemoryEnabled } from "@/app/components/memory-drawer";
+import { buildRitualContextForPrompt } from "@/app/components/ritual-drawer";
 
 interface UseVoiceConversationOptions {
   activePersonaId?: string;
@@ -52,6 +56,7 @@ export function useVoiceConversation({
   onAudioLevelsChange,
 }: UseVoiceConversationOptions = {}) {
   const [voiceState, setVoiceState] = useState<VoiceState>("idle");
+  const [voiceError, setVoiceError] = useState<VoiceErrorCode | null>(null);
   const [transcript, setTranscript] = useState("");
   const { settings: storedVoiceSettings } = useVoiceSettings();
   const voiceSettings = resolvePersonaVoiceSettings(
@@ -73,6 +78,15 @@ export function useVoiceConversation({
   useEffect(() => {
     voiceStateRef.current = voiceState;
   }, [voiceState]);
+
+  const raiseVoiceError = useCallback((code: VoiceErrorCode) => {
+    setVoiceError(code);
+    setVoiceState("error");
+    setTimeout(() => {
+      setVoiceState("idle");
+      setVoiceError(null);
+    }, 2400);
+  }, []);
 
   // ── TTS analysis loop — drives avatar while DOT speaks ──────────────────
   const startTtsAnalysis = useCallback(
@@ -125,10 +139,12 @@ export function useVoiceConversation({
     async (text: string) => {
       if (!voiceSettings.autoSpeak) {
         setVoiceState("idle");
+        setVoiceError(null);
         setTranscript("");
         return;
       }
 
+      setVoiceError(null);
       setVoiceState("speaking");
       try {
         const elevenlabsStored = getKey("elevenlabs");
@@ -200,18 +216,19 @@ export function useVoiceConversation({
           };
           window.speechSynthesis.speak(utt);
         } else {
-          setVoiceState("idle");
+          raiseVoiceError("TTS_ERROR");
           setTranscript("");
         }
       }
     },
-    [elevenLabsSettings, startTtsAnalysis, stopTtsAnalysis, voiceId, voiceSettings],
+    [elevenLabsSettings, raiseVoiceError, startTtsAnalysis, stopTtsAnalysis, voiceId, voiceSettings],
   );
 
   // ── Send transcript to AI ─────────────────────────────────────────────────
   const sendToAI = useCallback(
     async (text: string) => {
       setVoiceState("thinking");
+      setVoiceError(null);
       try {
         const providerInfo = (() => {
           for (const p of ["openai", "google"] as const) {
@@ -229,13 +246,15 @@ export function useVoiceConversation({
         })();
 
         if (!providerInfo) {
-          setVoiceState("error");
-          setTimeout(() => setVoiceState("idle"), 2000);
+          raiseVoiceError("NO_AI_KEY");
           return;
         }
 
         abortRef.current = new AbortController();
-        const memoryContext = buildMemoryContextForPrompt(text);
+        const memoryContext = [
+          buildMemoryContextForPrompt(text),
+          buildRitualContextForPrompt(),
+        ].filter(Boolean).join("\n");
         const res = await fetch("/api/chat", {
           method: "POST",
           headers: {
@@ -276,12 +295,11 @@ export function useVoiceConversation({
         }
       } catch (err: unknown) {
         if (!(err instanceof DOMException && err.name === "AbortError")) {
-          setVoiceState("error");
-          setTimeout(() => setVoiceState("idle"), 2000);
+          raiseVoiceError("AI_ERROR");
         }
       }
     },
-    [activePersonaId, personaTuning, speak],
+    [activePersonaId, personaTuning, raiseVoiceError, speak],
   );
 
   // ── Stop everything ───────────────────────────────────────────────────────
@@ -296,6 +314,7 @@ export function useVoiceConversation({
     stopTtsAnalysis();
     abortRef.current?.abort();
     if (typeof window !== "undefined") window.speechSynthesis?.cancel();
+    setVoiceError(null);
     setVoiceState("idle");
     setTranscript("");
   }, [stopTtsAnalysis]);
@@ -309,10 +328,10 @@ export function useVoiceConversation({
 
     const SpeechRec = getSpeechRecognition();
     if (!SpeechRec) {
-      setVoiceState("error");
-      setTimeout(() => setVoiceState("idle"), 2000);
+      raiseVoiceError("MIC_UNSUPPORTED");
       return;
     }
+    setVoiceError(null);
 
     const recognition = new SpeechRec();
     recognition.continuous = false;
@@ -337,8 +356,7 @@ export function useVoiceConversation({
       if (event.error === "no-speech") {
         setVoiceState("idle");
       } else if (event.error !== "aborted") {
-        setVoiceState("error");
-        setTimeout(() => setVoiceState("idle"), 2000);
+        raiseVoiceError("MIC_ERROR");
       }
     };
 
@@ -347,7 +365,7 @@ export function useVoiceConversation({
     };
 
     recognition.start();
-  }, [sendToAI, stopAll, voiceSettings.interruptible]);
+  }, [raiseVoiceError, sendToAI, stopAll, voiceSettings.interruptible]);
 
   const interrupt = useCallback(() => {
     if (voiceSettings.interruptible) stopAll();
@@ -368,5 +386,5 @@ export function useVoiceConversation({
     };
   }, [stopTtsAnalysis]);
 
-  return { voiceState, transcript, toggleMic, interrupt };
+  return { voiceState, voiceError, transcript, toggleMic, interrupt };
 }

@@ -6,6 +6,7 @@ import { X, Send, MessageSquare, Loader2, Settings2 } from "lucide-react";
 import { usePanelPosition } from "@/hooks/usePanelPosition";
 import { getKey, DEFAULT_MODELS, type Provider } from "@/lib/key-store";
 import { addMemory, buildMemoryContextForPrompt, isMemoryEnabled } from "./memory-drawer";
+import { buildRitualContextForPrompt } from "./ritual-drawer";
 import type { EmotionState } from "../components/face/types";
 import type { PersonaTuningSettings } from "@/hooks/usePersonaSettings";
 
@@ -152,7 +153,10 @@ export function ChatModule({
         }
 
         const assistantId = (Date.now() + 1).toString();
-        const memoryContext = buildMemoryContextForPrompt(trimmed);
+        const memoryContext = [
+            buildMemoryContextForPrompt(trimmed),
+            buildRitualContextForPrompt(),
+        ].filter(Boolean).join("\n");
 
         try {
             abortRef.current = new AbortController();
