@@ -507,7 +507,7 @@ export const CustomizationModal = React.memo(function CustomizationModal({
 							</TabsContent>
 
 							<TabsContent value="keys" className="mt-0">
-								<KeyVaultPanel accentColor={accentColor} />
+                                <KeyVaultPanel />
 							</TabsContent>
 
 							<TabsContent

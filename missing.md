@@ -52,7 +52,7 @@ Scope: static code audit of the current project against `ui.md`, `functuion.md`,
 - [ ] Export cancellation is missing. Long GIF/WebM capture can be started, but there is no cancel control once in progress.
 - [ ] Audio Lab is functional locally, but it is not integrated as a reusable product feature. Uploaded audio can drive emotion/levels, but there is no saved session, no generated insight, no export, and no connection to AI chat.
 - [ ] Onboarding is minimal. There is a settings-key indicator and no-key chat action, but no guided first-run setup for AI provider, ElevenLabs, memory consent, mic permission, and voice test.
-- [ ] Key deletion lacks confirmation. `key-vault-panel.tsx` clears a configured key immediately from the row X button.
+- [x] Key deletion now has confirmation. `key-vault-panel.tsx` opens a destructive confirmation dialog before clearing a provider key.
 - [ ] Key vault copy is misleading for unencrypted storage. Without a passphrase, keys can be stored plainly in localStorage. The edit UI does say `PLAIN · NO PASSPHRASE SET`, but the list footer says `LOCAL_ONLY` / `NEVER SENT TO OUR SERVERS`, which can read safer than reality.
 - [ ] Legacy/parallel components still exist. `ChatWindow.tsx`, `DownloadButton.tsx`, `components/audio-panel.tsx`, and unused persona UI components may now be dead or stale surfaces unless they are intentionally kept for reference.
 
@@ -68,7 +68,7 @@ Scope: static code audit of the current project against `ui.md`, `functuion.md`,
 - [x] Wire `VoiceSettingsSheet` into a persisted voice settings store and pass those settings into `useVoiceConversation` and `/api/tts`.
 - [x] Decide whether BYOK keys should move from JSON body to headers, then align `/api/chat`, `/api/tts`, chat client, voice client, and docs.
 - [x] Add provider key validation/test buttons for OpenAI, Google, and ElevenLabs.
-- [ ] Add key deletion confirmation and update vault copy to be precise about local storage, encryption, and proxy-route usage.
+- [x] Add key deletion confirmation and update vault copy to be precise about local storage, encryption, and proxy-route usage.
 - [ ] Add memory context and memory writes to voice conversations.
 - [ ] Replace template-only export labels with real template renderers for mood/reflection/reaction outputs.
 - [ ] Update `functuion.md` and `ui.md` so the project plan reflects what is now implemented vs still missing.

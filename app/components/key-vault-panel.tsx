@@ -6,10 +6,7 @@ import {
     setKey, getKey, clearKey, unlockVault, vaultIsLocked, isKeyEncrypted,
     type Provider, DEFAULT_MODELS,
 } from "@/lib/key-store";
-
-interface KeyVaultPanelProps {
-    accentColor?: string;
-}
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 const PROVIDERS: { id: Provider; label: string; placeholder: string; purpose: string }[] = [
     { id: "openai",     label: "OPENAI", placeholder: "sk-...",  purpose: "CHAT · VOICE" },
@@ -44,7 +41,7 @@ const INITIAL_VALIDATION_STATE: Record<Provider, ValidationState> = {
     elevenlabs: { status: "idle" },
 };
 
-export function KeyVaultPanel({ accentColor = "#7c3aed" }: KeyVaultPanelProps) {
+export function KeyVaultPanel() {
     const [view, setView] = React.useState<View>("list");
     const [keyStates, setKeyStates] = React.useState<Record<Provider, boolean>>({
         openai: false, google: false, elevenlabs: false,
@@ -70,6 +67,7 @@ export function KeyVaultPanel({ accentColor = "#7c3aed" }: KeyVaultPanelProps) {
     const [unlockError, setUnlockError] = React.useState(false);
     const [unlocking, setUnlocking] = React.useState(false);
     const [validationStates, setValidationStates] = React.useState<Record<Provider, ValidationState>>(INITIAL_VALIDATION_STATE);
+    const [deleteProvider, setDeleteProvider] = React.useState<Provider | null>(null);
 
     const refreshState = React.useCallback(() => {
         setKeyStates({
@@ -139,6 +137,7 @@ export function KeyVaultPanel({ accentColor = "#7c3aed" }: KeyVaultPanelProps) {
     const handleDelete = (provider: Provider) => {
         clearKey(provider);
         setValidationStates((prev) => ({ ...prev, [provider]: { status: "idle" } }));
+        setDeleteProvider(null);
         refreshState();
     };
 
@@ -516,7 +515,7 @@ export function KeyVaultPanel({ accentColor = "#7c3aed" }: KeyVaultPanelProps) {
                                         </span>
                                     </button>
                                     <button
-                                        onClick={() => handleDelete(provider.id)}
+                                        onClick={() => setDeleteProvider(provider.id)}
                                         className="size-9 shrink-0 te-button rounded-[6px] flex items-center justify-center transition-all"
                                         style={{
                                             "--key-bg": "var(--te-orange)",
@@ -549,6 +548,18 @@ export function KeyVaultPanel({ accentColor = "#7c3aed" }: KeyVaultPanelProps) {
                     LOCAL_VAULT · PROXY_HEADER_ONLY · SERVER_NOT_STORED
                 </span>
             </div>
+
+            <ConfirmDialog
+                open={deleteProvider !== null}
+                onOpenChange={(open) => !open && setDeleteProvider(null)}
+                title="Eject this key?"
+                description="This removes the provider key from this browser vault. DOT will stop using that integration until a new key is added."
+                confirmText="Eject Key"
+                destructive
+                onConfirm={() => {
+                    if (deleteProvider) handleDelete(deleteProvider);
+                }}
+            />
         </div>
     );
 }
