@@ -20,6 +20,7 @@ export function VoiceSettingsSheet({
     constraintsRef,
 }: VoiceSettingsSheetProps) {
     const { settings, updateSettings, elevenLabsSettings } = useVoiceSettings();
+    const activeProfile = VOICE_PROFILES.find((profile) => profile.id === settings.profile) ?? VOICE_PROFILES[0];
 
     const { x, y, onDragEnd } = usePanelPosition("voice-settings");
 
@@ -67,7 +68,7 @@ export function VoiceSettingsSheet({
                                     <span className="text-[14px] font-bold opacity-90 tracking-widest uppercase">ONLINE</span>
                                 </div>
                                 <span className="text-[14px] font-bold opacity-90 tracking-widest">
-                                    {VOICE_PROFILES.find(p => p.id === settings.profile)?.short || "ERR"}
+                                    {activeProfile.short}
                                 </span>
                             </div>
                         </div>
@@ -166,7 +167,7 @@ export function VoiceSettingsSheet({
 
                         <div className="te-lcd px-2 py-1 text-center">
                             <span className="text-[8px] font-mono font-bold tracking-widest opacity-50">
-                                TTS {elevenLabsSettings.speed.toFixed(2)}X · STB {Math.round(elevenLabsSettings.stability * 100)} · CLR {Math.round(elevenLabsSettings.similarity_boost * 100)}
+                                VOX {activeProfile.voiceLabel} · TTS {elevenLabsSettings.speed.toFixed(2)}X · STB {Math.round(elevenLabsSettings.stability * 100)} · CLR {Math.round(elevenLabsSettings.similarity_boost * 100)}
                             </span>
                         </div>
 

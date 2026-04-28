@@ -24,6 +24,12 @@ interface ChatMessage {
     content: string;
 }
 
+interface ChatErrorResponse {
+    error?: string;
+    code?: string;
+    action?: string;
+}
+
 // Lightweight text sentiment → emotion mapping
 function sentimentToEmotion(text: string): EmotionState {
     const lower = text.toLowerCase();
@@ -85,6 +91,14 @@ function getActiveProvider(): { provider: Provider; key: string; model: string }
         }
     }
     return null;
+}
+
+function formatChatError(data: ChatErrorResponse, status: number): string {
+    const code = data.code || `HTTP_${status}`;
+    const message = data.error || "DOT could not reach the AI provider.";
+    return data.action
+        ? `${code}: ${message} ${data.action}`
+        : `${code}: ${message}`;
 }
 
 export function ChatModule({
@@ -166,8 +180,8 @@ export function ChatModule({
             });
 
             if (!res.ok) {
-                const data = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
-                throw new Error(data.error || `HTTP ${res.status}`);
+                const data = (await res.json().catch(() => ({}))) as ChatErrorResponse;
+                throw new Error(formatChatError(data, res.status));
             }
 
             // Stream the text response

@@ -23,13 +23,15 @@
 ## F2 AI Route and Orchestration (AI SDK)
 - [x] Create current `POST /api/chat` route (planned `/api/ai/respond` route not created).
 - [x] Add provider routing logic from the request body provider field.
+- [x] Validate supported providers before AI SDK execution.
+- [x] Validate supported provider model IDs before AI SDK execution.
 - [x] Read user-provided API key from the `x-dot-api-key` request header.
 - [x] Implement OpenAI provider execution with AI SDK.
 - [x] Implement Google provider execution with AI SDK.
 - [x] Implement streaming responses to client.
 - [x] Inject persona context into request prompt stack.
 - [x] Inject recent memory context into request prompt stack.
-- [ ] Add normalized error mapping for missing/invalid keys.
+- [x] Add normalized error mapping for missing/invalid keys, quota, provider, and model failures.
 
 ## F3 ElevenLabs Voice Runtime
 - [x] Create current `POST /api/tts` route (planned `/api/tts/speak` route not created).
@@ -67,7 +69,7 @@
 - [x] Implement active persona persistence.
 - [x] Implement runtime persona switch logic.
 - [x] Apply persona prompt profile to AI requests.
-- [ ] Apply persona voice defaults to TTS requests.
+- [x] Apply selected voice profile defaults to TTS voice ID and voice settings.
 - [ ] Apply persona-driven avatar behavior tuning hooks.
 
 ## F7 Share and Export Runtime

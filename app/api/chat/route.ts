@@ -2,6 +2,35 @@ import { createOpenAI } from "@ai-sdk/openai";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { streamText } from "ai";
 
+type ChatProvider = "openai" | "google";
+
+interface ChatApiErrorPayload {
+    error: string;
+    code: string;
+    action?: string;
+}
+
+const SUPPORTED_MODELS: Record<ChatProvider, string[]> = {
+    openai: ["gpt-4o-mini", "gpt-4o", "o1-mini"],
+    google: ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-pro"],
+};
+
+const DEFAULT_MODELS: Record<ChatProvider, string> = {
+    openai: "gpt-4o-mini",
+    google: "gemini-2.0-flash",
+};
+
+class ChatApiError extends Error {
+    constructor(
+        public readonly status: number,
+        public readonly code: string,
+        message: string,
+        public readonly action?: string,
+    ) {
+        super(message);
+    }
+}
+
 export async function POST(req: Request) {
     try {
         const body = await req.json();
@@ -16,15 +45,21 @@ export async function POST(req: Request) {
         const apiKey = req.headers.get("x-dot-api-key") || legacyBodyApiKey;
 
         if (!apiKey) {
-            return new Response(
-                JSON.stringify({ error: "No API key provided. Add one in Settings → KEYS." }),
-                { status: 400, headers: { "Content-Type": "application/json" } }
+            throw new ChatApiError(
+                400,
+                "KEY_MISSING",
+                "No API key found for this provider.",
+                "Add or unlock a key in Settings > KEYS.",
             );
         }
 
+        const validatedProvider = validateProvider(provider);
+        const validatedModel = validateModel(validatedProvider, model);
+        const validatedMessages = validateMessages(messages);
+
         const systemPrompt = buildSystemPrompt(persona, memoryContext);
-        const recentMessages = messages.slice(-8);
-        const aiModel = getModel(provider, model, apiKey);
+        const recentMessages = validatedMessages.slice(-8);
+        const aiModel = getModel(validatedProvider, validatedModel, apiKey);
 
         const result = streamText({
             model: aiModel,
@@ -37,38 +72,160 @@ export async function POST(req: Request) {
     } catch (error: unknown) {
         console.error("[chat/route] Error:", error);
 
-        const status = getErrorStatus(error);
-        const message =
-            error instanceof Error
-                ? error.message
-                : "Connection failed. Check your API key.";
+        const normalized = normalizeChatError(error);
         
         return new Response(
-            JSON.stringify({ error: message }),
-            { status, headers: { "Content-Type": "application/json" } }
+            JSON.stringify(normalized.payload),
+            { status: normalized.status, headers: { "Content-Type": "application/json" } }
         );
     }
 }
 
-function getErrorStatus(error: unknown): number {
-    if (!error || typeof error !== "object") return 500;
-    const maybeStatus = error as { status?: unknown; statusCode?: unknown };
-    const status = maybeStatus.status ?? maybeStatus.statusCode;
-    return typeof status === "number" ? status : 500;
+function validateProvider(provider: unknown): ChatProvider {
+    if (provider === "openai" || provider === "google") return provider;
+    throw new ChatApiError(
+        400,
+        "PROVIDER_UNSUPPORTED",
+        "This AI provider is not supported for chat yet.",
+        "Choose OpenAI or Google in Settings > KEYS.",
+    );
 }
 
-function getModel(provider: string, model: string, apiKey: string) {
+function validateModel(provider: ChatProvider, model: unknown): string {
+    const selectedModel =
+        typeof model === "string" && model.trim()
+            ? model.trim()
+            : DEFAULT_MODELS[provider];
+
+    if (SUPPORTED_MODELS[provider].includes(selectedModel)) return selectedModel;
+
+    throw new ChatApiError(
+        400,
+        "MODEL_UNSUPPORTED",
+        `${selectedModel} is not enabled for ${provider} chat.`,
+        `Pick one of: ${SUPPORTED_MODELS[provider].join(", ")}.`,
+    );
+}
+
+function validateMessages(messages: unknown): { role: "user" | "assistant"; content: string }[] {
+    if (!Array.isArray(messages) || messages.length === 0) {
+        throw new ChatApiError(
+            400,
+            "MESSAGES_INVALID",
+            "No chat messages were provided.",
+            "Send at least one user message.",
+        );
+    }
+
+    return messages.map((message) => {
+        if (!message || typeof message !== "object") {
+            throw new ChatApiError(400, "MESSAGES_INVALID", "Chat message payload is malformed.");
+        }
+        const item = message as { role?: unknown; content?: unknown };
+        if (
+            (item.role !== "user" && item.role !== "assistant") ||
+            typeof item.content !== "string"
+        ) {
+            throw new ChatApiError(400, "MESSAGES_INVALID", "Chat message payload is malformed.");
+        }
+        return {
+            role: item.role,
+            content: item.content,
+        };
+    });
+}
+
+function getModel(provider: ChatProvider, model: string, apiKey: string) {
     switch (provider) {
         case "openai": {
             const openai = createOpenAI({ apiKey });
-            return openai(model || "gpt-4o-mini");
+            return openai(model);
         }
         case "google": {
             const google = createGoogleGenerativeAI({ apiKey });
-            return google(model || "gemini-2.0-flash");
+            return google(model);
         }
-        default:
-            throw new Error(`Unsupported provider: ${provider}`);
+    }
+}
+
+function normalizeChatError(error: unknown): { status: number; payload: ChatApiErrorPayload } {
+    if (error instanceof ChatApiError) {
+        return {
+            status: error.status,
+            payload: {
+                error: error.message,
+                code: error.code,
+                action: error.action,
+            },
+        };
+    }
+
+    const providerStatus = getProviderStatus(error);
+    const rawMessage = getProviderMessage(error);
+    const lowered = rawMessage.toLowerCase();
+
+    if (providerStatus === 401 || providerStatus === 403 || lowered.includes("api key")) {
+        return {
+            status: providerStatus || 401,
+            payload: {
+                error: "The provider rejected this API key.",
+                code: "AUTH_INVALID",
+                action: "Check or replace the key in Settings > KEYS.",
+            },
+        };
+    }
+
+    if (providerStatus === 429 || lowered.includes("rate limit") || lowered.includes("quota")) {
+        return {
+            status: 429,
+            payload: {
+                error: "The provider rate limit or quota was hit.",
+                code: "RATE_LIMITED",
+                action: "Wait a moment, check billing/quota, or switch provider.",
+            },
+        };
+    }
+
+    if (
+        providerStatus === 404 ||
+        lowered.includes("model") ||
+        lowered.includes("not found") ||
+        lowered.includes("unsupported")
+    ) {
+        return {
+            status: providerStatus || 400,
+            payload: {
+                error: "The selected model is unavailable for this key.",
+                code: "MODEL_UNAVAILABLE",
+                action: "Pick a different model in Settings > KEYS.",
+            },
+        };
+    }
+
+    return {
+        status: providerStatus || 500,
+        payload: {
+            error: "DOT could not reach the AI provider.",
+            code: "PROVIDER_REQUEST_FAILED",
+            action: "Check the key, provider status, and network connection.",
+        },
+    };
+}
+
+function getProviderStatus(error: unknown): number | undefined {
+    if (!error || typeof error !== "object") return undefined;
+    const maybeStatus = error as { status?: unknown; statusCode?: unknown; response?: { status?: unknown } };
+    const status = maybeStatus.status ?? maybeStatus.statusCode ?? maybeStatus.response?.status;
+    return typeof status === "number" ? status : undefined;
+}
+
+function getProviderMessage(error: unknown): string {
+    if (error instanceof Error) return error.message;
+    if (typeof error === "string") return error;
+    try {
+        return JSON.stringify(error);
+    } catch {
+        return "";
     }
 }
 

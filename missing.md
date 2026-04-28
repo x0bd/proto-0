@@ -22,8 +22,8 @@ Scope: static code audit of the current project against `ui.md`, `functuion.md`,
 - [x] BYOK key transport now uses the `x-dot-api-key` request header from chat, voice chat, and TTS clients. Server routes still accept the legacy JSON `apiKey` as a fallback.
 - [x] The key vault footer now uses tighter product copy: `LOCAL_VAULT · PROXY_HEADER_ONLY · SERVER_NOT_STORED`.
 - [x] Key validity can now be checked from the vault. `app/api/keys/validate/route.ts` validates OpenAI, Google, and ElevenLabs keys through provider APIs, and `key-vault-panel.tsx` exposes `TST` / `PING_KEY` controls.
-- [ ] Provider/model validation is thin. Unsupported providers throw, and selected models are passed straight to the AI SDK. Some chosen models may reject the shared `streamText` options, especially if a model does not support streaming or the same generation parameters.
-- [ ] Error handling is generic. `/api/chat` returns broad `AI request failed` messages instead of normalized provider/auth/quota/model errors the UI can explain cleanly.
+- [x] Provider/model validation now happens before AI SDK execution. `/api/chat` allows only the supported OpenAI/Google providers and known configured model IDs, with clear fallback/default handling.
+- [x] Chat error handling is now normalized. `/api/chat` returns structured auth/quota/model/provider errors, and `chat-module.tsx` surfaces the code plus suggested action.
 - [x] Voice chat now passes recent memory context into `/api/chat`, matching the text chat personalization path.
 
 ## ElevenLabs Findings
@@ -35,7 +35,7 @@ Scope: static code audit of the current project against `ui.md`, `functuion.md`,
 - [ ] The route is `/api/tts`, not the planned `/api/tts/speak`.
 - [ ] The client buffers the full ElevenLabs audio response with `arrayBuffer()` before decoding and playing it. The API route returns a stream, but playback is not true low-latency streaming.
 - [x] Voice settings now affect ElevenLabs. `components/ui/voice-settings-sheet.tsx` persists profile, speed, warmth, clarity, auto-speak, and interruption controls through `hooks/useVoiceSettings.ts`; `hooks/useVoiceConversation.ts` sends mapped ElevenLabs voice settings to `/api/tts`.
-- [ ] `/api/tts/route.ts` always uses a default voice ID unless `voiceId` is provided manually, but the visible voice UI never sends a voice ID.
+- [x] Voice profiles now send profile-specific ElevenLabs voice IDs. `useVoiceSettings` maps companion/guide/late-night profiles to voice IDs, and `useVoiceConversation` passes the selected ID to `/api/tts`.
 - [x] `/api/tts/route.ts` now accepts dynamic `voice_settings` for `stability`, `similarity_boost`, `style`, `speed`, and `use_speaker_boost`.
 - [x] ElevenLabs key validation exists in the key vault via the `TST` / `PING_KEY` controls.
 
@@ -72,3 +72,5 @@ Scope: static code audit of the current project against `ui.md`, `functuion.md`,
 - [x] Add memory context and memory writes to voice conversations.
 - [x] Replace template-only export labels with real template renderers for mood/reflection/reaction outputs.
 - [x] Update `functuion.md` and `ui.md` so the project plan reflects what is now implemented vs still missing.
+- [x] Normalize `/api/chat` provider/model validation and user-facing AI error messages.
+- [x] Wire visible voice profiles to actual ElevenLabs voice IDs.

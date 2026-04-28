@@ -52,7 +52,7 @@ export function useVoiceConversation({
 }: UseVoiceConversationOptions = {}) {
   const [voiceState, setVoiceState] = useState<VoiceState>("idle");
   const [transcript, setTranscript] = useState("");
-  const { settings: voiceSettings, elevenLabsSettings } = useVoiceSettings();
+  const { settings: voiceSettings, elevenLabsSettings, voiceId } = useVoiceSettings();
 
   const recognitionRef = useRef<any>(null);
   const abortRef = useRef<AbortController | null>(null);
@@ -134,6 +134,7 @@ export function useVoiceConversation({
           },
           body: JSON.stringify({
             text,
+            voiceId,
             voiceSettings: elevenLabsSettings,
           }),
         });
@@ -196,7 +197,7 @@ export function useVoiceConversation({
         }
       }
     },
-    [elevenLabsSettings, startTtsAnalysis, stopTtsAnalysis, voiceSettings],
+    [elevenLabsSettings, startTtsAnalysis, stopTtsAnalysis, voiceId, voiceSettings],
   );
 
   // ── Send transcript to AI ─────────────────────────────────────────────────

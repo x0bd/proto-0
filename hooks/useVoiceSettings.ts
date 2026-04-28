@@ -25,10 +25,30 @@ export const VOICE_PROFILES: {
   id: VoiceProfileId;
   label: string;
   short: string;
+  voiceId: string;
+  voiceLabel: string;
 }[] = [
-  { id: "companion", label: "CMPNN", short: "C-01" },
-  { id: "guide", label: "GUIDE", short: "G-02" },
-  { id: "late-night", label: "NIGHT", short: "N-03" },
+  {
+    id: "companion",
+    label: "CMPNN",
+    short: "C-01",
+    voiceId: "21m00Tcm4TlvDq8ikWAM",
+    voiceLabel: "RACHEL",
+  },
+  {
+    id: "guide",
+    label: "GUIDE",
+    short: "G-02",
+    voiceId: "ErXwobaYiN019PkySvjV",
+    voiceLabel: "ANTONI",
+  },
+  {
+    id: "late-night",
+    label: "NIGHT",
+    short: "N-03",
+    voiceId: "TxGEqnHWrfWFTfGW9XjX",
+    voiceLabel: "JOSH",
+  },
 ];
 
 export const DEFAULT_VOICE_SETTINGS: VoiceSettings = {
@@ -130,6 +150,14 @@ export function toElevenLabsVoiceSettings(
   };
 }
 
+export function getElevenLabsVoiceId(settings: VoiceSettings): string {
+  const normalized = normalizeVoiceSettings(settings);
+  return (
+    VOICE_PROFILES.find((profile) => profile.id === normalized.profile)
+      ?.voiceId ?? VOICE_PROFILES[0].voiceId
+  );
+}
+
 export function useVoiceSettings() {
   const [settings, setSettingsState] = React.useState<VoiceSettings>(() =>
     loadVoiceSettings(),
@@ -173,5 +201,6 @@ export function useVoiceSettings() {
     updateSettings,
     resetSettings,
     elevenLabsSettings: toElevenLabsVoiceSettings(settings),
+    voiceId: getElevenLabsVoiceId(settings),
   };
 }
