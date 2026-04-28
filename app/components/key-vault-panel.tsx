@@ -31,6 +31,18 @@ const PROVIDER_MODELS: Partial<Record<Provider, { id: string; label: string }[]>
 };
 
 type View = "list" | "edit" | "unlock";
+type ValidationStatus = "idle" | "testing" | "valid" | "invalid";
+
+interface ValidationState {
+    status: ValidationStatus;
+    message?: string;
+}
+
+const INITIAL_VALIDATION_STATE: Record<Provider, ValidationState> = {
+    openai: { status: "idle" },
+    google: { status: "idle" },
+    elevenlabs: { status: "idle" },
+};
 
 export function KeyVaultPanel({ accentColor = "#7c3aed" }: KeyVaultPanelProps) {
     const [view, setView] = React.useState<View>("list");
@@ -57,6 +69,7 @@ export function KeyVaultPanel({ accentColor = "#7c3aed" }: KeyVaultPanelProps) {
     const [showUnlock, setShowUnlock] = React.useState(false);
     const [unlockError, setUnlockError] = React.useState(false);
     const [unlocking, setUnlocking] = React.useState(false);
+    const [validationStates, setValidationStates] = React.useState<Record<Provider, ValidationState>>(INITIAL_VALIDATION_STATE);
 
     const refreshState = React.useCallback(() => {
         setKeyStates({
@@ -125,7 +138,75 @@ export function KeyVaultPanel({ accentColor = "#7c3aed" }: KeyVaultPanelProps) {
 
     const handleDelete = (provider: Provider) => {
         clearKey(provider);
+        setValidationStates((prev) => ({ ...prev, [provider]: { status: "idle" } }));
         refreshState();
+    };
+
+    const validateKey = async (provider: Provider, key: string, model?: string) => {
+        if (!key.trim()) return;
+        setValidationStates((prev) => ({
+            ...prev,
+            [provider]: { status: "testing", message: "PINGING" },
+        }));
+
+        try {
+            const response = await fetch("/api/keys/validate", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-dot-api-key": key.trim(),
+                },
+                body: JSON.stringify({ provider, model }),
+            });
+            const data = (await response.json().catch(() => ({}))) as {
+                ok?: boolean;
+                label?: string;
+                detail?: string;
+                error?: string;
+            };
+
+            if (!response.ok || !data.ok) {
+                throw new Error(data.error || "VALIDATION_FAILED");
+            }
+
+            setValidationStates((prev) => ({
+                ...prev,
+                [provider]: {
+                    status: "valid",
+                    message: data.detail ? `${data.label} · ${data.detail}` : data.label || "KEY_OK",
+                },
+            }));
+        } catch (error) {
+            setValidationStates((prev) => ({
+                ...prev,
+                [provider]: {
+                    status: "invalid",
+                    message: error instanceof Error ? error.message : "KEY_BAD",
+                },
+            }));
+        }
+    };
+
+    const validateSavedKey = (provider: Provider) => {
+        const stored = getKey(provider);
+        if (!stored) return;
+        void validateKey(provider, stored.key, stored.model || DEFAULT_MODELS[provider]);
+    };
+
+    const validationLabel = (provider: Provider, fallback: string) => {
+        const state = validationStates[provider];
+        if (state.status === "testing") return "PING";
+        if (state.status === "valid") return "OK";
+        if (state.status === "invalid") return "BAD";
+        return fallback;
+    };
+
+    const validationColor = (provider: Provider) => {
+        const state = validationStates[provider];
+        if (state.status === "valid") return "var(--te-green)";
+        if (state.status === "invalid") return "var(--te-orange)";
+        if (state.status === "testing") return "var(--te-blue)";
+        return undefined;
     };
 
     // ── Unlock view ───────────────────────────────────────────────────────────
@@ -301,6 +382,27 @@ export function KeyVaultPanel({ accentColor = "#7c3aed" }: KeyVaultPanelProps) {
 
                     <div className="flex gap-1.5">
                         <button
+                            type="button"
+                            onClick={() => validateKey(editingProvider, inputValue, modelValue || DEFAULT_MODELS[editingProvider])}
+                            disabled={!inputValue.trim() || validationStates[editingProvider].status === "testing"}
+                            className="h-8 px-3 te-button rounded-[6px] flex items-center justify-center gap-1 text-foreground/60 disabled:opacity-30"
+                        >
+                            <span className="text-[9px] font-bold tracking-widest">
+                                {validationStates[editingProvider].status === "testing" ? "PING..." : "PING_KEY"}
+                            </span>
+                        </button>
+                        <div className="flex-1 te-lcd px-2 py-1 flex items-center justify-center text-center overflow-hidden">
+                            <span
+                                className="text-[8px] font-mono font-bold tracking-widest opacity-70 truncate"
+                                style={{ color: validationColor(editingProvider) }}
+                            >
+                                {validationStates[editingProvider].message || "KEY_TEST_STANDBY"}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div className="flex gap-1.5">
+                        <button
                             onClick={cancelEdit}
                             className="flex-1 h-8 te-button rounded-[6px] flex items-center justify-center gap-1 text-foreground/60"
                         >
@@ -389,28 +491,58 @@ export function KeyVaultPanel({ accentColor = "#7c3aed" }: KeyVaultPanelProps) {
                                     <span className="text-[7px] font-bold tracking-widest opacity-40">{provider.purpose}</span>
                                 </div>
                                 <span className="text-[8px] font-bold tracking-widest opacity-60">
-                                    {isConfigured ? (isEnc ? "ENC" : "SET") : "ADD"}
+                                    {isConfigured
+                                        ? validationLabel(provider.id, isEnc ? "ENC" : "SET")
+                                        : "ADD"}
                                 </span>
                             </button>
 
                             {isConfigured && (
-                                <button
-                                    onClick={() => handleDelete(provider.id)}
-                                    className="size-9 shrink-0 te-button rounded-[6px] flex items-center justify-center transition-all"
-                                    style={{
-                                        "--key-bg": "var(--te-orange)",
-                                        "--key-border": "color-mix(in srgb, var(--te-orange) 80%, black)",
-                                        "--key-shadow": "color-mix(in srgb, var(--te-orange) 60%, black)",
-                                        color: "#ffffff",
-                                    } as React.CSSProperties}
-                                >
-                                    <X className="size-3" />
-                                </button>
+                                <>
+                                    <button
+                                        onClick={() => validateSavedKey(provider.id)}
+                                        disabled={validationStates[provider.id].status === "testing"}
+                                        className="h-9 px-2 shrink-0 te-button rounded-[6px] flex items-center justify-center transition-all disabled:opacity-40"
+                                        style={validationColor(provider.id) ? {
+                                            "--key-bg": validationColor(provider.id),
+                                            "--key-border": `color-mix(in srgb, ${validationColor(provider.id)} 80%, black)`,
+                                            "--key-shadow": `color-mix(in srgb, ${validationColor(provider.id)} 60%, black)`,
+                                            color: "#ffffff",
+                                        } as React.CSSProperties : undefined}
+                                        title="Test key"
+                                    >
+                                        <span className="text-[8px] font-bold tracking-widest">
+                                            {validationStates[provider.id].status === "testing" ? "..." : "TST"}
+                                        </span>
+                                    </button>
+                                    <button
+                                        onClick={() => handleDelete(provider.id)}
+                                        className="size-9 shrink-0 te-button rounded-[6px] flex items-center justify-center transition-all"
+                                        style={{
+                                            "--key-bg": "var(--te-orange)",
+                                            "--key-border": "color-mix(in srgb, var(--te-orange) 80%, black)",
+                                            "--key-shadow": "color-mix(in srgb, var(--te-orange) 60%, black)",
+                                            color: "#ffffff",
+                                        } as React.CSSProperties}
+                                    >
+                                        <X className="size-3" />
+                                    </button>
+                                </>
                             )}
                         </div>
                     );
                 })}
             </div>
+
+            {PROVIDERS.some((provider) => validationStates[provider.id].message) && (
+                <div className="te-lcd px-2 py-1 text-center">
+                    <span className="text-[8px] opacity-60 tracking-[0.2em] font-bold leading-relaxed">
+                        {PROVIDERS.map((provider) => validationStates[provider.id].message)
+                            .find(Boolean)
+                            ?.slice(0, 44)}
+                    </span>
+                </div>
+            )}
 
             <div className="te-lcd px-2 py-1.5 text-center">
                 <span className="text-[8px] opacity-50 tracking-[0.2em] font-bold leading-relaxed">
