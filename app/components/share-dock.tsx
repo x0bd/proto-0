@@ -969,7 +969,7 @@ export function ShareDock({
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.9 }}
                     transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                    className="absolute top-24 right-[400px] w-[280px] h-auto pb-3 te-module z-[100]"
+                    className="absolute top-24 right-[400px] w-[280px] h-auto pb-3 te-module te-safe-panel z-[100]"
                 >
                     {/* Header / Drag Handle */}
                     <div className="te-module-header">

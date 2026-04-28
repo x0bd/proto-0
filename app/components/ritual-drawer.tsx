@@ -220,14 +220,14 @@ export function RitualDrawer({
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.9 }}
                     transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                    className="absolute top-24 left-1/2 -translate-x-1/2 w-[360px] h-auto te-module z-[100] flex flex-col"
+                    className="absolute top-24 left-1/2 -translate-x-1/2 w-[360px] h-auto te-module te-safe-panel z-[100] flex flex-col"
                 >
                     {/* Header / Drag Handle */}
                     <div className="te-module-header">
                         <div className="flex items-center gap-2">
                             <div className="size-2 rounded-full bg-[var(--te-green)]" />
                             <span className="font-mono text-[10px] font-bold uppercase tracking-widest text-foreground">SYNC_MOD</span>
-                            <span className="font-mono text-[8px] uppercase tracking-widest text-foreground/30 ml-2">RT-09</span>
+                            <span className="font-mono text-[8px] uppercase tracking-widest te-whisper ml-2">RT-09</span>
                         </div>
                         <div className="w-16 h-2 te-grip opacity-50" />
                         <button onClick={() => onOpenChange(false)} className="size-5 te-button !rounded-full !border-b-2 flex items-center justify-center text-foreground hover:text-[var(--te-green)]">

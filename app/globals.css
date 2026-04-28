@@ -99,6 +99,16 @@
 	* {
 		@apply border-[var(--panel-border)];
 	}
+	:where(button, [role="button"], input, textarea, select, a):focus-visible {
+		outline: 2px solid var(--te-blue);
+		outline-offset: 3px;
+		box-shadow:
+			0 0 0 1px var(--panel-bg),
+			0 0 0 5px color-mix(in srgb, var(--te-blue) 28%, transparent);
+	}
+	:where(button, [role="button"]) {
+		touch-action: manipulation;
+	}
 	body {
 		@apply bg-background text-foreground antialiased font-sans;
 		selection-color: #ffffff;
@@ -141,6 +151,12 @@
 	}
 	.te-button:disabled {
 		@apply opacity-50 cursor-not-allowed active:border-b-[4px] active:translate-y-0;
+	}
+	.te-button:not(:disabled):hover {
+		filter: brightness(0.98);
+	}
+	.dark .te-button:not(:disabled):hover {
+		filter: brightness(1.12);
 	}
 
 	/* 3. LCD / Segmented Displays */
@@ -216,10 +232,57 @@
 
 	/* 5. Typography */
 	.te-label {
-		@apply font-mono text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.25em] text-foreground/50;
+		@apply font-mono text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.25em] text-foreground/65;
 	}
 	.te-value {
 		@apply font-mono text-[13px] font-bold uppercase tracking-widest text-foreground;
+	}
+
+	.te-subtle {
+		color: color-mix(in srgb, var(--foreground) 62%, transparent);
+	}
+	.te-whisper {
+		color: color-mix(in srgb, var(--foreground) 48%, transparent);
+	}
+}
+
+@media (pointer: coarse) {
+	:where(button, [role="button"], .te-button) {
+		min-width: 44px;
+		min-height: 44px;
+	}
+	:where(input, select, textarea) {
+		min-height: 44px;
+	}
+	input[type="range"] {
+		min-height: 32px;
+	}
+	.te-module-header {
+		min-height: 48px;
+	}
+}
+
+@media (max-width: 640px) {
+	.te-safe-panel {
+		top: max(72px, calc(env(safe-area-inset-top) + 64px)) !important;
+		right: max(12px, env(safe-area-inset-right)) !important;
+		left: max(12px, env(safe-area-inset-left)) !important;
+		width: auto !important;
+		max-width: calc(100vw - 24px) !important;
+		max-height: calc(100dvh - max(96px, calc(env(safe-area-inset-top) + 88px)) - max(16px, env(safe-area-inset-bottom))) !important;
+		transform: none !important;
+	}
+	.te-safe-panel > .relative,
+	.te-safe-panel > div:last-child {
+		overflow-y: auto;
+		-webkit-overflow-scrolling: touch;
+	}
+	.te-module-header {
+		gap: 0.75rem;
+		padding-inline: 0.75rem;
+	}
+	.te-module-header .te-grip {
+		width: 2.25rem;
 	}
 }
 

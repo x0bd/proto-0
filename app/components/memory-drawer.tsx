@@ -311,14 +311,14 @@ export function MemoryDrawer({
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.9 }}
                     transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                    className="absolute top-24 left-12 w-[600px] h-auto te-module z-[100] flex flex-col"
+                    className="absolute top-24 left-12 w-[600px] h-auto te-module te-safe-panel z-[100] flex flex-col"
                 >
                     {/* Header / Drag Handle */}
                     <div className="te-module-header">
                         <div className="flex items-center gap-2">
                             <div className="size-2 rounded-full bg-[var(--te-blue)]" />
                             <span className="font-mono text-[10px] font-bold uppercase tracking-widest text-foreground">MEMORY_CORE</span>
-                            <span className="font-mono text-[8px] uppercase tracking-widest text-foreground/30 ml-2">SN: 04-892</span>
+                            <span className="font-mono text-[8px] uppercase tracking-widest te-whisper ml-2">SN: 04-892</span>
                         </div>
                         <div className="w-16 h-2 te-grip opacity-50" />
                         <button onClick={() => onOpenChange(false)} className="size-5 te-button !rounded-full !border-b-2 flex items-center justify-center text-foreground hover:text-[var(--te-blue)]">
@@ -327,10 +327,10 @@ export function MemoryDrawer({
                     </div>
 
                     {/* Content - 2 Column Layout */}
-                    <div className="relative z-10 flex flex-row p-4 gap-5 bg-[var(--panel-bg)] h-full">
+                    <div className="relative z-10 flex flex-col sm:flex-row p-3 sm:p-4 gap-4 sm:gap-5 bg-[var(--panel-bg)] h-full">
                         
                         {/* Left Column - Controls */}
-                        <div className="flex flex-col gap-4 w-[240px] shrink-0">
+                        <div className="flex flex-col gap-4 w-full sm:w-[240px] shrink-0">
                             {/* LCD Status Display */}
                             <div className="te-lcd p-3 flex flex-col justify-center relative overflow-hidden shrink-0 h-[64px] border border-black/10 dark:border-white/10">
                                 <div className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/10 to-transparent pointer-events-none" />
@@ -391,7 +391,7 @@ export function MemoryDrawer({
                                     <div className="te-recessed p-1.5 flex flex-wrap gap-1.5">
                                         <button
                                             onClick={() => setActiveFilter(null)}
-                                            className="h-8 px-3 te-button rounded-[6px] text-[9px] transition-all duration-150"
+                                            className="h-9 px-3 te-button rounded-[6px] text-[9px] transition-all duration-150"
                                             style={activeFilter === null ? {
                                                 "--key-bg": "var(--te-blue)",
                                                 "--key-border": `color-mix(in srgb, var(--te-blue) 80%, black)`,
@@ -407,7 +407,7 @@ export function MemoryDrawer({
                                                 <button
                                                     key={tag}
                                                     onClick={() => setActiveFilter(tag)}
-                                                    className="h-8 px-3 te-button rounded-[6px] text-[9px] transition-all duration-150"
+                                                    className="h-9 px-3 te-button rounded-[6px] text-[9px] transition-all duration-150"
                                                     style={active ? {
                                                         "--key-bg": "var(--te-blue)",
                                                         "--key-border": `color-mix(in srgb, var(--te-blue) 80%, black)`,
@@ -441,7 +441,7 @@ export function MemoryDrawer({
                                 </div>
                                 <button
                                     onClick={toggleMemoryEnabled}
-                                    className="h-8 px-4 te-button rounded-[6px] text-[9px] transition-all duration-150"
+                                    className="h-9 px-4 te-button rounded-[6px] text-[9px] transition-all duration-150"
                                     style={memoryEnabled ? {
                                         "--key-bg": "var(--te-green)",
                                         "--key-border": `color-mix(in srgb, var(--te-green) 80%, black)`,
@@ -466,7 +466,7 @@ export function MemoryDrawer({
                         </div>
 
                         {/* Divider */}
-                        <div className="w-[1px] h-full bg-[var(--panel-border)] opacity-50 shadow-[1px_0_0_rgba(255,255,255,0.2)] dark:shadow-[1px_0_0_rgba(0,0,0,0.5)]" />
+                        <div className="hidden sm:block w-[1px] h-full bg-[var(--panel-border)] opacity-50 shadow-[1px_0_0_rgba(255,255,255,0.2)] dark:shadow-[1px_0_0_rgba(0,0,0,0.5)]" />
 
                         {/* Right Column - Data Blocks Matrix */}
                         <div className="flex flex-col flex-1 gap-1.5">
@@ -475,7 +475,7 @@ export function MemoryDrawer({
                                 <span className="te-label">PAGE {currentPage}/{totalPages}</span>
                             </div>
 
-                            <div className="te-recessed p-2 flex flex-col flex-1 h-full min-h-[340px]">
+                            <div className="te-recessed p-2 flex flex-col flex-1 h-full min-h-[280px] sm:min-h-[340px]">
                                 {filteredMemories.length === 0 ? (
                                     <div className="flex-1 flex flex-col items-center justify-center gap-3 opacity-50">
                                         <Database className="size-6" />
@@ -502,14 +502,14 @@ export function MemoryDrawer({
                                                                 {getSourceIcon(memory.source)}
                                                                 {memory.source}
                                                             </span>
-                                                            <span className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground/40">
+                                                            <span className="text-[9px] font-mono uppercase tracking-widest te-whisper">
                                                                 {formatDateLabel(memory.date)}
                                                             </span>
                                                         </div>
                                                     </div>
 
                                                     <button
-                                                        className="size-8 te-button !rounded-[6px] !border-b-[2px] opacity-0 group-hover:opacity-100 transition-all duration-200 text-foreground/40 hover:text-[var(--te-orange)] shrink-0 mr-1"
+                                                        className="size-9 te-button !rounded-[6px] !border-b-[2px] opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-200 text-foreground/70 hover:text-[var(--te-orange)] shrink-0 mr-1"
                                                         onClick={() => setDeleteId(memory.id)}
                                                         title="Eject Block"
                                                     >
@@ -527,7 +527,7 @@ export function MemoryDrawer({
                                         <button
                                             onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                                             disabled={currentPage === 1}
-                                            className="h-8 px-3 te-button !rounded-[6px] flex items-center justify-center disabled:opacity-30 text-foreground/70 hover:text-foreground"
+                                            className="h-9 px-3 te-button !rounded-[6px] flex items-center justify-center disabled:opacity-30 text-foreground/80 hover:text-foreground"
                                         >
                                             <ChevronLeft className="size-4" />
                                         </button>
@@ -541,7 +541,7 @@ export function MemoryDrawer({
                                         <button
                                             onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                                             disabled={currentPage === totalPages}
-                                            className="h-8 px-3 te-button !rounded-[6px] flex items-center justify-center disabled:opacity-30 text-foreground/70 hover:text-foreground"
+                                            className="h-9 px-3 te-button !rounded-[6px] flex items-center justify-center disabled:opacity-30 text-foreground/80 hover:text-foreground"
                                         >
                                             <ChevronRight className="size-4" />
                                         </button>

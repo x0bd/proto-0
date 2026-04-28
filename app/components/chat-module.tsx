@@ -233,7 +233,7 @@ export function ChatModule({
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.9 }}
                     transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                    className="absolute top-24 left-6 w-[380px] h-auto te-module z-[100] flex flex-col shadow-[0_30px_60px_rgba(0,0,0,0.4),0_0_0_1px_rgba(0,0,0,0.1),inset_0_1px_1px_rgba(255,255,255,0.1)]"
+                    className="absolute top-24 left-6 w-[380px] h-auto te-module te-safe-panel z-[100] flex flex-col shadow-[0_30px_60px_rgba(0,0,0,0.4),0_0_0_1px_rgba(0,0,0,0.1),inset_0_1px_1px_rgba(255,255,255,0.1)]"
                 >
                     {/* Header */}
                     <div className="te-module-header px-4 h-10 border-b border-black/10 dark:border-white/5 relative bg-[var(--panel-bg)] rounded-t-[16px]">
@@ -246,7 +246,7 @@ export function ChatModule({
                                 }}
                             />
                             <span className="font-mono text-[10px] font-bold uppercase tracking-widest text-foreground">CONV_MOD</span>
-                            <span className="font-mono text-[8px] uppercase tracking-widest text-foreground/30 ml-2">TX-2</span>
+                            <span className="font-mono text-[8px] uppercase tracking-widest te-whisper ml-2">TX-2</span>
                         </div>
                         <div className="w-16 h-2 te-grip opacity-40 shrink-0" />
                         <button
@@ -289,13 +289,13 @@ export function ChatModule({
                                     <span className="text-[10px] font-mono font-bold tracking-widest text-foreground/40 uppercase">
                                         NO_AI_KEY_FOUND
                                     </span>
-                                    <span className="text-[9px] font-mono text-foreground/30 leading-relaxed">
+                                    <span className="text-[9px] font-mono te-whisper leading-relaxed">
                                         Add an OpenAI or Google key in<br />Settings → KEYS tab to begin.
                                     </span>
                                     {onOpenSettings && (
                                         <button
                                             onClick={() => { onOpenSettings(); onOpenChange(false); }}
-                                            className="h-8 px-4 te-button rounded-[6px] flex items-center gap-1.5 text-foreground/70 hover:text-foreground"
+                                            className="h-9 px-4 te-button rounded-[6px] flex items-center gap-1.5 text-foreground/80 hover:text-foreground"
                                             style={{
                                                 "--key-bg": "var(--te-orange)",
                                                 "--key-border": "color-mix(in srgb, var(--te-orange) 80%, black)",

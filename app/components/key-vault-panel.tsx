@@ -231,7 +231,7 @@ export function KeyVaultPanel() {
                         <button
                             type="button"
                             onClick={() => setShowUnlock((v) => !v)}
-                            className="absolute right-2 top-1/2 -translate-y-1/2 size-5 flex items-center justify-center text-foreground/30 hover:text-foreground/60"
+                            className="absolute right-2 top-1/2 -translate-y-1/2 size-7 flex items-center justify-center text-foreground/55 hover:text-foreground"
                         >
                             {showUnlock ? <EyeOff className="size-3" /> : <Eye className="size-3" />}
                         </button>
@@ -298,7 +298,7 @@ export function KeyVaultPanel() {
                         <button
                             type="button"
                             onClick={() => setShowKey((v) => !v)}
-                            className="absolute right-2 top-1/2 -translate-y-1/2 size-5 flex items-center justify-center text-foreground/30 hover:text-foreground/60"
+                            className="absolute right-2 top-1/2 -translate-y-1/2 size-7 flex items-center justify-center text-foreground/55 hover:text-foreground"
                         >
                             {showKey ? <EyeOff className="size-3" /> : <Eye className="size-3" />}
                         </button>
@@ -336,7 +336,7 @@ export function KeyVaultPanel() {
                             <button
                                 type="button"
                                 onClick={() => setShowPassphrase((v) => !v)}
-                                className="absolute right-2 top-1/2 -translate-y-1/2 size-5 flex items-center justify-center text-foreground/30 hover:text-foreground/60"
+                                className="absolute right-2 top-1/2 -translate-y-1/2 size-7 flex items-center justify-center text-foreground/55 hover:text-foreground"
                             >
                                 {showPassphrase ? <EyeOff className="size-3" /> : <Eye className="size-3" />}
                             </button>
@@ -384,7 +384,7 @@ export function KeyVaultPanel() {
                             type="button"
                             onClick={() => validateKey(editingProvider, inputValue, modelValue || DEFAULT_MODELS[editingProvider])}
                             disabled={!inputValue.trim() || validationStates[editingProvider].status === "testing"}
-                            className="h-8 px-3 te-button rounded-[6px] flex items-center justify-center gap-1 text-foreground/60 disabled:opacity-30"
+                            className="h-9 px-3 te-button rounded-[6px] flex items-center justify-center gap-1 text-foreground/80 disabled:opacity-30"
                         >
                             <span className="text-[9px] font-bold tracking-widest">
                                 {validationStates[editingProvider].status === "testing" ? "PING..." : "PING_KEY"}

@@ -394,7 +394,7 @@ export function AudioLab({
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.9 }}
                     transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                    className="absolute top-24 right-6 w-[380px] h-auto te-module z-[100] flex flex-col shadow-[0_30px_60px_rgba(0,0,0,0.4),0_0_0_1px_rgba(0,0,0,0.1),inset_0_1px_1px_rgba(255,255,255,0.1)]"
+                    className="absolute top-24 right-6 w-[380px] h-auto te-module te-safe-panel z-[100] flex flex-col shadow-[0_30px_60px_rgba(0,0,0,0.4),0_0_0_1px_rgba(0,0,0,0.1),inset_0_1px_1px_rgba(255,255,255,0.1)]"
                 >
                     {/* Header */}
                     <div className="te-module-header px-4 h-10 border-b border-black/10 dark:border-white/5 relative bg-[var(--panel-bg)] rounded-t-[16px]">
@@ -407,7 +407,7 @@ export function AudioLab({
                                 }}
                             />
                             <span className="font-mono text-[10px] font-bold uppercase tracking-widest text-foreground">FREQ_LAB</span>
-                            <span className="font-mono text-[8px] uppercase tracking-widest text-foreground/30 ml-2">TAPE-1</span>
+                            <span className="font-mono text-[8px] uppercase tracking-widest te-whisper ml-2">TAPE-1</span>
                         </div>
                         <div className="w-16 h-2 te-grip opacity-40 shrink-0" />
                         <button
