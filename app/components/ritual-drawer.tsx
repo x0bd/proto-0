@@ -36,10 +36,30 @@ const STORAGE_KEY = "dot_sync_mod";
 interface SyncData {
     entries: Record<string, { mood: CheckInMood; note: string }>; // keyed by "YYYY-MM-DD"
     streak: number;
+    longestStreak: number;
+    timezone: string;
 }
 
-function getTodayKey(): string {
-    return new Date().toISOString().slice(0, 10);
+function getLocalTimezone(): string {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || "local";
+}
+
+function getDateKey(date: Date = new Date()): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+}
+
+function parseDateKey(key: string): Date {
+    const [year, month, day] = key.split("-").map(Number);
+    return new Date(year, (month || 1) - 1, day || 1);
+}
+
+function shiftDateKey(key: string, offsetDays: number): string {
+    const date = parseDateKey(key);
+    date.setDate(date.getDate() + offsetDays);
+    return getDateKey(date);
 }
 
 function getDayOfWeek(): number {
@@ -48,31 +68,70 @@ function getDayOfWeek(): number {
 }
 
 function loadSyncData(): SyncData {
-    if (typeof window === "undefined") return { entries: {}, streak: 0 };
+    if (typeof window === "undefined") {
+        return { entries: {}, streak: 0, longestStreak: 0, timezone: getLocalTimezone() };
+    }
     try {
         const raw = localStorage.getItem(STORAGE_KEY);
-        if (raw) return JSON.parse(raw);
+        if (raw) return normalizeSyncData(JSON.parse(raw));
     } catch { /* fall through */ }
-    return { entries: {}, streak: 0 };
+    return { entries: {}, streak: 0, longestStreak: 0, timezone: getLocalTimezone() };
 }
 
 function saveSyncData(data: SyncData): void {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
 }
 
-function calculateStreak(entries: Record<string, { mood: CheckInMood; note: string }>): number {
+function normalizeSyncData(value: unknown): SyncData {
+    const input = value && typeof value === "object"
+        ? value as Partial<SyncData>
+        : {};
+    const entries = input.entries && typeof input.entries === "object"
+        ? input.entries
+        : {};
+    const streak = calculateCurrentStreak(entries);
+    return {
+        entries,
+        streak,
+        longestStreak: Math.max(Number(input.longestStreak || 0), calculateLongestStreak(entries), streak),
+        timezone: input.timezone || getLocalTimezone(),
+    };
+}
+
+function calculateCurrentStreak(
+    entries: Record<string, { mood: CheckInMood; note: string }>,
+    fromKey: string = getDateKey(),
+): number {
     let streak = 0;
-    const d = new Date();
+    let key = fromKey;
     while (true) {
-        const key = d.toISOString().slice(0, 10);
         if (entries[key]) {
             streak++;
-            d.setDate(d.getDate() - 1);
+            key = shiftDateKey(key, -1);
         } else {
             break;
         }
     }
     return streak;
+}
+
+function calculateLongestStreak(entries: Record<string, { mood: CheckInMood; note: string }>): number {
+    const keys = new Set(Object.keys(entries));
+    let longest = 0;
+
+    for (const key of keys) {
+        if (keys.has(shiftDateKey(key, -1))) continue;
+
+        let current = 0;
+        let cursor = key;
+        while (keys.has(cursor)) {
+            current++;
+            cursor = shiftDateKey(cursor, 1);
+        }
+        longest = Math.max(longest, current);
+    }
+
+    return longest;
 }
 
 function getWeekEntries(entries: Record<string, { mood: CheckInMood; note: string }>): Record<string, CheckInMood> {
@@ -87,7 +146,7 @@ function getWeekEntries(entries: Record<string, { mood: CheckInMood; note: strin
     for (let i = 0; i < 7; i++) {
         const d = new Date(monday);
         d.setDate(monday.getDate() + i);
-        const key = d.toISOString().slice(0, 10);
+        const key = getDateKey(d);
         result[WEEK_DAYS[i]] = entries[key]?.mood ?? null;
     }
     return result;
@@ -103,10 +162,11 @@ export function RitualDrawer({
     const [selectedMood, setSelectedMood] = React.useState<CheckInMood>(null);
     const [note, setNote] = React.useState("");
 
-    const todayKey = getTodayKey();
+    const todayKey = getDateKey();
     const todayEntry = syncData.entries[todayKey];
     const hasCheckedInToday = !!todayEntry;
-    const streak = calculateStreak(syncData.entries);
+    const streak = calculateCurrentStreak(syncData.entries, todayKey);
+    const longestStreak = Math.max(syncData.longestStreak || 0, calculateLongestStreak(syncData.entries), streak);
     const weeklyData = getWeekEntries(syncData.entries);
 
     // Load today's entry into local form state when opening
@@ -129,8 +189,11 @@ export function RitualDrawer({
                 [todayKey]: { mood: selectedMood, note },
             },
             streak: 0, // will be recalculated
+            longestStreak: syncData.longestStreak || 0,
+            timezone: getLocalTimezone(),
         };
-        updated.streak = calculateStreak(updated.entries);
+        updated.streak = calculateCurrentStreak(updated.entries, todayKey);
+        updated.longestStreak = Math.max(updated.longestStreak, calculateLongestStreak(updated.entries));
         setSyncData(updated);
         saveSyncData(updated);
         if (isMemoryEnabled()) {
@@ -193,6 +256,9 @@ export function RitualDrawer({
                                 <div className="flex items-center justify-between mt-1 pt-1 border-t border-current/20">
                                     <span className="text-[10px] font-bold opacity-70 tracking-widest">
                                         STREAK: [{String(streak).padStart(3, "0")}]
+                                    </span>
+                                    <span className="text-[10px] font-bold opacity-70 tracking-widest">
+                                        BEST: [{String(longestStreak).padStart(3, "0")}]
                                     </span>
                                     <span className="text-[10px] font-bold opacity-70 tracking-widest" style={{ color: hasCheckedInToday && todayEntry?.mood ? MOODS.find(m => m.id === todayEntry.mood)?.color : "inherit" }}>
                                         {hasCheckedInToday ? "SYNC_OK" : "PENDING"}

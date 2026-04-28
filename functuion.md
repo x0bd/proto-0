@@ -51,16 +51,16 @@
 - [x] Implement memory search and filtering logic.
 - [x] Implement local memory retrieval scoring for relevance.
 - [x] Implement policy enforcement for read/write toggles.
-- [ ] Implement retention handling and purge behavior.
+- [x] Implement local retention handling and purge behavior.
 - [x] Implement clear-all purge operation.
-- [ ] Implement category purge operations.
+- [x] Implement category purge operations.
 
 ## F5 Check-ins and Streak Engine
 - [x] Implement check-in storage model and localStorage adapter.
 - [x] Implement one-check-in-per-day guard.
-- [ ] Implement timezone-aware day boundary utility.
+- [x] Implement local timezone-aware day boundary utility.
 - [x] Implement current streak calculation.
-- [ ] Implement longest streak calculation.
+- [x] Implement longest streak calculation.
 - [x] Implement weekly mood aggregation metrics.
 - [ ] Provide check-in summary context for AI responses.
 

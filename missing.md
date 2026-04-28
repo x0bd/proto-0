@@ -44,10 +44,10 @@ Scope: static code audit of the current project against `ui.md`, `functuion.md`,
 - [x] Voice settings sheet is no longer UI-only. It persists settings, feeds `useVoiceConversation`, passes ElevenLabs settings into `/api/tts`, controls browser speech fallback rate/pitch, and makes auto-speak/interruption toggles affect runtime behavior.
 - [ ] Persona tuning UI exists in unused components. `components/ui/persona-settings-panel.tsx`, `persona-picker.tsx`, and `persona-card.tsx` include richer controls, but the active settings modal currently uses a simpler inline persona picker instead.
 - [ ] Active persona selection is partially functional. The selected persona ID is persisted and sent to `/api/chat`, but expressiveness, directness, auto-voice, and voice mood are not implemented.
-- [ ] Memory is local-only. `MemoryDrawer` persists localStorage memories, search, filters, delete, and purge, but there is no backend memory API, embeddings, semantic recall, import/export, or cloud sync.
+- [ ] Memory is local-only. `MemoryDrawer` persists localStorage memories, search, filters, delete, clear-all, tag purge, and a local 200-block retention cap, but there is no backend memory API, embeddings, import/export, or cloud sync.
 - [x] Text and voice chat now use local relevance-ranked memory context instead of only taking the newest entries. Recall scores prompt/token/tag overlap with recency as a tiebreaker, while embeddings, summarization, dedupe, and richer editing remain future work.
 - [x] Voice memory capture now uses the shared memory helpers. Spoken transcripts are stored as `source: "voice"` when learning is enabled, and recent memories are sent with voice prompts.
-- [ ] Rituals are local-only. Mood check-ins persist to localStorage and can write memory entries, but there are no reminders, notifications, calendar integration, timezone controls, or multi-day analytics beyond local streak math.
+- [ ] Rituals are local-only. Mood check-ins persist to localStorage, use local-calendar day keys, track current/best streaks, show weekly mood history, and can write memory entries, but there are no reminders, notifications, calendar integration, or configurable timezone controls.
 - [x] Share/export now has real client renderers for PNG, GIF, WebM, and native share. Mood card, reflection card, and reaction clip templates composite the avatar into distinct designed canvas layouts.
 - [x] Export cancellation is now available. PNG/GIF/WebM/native share jobs share an abort flag, GIF/WebM loops stop on cancel, WebM recorder streams are cleaned up, and the export UI exposes `ABORT` / `ABORT_RENDER` controls while rendering.
 - [ ] Audio Lab is functional locally, but it is not integrated as a reusable product feature. Uploaded audio can drive emotion/levels, but there is no saved session, no generated insight, no export, and no connection to AI chat.
@@ -76,3 +76,5 @@ Scope: static code audit of the current project against `ui.md`, `functuion.md`,
 - [x] Wire visible voice profiles to actual ElevenLabs voice IDs.
 - [x] Add client-side export cancellation for long GIF/WebM renders.
 - [x] Replace shallow recent-memory recall with local relevance-ranked memory context for chat and voice.
+- [x] Add local memory retention cap and tag-level purge controls.
+- [x] Harden local check-in day boundaries and longest-streak tracking.

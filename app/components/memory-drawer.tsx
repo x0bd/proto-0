@@ -34,6 +34,7 @@ export interface MemoryEntry {
 }
 
 const STORAGE_KEY = "dot_memory_core";
+const MAX_MEMORY_ENTRIES = 200;
 const MEMORY_STOP_WORDS = new Set([
     "about",
     "after",
@@ -76,8 +77,12 @@ export function loadMemories(): MemoryEntry[] {
     return [];
 }
 
+function applyRetentionLimit(memories: MemoryEntry[]): MemoryEntry[] {
+    return memories.slice(0, MAX_MEMORY_ENTRIES);
+}
+
 function saveMemories(memories: MemoryEntry[]): void {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(memories));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(applyRetentionLimit(memories)));
 }
 
 export function isMemoryEnabled(): boolean {
@@ -95,6 +100,16 @@ export function addMemory(entry: Omit<MemoryEntry, "id" | "date">): void {
     };
     memories.unshift(newEntry); // newest first
     saveMemories(memories);
+}
+
+export function purgeMemoriesByTag(tag: string): MemoryEntry[] {
+    const normalizedTag = tag.toLowerCase();
+    const updated = loadMemories().filter((memory) => {
+        const tags = Array.isArray(memory.tags) ? memory.tags : [];
+        return !tags.some((item) => item.toLowerCase() === normalizedTag);
+    });
+    saveMemories(updated);
+    return updated;
 }
 
 function tokenizeMemoryText(value: string): string[] {
@@ -201,6 +216,7 @@ export function MemoryDrawer({
     const [memoryEnabled, setMemoryEnabled] = React.useState(true);
     const [deleteId, setDeleteId] = React.useState<string | null>(null);
     const [clearAllConfirm, setClearAllConfirm] = React.useState(false);
+    const [purgeTagConfirm, setPurgeTagConfirm] = React.useState<string | null>(null);
     const [currentPage, setCurrentPage] = React.useState(1);
     const ITEMS_PER_PAGE = 4;
 
@@ -215,14 +231,15 @@ export function MemoryDrawer({
         if (open) setMemories(loadMemories());
     }, [open]);
 
-    const tags = Array.from(new Set(memories.flatMap((m) => m.tags)));
+    const tags = Array.from(new Set(memories.flatMap((m) => Array.isArray(m.tags) ? m.tags : [])));
 
     const filteredMemories = memories.filter((m) => {
         const matchesSearch = m.content
             .toLowerCase()
             .includes(searchQuery.toLowerCase());
+        const memoryTags = Array.isArray(m.tags) ? m.tags : [];
         const matchesFilter = activeFilter
-            ? m.tags.includes(activeFilter)
+            ? memoryTags.includes(activeFilter)
             : true;
         return matchesSearch && matchesFilter;
     });
@@ -263,6 +280,14 @@ export function MemoryDrawer({
         setMemories([]);
         saveMemories([]);
         setClearAllConfirm(false);
+    };
+
+    const handlePurgeTag = () => {
+        if (!purgeTagConfirm) return;
+        const updated = purgeMemoriesByTag(purgeTagConfirm);
+        setMemories(updated);
+        if (activeFilter === purgeTagConfirm) setActiveFilter(null);
+        setPurgeTagConfirm(null);
     };
 
     const toggleMemoryEnabled = () => {
@@ -328,7 +353,7 @@ export function MemoryDrawer({
                                             </>
                                         )}
                                     </div>
-                                    <span className="text-[14px] font-bold opacity-90 tracking-widest">{memories.length} BLK</span>
+                                    <span className="text-[14px] font-bold opacity-90 tracking-widest">{memories.length}/{MAX_MEMORY_ENTRIES} BLK</span>
                                 </div>
                             </div>
 
@@ -395,6 +420,14 @@ export function MemoryDrawer({
                                             );
                                         })}
                                     </div>
+                                    {activeFilter && (
+                                        <button
+                                            onClick={() => setPurgeTagConfirm(activeFilter)}
+                                            className="h-8 te-button rounded-[6px] text-[9px] tracking-widest text-[var(--te-orange)]"
+                                        >
+                                            PURGE_TAG · {activeFilter.toUpperCase()}
+                                        </button>
+                                    )}
                                 </section>
                             )}
 
@@ -536,6 +569,16 @@ export function MemoryDrawer({
                         confirmText="Purge Everything"
                         destructive
                         onConfirm={handleClearAll}
+                    />
+
+                    <ConfirmDialog
+                        open={purgeTagConfirm !== null}
+                        onOpenChange={(open) => !open && setPurgeTagConfirm(null)}
+                        title="Purge memory tag?"
+                        description={`This will permanently delete every memory tagged "${purgeTagConfirm ?? ""}". Other memory blocks stay intact.`}
+                        confirmText="Purge Tag"
+                        destructive
+                        onConfirm={handlePurgeTag}
                     />
                 </motion.div>
             )}
