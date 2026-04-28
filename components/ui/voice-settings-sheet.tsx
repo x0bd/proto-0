@@ -4,6 +4,7 @@ import * as React from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { X, Mic2, Settings2 } from "lucide-react";
 import { usePanelPosition } from "@/hooks/usePanelPosition";
+import { useVoiceSettings, VOICE_PROFILES } from "@/hooks/useVoiceSettings";
 
 interface VoiceSettingsSheetProps {
     open: boolean;
@@ -12,24 +13,13 @@ interface VoiceSettingsSheetProps {
     constraintsRef?: React.RefObject<Element>;
 }
 
-const VOICE_PROFILES = [
-    { id: "companion", label: "CMPNN", short: "C-01" },
-    { id: "guide", label: "GUIDE", short: "G-02" },
-    { id: "late-night", label: "NIGHT", short: "N-03" },
-];
-
 export function VoiceSettingsSheet({
     open,
     onOpenChange,
     accentColor = "#7c3aed",
     constraintsRef,
 }: VoiceSettingsSheetProps) {
-    const [activeProfile, setActiveProfile] = React.useState("companion");
-    const [speed, setSpeed] = React.useState(58);
-    const [warmth, setWarmth] = React.useState(72);
-    const [clarity, setClarity] = React.useState(64);
-    const [autoSpeak, setAutoSpeak] = React.useState(true);
-    const [interruptible, setInterruptible] = React.useState(true);
+    const { settings, updateSettings, elevenLabsSettings } = useVoiceSettings();
 
     const { x, y, onDragEnd } = usePanelPosition("voice-settings");
 
@@ -77,7 +67,7 @@ export function VoiceSettingsSheet({
                                     <span className="text-[14px] font-bold opacity-90 tracking-widest uppercase">ONLINE</span>
                                 </div>
                                 <span className="text-[14px] font-bold opacity-90 tracking-widest">
-                                    {VOICE_PROFILES.find(p => p.id === activeProfile)?.short || "ERR"}
+                                    {VOICE_PROFILES.find(p => p.id === settings.profile)?.short || "ERR"}
                                 </span>
                             </div>
                         </div>
@@ -89,11 +79,11 @@ export function VoiceSettingsSheet({
                             </div>
                             <div className="te-recessed p-1.5 flex gap-1.5">
                                 {VOICE_PROFILES.map((profile) => {
-                                    const active = activeProfile === profile.id;
+                                    const active = settings.profile === profile.id;
                                     return (
                                         <button
                                             key={profile.id}
-                                            onClick={() => setActiveProfile(profile.id)}
+                                            onClick={() => updateSettings({ profile: profile.id })}
                                             className="flex-1 h-9 te-button rounded-[8px] text-[10px] transition-all duration-150"
                                             style={active ? {
                                                 "--key-bg": "var(--te-blue)",
@@ -116,9 +106,9 @@ export function VoiceSettingsSheet({
                             </div>
                             <div className="te-recessed p-3 flex flex-col gap-3">
                                 {[
-                                    { label: "SPD", value: speed, set: setSpeed },
-                                    { label: "WRM", value: warmth, set: setWarmth },
-                                    { label: "CLR", value: clarity, set: setClarity },
+                                    { label: "SPD", value: settings.speed, key: "speed" as const },
+                                    { label: "WRM", value: settings.warmth, key: "warmth" as const },
+                                    { label: "CLR", value: settings.clarity, key: "clarity" as const },
                                 ].map((item) => (
                                     <div key={item.label} className="flex items-center gap-3">
                                         <span className="w-8 shrink-0 text-[10px] font-mono font-bold tracking-widest text-foreground/60">{item.label}</span>
@@ -127,7 +117,7 @@ export function VoiceSettingsSheet({
                                                 type="range" 
                                                 min="0" max="100" 
                                                 value={item.value} 
-                                                onChange={(e) => item.set(Number(e.target.value))}
+                                                onChange={(e) => updateSettings({ [item.key]: Number(e.target.value) })}
                                                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                                             />
                                             <div 
@@ -150,12 +140,12 @@ export function VoiceSettingsSheet({
                             </div>
                             <div className="te-recessed p-1.5 flex gap-1.5">
                                 {[
-                                    { label: "AUTO_TX", state: autoSpeak, set: setAutoSpeak, color: "var(--te-orange)" },
-                                    { label: "INTERRUPT", state: interruptible, set: setInterruptible, color: "var(--te-green)" },
+                                    { label: "AUTO_TX", key: "autoSpeak" as const, state: settings.autoSpeak, color: "var(--te-orange)" },
+                                    { label: "INTERRUPT", key: "interruptible" as const, state: settings.interruptible, color: "var(--te-green)" },
                                 ].map((sw) => (
                                     <div key={sw.label} className="flex-1 flex flex-col gap-1">
                                         <button
-                                            onClick={() => sw.set(!sw.state)}
+                                            onClick={() => updateSettings({ [sw.key]: !sw.state })}
                                             className="w-full h-10 te-button rounded-[8px] transition-all duration-150 flex flex-col items-center justify-center gap-0.5"
                                             style={sw.state ? {
                                                 "--key-bg": sw.color,
@@ -173,6 +163,12 @@ export function VoiceSettingsSheet({
                                 ))}
                             </div>
                         </section>
+
+                        <div className="te-lcd px-2 py-1 text-center">
+                            <span className="text-[8px] font-mono font-bold tracking-widest opacity-50">
+                                TTS {elevenLabsSettings.speed.toFixed(2)}X · STB {Math.round(elevenLabsSettings.stability * 100)} · CLR {Math.round(elevenLabsSettings.similarity_boost * 100)}
+                            </span>
+                        </div>
 
                     </div>
                 </motion.div>

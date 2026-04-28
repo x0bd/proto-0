@@ -4,6 +4,7 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import type { VoiceState } from "@/components/ui/voice-companion-bar";
 import type { AudioLevels } from "./useAudioAnalysis";
 import { getKey } from "@/lib/key-store";
+import { useVoiceSettings } from "@/hooks/useVoiceSettings";
 
 function saveVoiceMemory(text: string): void {
   if (typeof window === "undefined") return;
@@ -38,6 +39,7 @@ export function useVoiceConversation({
 }: UseVoiceConversationOptions = {}) {
   const [voiceState, setVoiceState] = useState<VoiceState>("idle");
   const [transcript, setTranscript] = useState("");
+  const { settings: voiceSettings, elevenLabsSettings } = useVoiceSettings();
 
   const recognitionRef = useRef<any>(null);
   const abortRef = useRef<AbortController | null>(null);
@@ -100,13 +102,23 @@ export function useVoiceConversation({
   // ── TTS playback ─────────────────────────────────────────────────────────
   const speak = useCallback(
     async (text: string) => {
+      if (!voiceSettings.autoSpeak) {
+        setVoiceState("idle");
+        setTranscript("");
+        return;
+      }
+
       setVoiceState("speaking");
       try {
         const elevenlabsStored = getKey("elevenlabs");
         const res = await fetch("/api/tts", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text, apiKey: elevenlabsStored?.key ?? null }),
+          body: JSON.stringify({
+            text,
+            apiKey: elevenlabsStored?.key ?? null,
+            voiceSettings: elevenLabsSettings,
+          }),
         });
 
         if (!res.ok) throw new Error("TTS request failed");
@@ -149,6 +161,13 @@ export function useVoiceConversation({
         stopTtsAnalysis();
         if (typeof window !== "undefined" && window.speechSynthesis) {
           const utt = new SpeechSynthesisUtterance(text);
+          utt.rate = elevenLabsSettings.speed;
+          utt.pitch =
+            voiceSettings.profile === "late-night"
+              ? 0.85
+              : voiceSettings.profile === "guide"
+                ? 1.05
+                : 0.95 + (voiceSettings.warmth / 100) * 0.12;
           utt.onend = () => {
             setVoiceState("idle");
             setTranscript("");
@@ -160,7 +179,7 @@ export function useVoiceConversation({
         }
       }
     },
-    [startTtsAnalysis, stopTtsAnalysis],
+    [elevenLabsSettings, startTtsAnalysis, stopTtsAnalysis, voiceSettings],
   );
 
   // ── Send transcript to AI ─────────────────────────────────────────────────
@@ -253,7 +272,7 @@ export function useVoiceConversation({
   // ── Mic toggle: start listening or interrupt if active ────────────────────
   const toggleMic = useCallback(() => {
     if (voiceStateRef.current !== "idle") {
-      stopAll();
+      if (voiceSettings.interruptible) stopAll();
       return;
     }
 
@@ -297,9 +316,11 @@ export function useVoiceConversation({
     };
 
     recognition.start();
-  }, [sendToAI, stopAll]);
+  }, [sendToAI, stopAll, voiceSettings.interruptible]);
 
-  const interrupt = useCallback(() => stopAll(), [stopAll]);
+  const interrupt = useCallback(() => {
+    if (voiceSettings.interruptible) stopAll();
+  }, [stopAll, voiceSettings.interruptible]);
 
   // Cleanup on unmount
   useEffect(() => {
