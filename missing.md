@@ -9,7 +9,7 @@ Scope: static code audit of the current project against `ui.md`, `functuion.md`,
 - [x] BYOK AI chat is partially real: keys can be stored in the local key vault, read by chat/voice clients, and sent to `/api/chat`, which uses the AI SDK with OpenAI and Google providers.
 - [x] ElevenLabs TTS is partially real: the app can read the ElevenLabs key from the vault and send it to `/api/tts`, which calls ElevenLabs with `xi-api-key`.
 - [ ] The implemented API contracts still use `/api/chat` and `/api/tts` rather than the originally planned `/api/ai/respond` and `/api/tts/speak`, but BYOK key forwarding now uses request headers.
-- [ ] Several polished UI surfaces are still local-only or partially wired. They look like complete product features, but a few still do not control runtime AI/voice behavior.
+- [ ] Several polished UI surfaces are still local-only or partially wired. They look like complete product features, but a few still need deeper product/runtime integration.
 - [x] `functuion.md` and `ui.md` now reflect the current partial implementations instead of showing everything as pending.
 
 ## BYOK AI Findings
@@ -42,8 +42,8 @@ Scope: static code audit of the current project against `ui.md`, `functuion.md`,
 ## UI-Only / Partially Wired Product Areas
 
 - [x] Voice settings sheet is no longer UI-only. It persists settings, feeds `useVoiceConversation`, passes ElevenLabs settings into `/api/tts`, controls browser speech fallback rate/pitch, and makes auto-speak/interruption toggles affect runtime behavior.
-- [ ] Persona tuning UI exists in unused components. `components/ui/persona-settings-panel.tsx`, `persona-picker.tsx`, and `persona-card.tsx` include richer controls, but the active settings modal currently uses a simpler inline persona picker instead.
-- [ ] Active persona selection is partially functional. The selected persona ID is persisted and sent to `/api/chat`, but expressiveness, directness, auto-voice, and voice mood are not implemented.
+- [x] Persona tuning is wired into the active settings modal. The CORE tab now exposes expressiveness, directness, auto-voice, and voice mood controls in the same TE hardware style as the rest of the product.
+- [x] Active persona selection now drives runtime behavior beyond the ID. Persona tuning is persisted locally, sent to `/api/chat` for prompt shaping, used by voice chat, mapped into ElevenLabs/browser speech settings, and blended into avatar emotion bias.
 - [ ] Memory is local-only. `MemoryDrawer` persists localStorage memories, search, filters, delete, clear-all, tag purge, and a local 200-block retention cap, but there is no backend memory API, embeddings, import/export, or cloud sync.
 - [x] Text and voice chat now use local relevance-ranked memory context instead of only taking the newest entries. Recall scores prompt/token/tag overlap with recency as a tiebreaker, while embeddings, summarization, dedupe, and richer editing remain future work.
 - [x] Voice memory capture now uses the shared memory helpers. Spoken transcripts are stored as `source: "voice"` when learning is enabled, and recent memories are sent with voice prompts.
@@ -78,3 +78,4 @@ Scope: static code audit of the current project against `ui.md`, `functuion.md`,
 - [x] Replace shallow recent-memory recall with local relevance-ranked memory context for chat and voice.
 - [x] Add local memory retention cap and tag-level purge controls.
 - [x] Harden local check-in day boundaries and longest-streak tracking.
+- [x] Wire persona tuning into settings UI, AI prompt behavior, voice defaults, and avatar behavior bias.

@@ -7,12 +7,14 @@ import { usePanelPosition } from "@/hooks/usePanelPosition";
 import { getKey, DEFAULT_MODELS, type Provider } from "@/lib/key-store";
 import { addMemory, buildMemoryContextForPrompt, isMemoryEnabled } from "./memory-drawer";
 import type { EmotionState } from "../components/face/types";
+import type { PersonaTuningSettings } from "@/hooks/usePersonaSettings";
 
 interface ChatModuleProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     onEmotionChange?: (emotion: EmotionState) => void;
     activePersonaId?: string;
+    personaTuning?: PersonaTuningSettings;
     accentColor?: string;
     constraintsRef?: React.RefObject<Element>;
     onOpenSettings?: () => void;
@@ -97,6 +99,7 @@ export function ChatModule({
     onOpenChange,
     onEmotionChange,
     activePersonaId = "coach",
+    personaTuning,
     accentColor = "#7c3aed",
     constraintsRef,
     onOpenSettings,
@@ -165,6 +168,7 @@ export function ChatModule({
                     provider: providerInfo.provider,
                     model: providerInfo.model,
                     persona: activePersonaId,
+                    personaTuning,
                     memoryContext: memoryContext || undefined,
                 }),
                 signal: abortRef.current.signal,
@@ -207,7 +211,7 @@ export function ChatModule({
             setIsLoading(false);
             abortRef.current = null;
         }
-    }, [input, messages, providerInfo, activePersonaId, isLoading, onEmotionChange]);
+    }, [input, messages, providerInfo, activePersonaId, personaTuning, isLoading, onEmotionChange]);
 
     const providerLabel = providerInfo
         ? `${providerInfo.provider.toUpperCase()} · ${providerInfo.model.split("/").pop()?.split("-").slice(0, 2).join("-") ?? providerInfo.model}`

@@ -24,6 +24,10 @@ import { FaceVariant, EmotionState } from "../components/face/types";
 import { VARIANT_COLORS } from "../components/face/themes";
 import { useAudioAnalysis, type AudioLevels } from "@/hooks/useAudioAnalysis";
 import { useVoiceConversation } from "@/hooks/useVoiceConversation";
+import {
+	getPersonaAvatarBias,
+	usePersonaSettings,
+} from "@/hooks/usePersonaSettings";
 import { useTheme } from "next-themes";
 import { getAllKeys } from "@/lib/key-store";
 
@@ -106,6 +110,10 @@ export default function Home() {
 	const [mounted, setMounted] = useState(false);
 	const [hasKeys, setHasKeys] = useState(true);
 	const { theme, setTheme } = useTheme();
+	const {
+		settings: personaTuning,
+		updateSettings: updatePersonaTuning,
+	} = usePersonaSettings();
 
 	const [isMemoryOpen, setIsMemoryOpen] = useState(false);
 	const [isRitualOpen, setIsRitualOpen] = useState(false);
@@ -156,6 +164,7 @@ export default function Home() {
 
 	const { voiceState, toggleMic, interrupt } = useVoiceConversation({
 		activePersonaId,
+		personaTuning,
 		onAudioLevelsChange: (ttsLevels) => {
 			setAudioLevels(ttsLevels);
 			setVoiceLevel(ttsLevels.overall);
@@ -313,6 +322,20 @@ export default function Home() {
 		if (nextIndex >= EMOTION_PRESETS.length) nextIndex = 0;
 		if (nextIndex < 0) nextIndex = EMOTION_PRESETS.length - 1;
 		applyPreset(EMOTION_PRESETS[nextIndex].id);
+	};
+
+	const personaAvatarBias = getPersonaAvatarBias(
+		activePersonaId,
+		personaTuning,
+	);
+	const displayedEmotion: EmotionState = {
+		joy: clamp01(currentEmotion.joy + personaAvatarBias.joy),
+		sadness: clamp01(currentEmotion.sadness + personaAvatarBias.sadness),
+		surprise: clamp01(currentEmotion.surprise + personaAvatarBias.surprise),
+		anger: clamp01(currentEmotion.anger + personaAvatarBias.anger),
+		curiosity: clamp01(
+			currentEmotion.curiosity + personaAvatarBias.curiosity,
+		),
 	};
 
 	return (
@@ -499,7 +522,7 @@ export default function Home() {
 						className="w-full sm:w-[90vw] md:w-[80vw] lg:w-[62vw] max-w-[820px] aspect-[360/250] flex items-center justify-center pointer-events-auto"
 					>
 						<Avatar
-							emotion={currentEmotion}
+							emotion={displayedEmotion}
 							voiceEnabled={voiceEnabled}
 							voiceLevel={voiceLevel}
 							audioLevels={audioLevels}
@@ -536,6 +559,8 @@ export default function Home() {
 					onAccentColorChange={handleAccentColorChange}
 					activePersonaId={activePersonaId}
 					onPersonaChange={handlePersonaChange}
+					personaTuning={personaTuning}
+					onPersonaTuningChange={updatePersonaTuning}
 					constraintsRef={constraintsRef}
 				/>
 				{/* Memory Drawer */}
@@ -574,6 +599,7 @@ export default function Home() {
 						targetEmotionRef.current = emotion;
 					}}
 					activePersonaId={activePersonaId}
+					personaTuning={personaTuning}
 					accentColor={accentColor}
 					constraintsRef={constraintsRef}
 					onOpenSettings={() => { setIsChatOpen(false); setIsCustomizationOpen(true); }}

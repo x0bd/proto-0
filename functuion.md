@@ -6,7 +6,7 @@
 - [ ] Centralize `MemoryItem` and `MemoryPolicy` interfaces outside the UI drawer.
 - [x] Define voice session status model through the shared `VoiceState` UI contract.
 - [x] Define local check-in and streak data structures in `app/components/ritual-drawer.tsx`.
-- [ ] Define `PersonaConfig` interface.
+- [x] Define persona tuning settings contract in `hooks/usePersonaSettings.ts`.
 - [x] Define export format/status/template types in `app/components/share-dock.tsx`.
 - [ ] Define shared API request/response contracts for all new routes.
 
@@ -69,8 +69,10 @@
 - [x] Implement active persona persistence.
 - [x] Implement runtime persona switch logic.
 - [x] Apply persona prompt profile to AI requests.
+- [x] Apply expressiveness and directness tuning to AI requests.
+- [x] Apply auto-voice and voice mood tuning to active voice settings.
 - [x] Apply selected voice profile defaults to TTS voice ID and voice settings.
-- [ ] Apply persona-driven avatar behavior tuning hooks.
+- [x] Apply persona-driven avatar behavior tuning hooks.
 
 ## F7 Share and Export Runtime
 - [x] Harden PNG export pipeline.

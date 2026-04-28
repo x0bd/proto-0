@@ -262,11 +262,12 @@ function SpectrumPicker({
 /* ─── Modal (Now a Panel) ─────────────────────────────────────────────── */
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { KeyVaultPanel } from "./key-vault-panel";
-import { PersonaPicker } from "@/components/ui/persona-picker";
-import { PersonaPreview } from "@/components/ui/persona-preview";
-import { PersonaSettingsPanel } from "@/components/ui/persona-settings-panel";
-import { Settings2, WandSparkles, X } from "lucide-react";
+import { X } from "lucide-react";
 import { usePanelPosition } from "@/hooks/usePanelPosition";
+import type {
+	PersonaTuningSettings,
+	PersonaVoiceMood,
+} from "@/hooks/usePersonaSettings";
 
 interface CustomizationModalProps {
 	isOpen: boolean;
@@ -279,7 +280,53 @@ interface CustomizationModalProps {
 	onAccentColorChange: (color: string) => void;
 	activePersonaId: string;
 	onPersonaChange: (personaId: string) => void;
+	personaTuning: PersonaTuningSettings;
+	onPersonaTuningChange: (patch: Partial<PersonaTuningSettings>) => void;
 	constraintsRef?: React.RefObject<Element>;
+}
+
+function TuningSlider({
+	label,
+	value,
+	onChange,
+	lowLabel,
+	highLabel,
+	color = "var(--te-green)",
+}: {
+	label: string;
+	value: number;
+	onChange: (value: number) => void;
+	lowLabel: string;
+	highLabel: string;
+	color?: string;
+}) {
+	return (
+		<div className="te-recessed p-2 border border-[var(--panel-border)]">
+			<div className="flex items-center justify-between mb-2">
+				<span className="te-label">{label}</span>
+				<span className="te-lcd px-2 py-0.5 text-[8px] min-w-10 text-center">
+					{Math.round(value).toString().padStart(2, "0")}
+				</span>
+			</div>
+			<input
+				type="range"
+				min={0}
+				max={100}
+				value={value}
+				onChange={(event) => onChange(Number(event.target.value))}
+				className="w-full h-2 appearance-none rounded-full bg-[var(--lcd-bg)] shadow-[inset_0_2px_6px_rgba(0,0,0,0.35)] accent-[var(--te-green)]"
+				style={
+					{
+						accentColor: color,
+					} as React.CSSProperties
+				}
+			/>
+			<div className="flex justify-between pt-1.5 text-[8px] font-mono uppercase tracking-widest text-foreground/35">
+				<span>{lowLabel}</span>
+				<span>{highLabel}</span>
+			</div>
+		</div>
+	);
 }
 
 export const CustomizationModal = React.memo(function CustomizationModal({
@@ -293,6 +340,8 @@ export const CustomizationModal = React.memo(function CustomizationModal({
 	onAccentColorChange,
 	activePersonaId,
 	onPersonaChange,
+	personaTuning,
+	onPersonaTuningChange,
 	constraintsRef,
 }: CustomizationModalProps) {
 	const [nameVal, setNameVal] = React.useState(avatarName);
@@ -519,6 +568,9 @@ export const CustomizationModal = React.memo(function CustomizationModal({
 										<span className="te-label">
 											PERSONA_CORE
 										</span>
+										<span className="te-lcd px-2 py-0.5 text-[8px]">
+											{activePersona.tone.toUpperCase()}
+										</span>
 									</div>
 									<div className="te-recessed p-1.5 flex flex-col gap-1.5">
 										{PERSONAS.map((persona) => {
@@ -541,8 +593,12 @@ export const CustomizationModal = React.memo(function CustomizationModal({
 											return (
 												<button
 													key={persona.id}
-													onClick={() => onPersonaChange(persona.id)}
-													className="w-full h-10 te-button rounded-[8px] text-[10px] transition-all duration-150 flex items-center justify-between px-3"
+													onClick={() =>
+														onPersonaChange(
+															persona.id,
+														)
+													}
+													className="w-full min-h-11 te-button rounded-[8px] text-[10px] transition-all duration-150 flex items-center justify-between gap-3 px-3 py-2 text-left"
 													style={
 														active
 															? ({
@@ -553,11 +609,131 @@ export const CustomizationModal = React.memo(function CustomizationModal({
 																	color: textColor,
 																} as React.CSSProperties)
 															: undefined
+														}
+												>
+													<span className="flex flex-col gap-0.5">
+														<span className="font-bold tracking-widest">
+															{persona.name.toUpperCase()}
+														</span>
+														<span className="text-[8px] tracking-wider opacity-60">
+															{persona.description.toUpperCase()}
+														</span>
+													</span>
+													<span className="font-mono text-[8px] font-bold tracking-widest opacity-50">
+														{active ? "ON" : "SET"}
+													</span>
+												</button>
+											);
+										})}
+									</div>
+								</section>
+
+								<section className="flex flex-col gap-1.5 shrink-0">
+									<div className="flex items-center justify-between px-1">
+										<span className="te-label">
+											TONE_TUNE
+										</span>
+									</div>
+									<div className="grid grid-cols-1 gap-2">
+										<TuningSlider
+											label="EXP"
+											value={personaTuning.expressiveness}
+											onChange={(value) =>
+												onPersonaTuningChange({
+													expressiveness: value,
+												})
+											}
+											lowLabel="quiet"
+											highLabel="vivid"
+											color="var(--te-yellow)"
+										/>
+										<TuningSlider
+											label="DIR"
+											value={personaTuning.directness}
+											onChange={(value) =>
+												onPersonaTuningChange({
+													directness: value,
+												})
+											}
+											lowLabel="soft"
+											highLabel="sharp"
+											color="var(--te-green)"
+										/>
+									</div>
+								</section>
+
+								<section className="flex flex-col gap-1.5 shrink-0">
+									<div className="flex items-center justify-between px-1">
+										<span className="te-label">
+											VOX_MATCH
+										</span>
+										<button
+											type="button"
+											onClick={() =>
+												onPersonaTuningChange({
+													autoVoice:
+														!personaTuning.autoVoice,
+												})
+											}
+											className="h-6 px-2 te-button rounded-[6px] text-[8px] font-bold tracking-widest"
+											style={
+												personaTuning.autoVoice
+													? ({
+															"--key-bg":
+																"var(--te-green)",
+															"--key-border":
+																"color-mix(in srgb, var(--te-green) 80%, black)",
+															"--key-shadow":
+																"color-mix(in srgb, var(--te-green) 60%, black)",
+															color: "#ffffff",
+														} as React.CSSProperties)
+													: undefined
+											}
+										>
+											{personaTuning.autoVoice
+												? "AUTO_ON"
+												: "AUTO_OFF"}
+										</button>
+									</div>
+									<div className="te-recessed p-1.5 grid grid-cols-2 gap-1.5">
+										{(
+											[
+												["matched", "MATCH"],
+												["softened", "SOFT"],
+											] as const
+										).map(([mood, label]) => {
+											const active =
+												personaTuning.voiceMood === mood;
+											return (
+												<button
+													type="button"
+													key={mood}
+													onClick={() =>
+														onPersonaTuningChange({
+															voiceMood:
+																mood as PersonaVoiceMood,
+														})
+													}
+													disabled={
+														!personaTuning.autoVoice
+													}
+													className="h-9 te-button rounded-[8px] text-[9px] font-bold tracking-widest disabled:opacity-40"
+													style={
+														active &&
+														personaTuning.autoVoice
+															? ({
+																	"--key-bg":
+																		"var(--te-blue)",
+																	"--key-border":
+																		"color-mix(in srgb, var(--te-blue) 80%, black)",
+																	"--key-shadow":
+																		"color-mix(in srgb, var(--te-blue) 60%, black)",
+																	color: "#ffffff",
+																} as React.CSSProperties)
+															: undefined
 													}
 												>
-													<span className="font-bold tracking-widest">
-														{persona.name.toUpperCase()}
-													</span>
+													{label}
 												</button>
 											);
 										})}

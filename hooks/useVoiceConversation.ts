@@ -4,11 +4,20 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import type { VoiceState } from "@/components/ui/voice-companion-bar";
 import type { AudioLevels } from "./useAudioAnalysis";
 import { getKey } from "@/lib/key-store";
-import { useVoiceSettings } from "@/hooks/useVoiceSettings";
+import {
+	getElevenLabsVoiceId,
+	toElevenLabsVoiceSettings,
+	useVoiceSettings,
+} from "@/hooks/useVoiceSettings";
+import {
+	resolvePersonaVoiceSettings,
+	type PersonaTuningSettings,
+} from "@/hooks/usePersonaSettings";
 import { addMemory, buildMemoryContextForPrompt, isMemoryEnabled } from "@/app/components/memory-drawer";
 
 interface UseVoiceConversationOptions {
   activePersonaId?: string;
+  personaTuning?: PersonaTuningSettings;
   onAudioLevelsChange?: (levels: AudioLevels) => void;
 }
 
@@ -39,11 +48,19 @@ function saveVoiceMemory(text: string): void {
 
 export function useVoiceConversation({
   activePersonaId = "coach",
+  personaTuning,
   onAudioLevelsChange,
 }: UseVoiceConversationOptions = {}) {
   const [voiceState, setVoiceState] = useState<VoiceState>("idle");
   const [transcript, setTranscript] = useState("");
-  const { settings: voiceSettings, elevenLabsSettings, voiceId } = useVoiceSettings();
+  const { settings: storedVoiceSettings } = useVoiceSettings();
+  const voiceSettings = resolvePersonaVoiceSettings(
+    activePersonaId,
+    storedVoiceSettings,
+    personaTuning,
+  );
+  const elevenLabsSettings = toElevenLabsVoiceSettings(voiceSettings);
+  const voiceId = getElevenLabsVoiceId(voiceSettings);
 
   const recognitionRef = useRef<any>(null);
   const abortRef = useRef<AbortController | null>(null);
@@ -230,6 +247,7 @@ export function useVoiceConversation({
             provider: providerInfo.provider,
             model: providerInfo.model,
             persona: activePersonaId,
+            personaTuning,
             memoryContext: memoryContext || undefined,
           }),
           signal: abortRef.current.signal,
@@ -263,7 +281,7 @@ export function useVoiceConversation({
         }
       }
     },
-    [activePersonaId, speak],
+    [activePersonaId, personaTuning, speak],
   );
 
   // ── Stop everything ───────────────────────────────────────────────────────

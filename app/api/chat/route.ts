@@ -3,6 +3,14 @@ import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { streamText } from "ai";
 
 type ChatProvider = "openai" | "google";
+type PersonaVoiceMood = "matched" | "softened";
+
+interface PersonaTuningSettings {
+    expressiveness: number;
+    directness: number;
+    autoVoice: boolean;
+    voiceMood: PersonaVoiceMood;
+}
 
 interface ChatApiErrorPayload {
     error: string;
@@ -40,6 +48,7 @@ export async function POST(req: Request) {
             model,
             apiKey: legacyBodyApiKey,
             persona,
+            personaTuning,
             memoryContext,
         } = body;
         const apiKey = req.headers.get("x-dot-api-key") || legacyBodyApiKey;
@@ -57,7 +66,7 @@ export async function POST(req: Request) {
         const validatedModel = validateModel(validatedProvider, model);
         const validatedMessages = validateMessages(messages);
 
-        const systemPrompt = buildSystemPrompt(persona, memoryContext);
+        const systemPrompt = buildSystemPrompt(persona, memoryContext, personaTuning);
         const recentMessages = validatedMessages.slice(-8);
         const aiModel = getModel(validatedProvider, validatedModel, apiKey);
 
@@ -229,7 +238,45 @@ function getProviderMessage(error: unknown): string {
     }
 }
 
-function buildSystemPrompt(persona?: string, memoryContext?: string): string {
+function normalizePersonaTuning(value: unknown): PersonaTuningSettings {
+    const input =
+        value && typeof value === "object"
+            ? (value as Partial<PersonaTuningSettings>)
+            : {};
+    const clamp = (num: number) => Math.min(100, Math.max(0, num));
+    const voiceMood =
+        input.voiceMood === "matched" || input.voiceMood === "softened"
+            ? input.voiceMood
+            : "matched";
+
+    return {
+        expressiveness: clamp(Number(input.expressiveness ?? 72)),
+        directness: clamp(Number(input.directness ?? 54)),
+        autoVoice:
+            typeof input.autoVoice === "boolean" ? input.autoVoice : true,
+        voiceMood,
+    };
+}
+
+function buildPersonaTuningPrompt(tuning?: unknown): string {
+    const normalized = normalizePersonaTuning(tuning);
+    const expressive =
+        normalized.expressiveness >= 70
+            ? "animated and vivid"
+            : normalized.expressiveness <= 35
+                ? "restrained and quiet"
+                : "balanced and natural";
+    const direct =
+        normalized.directness >= 70
+            ? "direct, concise, and action-oriented"
+            : normalized.directness <= 35
+                ? "gentle, exploratory, and spacious"
+                : "clear without rushing the user";
+
+    return `\nPersona tuning: be ${expressive}; be ${direct}. Let these dials affect word choice, pacing, and how much guidance you offer.`;
+}
+
+function buildSystemPrompt(persona?: string, memoryContext?: string, personaTuning?: unknown): string {
     const base = `You are Dot, a warm and thoughtful AI companion. You speak in short, considered sentences. You are poetic but never verbose. Max 2-3 sentences per reply.`;
 
     const tones: Record<string, string> = {
@@ -240,8 +287,9 @@ function buildSystemPrompt(persona?: string, memoryContext?: string): string {
     };
 
     const personaTone = persona && tones[persona] ? `\n${tones[persona]}` : "";
+    const tuning = buildPersonaTuningPrompt(personaTuning);
     const memory = memoryContext
         ? `\n\nWhat you remember about this person (weave in naturally — never say "I remember" unless directly asked):\n${memoryContext}`
         : "";
-    return base + personaTone + memory;
+    return base + personaTone + tuning + memory;
 }
