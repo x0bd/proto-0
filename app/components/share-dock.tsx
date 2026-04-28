@@ -1,26 +1,11 @@
 "use client";
 
 import * as React from "react";
-import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "motion/react";
 import {
-    Sheet,
-    SheetContent,
-    SheetDescription,
-    SheetHeader,
-    SheetTitle,
-} from "@/components/ui/sheet";
-import { Badge } from "@/components/ui/badge";
-import {
     Share2,
-    Image as ImageIcon,
-    Film,
-    Video,
     Check,
     AlertCircle,
-    Download,
-    Smartphone,
-    Sparkles,
     X,
 } from "lucide-react";
 import GIF from "gif.js";
@@ -159,6 +144,409 @@ function dataUrlToBlob(dataUrl: string) {
     return new Blob([array], { type: mime });
 }
 
+interface RgbColor {
+    r: number;
+    g: number;
+    b: number;
+}
+
+interface RenderTemplateFrameOptions {
+    avatarDataUrl: string;
+    template: ShareTemplate;
+    outputSize: number;
+    accentColor: string;
+    frameIndex?: number;
+    totalFrames?: number;
+}
+
+function parseColor(color: string): RgbColor {
+    const rgbMatch = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/i);
+    if (rgbMatch) {
+        return {
+            r: Number(rgbMatch[1]),
+            g: Number(rgbMatch[2]),
+            b: Number(rgbMatch[3]),
+        };
+    }
+
+    const hex = color.trim().match(/^#?([0-9a-f]{3}|[0-9a-f]{6})$/i)?.[1];
+    if (!hex) return { r: 124, g: 58, b: 237 };
+
+    const normalized =
+        hex.length === 3
+            ? hex
+                .split("")
+                .map((char) => char + char)
+                .join("")
+            : hex;
+    const value = Number.parseInt(normalized, 16);
+
+    return {
+        r: (value >> 16) & 255,
+        g: (value >> 8) & 255,
+        b: value & 255,
+    };
+}
+
+function rgba(color: RgbColor, alpha: number) {
+    return `rgba(${color.r}, ${color.g}, ${color.b}, ${alpha})`;
+}
+
+function loadCanvasImage(src: string): Promise<HTMLImageElement> {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = () => reject(new Error("Failed to load export frame"));
+        img.src = src;
+    });
+}
+
+function drawRoundedPath(
+    ctx: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    radius: number,
+) {
+    const r = Math.min(radius, width / 2, height / 2);
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + width - r, y);
+    ctx.quadraticCurveTo(x + width, y, x + width, y + r);
+    ctx.lineTo(x + width, y + height - r);
+    ctx.quadraticCurveTo(x + width, y + height, x + width - r, y + height);
+    ctx.lineTo(x + r, y + height);
+    ctx.quadraticCurveTo(x, y + height, x, y + height - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+}
+
+function fillRoundedRect(
+    ctx: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    radius: number,
+    fillStyle: string | CanvasGradient | CanvasPattern,
+) {
+    drawRoundedPath(ctx, x, y, width, height, radius);
+    ctx.fillStyle = fillStyle;
+    ctx.fill();
+}
+
+function strokeRoundedRect(
+    ctx: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    radius: number,
+    strokeStyle: string | CanvasGradient | CanvasPattern,
+    lineWidth: number,
+) {
+    drawRoundedPath(ctx, x, y, width, height, radius);
+    ctx.strokeStyle = strokeStyle;
+    ctx.lineWidth = lineWidth;
+    ctx.stroke();
+}
+
+function drawExportGrid(
+    ctx: CanvasRenderingContext2D,
+    size: number,
+    color: RgbColor,
+    opacity: number,
+) {
+    const step = size / 24;
+    ctx.save();
+    ctx.strokeStyle = rgba(color, opacity);
+    ctx.lineWidth = Math.max(1, size * 0.0015);
+    for (let i = 0; i <= size; i += step) {
+        ctx.beginPath();
+        ctx.moveTo(i, 0);
+        ctx.lineTo(i, size);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(0, i);
+        ctx.lineTo(size, i);
+        ctx.stroke();
+    }
+    ctx.restore();
+}
+
+function drawAvatarTile(
+    ctx: CanvasRenderingContext2D,
+    avatar: HTMLImageElement,
+    x: number,
+    y: number,
+    size: number,
+    radius: number,
+    accent: RgbColor,
+    dark: boolean,
+) {
+    ctx.save();
+    ctx.shadowColor = rgba(accent, dark ? 0.34 : 0.2);
+    ctx.shadowBlur = size * 0.08;
+    ctx.shadowOffsetY = size * 0.03;
+    fillRoundedRect(
+        ctx,
+        x - size * 0.035,
+        y - size * 0.035,
+        size * 1.07,
+        size * 1.07,
+        radius + size * 0.03,
+        dark ? "rgba(8, 8, 7, 0.92)" : "rgba(253, 249, 238, 0.94)",
+    );
+    ctx.restore();
+
+    ctx.save();
+    drawRoundedPath(ctx, x, y, size, size, radius);
+    ctx.clip();
+    ctx.fillStyle = dark ? "#090907" : "#f8f1df";
+    ctx.fillRect(x, y, size, size);
+    ctx.drawImage(avatar, x, y, size, size);
+    ctx.restore();
+
+    strokeRoundedRect(ctx, x, y, size, size, radius, rgba(accent, 0.85), size * 0.01);
+    strokeRoundedRect(
+        ctx,
+        x + size * 0.025,
+        y + size * 0.025,
+        size * 0.95,
+        size * 0.95,
+        radius * 0.8,
+        dark ? "rgba(255, 255, 255, 0.08)" : "rgba(20, 20, 16, 0.08)",
+        size * 0.004,
+    );
+}
+
+function setMonoFont(
+    ctx: CanvasRenderingContext2D,
+    size: number,
+    weight: number = 800,
+) {
+    ctx.font = `${weight} ${size}px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace`;
+}
+
+function drawMoodCard(
+    ctx: CanvasRenderingContext2D,
+    avatar: HTMLImageElement,
+    size: number,
+    accent: RgbColor,
+    dark: boolean,
+    frameIndex: number,
+    totalFrames: number,
+) {
+    const progress = totalFrames > 1 ? frameIndex / totalFrames : 0;
+    const pulse = Math.sin(progress * Math.PI * 2);
+    const base = dark ? "#0b0a08" : "#f4eddd";
+    const ink = dark ? "#fff7de" : "#15120d";
+
+    ctx.fillStyle = base;
+    ctx.fillRect(0, 0, size, size);
+
+    const glow = ctx.createRadialGradient(size * 0.18, size * 0.08, 0, size * 0.38, size * 0.18, size * 0.7);
+    glow.addColorStop(0, rgba(accent, 0.42));
+    glow.addColorStop(1, rgba(accent, 0));
+    ctx.fillStyle = glow;
+    ctx.fillRect(0, 0, size, size);
+
+    drawExportGrid(ctx, size, accent, dark ? 0.07 : 0.09);
+
+    fillRoundedRect(
+        ctx,
+        size * 0.07,
+        size * 0.07,
+        size * 0.86,
+        size * 0.86,
+        size * 0.045,
+        dark ? "rgba(18, 17, 14, 0.8)" : "rgba(255, 251, 239, 0.78)",
+    );
+    strokeRoundedRect(ctx, size * 0.07, size * 0.07, size * 0.86, size * 0.86, size * 0.045, rgba(accent, 0.42), size * 0.004);
+
+    setMonoFont(ctx, size * 0.025, 900);
+    ctx.fillStyle = ink;
+    ctx.fillText("DOT // MOOD_CARD", size * 0.12, size * 0.14);
+    setMonoFont(ctx, size * 0.013, 700);
+    ctx.fillStyle = dark ? "rgba(255, 247, 222, 0.48)" : "rgba(21, 18, 13, 0.48)";
+    ctx.fillText("LOCAL CAPTURE / FEELING SNAPSHOT", size * 0.12, size * 0.17);
+
+    const avatarSize = size * 0.58 + pulse * size * 0.006;
+    drawAvatarTile(
+        ctx,
+        avatar,
+        (size - avatarSize) / 2,
+        size * 0.205,
+        avatarSize,
+        size * 0.045,
+        accent,
+        dark,
+    );
+
+    const labels = ["SIGNAL", "WARMTH", "AURA"];
+    labels.forEach((label, index) => {
+        const y = size * (0.78 + index * 0.045);
+        const value = 0.52 + index * 0.12 + Math.abs(pulse) * 0.1;
+        setMonoFont(ctx, size * 0.012, 800);
+        ctx.fillStyle = dark ? "rgba(255, 247, 222, 0.58)" : "rgba(21, 18, 13, 0.58)";
+        ctx.fillText(label, size * 0.13, y + size * 0.008);
+        fillRoundedRect(ctx, size * 0.3, y, size * 0.55, size * 0.012, size * 0.006, dark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)");
+        fillRoundedRect(ctx, size * 0.3, y, size * 0.55 * Math.min(value, 0.95), size * 0.012, size * 0.006, rgba(accent, 0.9));
+    });
+}
+
+function drawReflectionCard(
+    ctx: CanvasRenderingContext2D,
+    avatar: HTMLImageElement,
+    size: number,
+    accent: RgbColor,
+    dark: boolean,
+    frameIndex: number,
+    totalFrames: number,
+) {
+    const progress = totalFrames > 1 ? frameIndex / totalFrames : 0;
+    const drift = Math.sin(progress * Math.PI * 2) * size * 0.008;
+    const base = dark ? "#11100d" : "#efe5cf";
+    const paper = dark ? "rgba(25, 23, 19, 0.92)" : "rgba(255, 248, 231, 0.94)";
+    const ink = dark ? "#fff4cf" : "#211b12";
+
+    ctx.fillStyle = base;
+    ctx.fillRect(0, 0, size, size);
+
+    const wash = ctx.createLinearGradient(0, 0, size, size);
+    wash.addColorStop(0, rgba(accent, 0.28));
+    wash.addColorStop(0.45, "rgba(0, 0, 0, 0)");
+    wash.addColorStop(1, dark ? "rgba(255, 214, 128, 0.08)" : "rgba(118, 68, 22, 0.12)");
+    ctx.fillStyle = wash;
+    ctx.fillRect(0, 0, size, size);
+
+    fillRoundedRect(ctx, size * 0.09, size * 0.09, size * 0.82, size * 0.82, size * 0.035, paper);
+    strokeRoundedRect(ctx, size * 0.09, size * 0.09, size * 0.82, size * 0.82, size * 0.035, dark ? "rgba(255,255,255,0.1)" : "rgba(64,44,20,0.16)", size * 0.003);
+
+    ctx.fillStyle = rgba(accent, 0.9);
+    ctx.fillRect(size * 0.14, size * 0.15, size * 0.014, size * 0.7);
+
+    setMonoFont(ctx, size * 0.019, 900);
+    ctx.fillStyle = ink;
+    ctx.fillText("REFLECTION_LOG", size * 0.19, size * 0.18);
+    setMonoFont(ctx, size * 0.013, 700);
+    ctx.fillStyle = dark ? "rgba(255, 244, 207, 0.46)" : "rgba(33, 27, 18, 0.46)";
+    ctx.fillText("A QUIET DOT MOMENT, SAVED LOCALLY", size * 0.19, size * 0.215);
+
+    const avatarSize = size * 0.51;
+    drawAvatarTile(
+        ctx,
+        avatar,
+        size * 0.245 + drift,
+        size * 0.29,
+        avatarSize,
+        size * 0.035,
+        accent,
+        dark,
+    );
+
+    setMonoFont(ctx, size * 0.015, 800);
+    ctx.fillStyle = ink;
+    ctx.fillText("NOTE TO SELF", size * 0.19, size * 0.82);
+    setMonoFont(ctx, size * 0.012, 700);
+    ctx.fillStyle = dark ? "rgba(255, 244, 207, 0.5)" : "rgba(33, 27, 18, 0.5)";
+    ctx.fillText("small signal, honest weather, still here.", size * 0.19, size * 0.85);
+}
+
+function drawReactionClip(
+    ctx: CanvasRenderingContext2D,
+    avatar: HTMLImageElement,
+    size: number,
+    accent: RgbColor,
+    dark: boolean,
+    frameIndex: number,
+    totalFrames: number,
+) {
+    const progress = totalFrames > 1 ? frameIndex / totalFrames : 0;
+    const pulse = Math.sin(progress * Math.PI * 2);
+    const base = dark ? "#070707" : "#16130e";
+    const ink = "#fff7e8";
+
+    ctx.fillStyle = base;
+    ctx.fillRect(0, 0, size, size);
+
+    ctx.save();
+    ctx.translate(size * (0.08 + progress * 0.12), 0);
+    ctx.rotate(-0.16);
+    ctx.fillStyle = rgba(accent, 0.9);
+    ctx.fillRect(size * 0.08, -size * 0.1, size * 0.18, size * 1.2);
+    ctx.fillStyle = "rgba(255, 255, 255, 0.16)";
+    ctx.fillRect(size * 0.3, -size * 0.1, size * 0.03, size * 1.2);
+    ctx.restore();
+
+    for (let y = 0; y < size; y += size * 0.025) {
+        ctx.fillStyle = "rgba(255, 255, 255, 0.035)";
+        ctx.fillRect(0, y + (progress * size * 0.025), size, Math.max(1, size * 0.002));
+    }
+
+    const avatarSize = size * 0.64 + pulse * size * 0.018;
+    drawAvatarTile(
+        ctx,
+        avatar,
+        (size - avatarSize) / 2 + pulse * size * 0.008,
+        size * 0.19,
+        avatarSize,
+        size * 0.055,
+        accent,
+        true,
+    );
+
+    fillRoundedRect(ctx, size * 0.08, size * 0.08, size * 0.84, size * 0.085, size * 0.018, "rgba(0, 0, 0, 0.58)");
+    setMonoFont(ctx, size * 0.024, 900);
+    ctx.fillStyle = ink;
+    ctx.fillText("RXN_CLIP", size * 0.12, size * 0.135);
+    setMonoFont(ctx, size * 0.012, 800);
+    ctx.fillStyle = "rgba(255, 247, 232, 0.55)";
+    const frameLabel = `${String(frameIndex + 1).padStart(2, "0")}/${String(Math.max(totalFrames, 1)).padStart(2, "0")}`;
+    ctx.fillText(`FRAME ${frameLabel}`, size * 0.72, size * 0.135);
+
+    const ticks = 11;
+    for (let i = 0; i < ticks; i++) {
+        const x = size * 0.1 + i * size * 0.08;
+        const h = size * (0.018 + ((i + frameIndex) % 4) * 0.01);
+        fillRoundedRect(ctx, x, size * 0.84, size * 0.028, h, size * 0.006, rgba(accent, 0.85));
+    }
+}
+
+async function renderTemplateFrame({
+    avatarDataUrl,
+    template,
+    outputSize,
+    accentColor,
+    frameIndex = 0,
+    totalFrames = 1,
+}: RenderTemplateFrameOptions): Promise<{ dataUrl: string; size: number }> {
+    const avatar = await loadCanvasImage(avatarDataUrl);
+    const canvas = document.createElement("canvas");
+    canvas.width = outputSize;
+    canvas.height = outputSize;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) throw new Error("Canvas rendering is unavailable");
+
+    const accent = parseColor(accentColor);
+    const dark = document.documentElement.classList.contains("dark");
+
+    if (template === "reflection-card") {
+        drawReflectionCard(ctx, avatar, outputSize, accent, dark, frameIndex, totalFrames);
+    } else if (template === "reaction-clip") {
+        drawReactionClip(ctx, avatar, outputSize, accent, dark, frameIndex, totalFrames);
+    } else {
+        drawMoodCard(ctx, avatar, outputSize, accent, dark, frameIndex, totalFrames);
+    }
+
+    return {
+        dataUrl: canvas.toDataURL("image/png"),
+        size: outputSize,
+    };
+}
+
 const TEMPLATES: {
     id: ShareTemplate;
     name: string;
@@ -181,6 +569,10 @@ const TEMPLATES: {
     },
 ];
 
+function getTemplateMeta(template: ShareTemplate) {
+    return TEMPLATES.find((item) => item.id === template) ?? TEMPLATES[0];
+}
+
 export function ShareDock({
     targetRef,
     accentColor = "#7C3AED",
@@ -193,6 +585,7 @@ export function ShareDock({
     const [activeFormat, setActiveFormat] = React.useState<ExportFormat | null>(
         null,
     );
+    const selectedTemplate = getTemplateMeta(template);
     const canNativeShare =
         typeof navigator !== "undefined" && typeof navigator.share === "function";
 
@@ -221,7 +614,13 @@ export function ShareDock({
             setActiveFormat("png");
 
             const { dataUrl } = await captureAvatarPNG(targetRef.current, 1024);
-            const blob = dataUrlToBlob(dataUrl);
+            const rendered = await renderTemplateFrame({
+                avatarDataUrl: dataUrl,
+                template,
+                outputSize: 1024,
+                accentColor,
+            });
+            const blob = dataUrlToBlob(rendered.dataUrl);
             triggerDownload(blob, `dot-${template}-${Date.now()}.png`);
 
             setStatus("success");
@@ -233,7 +632,7 @@ export function ShareDock({
             setStatusMessage("PNG export failed");
             resetStatus();
         }
-    }, [resetStatus, status, targetRef, template, triggerDownload]);
+    }, [accentColor, resetStatus, status, targetRef, template, triggerDownload]);
 
     const handleExportWebM = React.useCallback(async () => {
         if (!targetRef.current || status === "progress") return;
@@ -280,9 +679,16 @@ export function ShareDock({
             const totalFrames = Math.ceil(3 * fps);
             for (let i = 0; i < totalFrames; i++) {
                 const { dataUrl } = await captureAvatarPNG(targetRef.current!, outputSize);
-                const img = new Image();
-                img.src = dataUrl;
-                await new Promise<void>((r) => { img.onload = () => r(); });
+                const rendered = await renderTemplateFrame({
+                    avatarDataUrl: dataUrl,
+                    template,
+                    outputSize,
+                    accentColor,
+                    frameIndex: i,
+                    totalFrames,
+                });
+                const img = await loadCanvasImage(rendered.dataUrl);
+                ctx2d.clearRect(0, 0, outputSize, outputSize);
                 ctx2d.drawImage(img, 0, 0, outputSize, outputSize);
                 await new Promise((r) => setTimeout(r, 1000 / fps));
             }
@@ -294,7 +700,7 @@ export function ShareDock({
             setStatusMessage("WebM export failed");
             resetStatus();
         }
-    }, [resetStatus, status, targetRef, template, triggerDownload]);
+    }, [accentColor, resetStatus, status, targetRef, template, triggerDownload]);
 
     const handleExportGIF = React.useCallback(async () => {
         if (!targetRef.current || status === "progress") return;
@@ -320,11 +726,15 @@ export function ShareDock({
 
             for (let i = 0; i < totalFrames; i++) {
                 const { dataUrl } = await captureAvatarPNG(container, outputSize);
-                const img = new Image();
-                img.src = dataUrl;
-                await new Promise<void>((resolve) => {
-                    img.onload = () => resolve();
+                const rendered = await renderTemplateFrame({
+                    avatarDataUrl: dataUrl,
+                    template,
+                    outputSize,
+                    accentColor,
+                    frameIndex: i,
+                    totalFrames,
                 });
+                const img = await loadCanvasImage(rendered.dataUrl);
                 gif.addFrame(img, { delay: 1000 / fps });
                 await new Promise((r) => setTimeout(r, 1000 / fps));
             }
@@ -343,7 +753,7 @@ export function ShareDock({
             setStatusMessage("GIF export failed");
             resetStatus();
         }
-    }, [resetStatus, status, targetRef, template, triggerDownload]);
+    }, [accentColor, resetStatus, status, targetRef, template, triggerDownload]);
 
     const handleShareNative = React.useCallback(async () => {
         if (!targetRef.current || status === "progress") return;
@@ -359,14 +769,20 @@ export function ShareDock({
             setActiveFormat("png");
 
             const { dataUrl } = await captureAvatarPNG(targetRef.current, 1024);
-            const blob = dataUrlToBlob(dataUrl);
+            const rendered = await renderTemplateFrame({
+                avatarDataUrl: dataUrl,
+                template,
+                outputSize: 1024,
+                accentColor,
+            });
+            const blob = dataUrlToBlob(rendered.dataUrl);
             const file = new File([blob], `dot-${template}.png`, {
                 type: "image/png",
             });
 
             await navigator.share({
-                title: "DOT Moment",
-                text: "A moment captured from DOT.",
+                title: `DOT ${selectedTemplate.name}`,
+                text: selectedTemplate.description,
                 files: [file],
             });
 
@@ -385,7 +801,7 @@ export function ShareDock({
             setStatusMessage("Share failed");
             resetStatus();
         }
-    }, [canNativeShare, resetStatus, status, targetRef, template]);
+    }, [accentColor, canNativeShare, resetStatus, selectedTemplate, status, targetRef, template]);
 
     const { x, y, onDragEnd } = usePanelPosition("share-dock");
 
@@ -528,6 +944,9 @@ export function ShareDock({
                                         </button>
                                     );
                                 })}
+                            </div>
+                            <div className="te-lcd px-2.5 py-2 text-[8px] font-mono font-bold uppercase tracking-[0.12em] leading-relaxed opacity-80">
+                                {selectedTemplate.description}
                             </div>
                         </section>
 
