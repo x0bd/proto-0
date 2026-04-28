@@ -34,14 +34,14 @@ Scope: static code audit of the current project against `ui.md`, `functuion.md`,
 - [x] If ElevenLabs fails or no key is available, the voice hook falls back to browser `speechSynthesis`.
 - [ ] The route is `/api/tts`, not the planned `/api/tts/speak`.
 - [ ] The client buffers the full ElevenLabs audio response with `arrayBuffer()` before decoding and playing it. The API route returns a stream, but playback is not true low-latency streaming.
-- [ ] Voice settings do not affect ElevenLabs. `components/ui/voice-settings-sheet.tsx` has profile, speed, warmth, clarity, auto-speak, and interruption controls, but those values are component-local state only.
+- [x] Voice settings now affect ElevenLabs. `components/ui/voice-settings-sheet.tsx` persists profile, speed, warmth, clarity, auto-speak, and interruption controls through `hooks/useVoiceSettings.ts`; `hooks/useVoiceConversation.ts` sends mapped ElevenLabs voice settings to `/api/tts`.
 - [ ] `/api/tts/route.ts` always uses a default voice ID unless `voiceId` is provided manually, but the visible voice UI never sends a voice ID.
-- [ ] `/api/tts/route.ts` uses fixed `voice_settings` and `model_id`. The UI sliders do not map to ElevenLabs `stability`, `similarity_boost`, style, speed, or model selection.
+- [x] `/api/tts/route.ts` now accepts dynamic `voice_settings` for `stability`, `similarity_boost`, `style`, `speed`, and `use_speaker_boost`.
 - [ ] No ElevenLabs voice/key validation flow exists in the key vault or voice settings.
 
 ## UI-Only / Partially Wired Product Areas
 
-- [ ] Voice settings sheet is mostly UI-only. It does not persist settings and does not feed `useVoiceConversation`, `/api/tts`, Web Speech recognition, browser speech fallback, or dock behavior.
+- [x] Voice settings sheet is no longer UI-only. It persists settings, feeds `useVoiceConversation`, passes ElevenLabs settings into `/api/tts`, controls browser speech fallback rate/pitch, and makes auto-speak/interruption toggles affect runtime behavior.
 - [ ] Persona tuning UI exists in unused components. `components/ui/persona-settings-panel.tsx`, `persona-picker.tsx`, and `persona-card.tsx` include richer controls, but the active settings modal currently uses a simpler inline persona picker instead.
 - [ ] Active persona selection is partially functional. The selected persona ID is persisted and sent to `/api/chat`, but expressiveness, directness, auto-voice, and voice mood are not implemented.
 - [ ] Memory is local-only. `MemoryDrawer` persists localStorage memories, search, filters, delete, and purge, but there is no backend memory API, embeddings, semantic recall, import/export, or cloud sync.
@@ -65,11 +65,10 @@ Scope: static code audit of the current project against `ui.md`, `functuion.md`,
 
 ## Priority Fix List
 
-- [ ] Wire `VoiceSettingsSheet` into a persisted voice settings store and pass those settings into `useVoiceConversation` and `/api/tts`.
+- [x] Wire `VoiceSettingsSheet` into a persisted voice settings store and pass those settings into `useVoiceConversation` and `/api/tts`.
 - [ ] Decide whether BYOK keys should move from JSON body to headers, then align `/api/chat`, `/api/tts`, chat client, voice client, and docs.
 - [ ] Add provider key validation/test buttons for OpenAI, Google, and ElevenLabs.
 - [ ] Add key deletion confirmation and update vault copy to be precise about local storage, encryption, and proxy-route usage.
 - [ ] Add memory context and memory writes to voice conversations.
 - [ ] Replace template-only export labels with real template renderers for mood/reflection/reaction outputs.
 - [ ] Update `functuion.md` and `ui.md` so the project plan reflects what is now implemented vs still missing.
-

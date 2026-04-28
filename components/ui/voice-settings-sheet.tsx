@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { X, Mic2, Settings2 } from "lucide-react";
+import { X } from "lucide-react";
 import { usePanelPosition } from "@/hooks/usePanelPosition";
 import { useVoiceSettings, VOICE_PROFILES } from "@/hooks/useVoiceSettings";
 
