@@ -49,7 +49,7 @@
 - [x] Implement memory write pipeline from voice interactions.
 - [x] Implement explicit save path from ritual check-ins.
 - [x] Implement memory search and filtering logic.
-- [ ] Implement memory retrieval scoring for relevance.
+- [x] Implement local memory retrieval scoring for relevance.
 - [x] Implement policy enforcement for read/write toggles.
 - [ ] Implement retention handling and purge behavior.
 - [x] Implement clear-all purge operation.
@@ -75,7 +75,7 @@
 ## F7 Share and Export Runtime
 - [x] Harden PNG export pipeline.
 - [x] Harden GIF/WebM export pipeline.
-- [ ] Add export cancellation and failure recovery.
+- [x] Add export cancellation and basic failure recovery.
 - [x] Add deterministic output sizing and template overlays.
 - [x] Integrate Web Share API path where available.
 - [x] Add download fallback for unsupported share environments.

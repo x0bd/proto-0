@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { X, Send, MessageSquare, Loader2, Settings2 } from "lucide-react";
 import { usePanelPosition } from "@/hooks/usePanelPosition";
 import { getKey, DEFAULT_MODELS, type Provider } from "@/lib/key-store";
-import { loadMemories, addMemory, isMemoryEnabled } from "./memory-drawer";
+import { addMemory, buildMemoryContextForPrompt, isMemoryEnabled } from "./memory-drawer";
 import type { EmotionState } from "../components/face/types";
 
 interface ChatModuleProps {
@@ -71,15 +71,6 @@ function autoTags(content: string): string[] {
     if (/\b(friend|family|partner|relationship|mom|dad|brother|sister)\b/.test(lower)) tags.push("people");
     if (/\b(like|love|enjoy|prefer|favorite|hate|dislike)\b/.test(lower)) tags.push("preferences");
     return tags.length > 0 ? tags : ["general"];
-}
-
-function buildMemoryContext(): string {
-    const memories = loadMemories();
-    if (memories.length === 0) return "";
-    return memories
-        .slice(0, 8)
-        .map((m) => `- ${m.content.slice(0, 120)}`)
-        .join("\n");
 }
 
 // Detect which provider is configured
@@ -158,7 +149,7 @@ export function ChatModule({
         }
 
         const assistantId = (Date.now() + 1).toString();
-        const memoryContext = buildMemoryContext();
+        const memoryContext = buildMemoryContextForPrompt(trimmed);
 
         try {
             abortRef.current = new AbortController();

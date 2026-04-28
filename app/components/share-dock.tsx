@@ -21,6 +21,13 @@ type ExportStatus = "idle" | "progress" | "success" | "error";
 type ExportFormat = "png" | "gif" | "webm";
 type ShareTemplate = "mood-card" | "reflection-card" | "reaction-clip";
 
+class ExportCancelledError extends Error {
+    constructor() {
+        super("Export cancelled");
+        this.name = "ExportCancelledError";
+    }
+}
+
 /**
  * Captures the avatar SVG as a PNG data URL using native SVG serialization.
  * Forces a perfect 1:1 square output by centering the SVG's viewBox.
@@ -585,16 +592,72 @@ export function ShareDock({
     const [activeFormat, setActiveFormat] = React.useState<ExportFormat | null>(
         null,
     );
+    const cancelExportRef = React.useRef(false);
+    const resetTimerRef = React.useRef<number | null>(null);
+    const activeRecorderRef = React.useRef<MediaRecorder | null>(null);
+    const activeStreamRef = React.useRef<MediaStream | null>(null);
+    const activeGifRef = React.useRef<{ abort?: () => void } | null>(null);
     const selectedTemplate = getTemplateMeta(template);
     const canNativeShare =
         typeof navigator !== "undefined" && typeof navigator.share === "function";
 
     const resetStatus = React.useCallback(() => {
-        window.setTimeout(() => {
+        if (resetTimerRef.current) {
+            window.clearTimeout(resetTimerRef.current);
+        }
+        resetTimerRef.current = window.setTimeout(() => {
             setStatus("idle");
             setStatusMessage("");
             setActiveFormat(null);
+            resetTimerRef.current = null;
         }, 2200);
+    }, []);
+
+    const beginExport = React.useCallback((format: ExportFormat, message: string) => {
+        if (resetTimerRef.current) {
+            window.clearTimeout(resetTimerRef.current);
+            resetTimerRef.current = null;
+        }
+        cancelExportRef.current = false;
+        setStatus("progress");
+        setStatusMessage(message);
+        setActiveFormat(format);
+    }, []);
+
+    const ensureNotCancelled = React.useCallback(() => {
+        if (cancelExportRef.current) throw new ExportCancelledError();
+    }, []);
+
+    const handleCancelExport = React.useCallback(() => {
+        cancelExportRef.current = true;
+        activeGifRef.current?.abort?.();
+        if (
+            activeRecorderRef.current &&
+            activeRecorderRef.current.state !== "inactive"
+        ) {
+            activeRecorderRef.current.stop();
+        } else {
+            activeStreamRef.current?.getTracks().forEach((track) => track.stop());
+        }
+        setStatus("error");
+        setStatusMessage("Export cancelled");
+        setActiveFormat(null);
+        resetStatus();
+    }, [resetStatus]);
+
+    React.useEffect(() => {
+        return () => {
+            cancelExportRef.current = true;
+            activeGifRef.current?.abort?.();
+            if (
+                activeRecorderRef.current &&
+                activeRecorderRef.current.state !== "inactive"
+            ) {
+                activeRecorderRef.current.stop();
+            }
+            activeStreamRef.current?.getTracks().forEach((track) => track.stop());
+            if (resetTimerRef.current) window.clearTimeout(resetTimerRef.current);
+        };
     }, []);
 
     const triggerDownload = React.useCallback((blob: Blob, filename: string) => {
@@ -609,17 +672,17 @@ export function ShareDock({
     const handleExportPNG = React.useCallback(async () => {
         if (!targetRef.current || status === "progress") return;
         try {
-            setStatus("progress");
-            setStatusMessage("Rendering PNG");
-            setActiveFormat("png");
+            beginExport("png", "Rendering PNG");
 
             const { dataUrl } = await captureAvatarPNG(targetRef.current, 1024);
+            ensureNotCancelled();
             const rendered = await renderTemplateFrame({
                 avatarDataUrl: dataUrl,
                 template,
                 outputSize: 1024,
                 accentColor,
             });
+            ensureNotCancelled();
             const blob = dataUrlToBlob(rendered.dataUrl);
             triggerDownload(blob, `dot-${template}-${Date.now()}.png`);
 
@@ -627,12 +690,13 @@ export function ShareDock({
             setStatusMessage("PNG saved");
             resetStatus();
         } catch (error) {
+            if (error instanceof ExportCancelledError) return;
             console.error("PNG export failed", error);
             setStatus("error");
             setStatusMessage("PNG export failed");
             resetStatus();
         }
-    }, [accentColor, resetStatus, status, targetRef, template, triggerDownload]);
+    }, [accentColor, beginExport, ensureNotCancelled, resetStatus, status, targetRef, template, triggerDownload]);
 
     const handleExportWebM = React.useCallback(async () => {
         if (!targetRef.current || status === "progress") return;
@@ -647,25 +711,34 @@ export function ShareDock({
             return;
         }
 
+        let stream: MediaStream | null = null;
+        let recorder: MediaRecorder | null = null;
+        let cancelled = false;
+
         try {
-            setStatus("progress");
-            setStatusMessage("Recording WebM");
-            setActiveFormat("webm");
+            beginExport("webm", "Recording WebM");
 
             const outputSize = 512;
             const canvas = document.createElement("canvas");
             canvas.width = outputSize;
             canvas.height = outputSize;
-            const ctx2d = canvas.getContext("2d")!;
+            const ctx2d = canvas.getContext("2d");
+            if (!ctx2d) throw new Error("Canvas rendering is unavailable");
 
-            const stream = canvas.captureStream(12);
-            const recorder = new MediaRecorder(stream, { mimeType });
+            stream = canvas.captureStream(12);
+            recorder = new MediaRecorder(stream, { mimeType });
+            activeStreamRef.current = stream;
+            activeRecorderRef.current = recorder;
             const chunks: BlobPart[] = [];
 
             recorder.ondataavailable = (e) => {
                 if (e.data.size > 0) chunks.push(e.data);
             };
             recorder.onstop = () => {
+                stream?.getTracks().forEach((track) => track.stop());
+                activeStreamRef.current = null;
+                activeRecorderRef.current = null;
+                if (cancelled || cancelExportRef.current) return;
                 const blob = new Blob(chunks, { type: "video/webm" });
                 triggerDownload(blob, `dot-${template}-${Date.now()}.webm`);
                 setStatus("success");
@@ -678,7 +751,9 @@ export function ShareDock({
             const fps = 12;
             const totalFrames = Math.ceil(3 * fps);
             for (let i = 0; i < totalFrames; i++) {
+                ensureNotCancelled();
                 const { dataUrl } = await captureAvatarPNG(targetRef.current!, outputSize);
+                ensureNotCancelled();
                 const rendered = await renderTemplateFrame({
                     avatarDataUrl: dataUrl,
                     template,
@@ -687,6 +762,7 @@ export function ShareDock({
                     frameIndex: i,
                     totalFrames,
                 });
+                ensureNotCancelled();
                 const img = await loadCanvasImage(rendered.dataUrl);
                 ctx2d.clearRect(0, 0, outputSize, outputSize);
                 ctx2d.drawImage(img, 0, 0, outputSize, outputSize);
@@ -695,19 +771,28 @@ export function ShareDock({
 
             recorder.stop();
         } catch (error) {
+            if (error instanceof ExportCancelledError) {
+                cancelled = true;
+                if (recorder && recorder.state !== "inactive") {
+                    recorder.stop();
+                } else {
+                    stream?.getTracks().forEach((track) => track.stop());
+                    activeStreamRef.current = null;
+                    activeRecorderRef.current = null;
+                }
+                return;
+            }
             console.error("WebM export failed", error);
             setStatus("error");
             setStatusMessage("WebM export failed");
             resetStatus();
         }
-    }, [accentColor, resetStatus, status, targetRef, template, triggerDownload]);
+    }, [accentColor, beginExport, ensureNotCancelled, resetStatus, status, targetRef, template, triggerDownload]);
 
     const handleExportGIF = React.useCallback(async () => {
         if (!targetRef.current || status === "progress") return;
         try {
-            setStatus("progress");
-            setStatusMessage("Capturing animated GIF");
-            setActiveFormat("gif");
+            beginExport("gif", "Capturing animated GIF");
 
             const container = targetRef.current;
             const outputSize = 1024;
@@ -719,13 +804,16 @@ export function ShareDock({
                 workerScript: "/gif.worker.js",
                 background: "#000000",
             });
+            activeGifRef.current = gif as { abort?: () => void };
 
             const fps = 10;
             const duration = 4000;
             const totalFrames = (duration / 1000) * fps;
 
             for (let i = 0; i < totalFrames; i++) {
+                ensureNotCancelled();
                 const { dataUrl } = await captureAvatarPNG(container, outputSize);
+                ensureNotCancelled();
                 const rendered = await renderTemplateFrame({
                     avatarDataUrl: dataUrl,
                     template,
@@ -734,26 +822,32 @@ export function ShareDock({
                     frameIndex: i,
                     totalFrames,
                 });
+                ensureNotCancelled();
                 const img = await loadCanvasImage(rendered.dataUrl);
                 gif.addFrame(img, { delay: 1000 / fps });
                 await new Promise((r) => setTimeout(r, 1000 / fps));
             }
 
             gif.on("finished", (blob: Blob) => {
+                activeGifRef.current = null;
+                if (cancelExportRef.current) return;
                 triggerDownload(blob, `dot-${template}-${Date.now()}.gif`);
                 setStatus("success");
                 setStatusMessage("GIF saved");
                 resetStatus();
             });
 
+            ensureNotCancelled();
             gif.render();
         } catch (error) {
+            activeGifRef.current = null;
+            if (error instanceof ExportCancelledError) return;
             console.error("GIF export failed", error);
             setStatus("error");
             setStatusMessage("GIF export failed");
             resetStatus();
         }
-    }, [accentColor, resetStatus, status, targetRef, template, triggerDownload]);
+    }, [accentColor, beginExport, ensureNotCancelled, resetStatus, status, targetRef, template, triggerDownload]);
 
     const handleShareNative = React.useCallback(async () => {
         if (!targetRef.current || status === "progress") return;
@@ -764,17 +858,17 @@ export function ShareDock({
             return;
         }
         try {
-            setStatus("progress");
-            setStatusMessage("Preparing share card");
-            setActiveFormat("png");
+            beginExport("png", "Preparing share card");
 
             const { dataUrl } = await captureAvatarPNG(targetRef.current, 1024);
+            ensureNotCancelled();
             const rendered = await renderTemplateFrame({
                 avatarDataUrl: dataUrl,
                 template,
                 outputSize: 1024,
                 accentColor,
             });
+            ensureNotCancelled();
             const blob = dataUrlToBlob(rendered.dataUrl);
             const file = new File([blob], `dot-${template}.png`, {
                 type: "image/png",
@@ -790,6 +884,7 @@ export function ShareDock({
             setStatusMessage("Shared successfully");
             resetStatus();
         } catch (error) {
+            if (error instanceof ExportCancelledError) return;
             if (error instanceof Error && error.name === "AbortError") {
                 setStatus("idle");
                 setStatusMessage("");
@@ -801,7 +896,7 @@ export function ShareDock({
             setStatusMessage("Share failed");
             resetStatus();
         }
-    }, [accentColor, canNativeShare, resetStatus, selectedTemplate, status, targetRef, template]);
+    }, [accentColor, beginExport, canNativeShare, ensureNotCancelled, resetStatus, selectedTemplate, status, targetRef, template]);
 
     const { x, y, onDragEnd } = usePanelPosition("share-dock");
 
@@ -835,6 +930,15 @@ export function ShareDock({
                             <span className="text-[11px] font-mono font-bold uppercase tracking-[0.16em] text-foreground/80">
                                 {statusMessage}
                             </span>
+                            {status === "progress" && (
+                                <button
+                                    type="button"
+                                    onClick={handleCancelExport}
+                                    className="ml-1 rounded-full border border-[var(--te-orange)]/30 px-2 py-0.5 text-[9px] font-mono font-bold uppercase tracking-[0.14em] text-[var(--te-orange)] hover:bg-[var(--te-orange)]/10"
+                                >
+                                    ABORT
+                                </button>
+                            )}
                         </motion.div>
                     )}
                 </AnimatePresence>
@@ -980,6 +1084,15 @@ export function ShareDock({
                                     );
                                 })}
                             </div>
+                            {status === "progress" && (
+                                <button
+                                    type="button"
+                                    onClick={handleCancelExport}
+                                    className="h-9 te-button rounded-[8px] text-[10px] tracking-widest text-[var(--te-orange)]"
+                                >
+                                    ABORT_RENDER
+                                </button>
+                            )}
                         </section>
 
                         <div className="flex-1" /> {/* Spacer */}

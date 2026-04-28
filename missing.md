@@ -45,11 +45,11 @@ Scope: static code audit of the current project against `ui.md`, `functuion.md`,
 - [ ] Persona tuning UI exists in unused components. `components/ui/persona-settings-panel.tsx`, `persona-picker.tsx`, and `persona-card.tsx` include richer controls, but the active settings modal currently uses a simpler inline persona picker instead.
 - [ ] Active persona selection is partially functional. The selected persona ID is persisted and sent to `/api/chat`, but expressiveness, directness, auto-voice, and voice mood are not implemented.
 - [ ] Memory is local-only. `MemoryDrawer` persists localStorage memories, search, filters, delete, and purge, but there is no backend memory API, embeddings, semantic recall, import/export, or cloud sync.
-- [ ] Text chat uses memory context, but only a shallow recent-memory slice. There is no ranking, summarization, dedupe, consent review, or memory editing beyond deleting stored blocks.
+- [x] Text and voice chat now use local relevance-ranked memory context instead of only taking the newest entries. Recall scores prompt/token/tag overlap with recency as a tiebreaker, while embeddings, summarization, dedupe, and richer editing remain future work.
 - [x] Voice memory capture now uses the shared memory helpers. Spoken transcripts are stored as `source: "voice"` when learning is enabled, and recent memories are sent with voice prompts.
 - [ ] Rituals are local-only. Mood check-ins persist to localStorage and can write memory entries, but there are no reminders, notifications, calendar integration, timezone controls, or multi-day analytics beyond local streak math.
 - [x] Share/export now has real client renderers for PNG, GIF, WebM, and native share. Mood card, reflection card, and reaction clip templates composite the avatar into distinct designed canvas layouts.
-- [ ] Export cancellation is missing. Long GIF/WebM capture can be started, but there is no cancel control once in progress.
+- [x] Export cancellation is now available. PNG/GIF/WebM/native share jobs share an abort flag, GIF/WebM loops stop on cancel, WebM recorder streams are cleaned up, and the export UI exposes `ABORT` / `ABORT_RENDER` controls while rendering.
 - [ ] Audio Lab is functional locally, but it is not integrated as a reusable product feature. Uploaded audio can drive emotion/levels, but there is no saved session, no generated insight, no export, and no connection to AI chat.
 - [ ] Onboarding is minimal. There is a settings-key indicator and no-key chat action, but no guided first-run setup for AI provider, ElevenLabs, memory consent, mic permission, and voice test.
 - [x] Key deletion now has confirmation. `key-vault-panel.tsx` opens a destructive confirmation dialog before clearing a provider key.
@@ -74,3 +74,5 @@ Scope: static code audit of the current project against `ui.md`, `functuion.md`,
 - [x] Update `functuion.md` and `ui.md` so the project plan reflects what is now implemented vs still missing.
 - [x] Normalize `/api/chat` provider/model validation and user-facing AI error messages.
 - [x] Wire visible voice profiles to actual ElevenLabs voice IDs.
+- [x] Add client-side export cancellation for long GIF/WebM renders.
+- [x] Replace shallow recent-memory recall with local relevance-ranked memory context for chat and voice.

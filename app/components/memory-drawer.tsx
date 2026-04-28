@@ -34,6 +34,36 @@ export interface MemoryEntry {
 }
 
 const STORAGE_KEY = "dot_memory_core";
+const MEMORY_STOP_WORDS = new Set([
+    "about",
+    "after",
+    "again",
+    "also",
+    "because",
+    "before",
+    "being",
+    "could",
+    "from",
+    "have",
+    "into",
+    "just",
+    "like",
+    "need",
+    "really",
+    "that",
+    "their",
+    "then",
+    "there",
+    "they",
+    "this",
+    "want",
+    "were",
+    "what",
+    "when",
+    "with",
+    "would",
+    "your",
+]);
 
 // --- Persistence helpers ---
 
@@ -65,6 +95,70 @@ export function addMemory(entry: Omit<MemoryEntry, "id" | "date">): void {
     };
     memories.unshift(newEntry); // newest first
     saveMemories(memories);
+}
+
+function tokenizeMemoryText(value: string): string[] {
+    return value
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, " ")
+        .split(/\s+/)
+        .map((token) => token.trim())
+        .filter((token) => token.length > 2 && !MEMORY_STOP_WORDS.has(token));
+}
+
+function getRecencyScore(iso: string): number {
+    const timestamp = new Date(iso).getTime();
+    if (!Number.isFinite(timestamp)) return 0;
+    const ageDays = Math.max(0, (Date.now() - timestamp) / 86_400_000);
+    return Math.max(0, 1 - ageDays / 30);
+}
+
+function scoreMemory(memory: MemoryEntry, queryTokens: Set<string>, query: string): number {
+    const content = memory.content.toLowerCase();
+    const memoryTokens = new Set(tokenizeMemoryText(memory.content));
+    const tags = Array.isArray(memory.tags) ? memory.tags : [];
+    let score = getRecencyScore(memory.date) * 0.35;
+
+    if (query && content.includes(query)) score += 3;
+
+    for (const token of queryTokens) {
+        if (memoryTokens.has(token)) score += 1.4;
+        if (tags.some((tag) => tag.toLowerCase().includes(token))) score += 1.8;
+        if (content.includes(token)) score += 0.45;
+    }
+
+    if (memory.source === "ritual") score += 0.12;
+    return score;
+}
+
+export function getRelevantMemories(prompt: string, limit: number = 8): MemoryEntry[] {
+    const memories = loadMemories();
+    if (memories.length === 0) return [];
+
+    const query = prompt.trim().toLowerCase();
+    const queryTokens = new Set(tokenizeMemoryText(query));
+    if (queryTokens.size === 0) return memories.slice(0, limit);
+
+    return memories
+        .map((memory, index) => ({
+            memory,
+            index,
+            score: scoreMemory(memory, queryTokens, query),
+        }))
+        .filter((item) => item.score > 0.15)
+        .sort((a, b) => b.score - a.score || a.index - b.index)
+        .slice(0, limit)
+        .map((item) => item.memory);
+}
+
+export function buildMemoryContextForPrompt(prompt: string, limit: number = 8): string {
+    return getRelevantMemories(prompt, limit)
+        .map((memory) => {
+            const tagsList = Array.isArray(memory.tags) ? memory.tags : [];
+            const tags = tagsList.length ? ` [${tagsList.join(", ")}]` : "";
+            return `- ${memory.content.slice(0, 140)}${tags}`;
+        })
+        .join("\n");
 }
 
 function formatDateLabel(iso: string): string {

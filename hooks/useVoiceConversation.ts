@@ -5,7 +5,7 @@ import type { VoiceState } from "@/components/ui/voice-companion-bar";
 import type { AudioLevels } from "./useAudioAnalysis";
 import { getKey } from "@/lib/key-store";
 import { useVoiceSettings } from "@/hooks/useVoiceSettings";
-import { addMemory, isMemoryEnabled, loadMemories } from "@/app/components/memory-drawer";
+import { addMemory, buildMemoryContextForPrompt, isMemoryEnabled } from "@/app/components/memory-drawer";
 
 interface UseVoiceConversationOptions {
   activePersonaId?: string;
@@ -26,15 +26,6 @@ function autoVoiceTags(content: string): string[] {
   if (/\b(friend|family|partner|relationship|mom|dad|brother|sister)\b/.test(lower)) tags.push("people");
   if (/\b(like|love|enjoy|prefer|favorite|hate|dislike)\b/.test(lower)) tags.push("preferences");
   return tags;
-}
-
-function buildMemoryContext(): string {
-  const memories = loadMemories();
-  if (memories.length === 0) return "";
-  return memories
-    .slice(0, 8)
-    .map((memory) => `- ${memory.content.slice(0, 120)}`)
-    .join("\n");
 }
 
 function saveVoiceMemory(text: string): void {
@@ -227,7 +218,7 @@ export function useVoiceConversation({
         }
 
         abortRef.current = new AbortController();
-        const memoryContext = buildMemoryContext();
+        const memoryContext = buildMemoryContextForPrompt(text);
         const res = await fetch("/api/chat", {
           method: "POST",
           headers: {
