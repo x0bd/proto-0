@@ -58,11 +58,11 @@
 - [x] Add weekly-data-populated state.
 
 ## U5 Persona Packs UI
-- [x] Build `PersonaPicker`.
-- [x] Build `PersonaCard`.
-- [x] Build `PersonaPreview`.
+- [x] Build active persona CORE tab in `CustomizationModal`.
+- [x] Build active persona selection cards.
+- [x] Build persona preview copy.
 - [x] Build `ActivePersonaChip`.
-- [x] Build `PersonaSettingsPanel`.
+- [x] Build persona tuning controls for expressiveness, directness, auto-voice, and voice mood.
 - [x] Add default persona state.
 - [x] Add active persona switch state feedback.
 - [x] Add unavailable persona state when requirements are missing.

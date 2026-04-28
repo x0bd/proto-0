@@ -3,7 +3,8 @@
 import * as React from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { usePanelPosition } from "@/hooks/usePanelPosition";
-import { X, Play, Pause, Square, Upload, AudioLines } from "lucide-react";
+import { X, Play, Pause, Square, Upload, AudioLines, Download, Database } from "lucide-react";
+import { addMemory, isMemoryEnabled } from "./memory-drawer";
 import type { EmotionState } from "../components/face/types";
 
 interface AudioLabProps {
@@ -67,6 +68,61 @@ function formatTime(seconds: number): string {
     return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
 }
 
+interface AudioLabSession {
+    id: string;
+    fileName: string;
+    duration: number;
+    emotionLabel: string;
+    bands: {
+        bass: number;
+        lowMid: number;
+        mid: number;
+        highMid: number;
+        presence: number;
+        overall: number;
+    };
+    insight: string;
+    createdAt: string;
+}
+
+const AUDIO_LAB_SESSIONS_KEY = "dot_audio_lab_sessions";
+const MAX_AUDIO_LAB_SESSIONS = 12;
+
+function loadAudioLabSessions(): AudioLabSession[] {
+    if (typeof window === "undefined") return [];
+    try {
+        const raw = localStorage.getItem(AUDIO_LAB_SESSIONS_KEY);
+        return raw ? JSON.parse(raw) : [];
+    } catch {
+        return [];
+    }
+}
+
+function saveAudioLabSession(session: AudioLabSession): AudioLabSession[] {
+    const updated = [session, ...loadAudioLabSessions()].slice(0, MAX_AUDIO_LAB_SESSIONS);
+    localStorage.setItem(AUDIO_LAB_SESSIONS_KEY, JSON.stringify(updated));
+    return updated;
+}
+
+function buildAudioInsight(
+    fileName: string | null,
+    duration: number,
+    emotionLabel: string,
+    bands: AudioLabSession["bands"],
+): string {
+    const ranked = [
+        ["bass", bands.bass],
+        ["low-mid warmth", bands.lowMid],
+        ["mid body", bands.mid],
+        ["high-mid motion", bands.highMid],
+        ["presence edge", bands.presence],
+    ].sort((a, b) => Number(b[1]) - Number(a[1]));
+    const leader = ranked[0]?.[0] ?? "overall energy";
+    const energy =
+        bands.overall > 0.45 ? "high-energy" : bands.overall > 0.18 ? "steady" : "low-intensity";
+    return `${fileName ?? "Audio"} analyzed as ${emotionLabel.toLowerCase()} with ${energy} movement. Dominant band: ${leader}. Duration ${formatTime(duration)}.`;
+}
+
 export function AudioLab({
     open,
     onOpenChange,
@@ -83,6 +139,8 @@ export function AudioLab({
     const [bands, setBands] = React.useState({
         bass: 0, lowMid: 0, mid: 0, highMid: 0, presence: 0, overall: 0,
     });
+    const [savedSessionCount, setSavedSessionCount] = React.useState(0);
+    const [saveStatus, setSaveStatus] = React.useState<"idle" | "saved" | "exported">("idle");
 
     // Audio engine refs — stable across the component lifetime
     const audioContextRef = React.useRef<AudioContext | null>(null);
@@ -100,6 +158,15 @@ export function AudioLab({
     const visualizerDataRef = React.useRef<Float32Array | null>(null);
 
     const FFT_SIZE = 512;
+
+    React.useEffect(() => {
+        if (open) setSavedSessionCount(loadAudioLabSessions().length);
+    }, [open]);
+
+    const currentInsight = React.useMemo(
+        () => buildAudioInsight(fileName, duration, emotionLabel, bands),
+        [bands, duration, emotionLabel, fileName],
+    );
 
     // Lazily initialise the AudioContext + analyser (never close it)
     const getAudioContext = React.useCallback(() => {
@@ -284,6 +351,7 @@ export function AudioLab({
             setCurrentTime(0);
             setIsPlaying(false);
             setEmotionLabel("DECODING");
+            setSaveStatus("idle");
             pauseOffsetRef.current = 0;
 
             // Stop any current playback
@@ -369,6 +437,49 @@ export function AudioLab({
     }, [drawSpectrum]);
 
     const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
+
+    const createSession = React.useCallback((): AudioLabSession | null => {
+        if (!fileName || duration <= 0) return null;
+        return {
+            id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+            fileName,
+            duration,
+            emotionLabel,
+            bands,
+            insight: currentInsight,
+            createdAt: new Date().toISOString(),
+        };
+    }, [bands, currentInsight, duration, emotionLabel, fileName]);
+
+    const handleSaveInsight = React.useCallback(() => {
+        const session = createSession();
+        if (!session) return;
+        const updated = saveAudioLabSession(session);
+        setSavedSessionCount(updated.length);
+        setSaveStatus("saved");
+        if (isMemoryEnabled()) {
+            addMemory({
+                content: `Audio insight: ${session.insight}`,
+                tags: ["audio", "insight", session.emotionLabel.toLowerCase()],
+                source: "system",
+            });
+        }
+    }, [createSession]);
+
+    const handleExportInsight = React.useCallback(() => {
+        const session = createSession();
+        if (!session) return;
+        const blob = new Blob([JSON.stringify(session, null, 2)], {
+            type: "application/json",
+        });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `dot-audio-${session.createdAt.slice(0, 10)}.json`;
+        link.click();
+        URL.revokeObjectURL(url);
+        setSaveStatus("exported");
+    }, [createSession]);
 
     // Cleanup
     React.useEffect(() => {
@@ -536,6 +647,39 @@ export function AudioLab({
                                         <span className="text-[9px] font-mono font-bold tracking-widest text-foreground/70 uppercase">{band.full}</span>
                                     </div>
                                 ))}
+                            </div>
+                        </section>
+
+                        {/* Local product output */}
+                        <section className="flex flex-col gap-1.5 shrink-0">
+                            <div className="flex items-center justify-between px-1">
+                                <span className="te-label">LOCAL_INSIGHT</span>
+                                <span className="te-label">SAVED {savedSessionCount}</span>
+                            </div>
+                            <div className="te-recessed p-2 flex flex-col gap-2">
+                                <div className="te-lcd px-2.5 py-2 min-h-12 flex items-center">
+                                    <span className="text-[9px] leading-relaxed opacity-80">
+                                        {fileName ? currentInsight.toUpperCase() : "LOAD_AUDIO_TO_GENERATE_SESSION_CARD"}
+                                    </span>
+                                </div>
+                                <div className="grid grid-cols-2 gap-1.5">
+                                    <button
+                                        onClick={handleSaveInsight}
+                                        disabled={!fileName || duration <= 0}
+                                        className="h-9 te-button rounded-[6px] flex items-center justify-center gap-1.5 text-[9px] disabled:opacity-30"
+                                    >
+                                        <Database className="size-3" />
+                                        {saveStatus === "saved" ? "SAVED" : "SAVE_MEM"}
+                                    </button>
+                                    <button
+                                        onClick={handleExportInsight}
+                                        disabled={!fileName || duration <= 0}
+                                        className="h-9 te-button rounded-[6px] flex items-center justify-center gap-1.5 text-[9px] disabled:opacity-30"
+                                    >
+                                        <Download className="size-3" />
+                                        {saveStatus === "exported" ? "EXPORTED" : "EXPORT"}
+                                    </button>
+                                </div>
                             </div>
                         </section>
 

@@ -8,7 +8,7 @@
 - [x] Define local check-in and streak data structures in `app/components/ritual-drawer.tsx`.
 - [x] Define persona tuning settings contract in `hooks/usePersonaSettings.ts`.
 - [x] Define export format/status/template types in `app/components/share-dock.tsx`.
-- [ ] Define shared API request/response contracts for all new routes.
+- [x] Define current shared API request/response contracts in `core-product.md`.
 
 ## F1 BYOK Key Vault Logic
 - [x] Implement BYOK key store in `lib/key-store.ts` (planned `lib/security/key-vault.ts` path not created).
@@ -21,7 +21,7 @@
 - [x] Implement no-server-persistence policy for user keys; keys are forwarded only to proxy routes for provider calls.
 
 ## F2 AI Route and Orchestration (AI SDK)
-- [x] Create current `POST /api/chat` route (planned `/api/ai/respond` route not created).
+- [x] Create current `POST /api/chat` route.
 - [x] Add provider routing logic from the request body provider field.
 - [x] Validate supported providers before AI SDK execution.
 - [x] Validate supported provider model IDs before AI SDK execution.
@@ -34,7 +34,7 @@
 - [x] Add normalized error mapping for missing/invalid keys, quota, provider, and model failures.
 
 ## F3 ElevenLabs Voice Runtime
-- [x] Create current `POST /api/tts` route (planned `/api/tts/speak` route not created).
+- [x] Create current `POST /api/tts` route.
 - [ ] Read ElevenLabs key from request headers only; route still accepts legacy body/env fallbacks.
 - [x] Stream audio response payload from the API route to client.
 - [x] Upgrade voice client hook for interrupt/cancel support.
@@ -95,8 +95,8 @@
 - [ ] Add unit tests for key vault crypto helpers.
 - [ ] Add unit tests for streak calculation utilities.
 - [ ] Add unit tests for memory retrieval ranking logic.
-- [ ] Add integration tests for `/api/ai/respond` provider switching.
-- [ ] Add integration tests for `/api/tts/speak` streaming and interruption.
+- [ ] Add integration tests for `/api/chat` provider switching.
+- [ ] Add integration tests for `/api/tts` streaming and interruption.
 - [ ] Add integration tests for memory policy enforcement.
 - [ ] Add E2E flow test: BYOK setup -> chat -> memory recall -> voice -> share.
 - [ ] Confirm `pnpm build` passes after each phase milestone.

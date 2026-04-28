@@ -8,8 +8,8 @@ Scope: static code audit of the current project against `ui.md`, `functuion.md`,
 
 - [x] BYOK AI chat is partially real: keys can be stored in the local key vault, read by chat/voice clients, and sent to `/api/chat`, which uses the AI SDK with OpenAI and Google providers.
 - [x] ElevenLabs TTS is partially real: the app can read the ElevenLabs key from the vault and send it to `/api/tts`, which calls ElevenLabs with `xi-api-key`.
-- [ ] The implemented API contracts still use `/api/chat` and `/api/tts` rather than the originally planned `/api/ai/respond` and `/api/tts/speak`, but BYOK key forwarding now uses request headers.
-- [ ] Several polished UI surfaces are still local-only or partially wired. They look like complete product features, but a few still need deeper product/runtime integration.
+- [x] The API contract docs now match the implemented `/api/chat` and `/api/tts` routes, including BYOK header forwarding.
+- [x] Local product surfaces are now wired as far as possible without adding backend, database, or cloud integrations.
 - [x] `functuion.md` and `ui.md` now reflect the current partial implementations instead of showing everything as pending.
 
 ## BYOK AI Findings
@@ -32,7 +32,7 @@ Scope: static code audit of the current project against `ui.md`, `functuion.md`,
 - [x] The TTS route accepts a BYOK key from the `x-dot-api-key` header, keeps legacy body fallback, and falls back to `process.env.ELEVENLABS_API_KEY`.
 - [x] `hooks/useVoiceConversation.ts` reads the `elevenlabs` key from the vault and posts it to `/api/tts`.
 - [x] If ElevenLabs fails or no key is available, the voice hook falls back to browser `speechSynthesis`.
-- [ ] The route is `/api/tts`, not the planned `/api/tts/speak`.
+- [x] The route plan now treats `/api/tts` as the current v1 contract rather than a temporary mismatch.
 - [ ] The client buffers the full ElevenLabs audio response with `arrayBuffer()` before decoding and playing it. The API route returns a stream, but playback is not true low-latency streaming.
 - [x] Voice settings now affect ElevenLabs. `components/ui/voice-settings-sheet.tsx` persists profile, speed, warmth, clarity, auto-speak, and interruption controls through `hooks/useVoiceSettings.ts`; `hooks/useVoiceConversation.ts` sends mapped ElevenLabs voice settings to `/api/tts`.
 - [x] Voice profiles now send profile-specific ElevenLabs voice IDs. `useVoiceSettings` maps companion/guide/late-night profiles to voice IDs, and `useVoiceConversation` passes the selected ID to `/api/tts`.
@@ -52,21 +52,21 @@ Scope: static code audit of the current project against `ui.md`, `functuion.md`,
 - [x] Ritual context now feeds existing AI personalization. Text and voice chat append a local daily check-in summary, current streak, best streak, timezone, and recent check-ins to the existing `/api/chat` memory context.
 - [x] Share/export now has real client renderers for PNG, GIF, WebM, and native share. Mood card, reflection card, and reaction clip templates composite the avatar into distinct designed canvas layouts.
 - [x] Export cancellation is now available. PNG/GIF/WebM/native share jobs share an abort flag, GIF/WebM loops stop on cancel, WebM recorder streams are cleaned up, and the export UI exposes `ABORT` / `ABORT_RENDER` controls while rendering.
-- [ ] Audio Lab is functional locally, but it is not integrated as a reusable product feature. Uploaded audio can drive emotion/levels, but there is no saved session, no generated insight, no export, and no connection to AI chat.
-- [ ] Onboarding is minimal. There is a settings-key indicator and no-key chat action, but no guided first-run setup for AI provider, ElevenLabs, memory consent, mic permission, and voice test.
+- [x] Audio Lab now behaves like a local product feature. Uploaded audio generates a session insight, can be saved into memory for later AI personalization, stores a rolling local session count, and exports a JSON snapshot.
+- [x] Onboarding now has a first-run `BOOT_SEQ` panel with key setup, memory enablement, voice test, persona status, and a persistent done state.
 - [x] Key deletion now has confirmation. `key-vault-panel.tsx` opens a destructive confirmation dialog before clearing a provider key.
 - [x] Key vault copy has been tightened. The footer now says `LOCAL_VAULT · PROXY_HEADER_ONLY · SERVER_NOT_STORED`, while the edit UI still distinguishes encrypted, session-only, and plain local storage modes.
 - [x] Encrypted key unlocks now expire from the in-memory decrypted cache after 15 minutes. Plain/session keys keep their existing reload/session behavior.
 - [x] Voice failures now surface reasoned local error states (`NO_KEY`, `NO_MIC`, `MIC_ERR`, `AI_ERR`, `TTS_ERR`) in the voice companion bar instead of one generic error label.
-- [ ] Legacy/parallel components still exist. `ChatWindow.tsx`, `DownloadButton.tsx`, `components/audio-panel.tsx`, and unused persona UI components may now be dead or stale surfaces unless they are intentionally kept for reference.
+- [x] Legacy/parallel components were removed. The app now uses `chat-module`, `share-dock`, `audio-lab`, and the active settings CORE tab instead of stale duplicate surfaces.
 
 ## Plan / Docs Drift
 
 - [x] `functuion.md` now checks the implemented slices for BYOK key storage, AI routing, voice, memory, rituals, persona runtime, and share/export while leaving incomplete items unchecked.
 - [x] `ui.md` now names `app/companion/page.tsx` as the product shell and marks the integrated/local-store UI work that is already present.
 - [x] `ui.md` UI QA is now checked off after adding mobile-safe panel bounds, coarse-pointer target sizing, visible focus rings, and higher-readability subtle text treatments.
-- [ ] The route names in the plans do not match the code. Current implementation uses `/api/chat` and `/api/tts`, though key forwarding now matches the header-based plan.
-- [ ] The privacy/security language needs a pass now that keys are sent from browser to app routes for proxying.
+- [x] The route names in the plans now match the code: `/api/chat` and `/api/tts`.
+- [x] The privacy/security language now states that BYOK keys are stored client-side and only forwarded to app proxy routes for provider calls, not silently persisted on the server.
 
 ## Priority Fix List
 
@@ -85,3 +85,4 @@ Scope: static code audit of the current project against `ui.md`, `functuion.md`,
 - [x] Harden local check-in day boundaries and longest-streak tracking.
 - [x] Wire persona tuning into settings UI, AI prompt behavior, voice defaults, and avatar behavior bias.
 - [x] Centralize memory contracts, add encrypted vault cache timeout, add voice error codes, and pass ritual summaries into AI context.
+- [x] Productize Audio Lab locally with insight save/export, add first-run onboarding, remove stale duplicate components, and align route/privacy docs.

@@ -22,7 +22,7 @@ This plan focuses on the Product Core:
 - BYOK-first integrations: users provide their own API keys for AI, voice, and optional connectors.
 - Transparent memory: users can view, edit, and delete what DOT remembers.
 - Fast interactions: low-latency voice/chat is prioritized over feature breadth.
-- Safe defaults: no silent key persistence to server, explicit consent for any memory write.
+- Safe defaults: no silent key persistence to the server; keys are forwarded only to local proxy routes for provider calls, and memory writes stay explicit/user-controllable.
 
 ---
 
@@ -33,7 +33,7 @@ This plan focuses on the Product Core:
   - LLM provider(s) via AI SDK (OpenAI/Google initially)
   - ElevenLabs TTS
   - Optional integrations (Spotify, weather, calendar, etc)
-- Keys should not be stored on server by default.
+- Keys should not be stored on the server by default.
 - Keys should be revocable from DOT settings instantly.
 
 ### v1 Implementation
@@ -48,12 +48,12 @@ This plan focuses on the Product Core:
 - Add `session-only mode` toggle (do not persist encrypted key blobs).
 
 ### API Contract (v1)
-- `POST /api/ai/respond`
-  - headers: `x-dot-provider`, `x-dot-api-key`
-  - body: messages, persona, memoryContext, toolsContext
-- `POST /api/tts/speak`
-  - headers: `x-elevenlabs-api-key`
-  - body: text, voiceId, model settings
+- `POST /api/chat`
+  - headers: `x-dot-api-key`
+  - body: provider, model, messages, persona, personaTuning, memoryContext
+- `POST /api/tts`
+  - headers: `x-dot-api-key`
+  - body: text, voiceId, voiceSettings
 - `POST /api/integrations/:id/execute` (optional, per connector)
   - integration-specific BYOK headers
 
@@ -71,8 +71,8 @@ This plan focuses on the Product Core:
   - `shareStore` (captures, exports, templates)
 
 ### Backend Routes
-- Consolidate chat generation around AI SDK in a single route (`/api/ai/respond`).
-- Keep ElevenLabs route specialized for streaming audio (`/api/tts/speak`).
+- Consolidate chat generation around AI SDK in a single route (`/api/chat`).
+- Keep ElevenLabs route specialized for audio generation (`/api/tts`).
 - Add memory operations route set if/when backend persistence is introduced:
   - `GET/POST/PATCH/DELETE /api/memory`
 
@@ -124,9 +124,9 @@ This plan focuses on the Product Core:
 
 ### Pipeline
 1. Capture microphone + partial transcript.
-2. Send transcript + context to `/api/ai/respond`.
+2. Send transcript + context to `/api/chat`.
 3. Stream text response back to UI.
-4. Send final/partial response text to `/api/tts/speak`.
+4. Send final response text to `/api/tts`.
 5. Play audio stream and feed analyzer to avatar.
 
 ### Implementation Notes
@@ -221,7 +221,7 @@ This plan focuses on the Product Core:
 
 ## Phase 0 - Foundation (Week 1)
 - Normalize API routes:
-  - migrate to `/api/ai/respond` + `/api/tts/speak`
+  - use `/api/chat` + `/api/tts` as the current v1 contract
 - Implement Key Vault (encrypted BYOK + session mode)
 - Add provider selection UI (OpenAI/Google via AI SDK)
 - Fix env/key naming consistency in docs and code
@@ -294,8 +294,7 @@ This plan focuses on the Product Core:
 
 ## 10) Immediate Next Tasks
 1. Create Key Vault UI + encrypted local storage utility.
-2. Introduce `/api/ai/respond` route powered by AI SDK provider abstraction.
-3. Rename/align TTS route to `/api/tts/speak` (keep temporary alias for compatibility).
+2. Keep `/api/chat` powered by AI SDK provider abstraction.
+3. Keep `/api/tts` aligned with ElevenLabs BYOK headers and dynamic voice settings.
 4. Implement memory schema + local persistence adapter.
 5. Add check-in MVP UI and streak calculation utility.
-

@@ -109,6 +109,7 @@ export default function Home() {
 	const constraintsRef = useRef<HTMLDivElement>(null);
 	const [mounted, setMounted] = useState(false);
 	const [hasKeys, setHasKeys] = useState(true);
+	const [isOnboardingOpen, setIsOnboardingOpen] = useState(false);
 	const { theme, setTheme } = useTheme();
 	const {
 		settings: personaTuning,
@@ -194,7 +195,11 @@ export default function Home() {
 
 	useEffect(() => {
 		setMounted(true);
-		setHasKeys(getAllKeys().length > 0);
+		const keysConfigured = getAllKeys().length > 0;
+		setHasKeys(keysConfigured);
+		setIsOnboardingOpen(
+			localStorage.getItem("dot_onboarding_done") !== "true",
+		);
 	}, []);
 
 	useEffect(() => {
@@ -322,6 +327,11 @@ export default function Home() {
 		if (nextIndex >= EMOTION_PRESETS.length) nextIndex = 0;
 		if (nextIndex < 0) nextIndex = EMOTION_PRESETS.length - 1;
 		applyPreset(EMOTION_PRESETS[nextIndex].id);
+	};
+
+	const completeOnboarding = () => {
+		localStorage.setItem("dot_onboarding_done", "true");
+		setIsOnboardingOpen(false);
 	};
 
 	const personaAvatarBias = getPersonaAvatarBias(
@@ -611,6 +621,136 @@ export default function Home() {
 					accentColor={accentColor}
 					constraintsRef={constraintsRef}
 				/>
+				<AnimatePresence>
+					{mounted && isOnboardingOpen && (
+						<motion.div
+							initial={{ opacity: 0, y: 12, scale: 0.96 }}
+							animate={{ opacity: 1, y: 0, scale: 1 }}
+							exit={{ opacity: 0, y: 12, scale: 0.96 }}
+							transition={{
+								type: "spring",
+								damping: 26,
+								stiffness: 280,
+							}}
+							className="absolute left-3 right-3 sm:left-auto sm:right-6 top-[calc(max(64px,env(safe-area-inset-top))+56px)] sm:top-28 sm:w-[340px] te-module te-safe-panel z-[110]"
+						>
+							<div className="te-module-header">
+								<div className="flex items-center gap-2">
+									<div className="size-2 rounded-full bg-[var(--te-orange)]" />
+									<span className="font-mono text-[10px] font-bold uppercase tracking-widest text-foreground">
+										BOOT_SEQ
+									</span>
+								</div>
+								<button
+									onClick={completeOnboarding}
+									className="size-5 te-button !rounded-full !border-b-2 flex items-center justify-center text-foreground hover:text-[var(--te-orange)]"
+									aria-label="Close onboarding"
+								>
+									<span className="text-[10px]">X</span>
+								</button>
+							</div>
+							<div className="p-4 bg-[var(--panel-bg)] flex flex-col gap-3">
+								<div className="te-lcd p-3">
+									<p className="text-[10px] leading-relaxed">
+										DOT IS LOCAL-FIRST. ADD YOUR KEYS, ENABLE
+										MEMORY IF YOU WANT PERSONALIZATION, THEN
+										TEST VOICE.
+									</p>
+								</div>
+								<div className="grid grid-cols-2 gap-2">
+									{[
+										{
+											label: "AI_KEYS",
+											ok: hasKeys,
+										},
+										{
+											label: "VOICE",
+											ok: voiceEnabled,
+										},
+										{
+											label: "MEMORY",
+											ok:
+												typeof window !== "undefined" &&
+												localStorage.getItem(
+													"dot_memory_enabled",
+												) !== "false",
+										},
+										{
+											label: "PERSONA",
+											ok: !!activePersonaId,
+										},
+									].map((item) => (
+										<div
+											key={item.label}
+											className="te-recessed p-2 flex items-center justify-between"
+										>
+											<span className="te-label">
+												{item.label}
+											</span>
+											<span
+												className="size-2 rounded-full"
+												style={{
+													backgroundColor: item.ok
+														? "var(--te-green)"
+														: "var(--te-orange)",
+													boxShadow: item.ok
+														? "0 0 8px var(--te-green)"
+														: "0 0 8px var(--te-orange)",
+												}}
+											/>
+										</div>
+									))}
+								</div>
+								<div className="grid grid-cols-2 gap-2">
+									<button
+										onClick={() => {
+											setIsCustomizationOpen(true);
+											setHasKeys(true);
+										}}
+										className="h-10 te-button rounded-[8px] text-[9px]"
+									>
+										SET_KEYS
+									</button>
+									<button
+										onClick={() => {
+											localStorage.setItem(
+												"dot_memory_enabled",
+												"true",
+											);
+											setIsMemoryOpen(true);
+										}}
+										className="h-10 te-button rounded-[8px] text-[9px]"
+									>
+										MEMORY
+									</button>
+									<button
+										onClick={toggleMic}
+										className="h-10 te-button rounded-[8px] text-[9px]"
+									>
+										VOICE_TEST
+									</button>
+									<button
+										onClick={completeOnboarding}
+										className="h-10 te-button rounded-[8px] text-[9px]"
+										style={
+											{
+												"--key-bg":
+													"var(--te-green)",
+												"--key-border":
+													"color-mix(in srgb, var(--te-green) 80%, black)",
+												"--key-shadow":
+													"color-mix(in srgb, var(--te-green) 60%, black)",
+												color: "#ffffff",
+											} as React.CSSProperties
+										}
+									>
+										DONE
+									</button>
+								</div>
+							</div>
+						</motion.div>
+					)}
+				</AnimatePresence>
 				{/* External links */}
 				<div className="absolute left-3 sm:left-6 bottom-[calc(max(16px,env(safe-area-inset-bottom))+78px)] sm:bottom-10 z-[70] pointer-events-auto">
 					<div className="flex flex-col items-start gap-2 te-recessed p-2">
