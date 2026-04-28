@@ -24,7 +24,7 @@ Scope: static code audit of the current project against `ui.md`, `functuion.md`,
 - [x] Key validity can now be checked from the vault. `app/api/keys/validate/route.ts` validates OpenAI, Google, and ElevenLabs keys through provider APIs, and `key-vault-panel.tsx` exposes `TST` / `PING_KEY` controls.
 - [ ] Provider/model validation is thin. Unsupported providers throw, and selected models are passed straight to the AI SDK. Some chosen models may reject the shared `streamText` options, especially if a model does not support streaming or the same generation parameters.
 - [ ] Error handling is generic. `/api/chat` returns broad `AI request failed` messages instead of normalized provider/auth/quota/model errors the UI can explain cleanly.
-- [ ] Voice chat does not pass memory context into `/api/chat`. Text chat includes recent memories, but `useVoiceConversation.ts` only sends `messages`, `provider`, `model`, `apiKey`, and `persona`.
+- [x] Voice chat now passes recent memory context into `/api/chat`, matching the text chat personalization path.
 
 ## ElevenLabs Findings
 
@@ -46,7 +46,7 @@ Scope: static code audit of the current project against `ui.md`, `functuion.md`,
 - [ ] Active persona selection is partially functional. The selected persona ID is persisted and sent to `/api/chat`, but expressiveness, directness, auto-voice, and voice mood are not implemented.
 - [ ] Memory is local-only. `MemoryDrawer` persists localStorage memories, search, filters, delete, and purge, but there is no backend memory API, embeddings, semantic recall, import/export, or cloud sync.
 - [ ] Text chat uses memory context, but only a shallow recent-memory slice. There is no ranking, summarization, dedupe, consent review, or memory editing beyond deleting stored blocks.
-- [ ] Voice memory capture appears missing. `useVoiceConversation.ts` did not show `addMemory` or `memoryContext` usage, so spoken conversations do not currently benefit from the same memory loop as text chat.
+- [x] Voice memory capture now uses the shared memory helpers. Spoken transcripts are stored as `source: "voice"` when learning is enabled, and recent memories are sent with voice prompts.
 - [ ] Rituals are local-only. Mood check-ins persist to localStorage and can write memory entries, but there are no reminders, notifications, calendar integration, timezone controls, or multi-day analytics beyond local streak math.
 - [ ] Share/export is partially functional. PNG, GIF, WebM, and native share have real client code, but templates only change labels/filenames. There is no actual designed mood-card/reflection-card/reaction-clip layout layer.
 - [ ] Export cancellation is missing. Long GIF/WebM capture can be started, but there is no cancel control once in progress.
@@ -69,6 +69,6 @@ Scope: static code audit of the current project against `ui.md`, `functuion.md`,
 - [x] Decide whether BYOK keys should move from JSON body to headers, then align `/api/chat`, `/api/tts`, chat client, voice client, and docs.
 - [x] Add provider key validation/test buttons for OpenAI, Google, and ElevenLabs.
 - [x] Add key deletion confirmation and update vault copy to be precise about local storage, encryption, and proxy-route usage.
-- [ ] Add memory context and memory writes to voice conversations.
+- [x] Add memory context and memory writes to voice conversations.
 - [ ] Replace template-only export labels with real template renderers for mood/reflection/reaction outputs.
 - [ ] Update `functuion.md` and `ui.md` so the project plan reflects what is now implemented vs still missing.

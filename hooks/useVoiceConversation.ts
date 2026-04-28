@@ -5,23 +5,7 @@ import type { VoiceState } from "@/components/ui/voice-companion-bar";
 import type { AudioLevels } from "./useAudioAnalysis";
 import { getKey } from "@/lib/key-store";
 import { useVoiceSettings } from "@/hooks/useVoiceSettings";
-
-function saveVoiceMemory(text: string): void {
-  if (typeof window === "undefined") return;
-  try {
-    if (localStorage.getItem("dot_memory_enabled") === "false") return;
-    const raw = localStorage.getItem("dot_memory_core");
-    const memories: unknown[] = raw ? JSON.parse(raw) : [];
-    memories.unshift({
-      id: `${Date.now()}${Math.random().toString(36).slice(2, 6)}`,
-      content: text,
-      tags: ["voice"],
-      source: "voice",
-      date: new Date().toISOString(),
-    });
-    localStorage.setItem("dot_memory_core", JSON.stringify(memories));
-  } catch { /* noop */ }
-}
+import { addMemory, isMemoryEnabled, loadMemories } from "@/app/components/memory-drawer";
 
 interface UseVoiceConversationOptions {
   activePersonaId?: string;
@@ -32,6 +16,35 @@ const getSpeechRecognition = () =>
   typeof window !== "undefined"
     ? (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
     : null;
+
+function autoVoiceTags(content: string): string[] {
+  const lower = content.toLowerCase();
+  const tags: string[] = ["voice"];
+  if (/\b(goal|want to|trying to|plan|aim|working on|building)\b/.test(lower)) tags.push("goals");
+  if (/\b(feel|feeling|emotion|mood|anxious|happy|sad|stress|nervous|excited)\b/.test(lower)) tags.push("feelings");
+  if (/\b(work|job|project|career|boss|colleague|client)\b/.test(lower)) tags.push("work");
+  if (/\b(friend|family|partner|relationship|mom|dad|brother|sister)\b/.test(lower)) tags.push("people");
+  if (/\b(like|love|enjoy|prefer|favorite|hate|dislike)\b/.test(lower)) tags.push("preferences");
+  return tags;
+}
+
+function buildMemoryContext(): string {
+  const memories = loadMemories();
+  if (memories.length === 0) return "";
+  return memories
+    .slice(0, 8)
+    .map((memory) => `- ${memory.content.slice(0, 120)}`)
+    .join("\n");
+}
+
+function saveVoiceMemory(text: string): void {
+  if (!isMemoryEnabled() || text.length <= 10) return;
+  addMemory({
+    content: text,
+    tags: autoVoiceTags(text),
+    source: "voice",
+  });
+}
 
 export function useVoiceConversation({
   activePersonaId = "coach",
@@ -213,6 +226,7 @@ export function useVoiceConversation({
         }
 
         abortRef.current = new AbortController();
+        const memoryContext = buildMemoryContext();
         const res = await fetch("/api/chat", {
           method: "POST",
           headers: {
@@ -224,6 +238,7 @@ export function useVoiceConversation({
             provider: providerInfo.provider,
             model: providerInfo.model,
             persona: activePersonaId,
+            memoryContext: memoryContext || undefined,
           }),
           signal: abortRef.current.signal,
         });
@@ -243,14 +258,14 @@ export function useVoiceConversation({
         }
 
         if (fullText) {
-          if (text.length > 10) saveVoiceMemory(text);
+          saveVoiceMemory(text);
           await speak(fullText);
         } else {
           setVoiceState("idle");
           setTranscript("");
         }
-      } catch (err: any) {
-        if (err.name !== "AbortError") {
+      } catch (err: unknown) {
+        if (!(err instanceof DOMException && err.name === "AbortError")) {
           setVoiceState("error");
           setTimeout(() => setVoiceState("idle"), 2000);
         }
