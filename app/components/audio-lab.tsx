@@ -6,12 +6,13 @@ import { usePanelPosition } from "@/hooks/usePanelPosition";
 import { X, Play, Pause, Square, Upload, AudioLines, Download, Database } from "lucide-react";
 import { addMemory, isMemoryEnabled } from "./memory-drawer";
 import type { EmotionState } from "../components/face/types";
+import type { AudioLevels } from "@/hooks/useAudioAnalysis";
 
 interface AudioLabProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     onEmotionChange?: (emotion: EmotionState) => void;
-    onAudioLevelsChange?: (levels: any) => void;
+    onAudioLevelsChange?: (levels: AudioLevels) => void;
     accentColor?: string;
     constraintsRef?: React.RefObject<Element>;
 }
@@ -38,11 +39,11 @@ function deriveEmotion(bands: {
     const dissonance = presence;
     const valence = Math.max(0, Math.min(1, 0.5 + warmth * 0.8 - dissonance * 1.2));
 
-    let joy = Math.max(0, arousal * 0.8 * (valence > 0.5 ? valence : 0));
-    let sadness = Math.max(0, (1 - arousal) * 0.8 * (1 - valence));
-    let surprise = Math.max(0, arousal * 0.6 * (highMid > 0.4 ? highMid : 0));
-    let anger = Math.max(0, arousal * 0.9 * (valence < 0.4 ? 1 - valence : 0) * (bass > 0.3 ? bass * 1.5 : 1));
-    let curiosity = Math.max(0, (1 - Math.abs(arousal - 0.5) * 2) * warmth);
+    const joy = Math.max(0, arousal * 0.8 * (valence > 0.5 ? valence : 0));
+    const sadness = Math.max(0, (1 - arousal) * 0.8 * (1 - valence));
+    const surprise = Math.max(0, arousal * 0.6 * (highMid > 0.4 ? highMid : 0));
+    const anger = Math.max(0, arousal * 0.9 * (valence < 0.4 ? 1 - valence : 0) * (bass > 0.3 ? bass * 1.5 : 1));
+    const curiosity = Math.max(0, (1 - Math.abs(arousal - 0.5) * 2) * warmth);
 
     if (joy < 0.1 && sadness < 0.1 && surprise < 0.1 && anger < 0.1 && curiosity < 0.1) {
         return {
@@ -84,6 +85,11 @@ interface AudioLabSession {
     insight: string;
     createdAt: string;
 }
+
+type WebAudioWindow = Window &
+    typeof globalThis & {
+        webkitAudioContext?: typeof AudioContext;
+    };
 
 const AUDIO_LAB_SESSIONS_KEY = "dot_audio_lab_sessions";
 const MAX_AUDIO_LAB_SESSIONS = 12;
@@ -153,7 +159,7 @@ export function AudioLab({
 
     const canvasRef = React.useRef<HTMLCanvasElement | null>(null);
     const rafRef = React.useRef<number | null>(null);
-    const frequencyDataRef = React.useRef<Uint8Array | null>(null);
+    const frequencyDataRef = React.useRef<Uint8Array<ArrayBuffer> | null>(null);
     const fileInputRef = React.useRef<HTMLInputElement | null>(null);
     const visualizerDataRef = React.useRef<Float32Array | null>(null);
 
@@ -171,7 +177,10 @@ export function AudioLab({
     // Lazily initialise the AudioContext + analyser (never close it)
     const getAudioContext = React.useCallback(() => {
         if (audioContextRef.current) return audioContextRef.current;
-        const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+        const AudioContextCtor =
+            window.AudioContext ?? (window as WebAudioWindow).webkitAudioContext;
+        if (!AudioContextCtor) throw new Error("AudioContext unsupported");
+        const ctx = new AudioContextCtor();
         audioContextRef.current = ctx;
 
         const analyser = ctx.createAnalyser();
@@ -197,7 +206,6 @@ export function AudioLab({
         const freqData = frequencyDataRef.current;
         if (!analyser || !freqData) return null;
 
-        // @ts-expect-error
         analyser.getByteFrequencyData(freqData);
 
         const binCount = analyser.frequencyBinCount;

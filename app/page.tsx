@@ -27,7 +27,7 @@ function HwButton({
     shadowColor?: string;
     color?: string;
     onClick?: () => void;
-    as?: any;
+    as?: React.ElementType;
     href?: string;
     target?: string;
     rel?: string;
