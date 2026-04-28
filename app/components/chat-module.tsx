@@ -151,12 +151,14 @@ export function ChatModule({
 
             const res = await fetch("/api/chat", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-dot-api-key": providerInfo.key,
+                },
                 body: JSON.stringify({
                     messages: newMessages.map(m => ({ role: m.role, content: m.content })),
                     provider: providerInfo.provider,
                     model: providerInfo.model,
-                    apiKey: providerInfo.key,
                     persona: activePersonaId,
                     memoryContext: memoryContext || undefined,
                 }),
@@ -192,9 +194,9 @@ export function ChatModule({
             if (onEmotionChange && fullText) {
                 onEmotionChange(sentimentToEmotion(fullText));
             }
-        } catch (err: any) {
-            if (err.name !== "AbortError") {
-                setError(err.message || "Connection failed");
+        } catch (err: unknown) {
+            if (!(err instanceof DOMException && err.name === "AbortError")) {
+                setError(err instanceof Error ? err.message : "Connection failed");
             }
         } finally {
             setIsLoading(false);

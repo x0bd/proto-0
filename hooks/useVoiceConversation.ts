@@ -113,10 +113,14 @@ export function useVoiceConversation({
         const elevenlabsStored = getKey("elevenlabs");
         const res = await fetch("/api/tts", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            ...(elevenlabsStored?.key
+              ? { "x-dot-api-key": elevenlabsStored.key }
+              : {}),
+          },
           body: JSON.stringify({
             text,
-            apiKey: elevenlabsStored?.key ?? null,
             voiceSettings: elevenLabsSettings,
           }),
         });
@@ -211,12 +215,14 @@ export function useVoiceConversation({
         abortRef.current = new AbortController();
         const res = await fetch("/api/chat", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            "x-dot-api-key": providerInfo.key,
+          },
           body: JSON.stringify({
             messages: [{ role: "user", content: text }],
             provider: providerInfo.provider,
             model: providerInfo.model,
-            apiKey: providerInfo.key,
             persona: activePersonaId,
           }),
           signal: abortRef.current.signal,

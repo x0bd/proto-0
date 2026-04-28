@@ -4,7 +4,16 @@ import { streamText } from "ai";
 
 export async function POST(req: Request) {
     try {
-        const { messages, provider, model, apiKey, persona, memoryContext } = await req.json();
+        const body = await req.json();
+        const {
+            messages,
+            provider,
+            model,
+            apiKey: legacyBodyApiKey,
+            persona,
+            memoryContext,
+        } = body;
+        const apiKey = req.headers.get("x-dot-api-key") || legacyBodyApiKey;
 
         if (!apiKey) {
             return new Response(
@@ -25,17 +34,27 @@ export async function POST(req: Request) {
         });
 
         return result.toTextStreamResponse();
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error("[chat/route] Error:", error);
-        
-        const status = error?.status ?? error?.statusCode ?? 500;
-        const message = error?.message ?? "Connection failed. Check your API key.";
+
+        const status = getErrorStatus(error);
+        const message =
+            error instanceof Error
+                ? error.message
+                : "Connection failed. Check your API key.";
         
         return new Response(
             JSON.stringify({ error: message }),
             { status, headers: { "Content-Type": "application/json" } }
         );
     }
+}
+
+function getErrorStatus(error: unknown): number {
+    if (!error || typeof error !== "object") return 500;
+    const maybeStatus = error as { status?: unknown; statusCode?: unknown };
+    const status = maybeStatus.status ?? maybeStatus.statusCode;
+    return typeof status === "number" ? status : 500;
 }
 
 function getModel(provider: string, model: string, apiKey: string) {

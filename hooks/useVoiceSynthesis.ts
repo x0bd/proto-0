@@ -25,8 +25,13 @@ export function useVoiceSynthesis(options: UseVoiceSynthesisOptions = {}) {
       const elevenlabsStored = getKey("elevenlabs");
       const response = await fetch("/api/tts", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text, voiceId, apiKey: elevenlabsStored?.key ?? null }),
+        headers: {
+          "Content-Type": "application/json",
+          ...(elevenlabsStored?.key
+            ? { "x-dot-api-key": elevenlabsStored.key }
+            : {}),
+        },
+        body: JSON.stringify({ text, voiceId }),
       });
 
       if (!response.ok) {

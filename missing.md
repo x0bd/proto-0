@@ -8,7 +8,7 @@ Scope: static code audit of the current project against `ui.md`, `functuion.md`,
 
 - [x] BYOK AI chat is partially real: keys can be stored in the local key vault, read by chat/voice clients, and sent to `/api/chat`, which uses the AI SDK with OpenAI and Google providers.
 - [x] ElevenLabs TTS is partially real: the app can read the ElevenLabs key from the vault and send it to `/api/tts`, which calls ElevenLabs with `xi-api-key`.
-- [ ] The implemented API contracts do not match the original functionality plan. The plan references `/api/ai/respond`, `/api/tts/speak`, and header-based key forwarding, but the code uses `/api/chat`, `/api/tts`, and sends keys in the JSON request body.
+- [ ] The implemented API contracts still use `/api/chat` and `/api/tts` rather than the originally planned `/api/ai/respond` and `/api/tts/speak`, but BYOK key forwarding now uses request headers.
 - [ ] Several polished UI surfaces are still local-only or settings-only. They look like complete product features, but they do not yet control the runtime AI/voice behavior.
 - [ ] `functuion.md` is still unchecked, while the code already contains partial implementations. The plan docs and code are now out of sync.
 
@@ -19,8 +19,8 @@ Scope: static code audit of the current project against `ui.md`, `functuion.md`,
 - [x] `app/components/chat-module.tsx` selects the first configured OpenAI or Google key and streams through `/api/chat`.
 - [x] `hooks/useVoiceConversation.ts` also selects an OpenAI or Google key and sends the voice transcript through `/api/chat`.
 - [x] `app/api/chat/route.ts` uses `createOpenAI`, `createGoogleGenerativeAI`, and `streamText`, so the AI SDK path is real.
-- [ ] BYOK key transport is not implemented as planned. Keys are sent in the JSON body as `apiKey`, not via an `x-dot-api-key` or provider-specific request header.
-- [ ] The key vault says `KEYS STORED ON-DEVICE ONLY · NEVER SENT TO OUR SERVERS`, but the browser sends keys to this app's own API routes. More accurate wording would be "sent only to local app proxy routes, never persisted server-side."
+- [x] BYOK key transport now uses the `x-dot-api-key` request header from chat, voice chat, and TTS clients. Server routes still accept the legacy JSON `apiKey` as a fallback.
+- [x] The key vault footer now uses tighter product copy: `LOCAL_VAULT · PROXY_HEADER_ONLY · SERVER_NOT_STORED`.
 - [ ] Key validity is not checked when saving. A user can save an invalid OpenAI, Google, or ElevenLabs key and only discovers the failure later during chat/TTS.
 - [ ] Provider/model validation is thin. Unsupported providers throw, and selected models are passed straight to the AI SDK. Some chosen models may reject the shared `streamText` options, especially if a model does not support streaming or the same generation parameters.
 - [ ] Error handling is generic. `/api/chat` returns broad `AI request failed` messages instead of normalized provider/auth/quota/model errors the UI can explain cleanly.
@@ -29,7 +29,7 @@ Scope: static code audit of the current project against `ui.md`, `functuion.md`,
 ## ElevenLabs Findings
 
 - [x] `/api/tts/route.ts` calls ElevenLabs directly with `xi-api-key` and returns an `audio/mpeg` response.
-- [x] The TTS route accepts a BYOK key from the request body and falls back to `process.env.ELEVENLABS_API_KEY`.
+- [x] The TTS route accepts a BYOK key from the `x-dot-api-key` header, keeps legacy body fallback, and falls back to `process.env.ELEVENLABS_API_KEY`.
 - [x] `hooks/useVoiceConversation.ts` reads the `elevenlabs` key from the vault and posts it to `/api/tts`.
 - [x] If ElevenLabs fails or no key is available, the voice hook falls back to browser `speechSynthesis`.
 - [ ] The route is `/api/tts`, not the planned `/api/tts/speak`.
@@ -60,13 +60,13 @@ Scope: static code audit of the current project against `ui.md`, `functuion.md`,
 
 - [ ] `functuion.md` still shows all functionality tasks unchecked even though the repo now has partial AI chat, BYOK key storage, TTS, memory, rituals, panel persistence, and exports.
 - [ ] `ui.md` still has U7 unchecked. The main app is integrated under `app/companion/page.tsx`, while `app/page.tsx` is now a landing page. The docs should name `/companion` as the actual product shell.
-- [ ] The route names in the plans do not match the code. Current implementation uses `/api/chat` and `/api/tts`.
+- [ ] The route names in the plans do not match the code. Current implementation uses `/api/chat` and `/api/tts`, though key forwarding now matches the header-based plan.
 - [ ] The privacy/security language needs a pass now that keys are sent from browser to app routes for proxying.
 
 ## Priority Fix List
 
 - [x] Wire `VoiceSettingsSheet` into a persisted voice settings store and pass those settings into `useVoiceConversation` and `/api/tts`.
-- [ ] Decide whether BYOK keys should move from JSON body to headers, then align `/api/chat`, `/api/tts`, chat client, voice client, and docs.
+- [x] Decide whether BYOK keys should move from JSON body to headers, then align `/api/chat`, `/api/tts`, chat client, voice client, and docs.
 - [ ] Add provider key validation/test buttons for OpenAI, Google, and ElevenLabs.
 - [ ] Add key deletion confirmation and update vault copy to be precise about local storage, encryption, and proxy-route usage.
 - [ ] Add memory context and memory writes to voice conversations.

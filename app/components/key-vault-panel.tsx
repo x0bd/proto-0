@@ -414,7 +414,7 @@ export function KeyVaultPanel({ accentColor = "#7c3aed" }: KeyVaultPanelProps) {
 
             <div className="te-lcd px-2 py-1.5 text-center">
                 <span className="text-[8px] opacity-50 tracking-[0.2em] font-bold leading-relaxed">
-                    KEYS STORED ON-DEVICE ONLY · NEVER SENT TO OUR SERVERS
+                    LOCAL_VAULT · PROXY_HEADER_ONLY · SERVER_NOT_STORED
                 </span>
             </div>
         </div>

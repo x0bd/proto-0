@@ -50,7 +50,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Text is required' }, { status: 400 });
     }
 
-    const apiKey = bodyApiKey || process.env.ELEVENLABS_API_KEY;
+    const apiKey =
+      req.headers.get("x-dot-api-key") ||
+      bodyApiKey ||
+      process.env.ELEVENLABS_API_KEY;
     if (!apiKey) {
       return NextResponse.json(
         { error: 'No ElevenLabs key. Add one in Settings → KEYS or set ELEVENLABS_API_KEY.' },
