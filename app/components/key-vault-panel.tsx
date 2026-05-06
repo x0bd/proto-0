@@ -4,7 +4,7 @@ import * as React from "react";
 import { KeyRound, Eye, EyeOff, Check, X, Lock, Unlock } from "lucide-react";
 import {
     setKey, getKey, clearKey, unlockVault, vaultIsLocked, isKeyEncrypted,
-    type Provider, DEFAULT_MODELS,
+    type Provider, DEFAULT_MODELS, KEY_STORE_CHANGE_EVENT,
 } from "@/lib/key-store";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
@@ -18,7 +18,6 @@ const PROVIDER_MODELS: Partial<Record<Provider, { id: string; label: string }[]>
     openai: [
         { id: "gpt-4o-mini",  label: "4O-MINI" },
         { id: "gpt-4o",       label: "4O"      },
-        { id: "o1-mini",      label: "O1-MINI" },
     ],
     google: [
         { id: "gemini-2.0-flash", label: "2.0-FLASH" },
@@ -83,7 +82,15 @@ export function KeyVaultPanel() {
         setLocked(vaultIsLocked());
     }, []);
 
-    React.useEffect(() => { refreshState(); }, [refreshState]);
+    React.useEffect(() => {
+        refreshState();
+        window.addEventListener("storage", refreshState);
+        window.addEventListener(KEY_STORE_CHANGE_EVENT, refreshState);
+        return () => {
+            window.removeEventListener("storage", refreshState);
+            window.removeEventListener(KEY_STORE_CHANGE_EVENT, refreshState);
+        };
+    }, [refreshState]);
 
     // ── Edit view ─────────────────────────────────────────────────────────────
 
@@ -106,15 +113,26 @@ export function KeyVaultPanel() {
     const handleSave = async () => {
         if (!editingProvider || !inputValue.trim()) return;
         setSaving(true);
-        await setKey(editingProvider, inputValue.trim(), {
-            sessionOnly: isSessionOnly,
-            passphrase: !isSessionOnly && passphraseValue.trim() ? passphraseValue.trim() : undefined,
-            model: modelValue || DEFAULT_MODELS[editingProvider],
-        });
-        refreshState();
-        setSaving(false);
-        setEditingProvider(null);
-        setView("list");
+        try {
+            await setKey(editingProvider, inputValue.trim(), {
+                sessionOnly: isSessionOnly,
+                passphrase: !isSessionOnly && passphraseValue.trim() ? passphraseValue.trim() : undefined,
+                model: modelValue || DEFAULT_MODELS[editingProvider],
+            });
+            refreshState();
+            setEditingProvider(null);
+            setView("list");
+        } catch (error) {
+            setValidationStates((prev) => ({
+                ...prev,
+                [editingProvider]: {
+                    status: "invalid",
+                    message: error instanceof Error ? error.message : "SAVE_FAILED",
+                },
+            }));
+        } finally {
+            setSaving(false);
+        }
     };
 
     // ── Unlock view ───────────────────────────────────────────────────────────
@@ -189,7 +207,12 @@ export function KeyVaultPanel() {
     const validateSavedKey = (provider: Provider) => {
         const stored = getKey(provider);
         if (!stored) return;
-        void validateKey(provider, stored.key, stored.model || DEFAULT_MODELS[provider]);
+        const supportedModels = PROVIDER_MODELS[provider]?.map((item) => item.id);
+        const model =
+            stored.model && supportedModels?.includes(stored.model)
+                ? stored.model
+                : DEFAULT_MODELS[provider];
+        void validateKey(provider, stored.key, model);
     };
 
     const validationLabel = (provider: Provider, fallback: string) => {
@@ -468,20 +491,28 @@ export function KeyVaultPanel() {
                 {PROVIDERS.map((provider) => {
                     const isConfigured = keyStates[provider.id];
                     const isEnc = encryptedStates[provider.id];
+                    const isLockedEncrypted = isEnc && !isConfigured;
                     return (
                         <div key={provider.id} className="flex items-center gap-1.5">
                             <button
-                                onClick={() => openEdit(provider.id)}
+                                onClick={() => isLockedEncrypted ? setView("unlock") : openEdit(provider.id)}
                                 className="flex-1 h-9 te-button rounded-[6px] flex items-center justify-between px-3 transition-all duration-150"
                                 style={isConfigured ? {
                                     "--key-bg": "var(--te-green)",
                                     "--key-border": "color-mix(in srgb, var(--te-green) 80%, black)",
                                     "--key-shadow": "color-mix(in srgb, var(--te-green) 60%, black)",
                                     color: "#ffffff",
+                                } as React.CSSProperties : isLockedEncrypted ? {
+                                    "--key-bg": "var(--te-orange)",
+                                    "--key-border": "color-mix(in srgb, var(--te-orange) 80%, black)",
+                                    "--key-shadow": "color-mix(in srgb, var(--te-orange) 60%, black)",
+                                    color: "#ffffff",
                                 } as React.CSSProperties : undefined}
                             >
                                 <div className="flex items-center gap-2">
-                                    {isConfigured ? (
+                                    {isLockedEncrypted ? (
+                                        <Lock className="size-3" />
+                                    ) : isConfigured ? (
                                         isEnc ? <Lock className="size-3" /> : <Check className="size-3" />
                                     ) : (
                                         <KeyRound className="size-3 opacity-50" />
@@ -490,7 +521,9 @@ export function KeyVaultPanel() {
                                     <span className="text-[7px] font-bold tracking-widest opacity-40">{provider.purpose}</span>
                                 </div>
                                 <span className="text-[8px] font-bold tracking-widest opacity-60">
-                                    {isConfigured
+                                    {isLockedEncrypted
+                                        ? "LOCK"
+                                        : isConfigured
                                         ? validationLabel(provider.id, isEnc ? "ENC" : "SET")
                                         : "ADD"}
                                 </span>

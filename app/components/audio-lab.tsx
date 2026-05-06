@@ -94,11 +94,42 @@ type WebAudioWindow = Window &
 const AUDIO_LAB_SESSIONS_KEY = "dot_audio_lab_sessions";
 const MAX_AUDIO_LAB_SESSIONS = 12;
 
+function normalizeAudioLabSession(value: unknown): AudioLabSession | null {
+    if (!value || typeof value !== "object") return null;
+    const input = value as Partial<AudioLabSession>;
+    if (typeof input.fileName !== "string" || typeof input.insight !== "string") return null;
+    const bands = input.bands && typeof input.bands === "object" ? input.bands : null;
+    if (!bands) return null;
+    return {
+        id: typeof input.id === "string" ? input.id : `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        fileName: input.fileName,
+        duration: Number.isFinite(input.duration) ? Number(input.duration) : 0,
+        emotionLabel: typeof input.emotionLabel === "string" ? input.emotionLabel : "NEUTRAL",
+        bands: {
+            bass: Number((bands as AudioLabSession["bands"]).bass) || 0,
+            lowMid: Number((bands as AudioLabSession["bands"]).lowMid) || 0,
+            mid: Number((bands as AudioLabSession["bands"]).mid) || 0,
+            highMid: Number((bands as AudioLabSession["bands"]).highMid) || 0,
+            presence: Number((bands as AudioLabSession["bands"]).presence) || 0,
+            overall: Number((bands as AudioLabSession["bands"]).overall) || 0,
+        },
+        insight: input.insight,
+        createdAt:
+            typeof input.createdAt === "string" && Number.isFinite(new Date(input.createdAt).getTime())
+                ? input.createdAt
+                : new Date().toISOString(),
+    };
+}
+
 function loadAudioLabSessions(): AudioLabSession[] {
     if (typeof window === "undefined") return [];
     try {
         const raw = localStorage.getItem(AUDIO_LAB_SESSIONS_KEY);
-        return raw ? JSON.parse(raw) : [];
+        const parsed = raw ? JSON.parse(raw) : [];
+        if (!Array.isArray(parsed)) return [];
+        return parsed
+            .map(normalizeAudioLabSession)
+            .filter((session): session is AudioLabSession => session !== null);
     } catch {
         return [];
     }
@@ -106,7 +137,11 @@ function loadAudioLabSessions(): AudioLabSession[] {
 
 function saveAudioLabSession(session: AudioLabSession): AudioLabSession[] {
     const updated = [session, ...loadAudioLabSessions()].slice(0, MAX_AUDIO_LAB_SESSIONS);
-    localStorage.setItem(AUDIO_LAB_SESSIONS_KEY, JSON.stringify(updated));
+    try {
+        localStorage.setItem(AUDIO_LAB_SESSIONS_KEY, JSON.stringify(updated));
+    } catch {
+        /* storage may be unavailable or full; still keep the current UI session */
+    }
     return updated;
 }
 
@@ -156,6 +191,7 @@ export function AudioLab({
     const audioBufferRef = React.useRef<AudioBuffer | null>(null);
     const startTimeRef = React.useRef(0);
     const pauseOffsetRef = React.useRef(0);
+    const playbackStopReasonRef = React.useRef<"pause" | "stop" | "replace" | null>(null);
 
     const canvasRef = React.useRef<HTMLCanvasElement | null>(null);
     const rafRef = React.useRef<number | null>(null);
@@ -363,31 +399,27 @@ export function AudioLab({
             pauseOffsetRef.current = 0;
 
             // Stop any current playback
+            playbackStopReasonRef.current = "replace";
             try { sourceRef.current?.stop(); } catch { /* noop */ }
             sourceRef.current = null;
 
             // Read and decode async
             const reader = new FileReader();
-            reader.onload = () => {
-                const ctx = getAudioContext();
-                ctx.resume().then(() => {
-                    const arrayBuf = reader.result as ArrayBuffer;
-                    ctx.decodeAudioData(
-                        arrayBuf,
-                        (audioBuffer) => {
-                            // Success
-                            audioBufferRef.current = audioBuffer;
-                            setDuration(audioBuffer.duration);
-                            setEmotionLabel("LOADED");
-                            console.log("[FREQ_LAB] Decoded:", file.name, "duration:", audioBuffer.duration.toFixed(1) + "s");
-                        },
-                        (err) => {
-                            // Decode error
-                            console.error("[FREQ_LAB] decodeAudioData failed:", err);
-                            setEmotionLabel("ERR_DECODE");
-                        }
-                    );
-                });
+            reader.onload = async () => {
+                try {
+                    const ctx = getAudioContext();
+                    await ctx.resume();
+                    const arrayBuf = reader.result;
+                    if (!(arrayBuf instanceof ArrayBuffer)) throw new Error("FileReader returned no audio data");
+                    const audioBuffer = await ctx.decodeAudioData(arrayBuf.slice(0));
+                    audioBufferRef.current = audioBuffer;
+                    setDuration(audioBuffer.duration);
+                    setEmotionLabel("LOADED");
+                    console.log("[FREQ_LAB] Decoded:", file.name, "duration:", audioBuffer.duration.toFixed(1) + "s");
+                } catch (err) {
+                    console.error("[FREQ_LAB] decodeAudioData failed:", err);
+                    setEmotionLabel("ERR_DECODE");
+                }
             };
             reader.onerror = () => {
                 console.error("[FREQ_LAB] FileReader error:", reader.error);
@@ -405,13 +437,20 @@ export function AudioLab({
 
         const ctx = getAudioContext();
         ctx.resume();
+        playbackStopReasonRef.current = null;
 
         // Create a fresh BufferSource each time (they're one-shot by spec)
         const src = ctx.createBufferSource();
         src.buffer = buffer;
         src.connect(gainRef.current!);
         src.onended = () => {
+            const reason = playbackStopReasonRef.current;
+            playbackStopReasonRef.current = null;
+            sourceRef.current = null;
             setIsPlaying(false);
+            if (reason === "pause" || reason === "stop" || reason === "replace") return;
+            pauseOffsetRef.current = 0;
+            setCurrentTime(buffer.duration);
             setEmotionLabel("COMPLETE");
         };
 
@@ -428,12 +467,15 @@ export function AudioLab({
         if (!sourceRef.current || !audioContextRef.current) return;
         const elapsed = audioContextRef.current.currentTime - startTimeRef.current + pauseOffsetRef.current;
         pauseOffsetRef.current = elapsed;
+        playbackStopReasonRef.current = "pause";
         try { sourceRef.current.stop(); } catch { /* noop */ }
         sourceRef.current = null;
         setIsPlaying(false);
+        setEmotionLabel("PAUSED");
     }, []);
 
     const handleStop = React.useCallback(() => {
+        playbackStopReasonRef.current = "stop";
         try { sourceRef.current?.stop(); } catch { /* noop */ }
         sourceRef.current = null;
         pauseOffsetRef.current = 0;
@@ -443,6 +485,10 @@ export function AudioLab({
         setBands({ bass: 0, lowMid: 0, mid: 0, highMid: 0, presence: 0, overall: 0 });
         drawSpectrum(new Uint8Array(FFT_SIZE / 2));
     }, [drawSpectrum]);
+
+    React.useEffect(() => {
+        if (!open && sourceRef.current) handleStop();
+    }, [handleStop, open]);
 
     const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
 
@@ -493,6 +539,7 @@ export function AudioLab({
     React.useEffect(() => {
         return () => {
             if (rafRef.current) cancelAnimationFrame(rafRef.current);
+            playbackStopReasonRef.current = "stop";
             try { sourceRef.current?.stop(); } catch { /* noop */ }
             audioContextRef.current?.close();
         };

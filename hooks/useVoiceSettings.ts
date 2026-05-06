@@ -67,6 +67,11 @@ function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
 }
 
+function toFiniteNumber(value: unknown, fallback: number) {
+  const numeric = typeof value === "number" ? value : Number(value);
+  return Number.isFinite(numeric) ? numeric : fallback;
+}
+
 function isVoiceProfileId(value: unknown): value is VoiceProfileId {
   return (
     value === "companion" ||
@@ -85,14 +90,14 @@ export function normalizeVoiceSettings(value: unknown): VoiceSettings {
     profile: isVoiceProfileId(input.profile)
       ? input.profile
       : DEFAULT_VOICE_SETTINGS.profile,
-    speed: clamp(Number(input.speed ?? DEFAULT_VOICE_SETTINGS.speed), 0, 100),
+    speed: clamp(toFiniteNumber(input.speed, DEFAULT_VOICE_SETTINGS.speed), 0, 100),
     warmth: clamp(
-      Number(input.warmth ?? DEFAULT_VOICE_SETTINGS.warmth),
+      toFiniteNumber(input.warmth, DEFAULT_VOICE_SETTINGS.warmth),
       0,
       100,
     ),
     clarity: clamp(
-      Number(input.clarity ?? DEFAULT_VOICE_SETTINGS.clarity),
+      toFiniteNumber(input.clarity, DEFAULT_VOICE_SETTINGS.clarity),
       0,
       100,
     ),

@@ -33,6 +33,11 @@ interface ChatErrorResponse {
     action?: string;
 }
 
+const CHAT_MODELS: Record<"openai" | "google", string[]> = {
+    openai: ["gpt-4o-mini", "gpt-4o"],
+    google: ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-pro"],
+};
+
 // Lightweight text sentiment → emotion mapping
 function sentimentToEmotion(text: string): EmotionState {
     const lower = text.toLowerCase();
@@ -78,10 +83,13 @@ function autoTags(content: string): string[] {
 
 // Detect which provider is configured
 function getActiveProvider(): { provider: Provider; key: string; model: string } | null {
-    for (const p of ["openai", "google"] as Provider[]) {
+    for (const p of ["openai", "google"] as const) {
         const stored = getKey(p);
         if (stored) {
-            return { provider: p, key: stored.key, model: stored.model || DEFAULT_MODELS[p] };
+            const model = stored.model && CHAT_MODELS[p].includes(stored.model)
+                ? stored.model
+                : DEFAULT_MODELS[p];
+            return { provider: p, key: stored.key, model };
         }
     }
     return null;
@@ -120,6 +128,10 @@ export function ChatModule({
         if (open) setProviderInfo(getActiveProvider());
     }, [open]);
 
+    React.useEffect(() => {
+        if (!open) abortRef.current?.abort();
+    }, [open]);
+
     // Auto-scroll
     React.useEffect(() => {
         scrollRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -146,11 +158,7 @@ export function ChatModule({
         setIsLoading(true);
         setError(null);
 
-        // Persist user message as a memory entry if learning is enabled
         const trimmed = userMsg.content;
-        if (isMemoryEnabled() && trimmed.length > 20) {
-            addMemory({ content: trimmed, tags: autoTags(trimmed), source: "chat" });
-        }
 
         const assistantId = (Date.now() + 1).toString();
         const memoryContext = [
@@ -159,6 +167,11 @@ export function ChatModule({
         ].filter(Boolean).join("\n");
 
         try {
+            // Memory should enrich chat, never block a provider call.
+            if (isMemoryEnabled() && trimmed.length > 20) {
+                addMemory({ content: trimmed, tags: autoTags(trimmed), source: "chat" });
+            }
+
             abortRef.current = new AbortController();
 
             const res = await fetch("/api/chat", {

@@ -28,6 +28,11 @@ function clamp(value: number, min: number, max: number) {
 	return Math.min(max, Math.max(min, value));
 }
 
+function toFiniteNumber(value: unknown, fallback: number) {
+	const numeric = typeof value === "number" ? value : Number(value);
+	return Number.isFinite(numeric) ? numeric : fallback;
+}
+
 function clamp01(value: number) {
 	return clamp(value, 0, 1);
 }
@@ -44,12 +49,12 @@ export function normalizePersonaTuning(value: unknown): PersonaTuningSettings {
 
 	return {
 		expressiveness: clamp(
-			Number(input.expressiveness ?? DEFAULT_PERSONA_TUNING.expressiveness),
+			toFiniteNumber(input.expressiveness, DEFAULT_PERSONA_TUNING.expressiveness),
 			0,
 			100,
 		),
 		directness: clamp(
-			Number(input.directness ?? DEFAULT_PERSONA_TUNING.directness),
+			toFiniteNumber(input.directness, DEFAULT_PERSONA_TUNING.directness),
 			0,
 			100,
 		),

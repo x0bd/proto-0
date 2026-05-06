@@ -29,7 +29,7 @@ import {
 	usePersonaSettings,
 } from "@/hooks/usePersonaSettings";
 import { useTheme } from "next-themes";
-import { getAllKeys } from "@/lib/key-store";
+import { getAllKeys, KEY_STORE_CHANGE_EVENT } from "@/lib/key-store";
 
 const NEUTRAL_EMOTION: EmotionState = {
 	joy: 0.3,
@@ -108,7 +108,7 @@ export default function Home() {
 	const baseEmotionRef = useRef<EmotionState>(NEUTRAL_EMOTION);
 	const constraintsRef = useRef<HTMLDivElement>(null);
 	const [mounted, setMounted] = useState(false);
-	const [hasKeys, setHasKeys] = useState(true);
+	const [hasKeys, setHasKeys] = useState(false);
 	const [isOnboardingOpen, setIsOnboardingOpen] = useState(false);
 	const { theme, setTheme } = useTheme();
 	const {
@@ -194,12 +194,19 @@ export default function Home() {
 	}, [voiceEnabled, connectMicrophone, disconnectAudio]);
 
 	useEffect(() => {
+		const refreshKeyState = () => setHasKeys(getAllKeys().length > 0);
+
 		setMounted(true);
-		const keysConfigured = getAllKeys().length > 0;
-		setHasKeys(keysConfigured);
+		refreshKeyState();
 		setIsOnboardingOpen(
 			localStorage.getItem("dot_onboarding_done") !== "true",
 		);
+		window.addEventListener("storage", refreshKeyState);
+		window.addEventListener(KEY_STORE_CHANGE_EVENT, refreshKeyState);
+		return () => {
+			window.removeEventListener("storage", refreshKeyState);
+			window.removeEventListener(KEY_STORE_CHANGE_EVENT, refreshKeyState);
+		};
 	}, []);
 
 	useEffect(() => {
@@ -501,7 +508,7 @@ export default function Home() {
 							damping: 25,
 							stiffness: 300,
 						}}
-						onClick={() => { setIsCustomizationOpen(true); setHasKeys(true); }}
+						onClick={() => setIsCustomizationOpen(true)}
 						className="relative size-10 sm:size-10 flex items-center justify-center te-button touch-manipulation"
 						title="Settings"
 					>
@@ -705,7 +712,6 @@ export default function Home() {
 									<button
 										onClick={() => {
 											setIsCustomizationOpen(true);
-											setHasKeys(true);
 										}}
 										className="h-10 te-button rounded-[8px] text-[9px]"
 									>

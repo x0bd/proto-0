@@ -4,6 +4,7 @@
 
 const STORAGE_PREFIX = "dot_key_";
 const DECRYPTED_CACHE_TTL_MS = 15 * 60 * 1000;
+export const KEY_STORE_CHANGE_EVENT = "dot:key-store";
 
 export type Provider = "openai" | "google" | "elevenlabs";
 
@@ -80,6 +81,11 @@ function getCachedKey(provider: Provider): StoredKey | null {
     return null;
   }
   return cached.key;
+}
+
+function dispatchKeyStoreChange(provider: Provider): void {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new CustomEvent(KEY_STORE_CHANGE_EVENT, { detail: { provider } }));
 }
 
 // ── Web Crypto helpers ──────────────────────────────────────────────────────
@@ -168,6 +174,7 @@ export async function setKey(
     sessionStorage.setItem(storageKey(provider), JSON.stringify(entry));
     localStorage.removeItem(storageKey(provider));
     setCache(provider, { provider, key: apiKey, model: opts?.model, sessionOnly: true, updatedAt: Date.now() });
+    dispatchKeyStoreChange(provider);
     return;
   }
 
@@ -183,6 +190,7 @@ export async function setKey(
       { provider, key: apiKey, model: opts?.model, sessionOnly: false, updatedAt: Date.now() },
       { decryptedVaultKey: true },
     );
+    dispatchKeyStoreChange(provider);
     return;
   }
 
@@ -193,6 +201,7 @@ export async function setKey(
   };
   localStorage.setItem(storageKey(provider), JSON.stringify(entry));
   setCache(provider, { provider, key: apiKey, model: opts?.model, sessionOnly: false, updatedAt: Date.now() });
+  dispatchKeyStoreChange(provider);
 }
 
 /** Read a key. Returns from memory cache first, then sessionStorage, then plain localStorage. Returns null for encrypted keys that haven't been unlocked. */
@@ -221,6 +230,7 @@ export function clearKey(provider: Provider): void {
   sessionStorage.removeItem(storageKey(provider));
   memCache.delete(provider);
   clearCacheTimer(provider);
+  dispatchKeyStoreChange(provider);
 }
 
 export function getAllKeys(): StoredKey[] {
@@ -281,6 +291,10 @@ export async function unlockVault(passphrase: string): Promise<{ success: boolea
     } catch {
       anyFailed = true;
     }
+  }
+
+  if (!anyFailed && unlocked > 0) {
+    window.dispatchEvent(new CustomEvent(KEY_STORE_CHANGE_EVENT, { detail: { provider: "vault" } }));
   }
 
   return { success: !anyFailed, unlocked };

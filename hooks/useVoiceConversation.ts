@@ -25,6 +25,11 @@ interface UseVoiceConversationOptions {
   onAudioLevelsChange?: (levels: AudioLevels) => void;
 }
 
+const CHAT_MODELS = {
+  openai: ["gpt-4o-mini", "gpt-4o"],
+  google: ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-pro"],
+} as const;
+
 const getSpeechRecognition = () =>
   typeof window !== "undefined"
     ? (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
@@ -233,13 +238,16 @@ export function useVoiceConversation({
         const providerInfo = (() => {
           for (const p of ["openai", "google"] as const) {
             const stored = getKey(p);
+            const fallbackModel =
+              p === "openai" ? "gpt-4o-mini" : "gemini-2.0-flash";
+            const model = stored?.model && (CHAT_MODELS[p] as readonly string[]).includes(stored.model)
+              ? stored.model
+              : fallbackModel;
             if (stored)
               return {
                 provider: p,
                 key: stored.key,
-                model:
-                  stored.model ||
-                  (p === "openai" ? "gpt-4o-mini" : "gemini-2.0-flash"),
+                model,
               };
           }
           return null;

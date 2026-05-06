@@ -19,7 +19,7 @@ interface ChatApiErrorPayload {
 }
 
 const SUPPORTED_MODELS: Record<ChatProvider, string[]> = {
-    openai: ["gpt-4o-mini", "gpt-4o", "o1-mini"],
+    openai: ["gpt-4o-mini", "gpt-4o"],
     google: ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-pro"],
 };
 
@@ -244,14 +244,18 @@ function normalizePersonaTuning(value: unknown): PersonaTuningSettings {
             ? (value as Partial<PersonaTuningSettings>)
             : {};
     const clamp = (num: number) => Math.min(100, Math.max(0, num));
+    const toFiniteNumber = (inputValue: unknown, fallback: number) => {
+        const numeric = typeof inputValue === "number" ? inputValue : Number(inputValue);
+        return Number.isFinite(numeric) ? numeric : fallback;
+    };
     const voiceMood =
         input.voiceMood === "matched" || input.voiceMood === "softened"
             ? input.voiceMood
             : "matched";
 
     return {
-        expressiveness: clamp(Number(input.expressiveness ?? 72)),
-        directness: clamp(Number(input.directness ?? 54)),
+        expressiveness: clamp(toFiniteNumber(input.expressiveness, 72)),
+        directness: clamp(toFiniteNumber(input.directness, 54)),
         autoVoice:
             typeof input.autoVoice === "boolean" ? input.autoVoice : true,
         voiceMood,

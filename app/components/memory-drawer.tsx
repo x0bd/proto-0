@@ -63,11 +63,45 @@ const MEMORY_STOP_WORDS = new Set([
 
 // --- Persistence helpers ---
 
+function normalizeMemoryEntry(value: unknown): MemoryEntry | null {
+    if (!value || typeof value !== "object") return null;
+    const input = value as Partial<MemoryEntry>;
+    if (typeof input.content !== "string" || !input.content.trim()) return null;
+    const source =
+        input.source === "chat" ||
+        input.source === "voice" ||
+        input.source === "ritual" ||
+        input.source === "system"
+            ? input.source
+            : "system";
+    const date =
+        typeof input.date === "string" && Number.isFinite(new Date(input.date).getTime())
+            ? input.date
+            : new Date().toISOString();
+
+    return {
+        id: typeof input.id === "string" && input.id ? input.id : `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+        content: input.content,
+        tags: Array.isArray(input.tags)
+            ? input.tags.filter((tag): tag is string => typeof tag === "string")
+            : ["general"],
+        source,
+        date,
+    };
+}
+
+function normalizeMemories(value: unknown): MemoryEntry[] {
+    if (!Array.isArray(value)) return [];
+    return value
+        .map(normalizeMemoryEntry)
+        .filter((entry): entry is MemoryEntry => entry !== null);
+}
+
 export function loadMemories(): MemoryEntry[] {
     if (typeof window === "undefined") return [];
     try {
         const raw = localStorage.getItem(STORAGE_KEY);
-        if (raw) return JSON.parse(raw);
+        if (raw) return normalizeMemories(JSON.parse(raw));
     } catch { /* fall through */ }
     return [];
 }
@@ -77,12 +111,20 @@ function applyRetentionLimit(memories: MemoryEntry[]): MemoryEntry[] {
 }
 
 function saveMemories(memories: MemoryEntry[]): void {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(applyRetentionLimit(memories)));
+    try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(applyRetentionLimit(memories)));
+    } catch {
+        /* storage may be unavailable or full; never block chat/voice */
+    }
 }
 
 export function isMemoryEnabled(): boolean {
     if (typeof window === "undefined") return false;
-    return localStorage.getItem("dot_memory_enabled") !== "false";
+    try {
+        return localStorage.getItem("dot_memory_enabled") !== "false";
+    } catch {
+        return false;
+    }
 }
 
 /** Add a memory from anywhere in the app */
@@ -196,7 +238,11 @@ function loadMemoryEnabled(): boolean {
 }
 
 function saveMemoryEnabled(val: boolean): void {
-    localStorage.setItem("dot_memory_enabled", val.toString());
+    try {
+        localStorage.setItem("dot_memory_enabled", val.toString());
+    } catch {
+        /* noop */
+    }
 }
 
 export function MemoryDrawer({

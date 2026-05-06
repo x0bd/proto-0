@@ -1,11 +1,5 @@
 import type { NextConfig } from "next";
 
-const nextConfig: NextConfig = {
-  webpack(config) {
-    config.output ??= {};
-    config.output.hashFunction = "sha256";
-    return config;
-  },
-};
+const nextConfig: NextConfig = {};
 
 export default nextConfig;

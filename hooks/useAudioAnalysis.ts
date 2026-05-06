@@ -60,6 +60,7 @@ export function useAudioAnalysis(options: UseAudioAnalysisOptions = {}) {
   const audioContextRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
   const sourceNodeRef = useRef<MediaStreamAudioSourceNode | MediaElementAudioSourceNode | null>(null);
+  const mediaStreamRef = useRef<MediaStream | null>(null);
   const animationFrameRef = useRef<number | null>(null);
   
   // State
@@ -68,7 +69,7 @@ export function useAudioAnalysis(options: UseAudioAnalysisOptions = {}) {
   const [error, setError] = useState<string | null>(null);
   
   // Frequency data buffer (reused to avoid GC)
-  const frequencyDataRef = useRef<Uint8Array | null>(null);
+  const frequencyDataRef = useRef<Uint8Array<ArrayBuffer> | null>(null);
   
   /**
    * Initialize AudioContext and AnalyserNode
@@ -77,7 +78,9 @@ export function useAudioAnalysis(options: UseAudioAnalysisOptions = {}) {
     if (audioContextRef.current) return audioContextRef.current;
     
     try {
-      const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      const AudioContextClass = window.AudioContext ||
+        (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+      if (!AudioContextClass) throw new Error("AudioContext unsupported");
       const ctx = new AudioContextClass();
       audioContextRef.current = ctx;
       
@@ -105,8 +108,7 @@ export function useAudioAnalysis(options: UseAudioAnalysisOptions = {}) {
     const frequencyData = frequencyDataRef.current;
     if (!analyser || !frequencyData) return ZERO_LEVELS;
     
-    const dataArray = frequencyData as unknown as Uint8Array;
-    analyser.getByteFrequencyData(dataArray as any);
+    analyser.getByteFrequencyData(frequencyData);
     
     const binCount = analyser.frequencyBinCount;
     const sampleRate = audioContextRef.current?.sampleRate || 44100;
@@ -190,10 +192,18 @@ export function useAudioAnalysis(options: UseAudioAnalysisOptions = {}) {
         await ctx.resume();
       }
       
+      if (sourceNodeRef.current) {
+        sourceNodeRef.current.disconnect();
+        sourceNodeRef.current = null;
+      }
+      mediaStreamRef.current?.getTracks().forEach((track) => track.stop());
+      mediaStreamRef.current = null;
+
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const source = ctx.createMediaStreamSource(stream);
       source.connect(analyserRef.current!);
       sourceNodeRef.current = source;
+      mediaStreamRef.current = stream;
       
       if (opts.autoStart) startAnalysis();
       return true;
@@ -268,6 +278,8 @@ export function useAudioAnalysis(options: UseAudioAnalysisOptions = {}) {
       sourceNodeRef.current.disconnect();
       sourceNodeRef.current = null;
     }
+    mediaStreamRef.current?.getTracks().forEach((track) => track.stop());
+    mediaStreamRef.current = null;
   }, [stopAnalysis]);
   
   /**
@@ -308,6 +320,7 @@ export function useAudioAnalysis(options: UseAudioAnalysisOptions = {}) {
       
       analyserRef.current = externalAnalyser;
       audioContextRef.current = externalAnalyser.context as AudioContext;
+      frequencyDataRef.current = new Uint8Array(externalAnalyser.frequencyBinCount);
       
       // Assume the external source is already connected to this analyser
       if (opts.autoStart) startAnalysis();
