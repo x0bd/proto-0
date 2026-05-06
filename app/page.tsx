@@ -26,8 +26,8 @@ const PRODUCT_LINKS = [
 
 export default function LandingPage() {
 	const [mounted, setMounted] = React.useState(false);
-	const { theme, setTheme } = useTheme();
-	const isDark = mounted && theme === "dark";
+	const { resolvedTheme, setTheme } = useTheme();
+	const isDark = mounted && resolvedTheme === "dark";
 
 	React.useEffect(() => {
 		setMounted(true);
@@ -36,23 +36,23 @@ export default function LandingPage() {
 	return (
 		<main className="relative flex h-dvh w-full items-center justify-center overflow-hidden bg-background text-foreground">
 			<div
-				className="pointer-events-none absolute inset-0 opacity-80"
+				className="pointer-events-none absolute inset-0 opacity-90"
 				style={{
 					background:
-						"radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--te-yellow) 11%, transparent), transparent 30%)",
+						"radial-gradient(circle at 50% 48%, color-mix(in srgb, var(--te-yellow) 16%, transparent), transparent 28%), radial-gradient(circle at 50% 66%, color-mix(in srgb, var(--foreground) 6%, transparent), transparent 42%)",
 				}}
 			/>
 
 			<header className="absolute left-4 top-[max(16px,env(safe-area-inset-top))] z-10 sm:left-7 sm:top-7">
 				<div className="flex flex-col items-start gap-2">
-					<div className="te-button h-11 px-5 cursor-default">
-						<span className="logo-font text-[13px] font-bold tracking-[0.24em] text-[var(--te-yellow)]">
+					<div className="te-button h-12 px-5 cursor-default">
+						<span className="logo-font text-[14px] font-bold tracking-[0.26em] text-[var(--te-yellow)]">
 							DOT
 						</span>
 					</div>
-					<div className="te-lcd px-3 py-1.5">
+					<div className="te-lcd px-3 py-1.5 shadow-sm">
 						<span className="text-[9px] font-bold tracking-[0.22em] opacity-60">
-							LOCAL_FIRST
+							LOCAL_FIRST · BYOK
 						</span>
 					</div>
 				</div>
@@ -72,24 +72,37 @@ export default function LandingPage() {
 				)}
 			</button>
 
-			<Link
-				href="/companion"
-				aria-label="Start Dot"
-				className="te-button relative z-10 h-16 min-w-[180px] px-10 text-[13px] shadow-[0_18px_36px_rgba(0,0,0,0.12)]"
-				style={{
-					backgroundColor: "var(--te-yellow)",
-					borderColor: "color-mix(in srgb, var(--te-yellow) 78%, black)",
-					borderBottomColor:
-						"color-mix(in srgb, var(--te-yellow) 56%, black)",
-					color: "#111111",
-				}}
-			>
-				START
-			</Link>
+			<section className="relative z-10 flex flex-col items-center gap-5 px-6 text-center">
+				<div className="te-lcd px-4 py-2">
+					<span className="text-[9px] font-bold tracking-[0.24em] opacity-55">
+						COMPANION_OS
+					</span>
+				</div>
+
+				<Link
+					href="/companion"
+					aria-label="Start Dot"
+					className="te-button h-[72px] min-w-[204px] px-12 text-[14px] shadow-[0_22px_44px_rgba(0,0,0,0.14)]"
+					style={{
+						backgroundColor: "var(--te-yellow)",
+						borderColor:
+							"color-mix(in srgb, var(--te-yellow) 78%, black)",
+						borderBottomColor:
+							"color-mix(in srgb, var(--te-yellow) 56%, black)",
+						color: "#111111",
+					}}
+				>
+					START
+				</Link>
+
+				<p className="max-w-[240px] text-[10px] font-mono font-bold uppercase leading-relaxed tracking-[0.18em] text-foreground/35">
+					A small local-first AI companion for voice, memory, and mood.
+				</p>
+			</section>
 
 			<nav
 				aria-label="Product links"
-				className="absolute bottom-[max(16px,env(safe-area-inset-bottom))] right-4 z-10 flex flex-col items-end gap-2 sm:bottom-7 sm:right-7"
+				className="absolute bottom-[max(16px,env(safe-area-inset-bottom))] right-4 z-10 flex flex-col items-end gap-2 rounded-[16px] sm:bottom-7 sm:right-7"
 			>
 				{PRODUCT_LINKS.map((link) => (
 					<a
@@ -97,7 +110,7 @@ export default function LandingPage() {
 						href={link.href}
 						target="_blank"
 						rel="noreferrer"
-						className="te-button h-10 justify-start gap-2 px-3 text-foreground/70 hover:text-foreground"
+						className="te-button h-10 justify-start gap-2 px-3 text-foreground/62 hover:text-foreground"
 						aria-label={`Open ${link.label}`}
 						title={link.label}
 					>
