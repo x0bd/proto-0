@@ -6,25 +6,17 @@ import {
     setKey, getKey, clearKey, unlockVault, vaultIsLocked, isKeyEncrypted,
     type Provider, DEFAULT_MODELS, KEY_STORE_CHANGE_EVENT,
 } from "@/lib/key-store";
+import { CHAT_MODELS } from "@/lib/ai-models";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 const PROVIDERS: { id: Provider; label: string; placeholder: string; purpose: string }[] = [
     { id: "openai",     label: "OPENAI", placeholder: "sk-...",  purpose: "CHAT · VOICE" },
     { id: "google",     label: "GOOGLE", placeholder: "AIza...", purpose: "CHAT · VOICE" },
+    { id: "anthropic",  label: "CLAUDE", placeholder: "sk-ant-...", purpose: "CHAT · VOICE" },
     { id: "elevenlabs", label: "11LABS", placeholder: "sk_...",  purpose: "TTS_ENGINE"   },
 ];
 
-const PROVIDER_MODELS: Partial<Record<Provider, { id: string; label: string }[]>> = {
-    openai: [
-        { id: "gpt-4o-mini",  label: "4O-MINI" },
-        { id: "gpt-4o",       label: "4O"      },
-    ],
-    google: [
-        { id: "gemini-2.0-flash", label: "2.0-FLASH" },
-        { id: "gemini-1.5-flash", label: "1.5-FLASH" },
-        { id: "gemini-1.5-pro",   label: "1.5-PRO"   },
-    ],
-};
+const PROVIDER_MODELS: Partial<Record<Provider, { id: string; label: string }[]>> = CHAT_MODELS;
 
 type View = "list" | "edit" | "unlock";
 type ValidationStatus = "idle" | "testing" | "valid" | "invalid";
@@ -37,16 +29,17 @@ interface ValidationState {
 const INITIAL_VALIDATION_STATE: Record<Provider, ValidationState> = {
     openai: { status: "idle" },
     google: { status: "idle" },
+    anthropic: { status: "idle" },
     elevenlabs: { status: "idle" },
 };
 
 export function KeyVaultPanel() {
     const [view, setView] = React.useState<View>("list");
     const [keyStates, setKeyStates] = React.useState<Record<Provider, boolean>>({
-        openai: false, google: false, elevenlabs: false,
+        openai: false, google: false, anthropic: false, elevenlabs: false,
     });
     const [encryptedStates, setEncryptedStates] = React.useState<Record<Provider, boolean>>({
-        openai: false, google: false, elevenlabs: false,
+        openai: false, google: false, anthropic: false, elevenlabs: false,
     });
     const [locked, setLocked] = React.useState(false);
 
@@ -72,11 +65,13 @@ export function KeyVaultPanel() {
         setKeyStates({
             openai:     !!getKey("openai"),
             google:     !!getKey("google"),
+            anthropic:  !!getKey("anthropic"),
             elevenlabs: !!getKey("elevenlabs"),
         });
         setEncryptedStates({
             openai:     isKeyEncrypted("openai"),
             google:     isKeyEncrypted("google"),
+            anthropic:  isKeyEncrypted("anthropic"),
             elevenlabs: isKeyEncrypted("elevenlabs"),
         });
         setLocked(vaultIsLocked());

@@ -2,11 +2,13 @@
 // BYOK key persistence with optional Web Crypto AES-GCM encryption.
 // Keys never leave the device except when forwarded to the app's own API routes.
 
+import { DEFAULT_MODELS, PROVIDER_IDS, type Provider } from "@/lib/ai-models";
+
 const STORAGE_PREFIX = "dot_key_";
 const DECRYPTED_CACHE_TTL_MS = 15 * 60 * 1000;
 export const KEY_STORE_CHANGE_EVENT = "dot:key-store";
 
-export type Provider = "openai" | "google" | "elevenlabs";
+export type { Provider };
 
 export interface StoredKey {
   provider: Provider;
@@ -234,8 +236,7 @@ export function clearKey(provider: Provider): void {
 }
 
 export function getAllKeys(): StoredKey[] {
-  const providers: Provider[] = ["openai", "google", "elevenlabs"];
-  return providers.map((p) => getKey(p)).filter((k): k is StoredKey => k !== null);
+  return PROVIDER_IDS.map((p) => getKey(p)).filter((k): k is StoredKey => k !== null);
 }
 
 export function hasKey(provider: Provider): boolean {
@@ -244,8 +245,7 @@ export function hasKey(provider: Provider): boolean {
 
 /** True if any localStorage entry is encrypted and not yet in the memory cache. */
 export function vaultIsLocked(): boolean {
-  const providers: Provider[] = ["openai", "google", "elevenlabs"];
-  return providers.some((p) => {
+  return PROVIDER_IDS.some((p) => {
     if (getCachedKey(p)) return false;
     try {
       const raw = localStorage.getItem(storageKey(p));
@@ -270,11 +270,10 @@ export function isKeyEncrypted(provider: Provider): boolean {
  * Returns { success: true } if all encrypted keys decrypted without error.
  */
 export async function unlockVault(passphrase: string): Promise<{ success: boolean; unlocked: number }> {
-  const providers: Provider[] = ["openai", "google", "elevenlabs"];
   let unlocked = 0;
   let anyFailed = false;
 
-  for (const p of providers) {
+  for (const p of PROVIDER_IDS) {
     if (getCachedKey(p)) continue;
     try {
       const raw = localStorage.getItem(storageKey(p));
@@ -299,9 +298,4 @@ export async function unlockVault(passphrase: string): Promise<{ success: boolea
 
   return { success: !anyFailed, unlocked };
 }
-
-export const DEFAULT_MODELS: Record<Provider, string> = {
-  openai: "gpt-4o-mini",
-  google: "gemini-2.0-flash",
-  elevenlabs: "eleven_monolingual_v1",
-};
+export { DEFAULT_MODELS };

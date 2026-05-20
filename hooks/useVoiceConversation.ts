@@ -7,6 +7,7 @@ import type {
 } from "@/components/ui/voice-companion-bar";
 import type { AudioLevels } from "./useAudioAnalysis";
 import { getKey } from "@/lib/key-store";
+import { CHAT_PROVIDER_IDS, resolveChatModel } from "@/lib/ai-models";
 import {
 	getElevenLabsVoiceId,
 	toElevenLabsVoiceSettings,
@@ -24,11 +25,6 @@ interface UseVoiceConversationOptions {
   personaTuning?: PersonaTuningSettings;
   onAudioLevelsChange?: (levels: AudioLevels) => void;
 }
-
-const CHAT_MODELS = {
-  openai: ["gpt-4o-mini", "gpt-4o"],
-  google: ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-pro"],
-} as const;
 
 const getSpeechRecognition = () =>
   typeof window !== "undefined"
@@ -236,18 +232,13 @@ export function useVoiceConversation({
       setVoiceError(null);
       try {
         const providerInfo = (() => {
-          for (const p of ["openai", "google"] as const) {
+          for (const p of CHAT_PROVIDER_IDS) {
             const stored = getKey(p);
-            const fallbackModel =
-              p === "openai" ? "gpt-4o-mini" : "gemini-2.0-flash";
-            const model = stored?.model && (CHAT_MODELS[p] as readonly string[]).includes(stored.model)
-              ? stored.model
-              : fallbackModel;
             if (stored)
               return {
                 provider: p,
                 key: stored.key,
-                model,
+                model: resolveChatModel(p, stored.model),
               };
           }
           return null;

@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-
-type Provider = "openai" | "google" | "elevenlabs";
+import { PROVIDER_IDS, type Provider } from "@/lib/ai-models";
 
 interface ValidateRequestBody {
   provider?: Provider;
@@ -12,7 +11,7 @@ interface ProviderCheckResult {
   detail?: string;
 }
 
-const PROVIDERS = new Set<Provider>(["openai", "google", "elevenlabs"]);
+const PROVIDERS = new Set<Provider>(PROVIDER_IDS);
 
 export async function POST(req: Request) {
   try {
@@ -53,6 +52,8 @@ async function validateProvider(
       return validateOpenAI(apiKey, model);
     case "google":
       return validateGoogle(apiKey, model);
+    case "anthropic":
+      return validateAnthropic(apiKey, model);
     case "elevenlabs":
       return validateElevenLabs(apiKey);
   }
@@ -103,6 +104,32 @@ async function validateGoogle(
 
   return {
     label: modelFound ? "GEMINI_MODEL_OK" : "GEMINI_OK",
+    detail: modelFound ? model : `${models.length} models visible`,
+  };
+}
+
+async function validateAnthropic(
+  apiKey: string,
+  model?: string,
+): Promise<ProviderCheckResult> {
+  const response = await fetch("https://api.anthropic.com/v1/models", {
+    headers: {
+      "x-api-key": apiKey,
+      "anthropic-version": "2023-06-01",
+    },
+  });
+  const payload = await parseJson(response);
+
+  if (!response.ok) {
+    throw new Error(readProviderError(payload, "Anthropic rejected key"));
+  }
+
+  const models = Array.isArray(payload.data) ? payload.data : [];
+  const modelFound =
+    model && models.some((item) => item && item.id === model);
+
+  return {
+    label: modelFound ? "CLAUDE_MODEL_OK" : "CLAUDE_OK",
     detail: modelFound ? model : `${models.length} models visible`,
   };
 }

@@ -4,7 +4,8 @@ import * as React from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { X, Send, MessageSquare, Loader2, Settings2 } from "lucide-react";
 import { usePanelPosition } from "@/hooks/usePanelPosition";
-import { getKey, DEFAULT_MODELS, type Provider } from "@/lib/key-store";
+import { getKey } from "@/lib/key-store";
+import { CHAT_PROVIDER_IDS, resolveChatModel, type ChatProvider } from "@/lib/ai-models";
 import { addMemory, buildMemoryContextForPrompt, isMemoryEnabled } from "./memory-drawer";
 import { buildRitualContextForPrompt } from "./ritual-drawer";
 import type { EmotionState } from "../components/face/types";
@@ -32,11 +33,6 @@ interface ChatErrorResponse {
     code?: string;
     action?: string;
 }
-
-const CHAT_MODELS: Record<"openai" | "google", string[]> = {
-    openai: ["gpt-4o-mini", "gpt-4o"],
-    google: ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-pro"],
-};
 
 // Lightweight text sentiment → emotion mapping
 function sentimentToEmotion(text: string): EmotionState {
@@ -82,13 +78,11 @@ function autoTags(content: string): string[] {
 }
 
 // Detect which provider is configured
-function getActiveProvider(): { provider: Provider; key: string; model: string } | null {
-    for (const p of ["openai", "google"] as const) {
+function getActiveProvider(): { provider: ChatProvider; key: string; model: string } | null {
+    for (const p of CHAT_PROVIDER_IDS) {
         const stored = getKey(p);
         if (stored) {
-            const model = stored.model && CHAT_MODELS[p].includes(stored.model)
-                ? stored.model
-                : DEFAULT_MODELS[p];
+            const model = resolveChatModel(p, stored.model);
             return { provider: p, key: stored.key, model };
         }
     }
@@ -307,7 +301,7 @@ export function ChatModule({
                                         NO_AI_KEY_FOUND
                                     </span>
                                     <span className="text-[9px] font-mono te-whisper leading-relaxed">
-                                        Add an OpenAI or Google key in<br />Settings → KEYS tab to begin.
+                                        Add an OpenAI, Google, or Claude key in<br />Settings → KEYS tab to begin.
                                     </span>
                                     {onOpenSettings && (
                                         <button

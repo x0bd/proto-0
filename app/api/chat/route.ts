@@ -1,8 +1,14 @@
 import { createOpenAI } from "@ai-sdk/openai";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
+import { createAnthropic } from "@ai-sdk/anthropic";
 import { streamText } from "ai";
+import {
+    DEFAULT_MODELS,
+    SUPPORTED_CHAT_MODELS,
+    isChatProvider,
+    type ChatProvider,
+} from "@/lib/ai-models";
 
-type ChatProvider = "openai" | "google";
 type PersonaVoiceMood = "matched" | "softened";
 
 interface PersonaTuningSettings {
@@ -17,16 +23,6 @@ interface ChatApiErrorPayload {
     code: string;
     action?: string;
 }
-
-const SUPPORTED_MODELS: Record<ChatProvider, string[]> = {
-    openai: ["gpt-4o-mini", "gpt-4o"],
-    google: ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-pro"],
-};
-
-const DEFAULT_MODELS: Record<ChatProvider, string> = {
-    openai: "gpt-4o-mini",
-    google: "gemini-2.0-flash",
-};
 
 class ChatApiError extends Error {
     constructor(
@@ -91,12 +87,12 @@ export async function POST(req: Request) {
 }
 
 function validateProvider(provider: unknown): ChatProvider {
-    if (provider === "openai" || provider === "google") return provider;
+    if (isChatProvider(provider)) return provider;
     throw new ChatApiError(
         400,
         "PROVIDER_UNSUPPORTED",
         "This AI provider is not supported for chat yet.",
-        "Choose OpenAI or Google in Settings > KEYS.",
+        "Choose OpenAI, Google, or Anthropic in Settings > KEYS.",
     );
 }
 
@@ -106,13 +102,13 @@ function validateModel(provider: ChatProvider, model: unknown): string {
             ? model.trim()
             : DEFAULT_MODELS[provider];
 
-    if (SUPPORTED_MODELS[provider].includes(selectedModel)) return selectedModel;
+    if (SUPPORTED_CHAT_MODELS[provider].includes(selectedModel)) return selectedModel;
 
     throw new ChatApiError(
         400,
         "MODEL_UNSUPPORTED",
         `${selectedModel} is not enabled for ${provider} chat.`,
-        `Pick one of: ${SUPPORTED_MODELS[provider].join(", ")}.`,
+        `Pick one of: ${SUPPORTED_CHAT_MODELS[provider].join(", ")}.`,
     );
 }
 
@@ -153,6 +149,10 @@ function getModel(provider: ChatProvider, model: string, apiKey: string) {
         case "google": {
             const google = createGoogleGenerativeAI({ apiKey });
             return google(model);
+        }
+        case "anthropic": {
+            const anthropic = createAnthropic({ apiKey });
+            return anthropic(model);
         }
     }
 }
