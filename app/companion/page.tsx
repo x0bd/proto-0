@@ -68,6 +68,12 @@ const EMOTION_PRESETS: { id: string; label: string; state: EmotionState }[] = [
 	},
 ];
 
+interface VoiceMessage {
+	id: string;
+	role: "user" | "assistant";
+	content: string;
+}
+
 function clamp01(v: number) {
 	return Math.min(1, Math.max(0, v));
 }
@@ -120,6 +126,8 @@ export default function Home() {
 	const [isRitualOpen, setIsRitualOpen] = useState(false);
 	const [isAudioLabOpen, setIsAudioLabOpen] = useState(false);
 	const [isChatOpen, setIsChatOpen] = useState(false);
+	const [liveTranscript, setLiveTranscript] = useState("");
+	const [voiceMessages, setVoiceMessages] = useState<VoiceMessage[]>([]);
 	const [activePersonaId, setActivePersonaId] = useState<string>(() => {
 		if (typeof window !== "undefined") {
 			return localStorage.getItem("activePersonaId") || "coach";
@@ -166,6 +174,37 @@ export default function Home() {
 	const { voiceState, voiceError, toggleMic, interrupt } = useVoiceConversation({
 		activePersonaId,
 		personaTuning,
+		onTranscriptChange: setLiveTranscript,
+		onVoiceUserMessage: (message) => {
+			setVoiceMessages((prev) => [
+				...prev,
+				{ id: `voice-user:${message.id}`, role: "user", content: message.content },
+			]);
+		},
+		onVoiceAssistantStart: (message) => {
+			setVoiceMessages((prev) => [
+				...prev,
+				{ id: `voice-assistant:${message.id}`, role: "assistant", content: "" },
+			]);
+		},
+		onVoiceAssistantUpdate: (message) => {
+			setVoiceMessages((prev) =>
+				prev.map((item) =>
+					item.id === `voice-assistant:${message.id}`
+						? { ...item, content: message.content }
+						: item,
+				),
+			);
+		},
+		onVoiceAssistantComplete: (message) => {
+			setVoiceMessages((prev) =>
+				prev.map((item) =>
+					item.id === `voice-assistant:${message.id}`
+						? { ...item, content: message.content }
+						: item,
+				),
+			);
+		},
 		onAudioLevelsChange: (ttsLevels) => {
 			setAudioLevels(ttsLevels);
 			setVoiceLevel(ttsLevels.overall);
@@ -562,6 +601,7 @@ export default function Home() {
 					constraintsRef={constraintsRef}
 					voiceState={voiceState}
 					voiceError={voiceError}
+					liveTranscript={liveTranscript}
 					onToggleMic={toggleMic}
 					onInterrupt={interrupt}
 				/>
@@ -616,6 +656,9 @@ export default function Home() {
 						baseEmotionRef.current = emotion;
 						targetEmotionRef.current = emotion;
 					}}
+					externalMessages={voiceMessages}
+					liveTranscript={liveTranscript}
+					voiceState={voiceState}
 					activePersonaId={activePersonaId}
 					personaTuning={personaTuning}
 					accentColor={accentColor}

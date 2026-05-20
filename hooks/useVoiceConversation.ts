@@ -24,6 +24,11 @@ interface UseVoiceConversationOptions {
   activePersonaId?: string;
   personaTuning?: PersonaTuningSettings;
   onAudioLevelsChange?: (levels: AudioLevels) => void;
+  onTranscriptChange?: (text: string) => void;
+  onVoiceUserMessage?: (message: { id: string; content: string }) => void;
+  onVoiceAssistantStart?: (message: { id: string }) => void;
+  onVoiceAssistantUpdate?: (message: { id: string; content: string }) => void;
+  onVoiceAssistantComplete?: (message: { id: string; content: string }) => void;
 }
 
 const getSpeechRecognition = () =>
@@ -55,6 +60,11 @@ export function useVoiceConversation({
   activePersonaId = "coach",
   personaTuning,
   onAudioLevelsChange,
+  onTranscriptChange,
+  onVoiceUserMessage,
+  onVoiceAssistantStart,
+  onVoiceAssistantUpdate,
+  onVoiceAssistantComplete,
 }: UseVoiceConversationOptions = {}) {
   const [voiceState, setVoiceState] = useState<VoiceState>("idle");
   const [voiceError, setVoiceError] = useState<VoiceErrorCode | null>(null);
@@ -142,6 +152,7 @@ export function useVoiceConversation({
         setVoiceState("idle");
         setVoiceError(null);
         setTranscript("");
+        onTranscriptChange?.("");
         return;
       }
 
@@ -199,6 +210,7 @@ export function useVoiceConversation({
           stopTtsAnalysis();
           setVoiceState("idle");
           setTranscript("");
+          onTranscriptChange?.("");
         };
       } catch {
         // Browser SpeechSynthesis fallback when ElevenLabs key is missing
@@ -215,15 +227,17 @@ export function useVoiceConversation({
           utt.onend = () => {
             setVoiceState("idle");
             setTranscript("");
+            onTranscriptChange?.("");
           };
           window.speechSynthesis.speak(utt);
         } else {
           raiseVoiceError("TTS_ERROR");
           setTranscript("");
+          onTranscriptChange?.("");
         }
       }
     },
-    [elevenLabsSettings, raiseVoiceError, startTtsAnalysis, stopTtsAnalysis, voiceId, voiceSettings],
+    [elevenLabsSettings, onTranscriptChange, raiseVoiceError, startTtsAnalysis, stopTtsAnalysis, voiceId, voiceSettings],
   );
 
   // ── Send transcript to AI ─────────────────────────────────────────────────
@@ -232,6 +246,11 @@ export function useVoiceConversation({
       setVoiceState("thinking");
       setVoiceError(null);
       try {
+        const userMessageId = Date.now().toString();
+        const assistantMessageId = `${Date.now() + 1}`;
+        onVoiceUserMessage?.({ id: userMessageId, content: text });
+        onVoiceAssistantStart?.({ id: assistantMessageId });
+
         const providerInfo = (() => {
           for (const p of CHAT_PROVIDER_IDS) {
             const stored = getKey(p);
@@ -277,21 +296,25 @@ export function useVoiceConversation({
         const reader = res.body?.getReader();
         const decoder = new TextDecoder();
         let fullText = "";
+        onVoiceAssistantUpdate?.({ id: assistantMessageId, content: "" });
 
         if (reader) {
           while (true) {
             const { done, value } = await reader.read();
             if (done) break;
             fullText += decoder.decode(value, { stream: true });
+            onVoiceAssistantUpdate?.({ id: assistantMessageId, content: fullText });
           }
         }
 
         if (fullText) {
+          onVoiceAssistantComplete?.({ id: assistantMessageId, content: fullText });
           saveVoiceMemory(text);
           await speak(fullText);
         } else {
           setVoiceState("idle");
           setTranscript("");
+          onTranscriptChange?.("");
         }
       } catch (err: unknown) {
         if (!(err instanceof DOMException && err.name === "AbortError")) {
@@ -299,7 +322,7 @@ export function useVoiceConversation({
         }
       }
     },
-    [activePersonaId, personaTuning, raiseVoiceError, speak],
+    [activePersonaId, onTranscriptChange, onVoiceAssistantComplete, onVoiceAssistantStart, onVoiceAssistantUpdate, onVoiceUserMessage, personaTuning, raiseVoiceError, speak],
   );
 
   // ── Stop everything ───────────────────────────────────────────────────────
@@ -317,7 +340,8 @@ export function useVoiceConversation({
     setVoiceError(null);
     setVoiceState("idle");
     setTranscript("");
-  }, [stopTtsAnalysis]);
+    onTranscriptChange?.("");
+  }, [onTranscriptChange, stopTtsAnalysis]);
 
   // ── Mic toggle: start listening or interrupt if active ────────────────────
   const toggleMic = useCallback(() => {
@@ -345,6 +369,7 @@ export function useVoiceConversation({
       const result = event.results[event.results.length - 1];
       const text = result[0].transcript;
       setTranscript(text);
+      onTranscriptChange?.(text);
       if (result.isFinal) {
         recognition.stop();
         recognitionRef.current = null;
@@ -365,7 +390,7 @@ export function useVoiceConversation({
     };
 
     recognition.start();
-  }, [raiseVoiceError, sendToAI, stopAll, voiceSettings.interruptible]);
+  }, [onTranscriptChange, raiseVoiceError, sendToAI, stopAll, voiceSettings.interruptible]);
 
   const interrupt = useCallback(() => {
     if (voiceSettings.interruptible) stopAll();

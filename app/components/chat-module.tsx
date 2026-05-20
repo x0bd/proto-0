@@ -15,6 +15,9 @@ interface ChatModuleProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     onEmotionChange?: (emotion: EmotionState) => void;
+    externalMessages?: ChatMessage[];
+    liveTranscript?: string;
+    voiceState?: "idle" | "listening" | "thinking" | "speaking" | "error";
     activePersonaId?: string;
     personaTuning?: PersonaTuningSettings;
     accentColor?: string;
@@ -101,6 +104,9 @@ export function ChatModule({
     open,
     onOpenChange,
     onEmotionChange,
+    externalMessages = [],
+    liveTranscript = "",
+    voiceState = "idle",
     activePersonaId = "coach",
     personaTuning,
     accentColor = "#7c3aed",
@@ -227,6 +233,14 @@ export function ChatModule({
     const providerLabel = providerInfo
         ? `${providerInfo.provider.toUpperCase()} · ${providerInfo.model.split("/").pop()?.split("-").slice(0, 2).join("-") ?? providerInfo.model}`
         : "NO_KEY";
+    const visibleMessages = React.useMemo(
+        () =>
+            [...messages, ...externalMessages].sort(
+                (a, b) => Number(a.id.split(":").pop()) - Number(b.id.split(":").pop()),
+            ),
+        [externalMessages, messages],
+    );
+    const isVoiceActive = voiceState === "listening" || voiceState === "thinking";
 
     const isConfigured = !!providerInfo;
     const { x, y, onDragEnd } = usePanelPosition("chat");
@@ -288,7 +302,7 @@ export function ChatModule({
                                 </div>
                                 <div className="bg-[#050505] px-2 py-[2px] rounded-[3px] border border-white/10">
                                     <span className="text-[9px] font-bold tracking-widest" style={{ color: isConfigured ? "#00ff88" : "var(--te-orange)" }}>
-                                        {isLoading ? "STREAM" : isConfigured ? "READY" : "NO_KEY"}
+                                        {isVoiceActive ? "VOICE" : isLoading ? "STREAM" : isConfigured ? "READY" : "NO_KEY"}
                                     </span>
                                 </div>
                             </div>
@@ -325,13 +339,23 @@ export function ChatModule({
                                 {/* Messages */}
                                 <div className="px-4 mb-2">
                                     <div className="te-recessed p-2 max-h-[240px] overflow-y-auto" style={{ backgroundColor: "#0a0a0a" }}>
-                                        {messages.length === 0 ? (
+                                        {liveTranscript && (
+                                            <div className="mb-2 te-lcd px-2 py-1.5 border border-white/10">
+                                                <div className="text-[7px] font-bold tracking-[0.24em] text-white/35 mb-1">
+                                                    LIVE_TRANSCRIPT
+                                                </div>
+                                                <div className="text-[10px] font-mono leading-relaxed text-white/75 normal-case">
+                                                    {liveTranscript}
+                                                </div>
+                                            </div>
+                                        )}
+                                        {visibleMessages.length === 0 ? (
                                             <div className="flex items-center justify-center py-6">
                                                 <span className="text-[9px] font-mono text-white/20 tracking-widest uppercase">AWAITING_INPUT</span>
                                             </div>
                                         ) : (
                                             <div className="flex flex-col gap-2 py-1">
-                                                {messages.map((msg) => (
+                                                {visibleMessages.map((msg) => (
                                                     <div
                                                         key={msg.id}
                                                         className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}

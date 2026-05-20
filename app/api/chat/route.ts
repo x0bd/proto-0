@@ -63,7 +63,7 @@ export async function POST(req: Request) {
         const validatedMessages = validateMessages(messages);
 
         const systemPrompt = buildSystemPrompt(persona, memoryContext, personaTuning);
-        const recentMessages = validatedMessages.slice(-8);
+        const recentMessages = validatedMessages.slice(-6);
         const aiModel = getModel(validatedProvider, validatedModel, apiKey);
 
         const result = streamText({
@@ -71,6 +71,7 @@ export async function POST(req: Request) {
             system: systemPrompt,
             messages: recentMessages,
             temperature: 0.7,
+            maxOutputTokens: 180,
         });
 
         return result.toTextStreamResponse();

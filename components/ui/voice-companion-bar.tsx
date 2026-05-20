@@ -36,6 +36,7 @@ interface VoiceCompanionBarProps {
 	onToggleMute: () => void;
 	onOpenSettings: () => void;
 	errorCode?: VoiceErrorCode | null;
+	liveTranscript?: string;
 	accentColor?: string;
 	className?: string;
 }
@@ -58,6 +59,7 @@ export function VoiceCompanionBar({
 	onToggleMute,
 	onOpenSettings,
 	errorCode,
+	liveTranscript = "",
 	accentColor = "#7c3aed",
 	className,
 }: VoiceCompanionBarProps) {
@@ -113,6 +115,15 @@ export function VoiceCompanionBar({
 					)}
 				</div>
 			</div>
+
+			{liveTranscript && (
+				<div className="hidden sm:flex te-lcd h-[48px] min-w-[180px] max-w-[260px] px-3 py-2 flex-col justify-center overflow-hidden shrink">
+					<span className="text-[7px] opacity-40 tracking-[0.22em] font-bold">TRANSCRIPT</span>
+					<span className="text-[10px] opacity-75 font-mono truncate normal-case">
+						{liveTranscript}
+					</span>
+				</div>
+			)}
 
 			{/* Transport Controls */}
 			<div className="flex items-center gap-1.5 te-recessed p-1.5 shrink-0">

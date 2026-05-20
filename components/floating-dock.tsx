@@ -18,6 +18,7 @@ interface FloatingDockProps {
     constraintsRef?: React.RefObject<Element>;
     voiceState: VoiceState;
     voiceError?: VoiceErrorCode | null;
+    liveTranscript?: string;
     onToggleMic: () => void;
     onInterrupt: () => void;
 }
@@ -32,6 +33,7 @@ export function FloatingDock({
     constraintsRef,
     voiceState,
     voiceError,
+    liveTranscript,
     onToggleMic,
     onInterrupt,
 }: FloatingDockProps) {
@@ -50,6 +52,7 @@ export function FloatingDock({
                     isMuted={!voiceEnabled}
                     onToggleMute={onVoiceToggle}
                     onOpenSettings={() => setIsVoiceSettingsOpen(true)}
+                    liveTranscript={liveTranscript}
                     accentColor={accentColor}
                 />
             </div>
