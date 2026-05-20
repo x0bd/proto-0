@@ -10,6 +10,7 @@ import { addMemory, buildMemoryContextForPrompt, isMemoryEnabled } from "./memor
 import { buildRitualContextForPrompt } from "./ritual-drawer";
 import type { EmotionState } from "../components/face/types";
 import type { PersonaTuningSettings } from "@/hooks/usePersonaSettings";
+import { emotionFromText } from "@/lib/emotion-analysis";
 
 interface ChatModuleProps {
     open: boolean;
@@ -35,38 +36,6 @@ interface ChatErrorResponse {
     error?: string;
     code?: string;
     action?: string;
-}
-
-// Lightweight text sentiment → emotion mapping
-function sentimentToEmotion(text: string): EmotionState {
-    const lower = text.toLowerCase();
-    let joy = 0, sadness = 0, surprise = 0, anger = 0, curiosity = 0;
-
-    const joyWords = ["happy", "great", "love", "wonderful", "beautiful", "bright", "warm", "light", "smile", "laugh", "glad", "brilliant", "enjoy", "fun", "delight", "hope", "joy", "excited"];
-    joyWords.forEach(w => { if (lower.includes(w)) joy += 0.3; });
-
-    const sadWords = ["sad", "sorry", "miss", "lost", "pain", "hurt", "alone", "quiet", "heavy", "weight", "dark", "shadow", "grief", "melancholy"];
-    sadWords.forEach(w => { if (lower.includes(w)) sadness += 0.3; });
-
-    const surpriseWords = ["wow", "unexpected", "sudden", "surprise", "amazing", "incredible", "whoa"];
-    surpriseWords.forEach(w => { if (lower.includes(w)) surprise += 0.3; });
-
-    const curiosityWords = ["wonder", "curious", "think", "reflect", "ponder", "question", "consider", "imagine", "perhaps", "maybe", "explore"];
-    curiosityWords.forEach(w => { if (lower.includes(w)) curiosity += 0.25; });
-
-    const angerWords = ["frustrat", "angry", "annoy", "hate", "rage", "furious", "stop", "enough"];
-    angerWords.forEach(w => { if (lower.includes(w)) anger += 0.3; });
-
-    if (text.includes("?")) curiosity += 0.2;
-    if (text.includes("!")) { surprise += 0.15; joy += 0.1; }
-
-    joy = Math.min(1, joy); sadness = Math.min(1, sadness);
-    surprise = Math.min(1, surprise); anger = Math.min(1, anger); curiosity = Math.min(1, curiosity);
-
-    if (joy < 0.1 && sadness < 0.1 && surprise < 0.1 && anger < 0.1 && curiosity < 0.1) {
-        return { joy: 0.3, sadness: 0, surprise: 0, anger: 0, curiosity: 0.15 };
-    }
-    return { joy, sadness, surprise, anger, curiosity };
 }
 
 function autoTags(content: string): string[] {
@@ -157,6 +126,7 @@ export function ChatModule({
         setInput("");
         setIsLoading(true);
         setError(null);
+        onEmotionChange?.(emotionFromText(userMsg.content));
 
         const trimmed = userMsg.content;
 
@@ -218,7 +188,7 @@ export function ChatModule({
 
             // Drive avatar emotion
             if (onEmotionChange && fullText) {
-                onEmotionChange(sentimentToEmotion(fullText));
+                onEmotionChange(emotionFromText(fullText));
             }
         } catch (err: unknown) {
             if (!(err instanceof DOMException && err.name === "AbortError")) {

@@ -24,20 +24,13 @@ import { FaceVariant, EmotionState } from "../components/face/types";
 import { VARIANT_COLORS } from "../components/face/themes";
 import { useAudioAnalysis, type AudioLevels } from "@/hooks/useAudioAnalysis";
 import { useVoiceConversation } from "@/hooks/useVoiceConversation";
+import { NEUTRAL_EMOTION, emotionFromText } from "@/lib/emotion-analysis";
 import {
 	getPersonaAvatarBias,
 	usePersonaSettings,
 } from "@/hooks/usePersonaSettings";
 import { useTheme } from "next-themes";
 import { getAllKeys, KEY_STORE_CHANGE_EVENT } from "@/lib/key-store";
-
-const NEUTRAL_EMOTION: EmotionState = {
-	joy: 0.3,
-	sadness: 0,
-	surprise: 0,
-	anger: 0,
-	curiosity: 0.2,
-};
 
 const EMOTION_PRESETS: { id: string; label: string; state: EmotionState }[] = [
 	{ id: "neutral", label: "NEUTRAL", state: NEUTRAL_EMOTION },
@@ -74,6 +67,8 @@ interface VoiceMessage {
 	content: string;
 }
 
+type EmotionSourceMode = "demo" | "live";
+
 function clamp01(v: number) {
 	return Math.min(1, Math.max(0, v));
 }
@@ -102,6 +97,8 @@ export default function Home() {
 	const [baseEmotion, setBaseEmotion] =
 		useState<EmotionState>(NEUTRAL_EMOTION);
 	const [activePresetId, setActivePresetId] = useState<string>("neutral");
+	const [emotionSourceMode, setEmotionSourceMode] =
+		useState<EmotionSourceMode>("demo");
 	const [isCustomizationOpen, setIsCustomizationOpen] = useState(false);
 	const avatarStageRef = useRef<HTMLDivElement>(null);
 	const [faceVariant, setFaceVariant] = useState<FaceVariant>("minimal");
@@ -165,6 +162,15 @@ export default function Home() {
 	const variantColor = VARIANT_COLORS[faceVariant];
 	const accentColor = customAccentColor ?? variantColor;
 
+	const applyLiveEmotionFromText = (text: string) => {
+		if (!text.trim()) return;
+		const nextEmotion = emotionFromText(text);
+		setBaseEmotion(nextEmotion);
+		baseEmotionRef.current = nextEmotion;
+		targetEmotionRef.current = nextEmotion;
+		setCurrentEmotion(nextEmotion);
+	};
+
 	const {
 		levels,
 		connectMicrophone,
@@ -180,6 +186,9 @@ export default function Home() {
 				...prev,
 				{ id: `voice-user:${message.id}`, role: "user", content: message.content },
 			]);
+			if (emotionSourceMode === "live") {
+				applyLiveEmotionFromText(message.content);
+			}
 		},
 		onVoiceAssistantStart: (message) => {
 			setVoiceMessages((prev) => [
@@ -204,6 +213,9 @@ export default function Home() {
 						: item,
 				),
 			);
+			if (emotionSourceMode === "live") {
+				applyLiveEmotionFromText(message.content);
+			}
 		},
 		onAudioLevelsChange: (ttsLevels) => {
 			setAudioLevels(ttsLevels);
@@ -304,6 +316,7 @@ export default function Home() {
 	}, [isCustomizationOpen]);
 
 	const handlePointerMove = (e: React.MouseEvent<HTMLDivElement>) => {
+		if (emotionSourceMode === "live") return;
 		if (typeof window === "undefined") return;
 
 		const { innerWidth, innerHeight } = window;
@@ -353,10 +366,12 @@ export default function Home() {
 	};
 
 	const handlePointerLeave = () => {
+		if (emotionSourceMode === "live") return;
 		targetEmotionRef.current = baseEmotionRef.current;
 	};
 
 	const applyPreset = (id: string) => {
+		if (emotionSourceMode === "live") return;
 		const preset = EMOTION_PRESETS.find((p) => p.id === id);
 		if (!preset) return;
 		setActivePresetId(id);
@@ -378,6 +393,17 @@ export default function Home() {
 	const completeOnboarding = () => {
 		localStorage.setItem("dot_onboarding_done", "true");
 		setIsOnboardingOpen(false);
+	};
+
+	const switchEmotionSourceMode = (mode: EmotionSourceMode) => {
+		setEmotionSourceMode(mode);
+		if (mode === "live") {
+			setBaseEmotion(NEUTRAL_EMOTION);
+			baseEmotionRef.current = NEUTRAL_EMOTION;
+			targetEmotionRef.current = NEUTRAL_EMOTION;
+			setCurrentEmotion(NEUTRAL_EMOTION);
+			setActivePresetId("neutral");
+		}
 	};
 
 	const personaAvatarBias = getPersonaAvatarBias(
@@ -463,6 +489,59 @@ export default function Home() {
 							<span className="text-[10px] tracking-widest">
 								{activePersonaId.replace("-", " ")}
 							</span>
+						</motion.div>
+
+						<motion.div
+							initial={{ opacity: 0, y: 6 }}
+							animate={{ opacity: 1, y: 0 }}
+							transition={{
+								delay: 0.3,
+								type: "spring",
+								damping: 26,
+								stiffness: 280,
+							}}
+							className="te-recessed p-1 flex gap-1"
+						>
+							{([
+								{ id: "demo", label: "DEMO" },
+								{ id: "live", label: "LIVE" },
+							] as const).map((mode) => {
+								const active = emotionSourceMode === mode.id;
+								return (
+									<button
+										key={mode.id}
+										type="button"
+										onClick={() => switchEmotionSourceMode(mode.id)}
+										className="h-7 px-3 te-button rounded-[7px] text-[8px] tracking-[0.18em]"
+										style={
+											active
+												? ({
+														"--key-bg":
+															mode.id === "live"
+																? "var(--te-green)"
+																: "var(--te-blue)",
+														"--key-border":
+															mode.id === "live"
+																? "color-mix(in srgb, var(--te-green) 80%, black)"
+																: "color-mix(in srgb, var(--te-blue) 80%, black)",
+														"--key-shadow":
+															mode.id === "live"
+																? "color-mix(in srgb, var(--te-green) 60%, black)"
+																: "color-mix(in srgb, var(--te-blue) 60%, black)",
+														color: "#ffffff",
+													} as React.CSSProperties)
+												: undefined
+										}
+										title={
+											mode.id === "demo"
+												? "Cursor and manual demos drive avatar mood"
+												: "Conversation text drives avatar mood"
+										}
+									>
+										{mode.label}
+									</button>
+								);
+							})}
 						</motion.div>
 					</div>
 				</div>
@@ -639,6 +718,7 @@ export default function Home() {
 					open={isAudioLabOpen}
 					onOpenChange={setIsAudioLabOpen}
 					onEmotionChange={(emotion) => {
+						if (emotionSourceMode !== "demo") return;
 						setBaseEmotion(emotion);
 						baseEmotionRef.current = emotion;
 						targetEmotionRef.current = emotion;
@@ -652,6 +732,7 @@ export default function Home() {
 					open={isChatOpen}
 					onOpenChange={setIsChatOpen}
 					onEmotionChange={(emotion) => {
+						if (emotionSourceMode !== "live") return;
 						setBaseEmotion(emotion);
 						baseEmotionRef.current = emotion;
 						targetEmotionRef.current = emotion;
