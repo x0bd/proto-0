@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { PROVIDER_IDS, type Provider } from "@/lib/ai-models";
+import { DEFAULT_MODELS, PROVIDER_IDS, type Provider } from "@/lib/ai-models";
 
 interface ValidateRequestBody {
   provider?: Provider;
@@ -55,7 +55,7 @@ async function validateProvider(
     case "anthropic":
       return validateAnthropic(apiKey, model);
     case "elevenlabs":
-      return validateElevenLabs(apiKey);
+      return validateElevenLabs(apiKey, model);
   }
 }
 
@@ -134,24 +134,56 @@ async function validateAnthropic(
   };
 }
 
-async function validateElevenLabs(apiKey: string): Promise<ProviderCheckResult> {
-  const response = await fetch("https://api.elevenlabs.io/v1/user", {
+async function validateElevenLabs(
+  apiKey: string,
+  model = DEFAULT_MODELS.elevenlabs,
+): Promise<ProviderCheckResult> {
+  const userResponse = await fetch("https://api.elevenlabs.io/v1/user", {
     headers: { "xi-api-key": apiKey },
   });
-  const payload = await parseJson(response);
+  const userPayload = await parseJson(userResponse);
 
-  if (!response.ok) {
-    throw new Error(readProviderError(payload, "ElevenLabs rejected key"));
+  if (!userResponse.ok) {
+    throw new Error(readProviderError(userPayload, "ElevenLabs rejected key"));
   }
 
   const tier =
-    payload.subscription && typeof payload.subscription === "object"
-      ? (payload.subscription as { tier?: unknown }).tier
+    userPayload.subscription && typeof userPayload.subscription === "object"
+      ? (userPayload.subscription as { tier?: unknown }).tier
       : undefined;
+  const modelResponse = await fetch("https://api.elevenlabs.io/v1/models", {
+    headers: { "xi-api-key": apiKey },
+  });
+  const modelPayload = (await modelResponse.json().catch(() => [])) as unknown;
+
+  if (!modelResponse.ok) {
+    throw new Error(
+      readProviderError(
+        modelPayload && typeof modelPayload === "object"
+          ? (modelPayload as Record<string, unknown>)
+          : {},
+        "ElevenLabs model check failed",
+      ),
+    );
+  }
+
+  const models = Array.isArray(modelPayload) ? modelPayload : [];
+  const selectedModel = models.find(
+    (item) =>
+      item &&
+      typeof item === "object" &&
+      (item as { model_id?: unknown }).model_id === model,
+  ) as { can_do_text_to_speech?: unknown } | undefined;
+
+  if (model && selectedModel && selectedModel.can_do_text_to_speech === false) {
+    throw new Error(`${model} does not support text to speech`);
+  }
 
   return {
-    label: "ELEVEN_OK",
-    detail: typeof tier === "string" ? tier : undefined,
+    label: selectedModel ? "ELEVEN_MODEL_OK" : "ELEVEN_OK",
+    detail: [typeof tier === "string" ? tier : undefined, selectedModel ? model : undefined]
+      .filter(Boolean)
+      .join(" · ") || undefined,
   };
 }
 

@@ -160,6 +160,7 @@ export function useVoiceConversation({
           body: JSON.stringify({
             text,
             voiceId,
+            modelId: elevenlabsStored?.model,
             voiceSettings: elevenLabsSettings,
           }),
         });

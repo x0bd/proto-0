@@ -1,5 +1,6 @@
 
 import { NextResponse } from 'next/server';
+import { DEFAULT_MODELS, ELEVENLABS_TTS_MODELS } from "@/lib/ai-models";
 
 type ElevenLabsVoiceSettings = {
   stability: number;
@@ -36,6 +37,40 @@ function normalizeVoiceSettings(value: unknown): ElevenLabsVoiceSettings {
   };
 }
 
+function normalizeModelId(value: unknown) {
+  const modelId = typeof value === "string" ? value.trim() : "";
+  return ELEVENLABS_TTS_MODELS.some((model) => model.id === modelId)
+    ? modelId
+    : DEFAULT_MODELS.elevenlabs;
+}
+
+async function readElevenLabsError(response: Response) {
+  const text = await response.text().catch(() => "");
+  if (!text) return "ElevenLabs request failed";
+
+  try {
+    const payload = JSON.parse(text) as {
+      detail?: { message?: unknown } | string;
+      message?: unknown;
+      error?: unknown;
+    };
+    if (typeof payload.detail === "string") return payload.detail;
+    if (
+      payload.detail &&
+      typeof payload.detail === "object" &&
+      typeof payload.detail.message === "string"
+    ) {
+      return payload.detail.message;
+    }
+    if (typeof payload.message === "string") return payload.message;
+    if (typeof payload.error === "string") return payload.error;
+  } catch {
+    /* fall through */
+  }
+
+  return text.slice(0, 400);
+}
+
 export async function POST(req: Request) {
   try {
     const {
@@ -43,7 +78,7 @@ export async function POST(req: Request) {
       voiceId = "21m00Tcm4TlvDq8ikWAM",
       apiKey: bodyApiKey,
       voiceSettings,
-      modelId = "eleven_monolingual_v1",
+      modelId,
     } = await req.json();
 
     if (!text || typeof text !== "string") {
@@ -61,10 +96,14 @@ export async function POST(req: Request) {
       );
     }
 
-    // Call ElevenLabs API
-    // stream=true for lower latency
+    const selectedModel = normalizeModelId(modelId);
+    const url = new URL(
+      `https://api.elevenlabs.io/v1/text-to-speech/${encodeURIComponent(voiceId)}/stream`,
+    );
+    url.searchParams.set("output_format", "mp3_44100_128");
+
     const response = await fetch(
-      `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}/stream?optimize_streaming_latency=2`, 
+      url,
       {
         method: 'POST',
         headers: {
@@ -74,21 +113,25 @@ export async function POST(req: Request) {
         },
         body: JSON.stringify({
           text,
-          model_id: modelId,
+          model_id: selectedModel,
           voice_settings: normalizeVoiceSettings(voiceSettings),
         }),
       }
     );
 
     if (!response.ok) {
-        const errorText = await response.text();
-        return NextResponse.json({ error: `ElevenLabs API Error: ${errorText}` }, { status: response.status });
+        const errorText = await readElevenLabsError(response);
+        return NextResponse.json(
+          { error: `ElevenLabs API Error: ${errorText}` },
+          { status: response.status },
+        );
     }
 
     // Return the audio stream directly
     return new NextResponse(response.body, {
       headers: {
-        'Content-Type': 'audio/mpeg',
+        'Content-Type': response.headers.get("content-type") || 'audio/mpeg',
+        'Cache-Control': 'no-store',
       },
     });
 

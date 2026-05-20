@@ -6,7 +6,7 @@ import {
     setKey, getKey, clearKey, unlockVault, vaultIsLocked, isKeyEncrypted,
     type Provider, DEFAULT_MODELS, KEY_STORE_CHANGE_EVENT,
 } from "@/lib/key-store";
-import { CHAT_MODELS } from "@/lib/ai-models";
+import { CHAT_MODELS, ELEVENLABS_TTS_MODELS } from "@/lib/ai-models";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 const PROVIDERS: { id: Provider; label: string; placeholder: string; purpose: string }[] = [
@@ -16,7 +16,10 @@ const PROVIDERS: { id: Provider; label: string; placeholder: string; purpose: st
     { id: "elevenlabs", label: "11LABS", placeholder: "sk_...",  purpose: "TTS_ENGINE"   },
 ];
 
-const PROVIDER_MODELS: Partial<Record<Provider, { id: string; label: string }[]>> = CHAT_MODELS;
+const PROVIDER_MODELS: Partial<Record<Provider, { id: string; label: string }[]>> = {
+    ...CHAT_MODELS,
+    elevenlabs: ELEVENLABS_TTS_MODELS,
+};
 
 type View = "list" | "edit" | "unlock";
 type ValidationStatus = "idle" | "testing" | "valid" | "invalid";

@@ -31,6 +31,13 @@ export const CHAT_MODELS: Record<ChatProvider, ModelOption[]> = {
   ],
 };
 
+export const ELEVENLABS_TTS_MODELS: ModelOption[] = [
+  { id: "eleven_flash_v2_5", label: "FLASH-2.5" },
+  { id: "eleven_multilingual_v2", label: "MULTI-2" },
+  { id: "eleven_v3", label: "V3" },
+  { id: "eleven_flash_v2", label: "FLASH-2" },
+];
+
 export const SUPPORTED_CHAT_MODELS: Record<ChatProvider, string[]> = {
   openai: CHAT_MODELS.openai.map((model) => model.id),
   google: CHAT_MODELS.google.map((model) => model.id),
@@ -41,7 +48,7 @@ export const DEFAULT_MODELS: Record<Provider, string> = {
   openai: "gpt-5.5",
   google: "gemini-3.5-flash",
   anthropic: "claude-sonnet-4-6",
-  elevenlabs: "eleven_monolingual_v1",
+  elevenlabs: "eleven_flash_v2_5",
 };
 
 export function isChatProvider(provider: unknown): provider is ChatProvider {

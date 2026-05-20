@@ -31,7 +31,7 @@ export function useVoiceSynthesis(options: UseVoiceSynthesisOptions = {}) {
             ? { "x-dot-api-key": elevenlabsStored.key }
             : {}),
         },
-        body: JSON.stringify({ text, voiceId }),
+        body: JSON.stringify({ text, voiceId, modelId: elevenlabsStored?.model }),
       });
 
       if (!response.ok) {
