@@ -75,15 +75,20 @@ export default function LandingPage() {
 	}, []);
 
 	return (
-		<main className="flex h-dvh w-full flex-col overflow-hidden bg-background text-foreground">
+		/*
+		 * Mobile:  min-h-dvh, no overflow-hidden → page scrolls naturally
+		 * Desktop: h-dvh overflow-hidden → locked two-column split
+		 */
+		<main className="flex min-h-dvh flex-col bg-background text-foreground sm:h-dvh sm:overflow-hidden">
 			{/* ── Top Navigation ─────────────────────────────────── */}
-			<header className="flex h-11 shrink-0 items-center justify-between border-b border-[var(--panel-border)] px-5 sm:px-7">
+			<header className="flex h-11 shrink-0 items-center justify-between border-b border-[var(--panel-border)] px-4 sm:px-7">
 				<div className="te-button h-7 cursor-default px-3.5">
 					<span className="font-mono text-[11px] font-bold tracking-[0.28em] text-[var(--te-yellow)]">
 						DOT
 					</span>
 				</div>
 
+				{/* Center nav — desktop only */}
 				<nav className="hidden items-center gap-7 sm:flex">
 					{(["COMPANION", "MEMORY", "KEYS"] as const).map((label) => (
 						<span
@@ -123,13 +128,21 @@ export default function LandingPage() {
 				</div>
 			</header>
 
-			{/* ── Main Two-Column ────────────────────────────────── */}
-			<div className="grid min-h-0 flex-1 grid-cols-1 sm:grid-cols-[5fr_6fr]">
+			{/* ── Main grid ──────────────────────────────────────── */}
+			{/*
+			 * Mobile:  single column, natural height
+			 * Desktop: two columns, flex-1 fills remaining viewport
+			 */}
+			<div className="grid flex-1 grid-cols-1 sm:min-h-0 sm:grid-cols-[5fr_6fr]">
 
 				{/* ── Left: Avatar Panel ── */}
-				<div className="relative flex h-[46vh] flex-col overflow-hidden border-b border-[var(--panel-border)] sm:h-auto sm:border-b-0 sm:border-r">
+				{/*
+				 * Mobile:  fixed height so avatar has dedicated space
+				 * Desktop: fills the grid cell height via stretch
+				 */}
+				<div className="relative flex h-[42vh] flex-col overflow-hidden border-b border-[var(--panel-border)] sm:h-auto sm:border-b-0 sm:border-r">
 
-					{/* Subtle dot grid */}
+					{/* Dot grid background */}
 					<div
 						className="pointer-events-none absolute inset-0 opacity-[0.03]"
 						style={{
@@ -145,7 +158,7 @@ export default function LandingPage() {
 					<CornerMark position="bl" />
 					<CornerMark position="br" />
 
-					{/* Avatar — width-fills the panel, flex centers it vertically */}
+					{/* Avatar — fills width, centered vertically in flex-1 */}
 					<div className="flex min-h-0 flex-1 items-center justify-center px-4 py-3">
 						<Avatar
 							variant={face}
@@ -161,7 +174,7 @@ export default function LandingPage() {
 					</div>
 
 					{/* Face type picker */}
-					<div className="flex shrink-0 items-center justify-center gap-2 border-t border-[var(--panel-border)] px-4 py-3">
+					<div className="flex shrink-0 items-center justify-center gap-2 border-t border-[var(--panel-border)] px-4 py-2.5">
 						{FACES.map((f) => {
 							const active = face === f.id;
 							return (
@@ -191,26 +204,30 @@ export default function LandingPage() {
 				</div>
 
 				{/* ── Right: Content Panel ── */}
-				<div className="relative flex flex-col justify-between overflow-hidden px-7 py-6 sm:px-12 sm:py-10">
-					{/* Top-right corner mark */}
-					<div className="absolute right-5 top-5 size-[18px] border-r-2 border-t-2 border-[var(--te-orange)] opacity-25" />
+				{/*
+				 * Mobile:  natural height, compact spacing, desc text hidden
+				 * Desktop: flex justify-between fills the grid cell
+				 */}
+				<div className="relative flex flex-col gap-6 px-5 py-5 sm:justify-between sm:gap-0 sm:px-12 sm:py-10">
+
+					{/* Top-right corner mark — desktop only */}
+					<div className="absolute right-5 top-5 hidden size-[18px] border-r-2 border-t-2 border-[var(--te-orange)] opacity-25 sm:block" />
 
 					{/* Status badge */}
-					<div>
-						<div className="te-lcd w-fit px-2.5 py-1">
-							<span className="text-[8px] font-bold tracking-[0.26em] opacity-50">
-								COMPANION_OS · v0.1
-							</span>
-						</div>
+					<div className="te-lcd w-fit px-2.5 py-1">
+						<span className="text-[8px] font-bold tracking-[0.26em] opacity-50">
+							COMPANION_OS · v0.1
+						</span>
 					</div>
 
 					{/* Core content */}
-					<div className="flex flex-col gap-6 sm:gap-8">
+					<div className="flex flex-col gap-4 sm:gap-8">
+						{/* Headline — scales from mobile to desktop */}
 						<h1
 							className="font-bold leading-[0.9] tracking-[-0.01em] text-foreground"
 							style={{
 								fontFamily: "var(--font-display)",
-								fontSize: "clamp(2.6rem, 5.8vw, 4.4rem)",
+								fontSize: "clamp(2rem, 9vw, 4.4rem)",
 							}}
 						>
 							A SMALL
@@ -220,11 +237,12 @@ export default function LandingPage() {
 							COMPANION
 						</h1>
 
+						{/* Feature list */}
 						<div className="flex flex-col">
 							{FEATURES.map((f) => (
 								<div
 									key={f.n}
-									className="flex items-start gap-4 border-b border-[var(--panel-border)] py-3 first:border-t"
+									className="flex items-start gap-4 border-b border-[var(--panel-border)] py-2 first:border-t sm:py-3"
 								>
 									<span
 										className="mt-0.5 shrink-0 font-mono text-[9px] font-bold uppercase tracking-[0.22em]"
@@ -236,7 +254,8 @@ export default function LandingPage() {
 										<span className="font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-foreground/80">
 											{f.title}
 										</span>
-										<span className="font-mono text-[9px] leading-relaxed text-foreground/35">
+										{/* Desc hidden on mobile to save space */}
+										<span className="hidden font-mono text-[9px] leading-relaxed text-foreground/35 sm:block">
 											{f.desc}
 										</span>
 									</div>
@@ -244,6 +263,7 @@ export default function LandingPage() {
 							))}
 						</div>
 
+						{/* CTA */}
 						<div className="flex items-center gap-4">
 							<Link
 								href="/companion"
@@ -259,14 +279,15 @@ export default function LandingPage() {
 							>
 								START
 							</Link>
-							<span className="font-mono text-[9px] font-bold uppercase tracking-[0.16em] text-foreground/25">
+							{/* Arrow hint — desktop only */}
+							<span className="hidden font-mono text-[9px] font-bold uppercase tracking-[0.16em] text-foreground/25 sm:inline">
 								→ /companion
 							</span>
 						</div>
 					</div>
 
-					{/* Pagination */}
-					<div className="flex items-end justify-between">
+					{/* Pagination — desktop only */}
+					<div className="hidden items-end justify-between sm:flex">
 						<span className="font-mono text-[13px] font-bold tracking-widest text-foreground/15">
 							1
 						</span>
@@ -278,7 +299,7 @@ export default function LandingPage() {
 			</div>
 
 			{/* ── Bottom Status Bar ──────────────────────────────── */}
-			<footer className="flex h-9 shrink-0 items-center justify-between border-t border-[var(--panel-border)] px-5 sm:px-7">
+			<footer className="flex h-9 shrink-0 items-center justify-between border-t border-[var(--panel-border)] px-4 sm:px-7">
 				<a
 					href="https://xoboid.com"
 					target="_blank"
