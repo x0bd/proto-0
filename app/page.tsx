@@ -6,11 +6,18 @@ import dynamic from "next/dynamic";
 import { useTheme } from "next-themes";
 import { RiMoonFill, RiSunFill } from "react-icons/ri";
 import { SiGithub, SiNpm } from "react-icons/si";
+import type { FaceVariant } from "@/app/components/face/types";
 
 const Avatar = dynamic(() => import("@/app/components/Avatar"), {
 	ssr: false,
 	loading: () => <div className="size-full" />,
 });
+
+const FACES: { id: FaceVariant; label: string }[] = [
+	{ id: "minimal", label: "PURE" },
+	{ id: "tron", label: "DIGITAL" },
+	{ id: "analogue", label: "SKETCH" },
+];
 
 const FEATURES = [
 	{
@@ -43,23 +50,23 @@ const LINKS = [
 	},
 ];
 
-function CornerMark({
-	position,
-}: {
-	position: "tl" | "tr" | "bl" | "br";
-}) {
-	const base = "absolute size-[18px] border-[var(--te-orange)] opacity-35";
+function CornerMark({ position }: { position: "tl" | "tr" | "bl" | "br" }) {
 	const borders: Record<typeof position, string> = {
 		tl: "top-4 left-4 border-t-2 border-l-2",
 		tr: "top-4 right-4 border-t-2 border-r-2",
 		bl: "bottom-4 left-4 border-b-2 border-l-2",
 		br: "bottom-4 right-4 border-b-2 border-r-2",
 	};
-	return <div className={`${base} ${borders[position]}`} />;
+	return (
+		<div
+			className={`pointer-events-none absolute size-[18px] border-[var(--te-orange)] opacity-30 ${borders[position]}`}
+		/>
+	);
 }
 
 export default function LandingPage() {
 	const [mounted, setMounted] = React.useState(false);
+	const [face, setFace] = React.useState<FaceVariant>("tron");
 	const { resolvedTheme, setTheme } = useTheme();
 	const isDark = mounted && resolvedTheme === "dark";
 
@@ -71,26 +78,23 @@ export default function LandingPage() {
 		<main className="flex h-dvh w-full flex-col overflow-hidden bg-background text-foreground">
 			{/* ── Top Navigation ─────────────────────────────────── */}
 			<header className="flex h-11 shrink-0 items-center justify-between border-b border-[var(--panel-border)] px-5 sm:px-7">
-				{/* Brand */}
 				<div className="te-button h-7 cursor-default px-3.5">
 					<span className="font-mono text-[11px] font-bold tracking-[0.28em] text-[var(--te-yellow)]">
 						DOT
 					</span>
 				</div>
 
-				{/* Center links */}
 				<nav className="hidden items-center gap-7 sm:flex">
 					{(["COMPANION", "MEMORY", "KEYS"] as const).map((label) => (
 						<span
 							key={label}
-							className="font-mono text-[9px] font-bold uppercase tracking-[0.24em] text-foreground/40 transition-colors hover:text-foreground/70 cursor-default select-none"
+							className="cursor-default select-none font-mono text-[9px] font-bold uppercase tracking-[0.24em] text-foreground/40 transition-colors hover:text-foreground/70"
 						>
 							{label}
 						</span>
 					))}
 				</nav>
 
-				{/* Actions */}
 				<div className="flex items-center gap-2">
 					{LINKS.map((l) => (
 						<a
@@ -121,11 +125,13 @@ export default function LandingPage() {
 
 			{/* ── Main Two-Column ────────────────────────────────── */}
 			<div className="grid min-h-0 flex-1 grid-cols-1 sm:grid-cols-[5fr_6fr]">
+
 				{/* ── Left: Avatar Panel ── */}
-				<div className="relative flex h-[38vh] items-center justify-center overflow-hidden border-b border-[var(--panel-border)] sm:h-auto sm:border-b-0 sm:border-r">
+				<div className="relative flex h-[46vh] flex-col overflow-hidden border-b border-[var(--panel-border)] sm:h-auto sm:border-b-0 sm:border-r">
+
 					{/* Subtle dot grid */}
 					<div
-						className="pointer-events-none absolute inset-0 opacity-[0.035]"
+						className="pointer-events-none absolute inset-0 opacity-[0.03]"
 						style={{
 							backgroundImage:
 								"radial-gradient(circle, var(--foreground) 1px, transparent 1px)",
@@ -139,10 +145,10 @@ export default function LandingPage() {
 					<CornerMark position="bl" />
 					<CornerMark position="br" />
 
-					{/* Avatar — "Digital" (tron) preset = robot */}
-					<div className="relative w-[75%] max-w-[380px] aspect-square sm:w-[80%]">
+					{/* Avatar — width-fills the panel, flex centers it vertically */}
+					<div className="flex min-h-0 flex-1 items-center justify-center px-4 py-3">
 						<Avatar
-							variant="tron"
+							variant={face}
 							accentColor="var(--te-orange)"
 							emotion={{
 								joy: 0.2,
@@ -154,13 +160,33 @@ export default function LandingPage() {
 						/>
 					</div>
 
-					{/* Mode label */}
-					<div className="absolute bottom-4 left-0 right-0 flex justify-center">
-						<div className="te-lcd px-2.5 py-1">
-							<span className="text-[8px] font-bold tracking-[0.24em] opacity-45">
-								DIGITAL · IDLE
-							</span>
-						</div>
+					{/* Face type picker */}
+					<div className="flex shrink-0 items-center justify-center gap-2 border-t border-[var(--panel-border)] px-4 py-3">
+						{FACES.map((f) => {
+							const active = face === f.id;
+							return (
+								<button
+									key={f.id}
+									type="button"
+									onClick={() => setFace(f.id)}
+									className="te-button h-7 px-3 text-[9px] transition-colors"
+									style={
+										active
+											? {
+													backgroundColor: "var(--te-orange)",
+													borderColor:
+														"color-mix(in srgb, var(--te-orange) 78%, black)",
+													borderBottomColor:
+														"color-mix(in srgb, var(--te-orange) 56%, black)",
+													color: "#fff",
+												}
+											: {}
+									}
+								>
+									{f.label}
+								</button>
+							);
+						})}
 					</div>
 				</div>
 
@@ -180,7 +206,6 @@ export default function LandingPage() {
 
 					{/* Core content */}
 					<div className="flex flex-col gap-6 sm:gap-8">
-						{/* Headline */}
 						<h1
 							className="font-bold leading-[0.9] tracking-[-0.01em] text-foreground"
 							style={{
@@ -195,7 +220,6 @@ export default function LandingPage() {
 							COMPANION
 						</h1>
 
-						{/* Feature list */}
 						<div className="flex flex-col">
 							{FEATURES.map((f) => (
 								<div
@@ -220,7 +244,6 @@ export default function LandingPage() {
 							))}
 						</div>
 
-						{/* CTA */}
 						<div className="flex items-center gap-4">
 							<Link
 								href="/companion"
