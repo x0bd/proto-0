@@ -1,19 +1,26 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
-import { GeistSans } from "geist/font/sans";
-import { GeistMono } from "geist/font/mono";
 import "./globals.css";
 import { ThemeProvider } from "./components/theme-provider";
 
+/* ─── Main: Carbon — display, headings, hero moments ─── */
 const carbon = localFont({
 	src: "../public/fonts/carbon/Carbon Regular.woff2",
 	variable: "--font-carbon",
+	display: "swap",
+});
+
+/* ─── Secondary: Departure Mono — labels, data, body ─── */
+const departureMono = localFont({
+	src: "../public/fonts/carbon/DepartureMono-1.500/DepartureMono-1.500/DepartureMono-Regular.woff2",
+	variable: "--font-departure",
+	display: "swap",
 });
 
 export const metadata: Metadata = {
 	title: "Dot | Agentic Expressive Avatar",
 	description:
-		"Dot – a minimal, expressive avatar. Pure eyes and mouth, emotion through orientation. .",
+		"Dot – a minimal, expressive avatar. Pure eyes and mouth, emotion through orientation.",
 };
 
 export const viewport = {
@@ -31,25 +38,13 @@ export default function RootLayout({
 }>) {
 	return (
 		<html lang="en" suppressHydrationWarning>
-			<head>
-				<link rel="preconnect" href="https://fonts.googleapis.com" />
-				<link
-					rel="preconnect"
-					href="https://fonts.gstatic.com"
-					crossOrigin="anonymous"
-				/>
-				<link
-					href="https://fonts.googleapis.com/css2?family=Doto:wght@100..900&family=Mochiy+Pop+One&display=swap"
-					rel="stylesheet"
-				/>
-			</head>
 			<body
-				className={`${GeistSans.variable} ${GeistMono.variable} ${carbon.variable} antialiased bg-background text-foreground`}
+				className={`${carbon.variable} ${departureMono.variable} antialiased bg-background text-foreground`}
 			>
 				<ThemeProvider
 					attribute="class"
-					defaultTheme="system"
-					enableSystem
+					defaultTheme="light"
+					enableSystem={false}
 					disableTransitionOnChange
 				>
 					{children}

@@ -4,54 +4,136 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+	/* ─── Semantic surface colors (Tailwind utilities) ─── */
 	--color-background: var(--background);
 	--color-foreground: var(--foreground);
+	--color-surface: var(--surface);
+	--color-surface-raised: var(--surface-raised);
+	--color-accent: var(--accent);
+	--color-accent-foreground: var(--accent-foreground);
+	--color-muted: var(--fg-muted);
+	--color-faint: var(--fg-faint);
 
-	/* Playful type stack */
-	--font-sans: var(--font-geist-sans), system-ui, sans-serif;
-	--font-mono: var(--font-geist-mono), ui-monospace, monospace;
-	--font-display: "Doto", sans-serif;
-	--font-mochiy: "Mochiy Pop One", system-ui, sans-serif;
+	/* ─── Type stack: Carbon (display) + Departure Mono (everything else) ─── */
+	--font-display: var(--font-carbon), "Departure Mono", monospace;
 	--font-carbon: var(--font-carbon), monospace;
+	--font-mono: var(--font-departure), ui-monospace, "SFMono-Regular", monospace;
+	--font-departure: var(--font-departure), ui-monospace, monospace;
+	/* Body defaults to the mono workhorse — no prose sans in this system */
+	--font-sans: var(--font-departure), ui-monospace, monospace;
 }
 
 :root {
-	/* === TE x APPLE: LIGHT MODE (WASHI B&W) === */
-	--background: #f4f4f0; /* Warm washi paper white */
-	--foreground: #111111; /* Stark black */
+	/* ═══════════════════════════════════════════════════════════════
+	   LIME × NOTHING — light mode only
+	   Indigo ink on warm bone. Lime is the one signal colour.
+	   ═══════════════════════════════════════════════════════════════ */
 
-	/* Hardware Materials */
-	--panel-bg: #ffffff; /* Pure white chassis */
-	--panel-border: #e5e5e5;
-	--key-bg: #ffffff;
-	--key-border: #e5e5e5;
-	--key-shadow: #d4d4d4;
+	/* ─── Canvas & surfaces ─── */
+	--bg: #ebebeb; /* warm bone canvas */
+	--surface: #f4f4f2; /* raised-off-canvas panels */
+	--surface-raised: #ffffff; /* cards / highest layer */
 
-	/* LCD Screen */
-	--lcd-bg: #eeeeee; /* Cool grey LCD */
-	--lcd-text: #111111;
-	--lcd-glow: rgba(0, 0, 0, 0.1);
+	/* ─── Ink (deep indigo) ─── */
+	--fg: #1a1b52;
+	--fg-muted: rgba(26, 27, 82, 0.65); /* body / secondary */
+	--fg-faint: rgba(26, 27, 82, 0.42); /* labels / captions */
+	--fg-disabled: rgba(26, 27, 82, 0.3); /* hints / timestamps */
 
-	/* Accents (TE style - kept vibrant) */
-	--te-orange: #ff3b30;
-	--te-yellow: #ffcc00;
-	--te-blue: #007aff;
-	--te-green: #34c759;
+	/* ─── Hairlines ─── */
+	--hair: rgba(26, 27, 82, 0.12);
+	--hair-2: rgba(26, 27, 82, 0.24);
 
-	--face-color: #ff3b30;
-	--face-glow: rgba(255, 59, 48, 0.35);
-	--face-bg-tint: rgba(255, 59, 48, 0.04);
+	/* ─── Accent — lime, the one signal (geometry, never raw text) ─── */
+	--accent: #baff29;
+	--accent-hover: #c6ff52;
+	--accent-foreground: #1a1b52; /* indigo-on-lime */
 
-	/* Radix / Shadcn fallbacks */
-	--muted: #e5e5e5;
-	--muted-foreground: #8e8e93;
-	--destructive: #ff3b30;
+	/* ─── Status (exempt from the one-accent rule when encoding data) ─── */
+	--success: #4a9e5c;
+	--warning: #d4a843;
+	--error: #d23a2c;
+
+	/* ─── Decorative ─── */
+	--ghost: rgba(26, 27, 82, 0.045); /* giant background watermark */
+
+	/* ─── Type scale (Nothing) ─── */
+	--display-xl: 72px;
+	--display-lg: 48px;
+	--display-md: 36px;
+	--heading: 24px;
+	--subheading: 18px;
+	--body: 16px;
+	--body-sm: 14px;
+	--caption: 12px;
+	--label: 11px;
+
+	/* ─── Spacing scale (8px base) ─── */
+	--space-2xs: 2px;
+	--space-xs: 4px;
+	--space-sm: 8px;
+	--space-md: 16px;
+	--space-lg: 24px;
+	--space-xl: 32px;
+	--space-2xl: 48px;
+	--space-3xl: 64px;
+	--space-4xl: 96px;
+
+	--radius: 0.5rem;
+
+	/* ─── Motion ─── */
+	--ease: cubic-bezier(0.25, 0.1, 0.25, 1);
+
+	/* ─── shadcn / Radix bridge ─── */
+	--background: var(--bg);
+	--foreground: var(--fg);
+	--card: var(--surface-raised);
+	--card-foreground: var(--fg);
+	--popover: var(--surface-raised);
+	--popover-foreground: var(--fg);
+	--primary: var(--fg);
+	--primary-foreground: var(--bg);
+	--secondary: #e3e3e1;
+	--secondary-foreground: var(--fg);
+	--muted: #e3e3e1;
+	--muted-foreground: var(--fg-muted);
+	--accent-bg: var(--accent);
+	--destructive: var(--error);
 	--destructive-foreground: #ffffff;
-	--success: #34c759;
+	--border: var(--hair);
+	--input: var(--hair-2);
+	--ring: var(--fg);
+
+	/* ─── chart series: indigo opacity ramp + the single lime event ─── */
+	--chart-1: var(--accent);
+	--chart-2: var(--fg);
+	--chart-3: rgba(26, 27, 82, 0.6);
+	--chart-4: rgba(26, 27, 82, 0.35);
+	--chart-5: rgba(26, 27, 82, 0.18);
+
+	/* ═══════════════════════════════════════════════════════════════
+	   LEGACY hardware vars — kept alive so existing .te-* components
+	   keep resolving until each screen is rebuilt on the new system.
+	   Remapped onto the lime palette where it reads cleanly.
+	   ═══════════════════════════════════════════════════════════════ */
+	--panel-bg: var(--surface-raised);
+	--panel-border: var(--hair);
+	--key-bg: var(--surface-raised);
+	--key-border: var(--hair-2);
+	--key-shadow: var(--hair-2);
+	--lcd-bg: #e3e3e1;
+	--lcd-text: var(--fg);
+	--lcd-glow: rgba(26, 27, 82, 0.1);
+	--te-orange: var(--fg);
+	--te-yellow: var(--accent);
+	--te-blue: var(--fg);
+	--te-green: var(--success);
+	--face-color: var(--fg);
+	--face-glow: rgba(26, 27, 82, 0.2);
+	--face-bg-tint: rgba(26, 27, 82, 0.03);
 	--success-foreground: #ffffff;
-	--warning: #ffcc00;
-	--warning-foreground: #111111;
-	--info: #007aff;
+	--warning-foreground: var(--fg);
+	--info: var(--fg-muted);
 	--info-foreground: #ffffff;
 }
 
@@ -97,26 +179,82 @@
 
 @layer base {
 	* {
-		@apply border-[var(--panel-border)];
+		@apply border-[var(--hair)];
 	}
 	:where(button, [role="button"], input, textarea, select, a):focus-visible {
-		outline: 2px solid var(--te-blue);
+		outline: 2px solid var(--fg);
 		outline-offset: 3px;
 		box-shadow:
-			0 0 0 1px var(--panel-bg),
-			0 0 0 5px color-mix(in srgb, var(--te-blue) 28%, transparent);
+			0 0 0 1px var(--bg),
+			0 0 0 5px color-mix(in srgb, var(--accent) 60%, transparent);
 	}
 	:where(button, [role="button"]) {
 		touch-action: manipulation;
 	}
 	body {
-		@apply bg-background text-foreground antialiased font-sans;
-		selection-color: #ffffff;
+		@apply bg-background text-foreground antialiased font-mono;
 		-webkit-font-smoothing: antialiased;
+		font-feature-settings: "liga" 0;
 	}
+	/* Lime marker selection — indigo text on lime */
 	::selection {
-		background-color: var(--te-blue);
-		color: #ffffff;
+		background-color: var(--accent);
+		color: var(--accent-foreground);
+	}
+	h1, h2, h3 {
+		font-family: var(--font-display);
+		letter-spacing: -0.02em;
+	}
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   LIME × NOTHING — core token utilities
+   ═══════════════════════════════════════════════════════════════ */
+@layer utilities {
+	/* Instrument-panel label — Departure Mono, ALL CAPS, tracked out */
+	.label {
+		font-family: var(--font-mono);
+		font-size: var(--label);
+		line-height: 1.2;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: var(--fg-faint);
+	}
+
+	/* Lime marker — the one inline use of the accent as a highlight.
+	   Lime background + indigo text. Never lime text on the bone canvas. */
+	.marker {
+		background: var(--accent);
+		color: var(--accent-foreground);
+		padding: 0 5px;
+		border-radius: 3px;
+	}
+
+	/* Indigo band — the one place lime text is allowed (reads as colour) */
+	.band {
+		background: var(--fg);
+		color: var(--bg);
+	}
+	.band .label {
+		color: rgba(235, 235, 235, 0.45);
+	}
+
+	/* Dot-matrix motif (Nothing) */
+	.dot-grid {
+		background-image: radial-gradient(
+			circle,
+			var(--hair-2) 1px,
+			transparent 1px
+		);
+		background-size: 16px 16px;
+	}
+	.dot-grid-subtle {
+		background-image: radial-gradient(
+			circle,
+			var(--hair) 0.5px,
+			transparent 0.5px
+		);
+		background-size: 12px 12px;
 	}
 }
 
