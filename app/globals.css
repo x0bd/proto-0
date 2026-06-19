@@ -328,129 +328,89 @@
 	}
 }
 
-/* === TE x APPLE HARDWARE DESIGN SYSTEM === */
+/* ═══════════════════════════════════════════════════════════════
+   DOT INSTRUMENT SYSTEM — the legacy .te-* primitives are redefined
+   as FLAT lime × nothing surfaces. Every panel built on them inherits
+   the new language without touching component markup. Inline active
+   overrides (--key-bg / --key-border / color) still fire — they now
+   resolve onto the lime palette (indigo fill, bone text).
+   ═══════════════════════════════════════════════════════════════ */
 @layer utilities {
-	/* 1. The Chassis (Milled Aluminum / Matte Plastic) */
+	/* Chassis / card — white on bone, hairline border, no shadow */
 	.te-panel {
-		background-color: var(--panel-bg);
-		border: 1px solid var(--panel-border);
-		box-shadow:
-			0 24px 48px -12px rgba(0, 0, 0, 0.08),
-			0 12px 24px -8px rgba(0, 0, 0, 0.04),
-			inset 0 1px 1px rgba(255, 255, 255, 0.8),
-			inset 0 -1px 1px rgba(0, 0, 0, 0.03);
-		@apply rounded-[16px];
-	}
-	.dark .te-panel {
-		box-shadow:
-			0 24px 48px -12px rgba(0, 0, 0, 0.9),
-			0 12px 24px -8px rgba(0, 0, 0, 0.8),
-			inset 0 1px 1px rgba(255, 255, 255, 0.05),
-			inset 0 -1px 1px rgba(0, 0, 0, 0.6);
+		background-color: var(--surface-raised);
+		border: 1px solid var(--hair-2);
+		@apply rounded-[12px];
 	}
 
-	/* 2. Mechanical Keys (OP-1 Style) */
+	/* Flat technical key — keeps --key-* hooks so active fills still work */
 	.te-button {
 		background-color: var(--key-bg);
 		border: 1px solid var(--key-border);
-		border-bottom-width: 4px;
-		border-bottom-color: var(--key-shadow);
-		@apply rounded-[8px] transition-all duration-75 flex items-center justify-center font-mono font-bold uppercase tracking-widest active:border-b-[1px] active:translate-y-[3px];
-	}
-	.te-button:disabled {
-		@apply opacity-50 cursor-not-allowed active:border-b-[4px] active:translate-y-0;
+		color: var(--fg-muted);
+		@apply flex items-center justify-center rounded-[6px] font-mono uppercase tracking-[0.08em] transition-colors duration-150;
 	}
 	.te-button:not(:disabled):hover {
-		filter: brightness(0.98);
+		color: var(--fg);
+		border-color: var(--fg);
 	}
-	.dark .te-button:not(:disabled):hover {
-		filter: brightness(1.12);
+	.te-button:not(:disabled):active {
+		background-color: var(--bg);
+	}
+	.te-button:disabled {
+		@apply cursor-not-allowed opacity-40;
 	}
 
-	/* 3. LCD / Segmented Displays */
+	/* Readout (was glowing LCD) — flat bone recess, indigo ink */
 	.te-lcd {
 		background-color: var(--lcd-bg);
 		color: var(--lcd-text);
-		box-shadow:
-			inset 0 2px 8px rgba(0, 0, 0, 0.08),
-			inset 0 0 0 1px rgba(0, 0, 0, 0.05),
-			0 1px 1px rgba(255, 255, 255, 0.8);
-		@apply font-mono uppercase tracking-widest rounded-[6px];
-	}
-	.dark .te-lcd {
-		box-shadow:
-			inset 0 2px 8px rgba(0, 0, 0, 0.8),
-			inset 0 0 0 1px rgba(0, 0, 0, 0.5),
-			0 1px 1px rgba(255, 255, 255, 0.05);
-		text-shadow: 0 0 8px var(--lcd-glow);
+		border: 1px solid var(--hair);
+		@apply rounded-[6px] font-mono uppercase tracking-[0.08em];
 	}
 
-	/* 4. Recessed Modules (Patchbays, Input slots) */
+	/* Recessed group / patchbay — flat bone inset */
 	.te-recessed {
-		background-color: var(--background);
-		box-shadow:
-			inset 0 2px 6px rgba(0, 0, 0, 0.04),
-			inset 0 0 0 1px rgba(0, 0, 0, 0.05),
-			0 1px 0 rgba(255, 255, 255, 0.8);
-		@apply rounded-[12px];
-	}
-	.dark .te-recessed {
-		box-shadow:
-			inset 0 2px 6px rgba(0, 0, 0, 0.6),
-			inset 0 0 0 1px rgba(0, 0, 0, 0.4),
-			0 1px 0 rgba(255, 255, 255, 0.05);
+		background-color: var(--bg);
+		border: 1px solid var(--hair);
+		@apply rounded-[10px];
 	}
 
-	/* 4.5 Draggable Hardware Modules */
+	/* Draggable module card */
 	.te-module {
-		background-color: var(--panel-bg);
-		border: 1px solid var(--panel-border);
-		box-shadow:
-			0 32px 64px -16px rgba(0, 0, 0, 0.15),
-			0 16px 32px -8px rgba(0, 0, 0, 0.1),
-			0 0 0 1px rgba(0, 0, 0, 0.02),
-			inset 0 1px 1px rgba(255, 255, 255, 0.8),
-			inset 0 -1px 1px rgba(0, 0, 0, 0.05);
-		@apply rounded-[12px] overflow-hidden flex flex-col;
-	}
-	.dark .te-module {
-		box-shadow:
-			0 32px 64px -16px rgba(0, 0, 0, 0.95),
-			0 16px 32px -8px rgba(0, 0, 0, 0.8),
-			0 0 0 1px rgba(0, 0, 0, 0.8),
-			inset 0 1px 1px rgba(255, 255, 255, 0.05),
-			inset 0 -1px 1px rgba(0, 0, 0, 0.6);
+		background-color: var(--surface-raised);
+		border: 1px solid var(--hair-2);
+		@apply flex flex-col overflow-hidden rounded-[12px];
 	}
 	.te-module-header {
-		@apply flex items-center justify-between px-3 py-2 border-b border-[var(--panel-border)] cursor-grab active:cursor-grabbing select-none shrink-0;
-		background: linear-gradient(to bottom, var(--key-bg), var(--panel-bg));
-	}
-	.dark .te-module-header {
-		background: linear-gradient(to bottom, #1c1c1c, var(--panel-bg));
-	}
-	.te-grip {
-		background-image: repeating-linear-gradient(
-			90deg,
-			var(--panel-border),
-			var(--panel-border) 2px,
-			transparent 2px,
-			transparent 4px
-		);
+		background-color: var(--surface);
+		@apply flex shrink-0 cursor-grab select-none items-center justify-between border-b border-[var(--hair)] px-3 py-2 active:cursor-grabbing;
 	}
 
-	/* 5. Typography */
+	/* Drag grip — dot motif (Nothing) */
+	.te-grip {
+		background-image: radial-gradient(
+			circle,
+			var(--hair-2) 1px,
+			transparent 1px
+		);
+		background-size: 5px 5px;
+	}
+
+	/* Typography */
 	.te-label {
-		@apply font-mono text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.25em] text-foreground/65;
+		@apply font-mono text-[9px] uppercase tracking-[0.18em] sm:text-[10px];
+		color: var(--fg-faint);
 	}
 	.te-value {
-		@apply font-mono text-[13px] font-bold uppercase tracking-widest text-foreground;
+		@apply font-mono text-[13px] uppercase tracking-[0.08em];
+		color: var(--fg);
 	}
-
 	.te-subtle {
-		color: color-mix(in srgb, var(--foreground) 62%, transparent);
+		color: var(--fg-muted);
 	}
 	.te-whisper {
-		color: color-mix(in srgb, var(--foreground) 48%, transparent);
+		color: var(--fg-faint);
 	}
 }
 

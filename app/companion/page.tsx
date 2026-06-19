@@ -443,15 +443,8 @@ export default function Home() {
 				}}
 				onTouchEnd={handlePointerLeave}
 			>
-				{/* Washi paper texture */}
-				<div className="absolute inset-0 bg-washi pointer-events-none" />
-				{/* Faint accent color wash — visible in both light & dark */}
-				<div
-					className="absolute inset-0 pointer-events-none transition-all duration-700"
-					style={{
-						background: `radial-gradient(ellipse at 50% 40%, ${accentColor}10 0%, transparent 70%)`,
-					}}
-				/>
+				{/* Bone canvas — subtle dot-matrix */}
+				<div className="dot-grid-subtle pointer-events-none absolute inset-0" />
 				{/* HEADER UI */}
 				<div className="absolute top-[max(12px,env(safe-area-inset-top))] left-3 sm:top-8 sm:left-6 z-50 flex items-center gap-3 select-none">
 					<div className="flex flex-col items-start gap-2">

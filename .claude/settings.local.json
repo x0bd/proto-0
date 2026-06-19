@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(pnpm tsc *)",
-      "Bash(npx tsc *)"
+      "Bash(npx tsc *)",
+      "Bash(grep -aE \"Error|error|Failed|warn|Warning|\\\\.tsx|\\\\.css|line|Module\" /tmp/dotbuild.log | grep -avE \"^var|webpack|chunk\" | head -40)",
+      "Read(//tmp/**)"
     ]
   }
 }
