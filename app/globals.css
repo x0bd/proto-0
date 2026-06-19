@@ -257,6 +257,45 @@
 		background-size: 12px 12px;
 	}
 
+	/* ─── Instrument surfaces (flat, border-separated — no shadows) ─── */
+	.nt-surface {
+		background: var(--surface-raised);
+		border: 1px solid var(--hair-2);
+	}
+	.nt-recess {
+		background: var(--bg);
+		border: 1px solid var(--hair);
+	}
+
+	/* ─── Flat technical button ─── */
+	.nt-btn {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		font-family: var(--font-mono);
+		font-size: 11px;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--fg-muted);
+		background: var(--surface-raised);
+		border: 1px solid var(--hair-2);
+		transition:
+			color 0.15s var(--ease),
+			border-color 0.15s var(--ease),
+			background-color 0.15s var(--ease);
+	}
+	.nt-btn:hover:not(:disabled) {
+		color: var(--fg);
+		border-color: var(--fg);
+	}
+	.nt-btn:active:not(:disabled) {
+		background: var(--bg);
+	}
+	.nt-btn:disabled {
+		opacity: 0.4;
+		cursor: not-allowed;
+	}
+
 	/* Slow blink for the lime status square */
 	.lime-pulse {
 		animation: lime-pulse 2.4s var(--ease) infinite;

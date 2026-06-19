@@ -465,11 +465,11 @@ export default function Home() {
 								damping: 25,
 								stiffness: 300,
 							}}
-							className="flex items-center gap-2.5 px-4 sm:px-6 h-10 sm:h-12 te-button group cursor-default"
+							className="nt-surface flex h-10 cursor-default items-center gap-2.5 rounded-[8px] px-4 sm:h-12 sm:px-6"
 						>
 							<span
-								className="logo-font font-bold text-xs sm:text-sm leading-none tracking-[0.2em] pl-1 transition-colors"
-								style={{ color: accentColor }}
+								className="text-[16px] leading-none tracking-[0.06em] text-[var(--fg)] sm:text-[18px]"
+								style={{ fontFamily: "var(--font-display)" }}
 							>
 								{avatarName}
 							</span>
@@ -484,9 +484,10 @@ export default function Home() {
 								damping: 26,
 								stiffness: 280,
 							}}
-							className="te-lcd px-3 py-1.5"
+							className="nt-recess flex flex-col gap-1 rounded-[6px] px-3 py-1.5"
 						>
-							<span className="text-[10px] tracking-widest">
+							<span className="label leading-none">PERSONA</span>
+							<span className="font-mono text-[10px] uppercase tracking-[0.08em] text-[var(--fg)]">
 								{activePersonaId.replace("-", " ")}
 							</span>
 						</motion.div>
@@ -500,7 +501,7 @@ export default function Home() {
 								damping: 26,
 								stiffness: 280,
 							}}
-							className="te-recessed p-1 flex gap-1"
+							className="nt-recess flex gap-1 rounded-[8px] p-1"
 						>
 							{([
 								{ id: "demo", label: "DEMO" },
@@ -512,23 +513,13 @@ export default function Home() {
 										key={mode.id}
 										type="button"
 										onClick={() => switchEmotionSourceMode(mode.id)}
-										className="h-7 px-3 te-button rounded-[7px] text-[8px] tracking-[0.18em]"
+										className="nt-btn h-7 rounded-[5px] px-3 text-[8px] tracking-[0.18em]"
 										style={
 											active
 												? ({
-														"--key-bg":
-															mode.id === "live"
-																? "var(--te-green)"
-																: "var(--te-blue)",
-														"--key-border":
-															mode.id === "live"
-																? "color-mix(in srgb, var(--te-green) 80%, black)"
-																: "color-mix(in srgb, var(--te-blue) 80%, black)",
-														"--key-shadow":
-															mode.id === "live"
-																? "color-mix(in srgb, var(--te-green) 60%, black)"
-																: "color-mix(in srgb, var(--te-blue) 60%, black)",
-														color: "#ffffff",
+														background: "var(--fg)",
+														borderColor: "var(--fg)",
+														color: "var(--bg)",
 													} as React.CSSProperties)
 												: undefined
 										}
@@ -545,7 +536,7 @@ export default function Home() {
 						</motion.div>
 					</div>
 				</div>
-				<div className="absolute top-[max(12px,env(safe-area-inset-top))] right-3 sm:top-8 sm:right-6 z-50 flex items-center gap-2 sm:gap-2.5 te-recessed p-2">
+				<div className="absolute top-[max(12px,env(safe-area-inset-top))] right-3 sm:top-8 sm:right-6 z-50 nt-recess flex items-center gap-1.5 rounded-[8px] p-1.5">
 					{/* Theme Toggle */}
 					<motion.button
 						initial={{ opacity: 0, scale: 0.9 }}
@@ -559,14 +550,14 @@ export default function Home() {
 						onClick={() =>
 							setTheme(theme === "dark" ? "light" : "dark")
 						}
-						className="size-10 sm:size-10 flex items-center justify-center te-button touch-manipulation"
+						className="nt-btn size-10 rounded-[5px] touch-manipulation"
 						title="Toggle Theme"
 						aria-label="Toggle theme"
 					>
 						{mounted && theme === "dark" ? (
-							<RiMoonFill className="size-[18px] text-foreground/70" />
+							<RiMoonFill className="size-[17px]" />
 						) : (
-							<RiSunFill className="size-[18px] text-foreground/70" />
+							<RiSunFill className="size-[17px]" />
 						)}
 					</motion.button>
 					{/* Memory Button */}
@@ -580,10 +571,10 @@ export default function Home() {
 							stiffness: 300,
 						}}
 						onClick={() => setIsMemoryOpen(true)}
-						className="size-10 sm:size-10 flex items-center justify-center te-button touch-manipulation"
+						className="nt-btn size-10 rounded-[5px] touch-manipulation"
 						title="Memory Core"
 					>
-						<Database className="size-[18px] text-foreground/70" />
+						<Database className="size-[17px]" strokeWidth={1.5} />
 					</motion.button>
 					<motion.button
 						initial={{ opacity: 0, scale: 0.9 }}
@@ -595,10 +586,10 @@ export default function Home() {
 							stiffness: 300,
 						}}
 						onClick={() => setIsRitualOpen(true)}
-						className="size-10 sm:size-10 flex items-center justify-center te-button touch-manipulation"
+						className="nt-btn size-10 rounded-[5px] touch-manipulation"
 						title="Rituals"
 					>
-						<Calendar className="size-[18px] text-foreground/70" />
+						<Calendar className="size-[17px]" strokeWidth={1.5} />
 					</motion.button>
 					{/* Audio Lab Button */}
 					<motion.button
@@ -611,10 +602,10 @@ export default function Home() {
 							stiffness: 300,
 						}}
 						onClick={() => setIsAudioLabOpen(true)}
-						className="size-10 sm:size-10 flex items-center justify-center te-button touch-manipulation"
+						className="nt-btn size-10 rounded-[5px] touch-manipulation"
 						title="Audio Lab"
 					>
-						<AudioWaveform className="size-[18px] text-foreground/70" />
+						<AudioWaveform className="size-[17px]" strokeWidth={1.5} />
 					</motion.button>
 					{/* Settings Button */}
 					<motion.button
@@ -627,12 +618,12 @@ export default function Home() {
 							stiffness: 300,
 						}}
 						onClick={() => setIsCustomizationOpen(true)}
-						className="relative size-10 sm:size-10 flex items-center justify-center te-button touch-manipulation"
+						className="nt-btn relative size-10 rounded-[5px] touch-manipulation"
 						title="Settings"
 					>
-						<RiSettings4Fill className="size-[18px] text-foreground/70" />
+						<RiSettings4Fill className="size-[17px]" />
 						{mounted && !hasKeys && (
-							<span className="absolute top-1 right-1 size-2 rounded-full bg-[var(--te-orange)] animate-pulse shadow-[0_0_6px_var(--te-orange)]" />
+							<span className="absolute -right-0.5 -top-0.5 size-2 bg-[var(--accent)] animate-pulse" />
 						)}
 					</motion.button>
 				</div>
@@ -883,7 +874,7 @@ export default function Home() {
 				</AnimatePresence>
 				{/* External links */}
 				<div className="absolute left-3 sm:left-6 bottom-[calc(max(16px,env(safe-area-inset-bottom))+78px)] sm:bottom-10 z-[70] pointer-events-auto">
-					<div className="flex flex-col items-start gap-2 te-recessed p-2">
+					<div className="nt-recess flex flex-col items-start gap-1 rounded-[8px] p-1.5">
 						{[
 							{
 								icon: (
@@ -927,12 +918,12 @@ export default function Home() {
 										"noopener,noreferrer",
 									)
 								}
-								className="h-10 sm:h-auto flex items-center justify-start gap-2 px-3 sm:px-3.5 sm:py-2.5 te-button touch-manipulation text-foreground/70 hover:text-foreground"
+								className="nt-btn h-10 w-full justify-start gap-2 rounded-[5px] px-3 touch-manipulation sm:h-auto sm:px-3.5 sm:py-2.5"
 								aria-label={`Open ${label}`}
 								title={label}
 							>
 								{icon}
-								<span className="font-mono text-[9px] sm:text-[10px] font-bold tracking-[0.15em] uppercase leading-none">
+								<span className="font-mono text-[9px] sm:text-[10px] tracking-[0.15em] uppercase leading-none">
 									{label}
 								</span>
 							</motion.button>

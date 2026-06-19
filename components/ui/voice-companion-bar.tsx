@@ -2,10 +2,9 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
-import { motion, AnimatePresence } from "motion/react";
 import {
 	Mic,
-	SquareSquare,
+	Square,
 	Volume2,
 	VolumeX,
 	MessageSquareText,
@@ -49,6 +48,30 @@ const VOICE_ERROR_LABELS: Record<VoiceErrorCode, string> = {
 	TTS_ERROR: "TTS_ERR",
 };
 
+/* status → { dot colour, readout label } — status colours encode data, exempt from one-accent rule */
+const STATUS: Record<
+	VoiceState,
+	{ color: string; label: string; pulse: boolean }
+> = {
+	idle: { color: "var(--fg-faint)", label: "IDLE", pulse: false },
+	listening: { color: "var(--accent)", label: "LISTENING", pulse: true },
+	thinking: { color: "var(--warning)", label: "THINKING", pulse: true },
+	speaking: { color: "var(--success)", label: "SPEAKING", pulse: true },
+	error: { color: "var(--error)", label: "ERROR", pulse: false },
+};
+
+/* Active fill presets applied over .nt-btn */
+const FILL_LIME: React.CSSProperties = {
+	background: "var(--accent)",
+	borderColor: "var(--accent)",
+	color: "var(--accent-foreground)",
+};
+const FILL_INK: React.CSSProperties = {
+	background: "var(--fg)",
+	borderColor: "var(--fg)",
+	color: "var(--bg)",
+};
+
 export function VoiceCompanionBar({
 	state,
 	onToggleMic,
@@ -60,139 +83,102 @@ export function VoiceCompanionBar({
 	onOpenSettings,
 	errorCode,
 	liveTranscript = "",
-	accentColor = "#7c3aed",
 	className,
 }: VoiceCompanionBarProps) {
-	// State maps to UI behavior
 	const isListening = state === "listening";
 	const isSpeaking = state === "speaking";
 	const isThinking = state === "thinking";
-	const isError = state === "error";
+	const isBusy = isSpeaking || isThinking;
+
+	const status = STATUS[state];
+	const statusLabel =
+		state === "error" && errorCode
+			? VOICE_ERROR_LABELS[errorCode]
+			: status.label;
 
 	return (
 		<div
 			className={cn(
-				"relative z-50 flex items-center gap-3 p-2 pr-2.5 te-panel",
+				"nt-surface relative z-50 flex items-center gap-2 rounded-[10px] p-2",
 				className,
 			)}
 		>
-			{/* Dynamic Status LCD */}
-			<div className="te-lcd px-3.5 py-2 flex flex-col justify-center min-w-[110px] h-[48px] relative overflow-hidden shrink-0">
-				{/* Subtle glass reflection for realism */}
-				<div className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/10 to-transparent pointer-events-none" />
-				
-				<div className="text-[8px] opacity-50 mb-0.5 tracking-[0.2em] font-bold">STATUS</div>
+			{/* ── Status readout ── */}
+			<div className="nt-recess flex h-[46px] min-w-[116px] shrink-0 flex-col justify-center gap-1 rounded-[6px] px-3.5">
+				<span className="label leading-none">STATUS</span>
 				<div className="flex items-center gap-2">
-					{isListening ? (
-						<>
-							<div className="size-2 rounded-full bg-[var(--te-orange)] animate-pulse shadow-[0_0_8px_var(--te-orange)]" />
-							<span className="text-[12px] font-bold">REC...</span>
-						</>
-					) : isThinking ? (
-						<>
-							<div className="size-2 rounded-full bg-[var(--te-yellow)] animate-pulse shadow-[0_0_8px_var(--te-yellow)]" />
-							<span className="text-[12px] font-bold">PROC...</span>
-						</>
-					) : isSpeaking ? (
-						<>
-							<div className="size-2 rounded-full bg-[var(--te-blue)] animate-pulse shadow-[0_0_8px_var(--te-blue)]" />
-							<span className="text-[12px] font-bold">PLAY...</span>
-						</>
-					) : isError ? (
-						<>
-							<div className="size-2 rounded-full bg-[var(--te-orange)] shadow-[0_0_8px_var(--te-orange)]" />
-							<span className="text-[12px] font-bold">
-								{errorCode
-									? VOICE_ERROR_LABELS[errorCode]
-									: "ERR_01"}
-							</span>
-						</>
-					) : (
-						<>
-							<div className="size-2 rounded-full bg-current opacity-20" />
-							<span className="text-[12px] opacity-50 font-bold">IDLE</span>
-						</>
-					)}
+					<span
+						className={cn("size-2 shrink-0", status.pulse && "animate-pulse")}
+						style={{ background: status.color }}
+					/>
+					<span className="font-mono text-[11px] uppercase tracking-[0.06em] text-[var(--fg)]">
+						{statusLabel}
+					</span>
 				</div>
 			</div>
 
+			{/* ── Live transcript readout ── */}
 			{liveTranscript && (
-				<div className="hidden sm:flex te-lcd h-[48px] min-w-[180px] max-w-[260px] px-3 py-2 flex-col justify-center overflow-hidden shrink">
-					<span className="text-[7px] opacity-40 tracking-[0.22em] font-bold">TRANSCRIPT</span>
-					<span className="text-[10px] opacity-75 font-mono truncate normal-case">
+				<div className="nt-recess hidden h-[46px] min-w-[180px] max-w-[260px] shrink flex-col justify-center gap-1 rounded-[6px] px-3 sm:flex">
+					<span className="label leading-none">TRANSCRIPT</span>
+					<span className="truncate font-mono text-[10px] normal-case text-[var(--fg-muted)]">
 						{liveTranscript}
 					</span>
 				</div>
 			)}
 
-			{/* Transport Controls */}
-			<div className="flex items-center gap-1.5 te-recessed p-1.5 shrink-0">
-				{/* Mute Toggle */}
+			{/* ── Transport cluster ── */}
+			<div className="nt-recess flex shrink-0 items-center gap-1 rounded-[8px] p-1">
+				{/* Mute */}
 				<button
 					onClick={onToggleMute}
-					className="w-12 h-10 te-button text-foreground/70 rounded-[10px]"
+					className="nt-btn h-9 w-11 rounded-[5px]"
+					style={isMuted ? { color: "var(--error)" } : undefined}
 					title={isMuted ? "Unmute" : "Mute"}
+					aria-label={isMuted ? "Unmute" : "Mute"}
 				>
 					{isMuted ? (
-						<VolumeX className="size-[16px]" />
+						<VolumeX className="size-[16px]" strokeWidth={1.5} />
 					) : (
-						<Volume2 className="size-[16px]" />
+						<Volume2 className="size-[16px]" strokeWidth={1.5} />
 					)}
 				</button>
 
-				{/* Main Action (Record / Stop) */}
+				{/* Main action — record / stop */}
 				<button
-					onClick={
-						isSpeaking || isThinking ? onInterrupt : onToggleMic
-					}
-					className="w-16 h-10 te-button rounded-[10px]"
-					style={
-						(isListening || isSpeaking || isThinking)
-							? ({
-									"--key-bg": "var(--te-orange)",
-									"--key-border": "color-mix(in srgb, var(--te-orange) 80%, black)",
-									"--key-shadow": "color-mix(in srgb, var(--te-orange) 60%, black)",
-									color: "#ffffff",
-							  } as React.CSSProperties)
-							: undefined
-					}
+					onClick={isBusy ? onInterrupt : onToggleMic}
+					className="nt-btn h-9 w-16 rounded-[5px]"
+					style={isListening ? FILL_LIME : isBusy ? FILL_INK : undefined}
+					title={isBusy ? "Stop" : "Record"}
+					aria-label={isBusy ? "Stop" : "Record"}
 				>
-					{isSpeaking || isThinking ? (
-						<SquareSquare className="size-[16px] fill-current" />
+					{isBusy ? (
+						<Square className="size-[15px] fill-current" strokeWidth={1.5} />
 					) : (
-						<Mic className="size-[18px]" />
+						<Mic className="size-[18px]" strokeWidth={1.5} />
 					)}
 				</button>
 
-				{/* Chat Toggle */}
+				{/* Chat */}
 				<button
 					onClick={onToggleChat}
-					className="w-12 h-10 te-button text-foreground/70 rounded-[10px]"
-					style={
-						isChatOpen
-							? ({
-									"--key-bg": "var(--te-blue)",
-									"--key-border": "color-mix(in srgb, var(--te-blue) 80%, black)",
-									"--key-shadow": "color-mix(in srgb, var(--te-blue) 60%, black)",
-									color: "#ffffff",
-							  } as React.CSSProperties)
-							: undefined
-					}
-					title={
-						isChatOpen ? "Close Chat" : "Open Chat"
-					}
+					className="nt-btn h-9 w-11 rounded-[5px]"
+					style={isChatOpen ? FILL_INK : undefined}
+					title={isChatOpen ? "Close chat" : "Open chat"}
+					aria-label={isChatOpen ? "Close chat" : "Open chat"}
 				>
-					<MessageSquareText className="size-[16px]" />
+					<MessageSquareText className="size-[16px]" strokeWidth={1.5} />
 				</button>
 			</div>
 
-			{/* Settings Button */}
+			{/* ── Settings ── */}
 			<button
 				onClick={onOpenSettings}
-				className="size-12 te-button rounded-full shrink-0"
-				title="Voice Settings"
+				className="nt-btn size-[46px] shrink-0 rounded-[6px]"
+				title="Voice settings"
+				aria-label="Voice settings"
 			>
-				<SlidersHorizontal className="size-[16px]" />
+				<SlidersHorizontal className="size-[16px]" strokeWidth={1.5} />
 			</button>
 		</div>
 	);
