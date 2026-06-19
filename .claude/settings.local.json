@@ -7,7 +7,8 @@
       "Read(//tmp/**)",
       "Bash(echo \"exit: $?\")",
       "Bash(rm -rf .next && pnpm build > /tmp/cm.log 2>&1; echo \"exit: $?\"; grep -aE \"Compiled successfully|Failed to compile|error TS|Type error\" /tmp/cm.log | grep -avE \"^var|webpack\" | head)",
-      "Bash(git commit -m ' *)"
+      "Bash(git commit -m ' *)",
+      "Bash(rm -rf .next && pnpm build > /tmp/fb.log 2>&1; echo \"exit: $?\"; grep -aE \"Compiled successfully|Failed to compile|error TS|Type error|Generating static pages \\\\\\(10/10\\\\\\)\" /tmp/fb.log | grep -avE \"^var|webpack\" | head)"
     ],
     "additionalDirectories": [
       "\\tmp"
