@@ -656,7 +656,7 @@ export function AudioLab({
                                     { full: "PRE", value: bands.presence },
                                 ].map((band) => (
                                     <div key={band.full} className="flex flex-1 flex-col items-center gap-1.5">
-                                        <div className="relative h-[50px] w-5 overflow-hidden rounded-[3px] bg-[var(--fg)]">
+                                        <div className="relative h-[50px] w-5 overflow-hidden rounded-[3px] bg-[#1a1b52]">
                                             {/* tick lines */}
                                             <div
                                                 className="pointer-events-none absolute inset-0 z-20"

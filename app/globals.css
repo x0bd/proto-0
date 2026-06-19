@@ -146,7 +146,6 @@
 
 	/* Canvas & surfaces */
 	--bg: #0a0b14; /* near-black indigo */
-	--surface: #13142200;
 	--surface: #131426;
 	--surface-raised: #1b1c30;
 
@@ -240,10 +239,11 @@
 		border-radius: 3px;
 	}
 
-	/* Indigo band — the one place lime text is allowed (reads as colour) */
+	/* Indigo band — constant instrument screen in both themes.
+	   The one place lime text is allowed (reads as colour, not shape). */
 	.band {
-		background: var(--fg);
-		color: var(--bg);
+		background: #1a1b52;
+		color: #ebebeb;
 	}
 	.band .label {
 		color: rgba(235, 235, 235, 0.45);
