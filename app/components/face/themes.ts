@@ -5,18 +5,18 @@ import { FaceVariant } from "./types";
  * Used to tint the SVG avatar currentColor.
  */
 export const VARIANT_COLORS: Record<FaceVariant, string> = {
-	minimal: "#FF6B6B", // Coral red
-	tron: "#06B6D4", // Electric cyan
-	analogue: "#FBBF24", // Warm amber
+	minimal: "#BAFF29", // Brand lime
+	tron: "#BAFF29", // Brand lime
+	analogue: "#BAFF29", // Brand lime
 };
 
 /**
  * Glow colors per variant (for shadows and glows).
  */
 export const VARIANT_GLOW: Record<FaceVariant, string> = {
-	minimal: "rgba(255, 107, 107, 0.4)",
-	tron: "rgba(6, 182, 212, 0.5)",
-	analogue: "rgba(251, 191, 36, 0.4)",
+	minimal: "rgba(186, 255, 41, 0.4)",
+	tron: "rgba(186, 255, 41, 0.4)",
+	analogue: "rgba(186, 255, 41, 0.4)",
 };
 
 /**
@@ -24,7 +24,7 @@ export const VARIANT_GLOW: Record<FaceVariant, string> = {
  */
 function hexToRgba(hex: string, alpha: number): string {
 	const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-	if (!m) return `rgba(124, 58, 237, ${alpha})`;
+	if (!m) return `rgba(186, 255, 41, ${alpha})`;
 	return `rgba(${parseInt(m[1], 16)}, ${parseInt(m[2], 16)}, ${parseInt(m[3], 16)}, ${alpha})`;
 }
 
@@ -36,10 +36,10 @@ export function applyAgentTheme(
 	variant: FaceVariant,
 	accentColor?: string,
 ): void {
-	const color = accentColor || VARIANT_COLORS[variant] || "#7C3AED";
+	const color = accentColor || VARIANT_COLORS[variant] || "#BAFF29";
 	const glow = accentColor
 		? hexToRgba(accentColor, 0.4)
-		: VARIANT_GLOW[variant] || "rgba(124, 58, 237, 0.35)";
+		: VARIANT_GLOW[variant] || "rgba(186, 255, 41, 0.35)";
 	const root = document.documentElement;
 
 	root.style.setProperty("--face-color", color);

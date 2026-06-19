@@ -291,7 +291,7 @@ export function AudioLab({
                 ctx.scale(dpr, dpr);
             }
 
-            ctx.fillStyle = "#020202";
+            ctx.fillStyle = "#1A1B52"; // indigo band — the scope screen
             ctx.fillRect(0, 0, w, h);
 
             const r = parseInt(accentColor.slice(1, 3), 16);
@@ -556,62 +556,52 @@ export function AudioLab({
                     dragMomentum={false}
                     style={{ x, y }}
                     onDragEnd={onDragEnd}
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.9 }}
-                    transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                    className="absolute top-24 right-6 w-[380px] h-auto te-module te-safe-panel z-[100] flex flex-col shadow-[0_30px_60px_rgba(0,0,0,0.4),0_0_0_1px_rgba(0,0,0,0.1),inset_0_1px_1px_rgba(255,255,255,0.1)]"
+                    initial={{ opacity: 0, y: 8, scale: 0.99 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 8, scale: 0.99 }}
+                    transition={{ duration: 0.22, ease: [0.25, 0.1, 0.25, 1] }}
+                    className="absolute top-24 right-6 z-[100] flex h-auto w-[380px] flex-col te-module te-safe-panel"
                 >
                     {/* Header */}
-                    <div className="te-module-header px-4 h-10 border-b border-black/10 dark:border-white/5 relative bg-[var(--panel-bg)] rounded-t-[16px]">
+                    <div className="te-module-header h-10 px-3">
                         <div className="flex items-center gap-2">
-                            <div
-                                className="size-2 rounded-full"
-                                style={{
-                                    backgroundColor: isPlaying ? "var(--te-green)" : "var(--te-orange)",
-                                    boxShadow: isPlaying ? "0 0 8px var(--te-green)" : "none",
-                                }}
+                            <span
+                                className={`size-2 shrink-0 ${isPlaying ? "animate-pulse" : ""}`}
+                                style={{ background: isPlaying ? "var(--accent)" : "var(--fg-faint)" }}
                             />
-                            <span className="font-mono text-[10px] font-bold uppercase tracking-widest text-foreground">FREQ_LAB</span>
-                            <span className="font-mono text-[8px] uppercase tracking-widest te-whisper ml-2">TAPE-1</span>
+                            <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-[var(--fg)]">FREQ_LAB</span>
+                            <span className="label">TAPE-1</span>
                         </div>
-                        <div className="w-16 h-2 te-grip opacity-40 shrink-0" />
+                        <div className="te-grip h-2.5 w-10 opacity-70" />
                         <button
                             onClick={() => onOpenChange(false)}
-                            className="size-5 te-button !rounded-full flex items-center justify-center text-foreground hover:text-[var(--te-orange)]"
+                            className="size-6 shrink-0 te-button rounded-[5px]"
                             aria-label="Close"
                         >
-                            <X className="size-3" />
+                            <X className="size-3" strokeWidth={1.5} />
                         </button>
                     </div>
 
-                    <div className="relative z-10 flex flex-col p-4 gap-4 bg-[var(--panel-bg)] rounded-b-[16px]">
-                        {/* Screws */}
-                        <div className="absolute top-4 left-4 size-1.5 rounded-full bg-black/20 dark:bg-white/10 shadow-[inset_0_1px_2px_rgba(0,0,0,0.5)] pointer-events-none" />
-                        <div className="absolute top-4 right-4 size-1.5 rounded-full bg-black/20 dark:bg-white/10 shadow-[inset_0_1px_2px_rgba(0,0,0,0.5)] pointer-events-none" />
-
-                        {/* Screen cluster — forced dark */}
-                        <div
-                            className="te-recessed p-2 pt-3 flex flex-col gap-2 mt-2 relative border border-[var(--panel-border)] shadow-[inset_0_4px_10px_rgba(0,0,0,0.15)]"
-                            style={{ backgroundColor: "#111111" }}
-                        >
-                            {/* LCD info */}
-                            <div className="flex items-start justify-between px-2 mb-1">
-                                <div className="flex flex-col">
-                                    <span className="text-[7px] text-white/40 tracking-[0.3em] font-bold uppercase">TAPE TRACK</span>
-                                    <div className="flex items-center gap-2 mt-0.5">
-                                        <AudioLines className="size-3 text-white/80" />
-                                        <span className="text-[12px] text-white font-mono font-bold tracking-widest uppercase truncate max-w-[140px] drop-shadow-[0_0_8px_rgba(255,255,255,0.4)]">
+                    <div className="fade-up relative z-10 flex flex-col gap-4 p-4">
+                        {/* Scope screen — the one indigo band */}
+                        <div className="band flex flex-col gap-2 rounded-[8px] p-2 pt-3">
+                            {/* readout */}
+                            <div className="mb-1 flex items-start justify-between px-2">
+                                <div className="flex flex-col gap-0.5">
+                                    <span className="label leading-none">TAPE TRACK</span>
+                                    <div className="mt-0.5 flex items-center gap-2">
+                                        <AudioLines className="size-3 text-[rgba(235,235,235,0.7)]" strokeWidth={1.5} />
+                                        <span className="max-w-[140px] truncate font-mono text-[12px] uppercase tracking-widest text-[var(--bg)]">
                                             {fileName
                                                 ? fileName.replace(/\.[^/.]+$/, "").slice(0, 15) + (fileName.length > 15 ? ".." : "")
                                                 : "NO_SRC"}
                                         </span>
                                     </div>
                                 </div>
-                                <div className="flex flex-col items-end">
-                                    <span className="text-[7px] text-white/40 tracking-[0.3em] font-bold uppercase mb-0.5">SYS_EMOTION</span>
-                                    <div className="bg-[#050505] px-2 py-[2px] rounded-[3px] border border-white/10">
-                                        <span className="text-[10px] font-bold tracking-widest" style={{ color: accentColor, textShadow: `0 0 8px ${accentColor}` }}>
+                                <div className="flex flex-col items-end gap-0.5">
+                                    <span className="label leading-none">SYS_EMOTION</span>
+                                    <div className="rounded-[3px] border border-[rgba(235,235,235,0.15)] px-2 py-[2px]">
+                                        <span className="font-mono text-[10px] tracking-widest" style={{ color: "var(--accent)" }}>
                                             {emotionLabel}
                                         </span>
                                     </div>
@@ -619,35 +609,35 @@ export function AudioLab({
                             </div>
 
                             {/* Spectrum */}
-                            <div className="h-[80px] relative rounded-[4px] border border-black/50 overflow-hidden bg-[#020202] shadow-[inset_0_2px_8px_rgba(0,0,0,0.8)]">
-                                <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" style={{ imageRendering: "pixelated" }} />
+                            <div className="relative h-[80px] overflow-hidden rounded-[4px] border border-[rgba(235,235,235,0.12)]">
+                                <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" style={{ imageRendering: "pixelated" }} />
                                 {!fileName && (
                                     <div className="absolute inset-0 flex items-center justify-center">
-                                        <span className="text-[9px] font-mono leading-tight tracking-[0.2em] text-[var(--te-orange)] opacity-50 text-center uppercase">
+                                        <span className="text-center font-mono text-[9px] uppercase leading-tight tracking-[0.2em] text-[rgba(235,235,235,0.45)]">
                                             INSERT_TAPE
                                             <br />
                                             TO_BEGIN_ANALYSIS
                                         </span>
                                     </div>
                                 )}
-                                <div className="absolute top-1 left-1.5 opacity-30 flex items-center gap-1">
-                                    <div className={`size-1.5 rounded-full ${isPlaying ? "bg-red-500 animate-pulse" : "bg-white/30"}`} />
-                                    <span className="text-[6px] text-white font-mono tracking-widest font-bold">REC</span>
+                                <div className="absolute left-1.5 top-1 flex items-center gap-1">
+                                    <span className={`size-1.5 ${isPlaying ? "animate-pulse" : ""}`} style={{ background: isPlaying ? "var(--accent)" : "rgba(235,235,235,0.3)" }} />
+                                    <span className="font-mono text-[6px] tracking-widest text-[rgba(235,235,235,0.6)]">REC</span>
                                 </div>
                             </div>
 
                             {/* Progress */}
                             <div className="flex items-center gap-2 px-1">
-                                <span className="text-[9px] text-[#00ff88] font-mono font-bold tracking-wider tabular-nums drop-shadow-[0_0_4px_#00ff88]">
+                                <span className="font-mono text-[9px] tabular-nums tracking-wider text-[var(--accent)]">
                                     {formatTime(currentTime)}
                                 </span>
-                                <div className="flex-1 h-1.5 bg-[#050505] rounded-full overflow-hidden border border-white/10 relative">
+                                <div className="relative h-1.5 flex-1 overflow-hidden rounded-full bg-[rgba(235,235,235,0.12)]">
                                     <div
-                                        className="h-full bg-[#00ff88] shadow-[0_0_8px_#00ff88] transition-none absolute left-0 top-0 z-10"
-                                        style={{ width: `${progress}%` }}
+                                        className="absolute left-0 top-0 z-10 h-full transition-none"
+                                        style={{ width: `${progress}%`, background: "var(--accent)" }}
                                     />
                                 </div>
-                                <span className="text-[9px] text-white/50 font-mono font-bold tracking-wider tabular-nums">{formatTime(duration)}</span>
+                                <span className="font-mono text-[9px] tabular-nums tracking-wider text-[rgba(235,235,235,0.5)]">{formatTime(duration)}</span>
                             </div>
                         </div>
 
@@ -657,7 +647,7 @@ export function AudioLab({
                                 <span className="te-label">EQ_BANDS</span>
                                 <span className="te-label opacity-40">METER</span>
                             </div>
-                            <div className="te-recessed p-2 py-3 flex gap-2">
+                            <div className="te-recessed flex gap-2 p-2 py-3">
                                 {[
                                     { full: "BSS", value: bands.bass },
                                     { full: "L-M", value: bands.lowMid },
@@ -665,41 +655,25 @@ export function AudioLab({
                                     { full: "H-M", value: bands.highMid },
                                     { full: "PRE", value: bands.presence },
                                 ].map((band) => (
-                                    <div key={band.full} className="flex-1 flex flex-col items-center gap-1.5">
-                                        <div
-                                            className="w-5 h-[50px] relative overflow-hidden"
-                                            style={{
-                                                backgroundColor: "#111",
-                                                border: "1px solid #000",
-                                                borderRadius: "3px",
-                                                boxShadow: "inset 0 2px 6px rgba(0,0,0,0.8)",
-                                            }}
-                                        >
+                                    <div key={band.full} className="flex flex-1 flex-col items-center gap-1.5">
+                                        <div className="relative h-[50px] w-5 overflow-hidden rounded-[3px] bg-[var(--fg)]">
+                                            {/* tick lines */}
                                             <div
-                                                className="absolute inset-x-0 bottom-0 top-0 opacity-20 pointer-events-none z-0"
+                                                className="pointer-events-none absolute inset-0 z-20"
                                                 style={{
                                                     backgroundImage:
-                                                        "repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(255,255,255,0.2) 3px, rgba(255,255,255,0.2) 4px)",
+                                                        "repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(235,235,235,0.14) 3px, rgba(235,235,235,0.14) 4px)",
                                                 }}
                                             />
                                             <div
                                                 className="absolute inset-x-0 bottom-0 z-10 transition-all duration-75"
                                                 style={{
                                                     height: `${Math.min(100, band.value * 100)}%`,
-                                                    backgroundColor: accentColor,
-                                                    boxShadow: band.value > 0.2 ? `0 0 10px ${accentColor}` : "none",
-                                                }}
-                                            />
-                                            <div
-                                                className="absolute inset-0 z-20 pointer-events-none bg-repeat-y"
-                                                style={{
-                                                    backgroundImage:
-                                                        "repeating-linear-gradient(0deg, transparent, transparent 3px, #000 3px, #000 4px)",
-                                                    mixBlendMode: "multiply",
+                                                    background: "var(--accent)",
                                                 }}
                                             />
                                         </div>
-                                        <span className="text-[9px] font-mono font-bold tracking-widest text-foreground/70 uppercase">{band.full}</span>
+                                        <span className="font-mono text-[9px] uppercase tracking-widest text-[var(--fg-muted)]">{band.full}</span>
                                     </div>
                                 ))}
                             </div>
@@ -711,9 +685,9 @@ export function AudioLab({
                                 <span className="te-label">LOCAL_INSIGHT</span>
                                 <span className="te-label">SAVED {savedSessionCount}</span>
                             </div>
-                            <div className="te-recessed p-2 flex flex-col gap-2">
-                                <div className="te-lcd px-2.5 py-2 min-h-12 flex items-center">
-                                    <span className="text-[9px] leading-relaxed opacity-80">
+                            <div className="te-recessed flex flex-col gap-2 p-2">
+                                <div className="flex min-h-12 items-center te-lcd px-2.5 py-2">
+                                    <span className="font-mono text-[9px] leading-relaxed text-[var(--fg-muted)]">
                                         {fileName ? currentInsight.toUpperCase() : "LOAD_AUDIO_TO_GENERATE_SESSION_CARD"}
                                     </span>
                                 </div>
@@ -721,17 +695,17 @@ export function AudioLab({
                                     <button
                                         onClick={handleSaveInsight}
                                         disabled={!fileName || duration <= 0}
-                                        className="h-9 te-button rounded-[6px] flex items-center justify-center gap-1.5 text-[9px] disabled:opacity-30"
+                                        className="flex h-9 items-center justify-center gap-1.5 rounded-[5px] te-button text-[9px] disabled:opacity-30"
                                     >
-                                        <Database className="size-3" />
+                                        <Database className="size-3" strokeWidth={1.5} />
                                         {saveStatus === "saved" ? "SAVED" : "SAVE_MEM"}
                                     </button>
                                     <button
                                         onClick={handleExportInsight}
                                         disabled={!fileName || duration <= 0}
-                                        className="h-9 te-button rounded-[6px] flex items-center justify-center gap-1.5 text-[9px] disabled:opacity-30"
+                                        className="flex h-9 items-center justify-center gap-1.5 rounded-[5px] te-button text-[9px] disabled:opacity-30"
                                     >
-                                        <Download className="size-3" />
+                                        <Download className="size-3" strokeWidth={1.5} />
                                         {saveStatus === "exported" ? "EXPORTED" : "EXPORT"}
                                     </button>
                                 </div>
@@ -739,14 +713,14 @@ export function AudioLab({
                         </section>
 
                         {/* Transport */}
-                        <section className="flex gap-2 shrink-0 mt-1">
-                            <div className="flex-1 p-1.5 te-recessed flex gap-1.5 items-center">
+                        <section className="mt-1 flex shrink-0 gap-2">
+                            <div className="flex flex-1 items-center gap-1.5 te-recessed p-1.5">
                                 <button
                                     onClick={() => fileInputRef.current?.click()}
-                                    className="h-10 px-3 te-button rounded-[6px] flex items-center justify-center gap-1.5 text-foreground flex-1"
+                                    className="flex h-10 flex-1 items-center justify-center gap-1.5 rounded-[5px] te-button px-3"
                                 >
-                                    <Upload className="size-3 opacity-70" />
-                                    <span className="text-[10px] font-bold tracking-widest">TAPE_IN</span>
+                                    <Upload className="size-3" strokeWidth={1.5} />
+                                    <span className="text-[10px] tracking-widest">TAPE_IN</span>
                                 </button>
                                 <input
                                     ref={fileInputRef}
@@ -761,42 +735,46 @@ export function AudioLab({
                                 />
                             </div>
 
-                            <div className="flex-1 p-1.5 te-recessed flex gap-1.5 items-center">
+                            <div className="flex flex-1 items-center gap-1.5 te-recessed p-1.5">
                                 <button
                                     onClick={handleStop}
                                     disabled={!fileName}
-                                    className="size-10 shrink-0 te-button rounded-[6px] flex items-center justify-center disabled:opacity-30 transition-all"
+                                    className="flex size-10 shrink-0 items-center justify-center rounded-[5px] te-button disabled:opacity-30"
                                     style={
                                         isPlaying
                                             ? ({
-                                                  "--key-bg": "var(--te-orange)",
-                                                  "--key-border": "color-mix(in srgb, var(--te-orange) 80%, black)",
-                                                  "--key-shadow": "color-mix(in srgb, var(--te-orange) 60%, black)",
-                                                  color: "#ffffff",
+                                                  background: "var(--fg)",
+                                                  borderColor: "var(--fg)",
+                                                  color: "var(--bg)",
                                               } as React.CSSProperties)
                                             : undefined
                                     }
                                 >
-                                    <Square className="size-3.5" fill="currentColor" />
+                                    <Square className="size-3.5" fill="currentColor" strokeWidth={1.5} />
                                 </button>
 
                                 <button
                                     onClick={isPlaying ? handlePause : handlePlay}
                                     disabled={!fileName}
-                                    className="h-10 flex-1 te-button rounded-[6px] flex items-center justify-center gap-1.5 disabled:opacity-30 transition-all text-white"
+                                    className="flex h-10 flex-1 items-center justify-center gap-1.5 rounded-[5px] te-button disabled:opacity-30"
                                     style={
                                         fileName
-                                            ? ({
-                                                  "--key-bg": isPlaying ? "var(--te-orange)" : "var(--te-green)",
-                                                  "--key-border": `color-mix(in srgb, ${isPlaying ? "var(--te-orange)" : "var(--te-green)"} 80%, black)`,
-                                                  "--key-shadow": `color-mix(in srgb, ${isPlaying ? "var(--te-orange)" : "var(--te-green)"} 60%, black)`,
-                                                  color: "#ffffff",
-                                              } as React.CSSProperties)
+                                            ? isPlaying
+                                                ? ({
+                                                      background: "var(--fg)",
+                                                      borderColor: "var(--fg)",
+                                                      color: "var(--bg)",
+                                                  } as React.CSSProperties)
+                                                : ({
+                                                      background: "var(--accent)",
+                                                      borderColor: "var(--accent)",
+                                                      color: "var(--accent-foreground)",
+                                                  } as React.CSSProperties)
                                             : undefined
                                     }
                                 >
-                                    {isPlaying ? <Pause className="size-4" fill="currentColor" /> : <Play className="size-4" fill="currentColor" />}
-                                    <span className="text-[10px] font-bold tracking-widest">{isPlaying ? "PAUSE" : "PLAY"}</span>
+                                    {isPlaying ? <Pause className="size-4" fill="currentColor" strokeWidth={1.5} /> : <Play className="size-4" fill="currentColor" strokeWidth={1.5} />}
+                                    <span className="text-[10px] tracking-widest">{isPlaying ? "PAUSE" : "PLAY"}</span>
                                 </button>
                             </div>
                         </section>
