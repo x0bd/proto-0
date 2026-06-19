@@ -78,7 +78,6 @@ export function ChatModule({
     voiceState = "idle",
     activePersonaId = "coach",
     personaTuning,
-    accentColor = "#7c3aed",
     constraintsRef,
     onOpenSettings,
 }: ChatModuleProps) {
@@ -215,6 +214,19 @@ export function ChatModule({
     const isConfigured = !!providerInfo;
     const { x, y, onDragEnd } = usePanelPosition("chat");
 
+    const statusText = isVoiceActive
+        ? "VOICE"
+        : isLoading
+            ? "STREAM"
+            : isConfigured
+                ? "READY"
+                : "NO_KEY";
+    const statusColor = !isConfigured
+        ? "var(--error)"
+        : isConfigured && !isVoiceActive && !isLoading
+            ? "var(--success)"
+            : "var(--fg)";
+
     return (
         <AnimatePresence>
             {open && (
@@ -224,175 +236,172 @@ export function ChatModule({
                     dragMomentum={false}
                     style={{ x, y }}
                     onDragEnd={onDragEnd}
-                    initial={{ opacity: 0, scale: 0.9 }}
+                    initial={{ opacity: 0, scale: 0.97 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.9 }}
+                    exit={{ opacity: 0, scale: 0.97 }}
                     transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                    className="absolute top-24 left-6 w-[380px] h-auto te-module te-safe-panel z-[100] flex flex-col shadow-[0_30px_60px_rgba(0,0,0,0.4),0_0_0_1px_rgba(0,0,0,0.1),inset_0_1px_1px_rgba(255,255,255,0.1)]"
+                    className="absolute top-24 left-6 z-[100] flex w-[380px] flex-col te-module te-safe-panel"
                 >
                     {/* Header */}
-                    <div className="te-module-header px-4 h-10 border-b border-black/10 dark:border-white/5 relative bg-[var(--panel-bg)] rounded-t-[16px]">
+                    <div className="te-module-header h-10 px-3">
                         <div className="flex items-center gap-2">
-                            <div
-                                className="size-2 rounded-full"
-                                style={{
-                                    backgroundColor: isConfigured ? "var(--te-green)" : "var(--te-orange)",
-                                    boxShadow: isConfigured ? "0 0 8px var(--te-green)" : "none",
-                                }}
+                            <span
+                                className="size-2 shrink-0"
+                                style={{ background: isConfigured ? "var(--success)" : "var(--accent)" }}
                             />
-                            <span className="font-mono text-[10px] font-bold uppercase tracking-widest text-foreground">CONV_MOD</span>
-                            <span className="font-mono text-[8px] uppercase tracking-widest te-whisper ml-2">TX-2</span>
+                            <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-[var(--fg)]">
+                                CONV_MOD
+                            </span>
+                            <span className="label">TX-2</span>
                         </div>
-                        <div className="w-16 h-2 te-grip opacity-40 shrink-0" />
+                        <div className="te-grip h-2.5 w-10 opacity-70" />
                         <button
                             onClick={() => onOpenChange(false)}
-                            className="size-5 te-button !rounded-full flex items-center justify-center text-foreground hover:text-[var(--te-orange)]"
+                            className="size-6 shrink-0 te-button rounded-[5px]"
                             aria-label="Close"
                         >
-                            <X className="size-3" />
+                            <X className="size-3" strokeWidth={1.5} />
                         </button>
                     </div>
 
-                    <div className="relative z-10 flex flex-col bg-[var(--panel-bg)] rounded-b-[16px]">
-                        {/* Screws */}
-                        <div className="absolute top-2 left-3 size-1.5 rounded-full bg-black/20 dark:bg-white/10 shadow-[inset_0_1px_2px_rgba(0,0,0,0.5)] pointer-events-none" />
-                        <div className="absolute top-2 right-3 size-1.5 rounded-full bg-black/20 dark:bg-white/10 shadow-[inset_0_1px_2px_rgba(0,0,0,0.5)] pointer-events-none" />
-
-                        {/* LCD Status */}
-                        <div className="mx-4 mt-4 mb-2">
-                            <div
-                                className="te-recessed p-2 flex items-center justify-between border border-[var(--panel-border)]"
-                                style={{ backgroundColor: "#111111" }}
-                            >
-                                <div className="flex items-center gap-2">
-                                    <MessageSquare className="size-3 text-white/60" />
-                                    <span className="text-[10px] text-white font-mono font-bold tracking-widest uppercase truncate max-w-[160px]">
-                                        {providerLabel}
-                                    </span>
-                                </div>
-                                <div className="bg-[#050505] px-2 py-[2px] rounded-[3px] border border-white/10">
-                                    <span className="text-[9px] font-bold tracking-widest" style={{ color: isConfigured ? "#00ff88" : "var(--te-orange)" }}>
-                                        {isVoiceActive ? "VOICE" : isLoading ? "STREAM" : isConfigured ? "READY" : "NO_KEY"}
-                                    </span>
-                                </div>
+                    <div className="flex flex-col gap-2.5 p-3">
+                        {/* Provider / status readout */}
+                        <div className="te-lcd flex items-center justify-between px-3 py-2">
+                            <div className="flex items-center gap-2 overflow-hidden">
+                                <MessageSquare className="size-3 shrink-0 text-[var(--fg-muted)]" strokeWidth={1.5} />
+                                <span className="truncate font-mono text-[10px] uppercase tracking-[0.06em] text-[var(--fg)]">
+                                    {providerLabel}
+                                </span>
                             </div>
+                            <span
+                                className="shrink-0 font-mono text-[9px] tracking-[0.1em]"
+                                style={{ color: statusColor }}
+                            >
+                                {statusText}
+                            </span>
                         </div>
 
                         {!isConfigured ? (
-                            <div className="px-4 pb-4">
-                                <div className="te-recessed p-4 flex flex-col items-center gap-3 text-center">
-                                    <span className="text-[10px] font-mono font-bold tracking-widest text-foreground/40 uppercase">
-                                        NO_AI_KEY_FOUND
-                                    </span>
-                                    <span className="text-[9px] font-mono te-whisper leading-relaxed">
-                                        Add an OpenAI, Google, or Claude key in<br />Settings → KEYS tab to begin.
-                                    </span>
-                                    {onOpenSettings && (
-                                        <button
-                                            onClick={() => { onOpenSettings(); onOpenChange(false); }}
-                                            className="h-9 px-4 te-button rounded-[6px] flex items-center gap-1.5 text-foreground/80 hover:text-foreground"
-                                            style={{
-                                                "--key-bg": "var(--te-orange)",
-                                                "--key-border": "color-mix(in srgb, var(--te-orange) 80%, black)",
-                                                "--key-shadow": "color-mix(in srgb, var(--te-orange) 60%, black)",
-                                                color: "#ffffff",
-                                            } as React.CSSProperties}
-                                        >
-                                            <Settings2 className="size-3" />
-                                            <span className="text-[9px] font-bold tracking-widest">OPEN_SETTINGS</span>
-                                        </button>
-                                    )}
-                                </div>
+                            <div className="te-recessed flex flex-col items-center gap-3 p-5 text-center">
+                                <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-[var(--fg-muted)]">
+                                    NO_AI_KEY_FOUND
+                                </span>
+                                <span className="font-mono text-[9px] leading-relaxed text-[var(--fg-faint)]">
+                                    Add an OpenAI, Google, or Claude key in
+                                    <br />
+                                    Settings → KEYS tab to begin.
+                                </span>
+                                {onOpenSettings && (
+                                    <button
+                                        onClick={() => { onOpenSettings(); onOpenChange(false); }}
+                                        className="flex h-9 items-center gap-1.5 rounded-[5px] te-button px-4"
+                                        style={{
+                                            background: "var(--accent)",
+                                            borderColor: "var(--accent)",
+                                            color: "var(--accent-foreground)",
+                                        }}
+                                    >
+                                        <Settings2 className="size-3" strokeWidth={1.5} />
+                                        <span className="font-mono text-[9px] tracking-[0.12em]">OPEN_SETTINGS</span>
+                                    </button>
+                                )}
                             </div>
                         ) : (
                             <>
-                                {/* Messages */}
-                                <div className="px-4 mb-2">
-                                    <div className="te-recessed p-2 max-h-[240px] overflow-y-auto" style={{ backgroundColor: "#0a0a0a" }}>
-                                        {liveTranscript && (
-                                            <div className="mb-2 te-lcd px-2 py-1.5 border border-white/10">
-                                                <div className="text-[7px] font-bold tracking-[0.24em] text-white/35 mb-1">
-                                                    LIVE_TRANSCRIPT
-                                                </div>
-                                                <div className="text-[10px] font-mono leading-relaxed text-white/75 normal-case">
-                                                    {liveTranscript}
-                                                </div>
+                                {/* Message log */}
+                                <div className="te-recessed max-h-[240px] overflow-y-auto p-2.5">
+                                    {liveTranscript && (
+                                        <div className="mb-2 te-lcd px-2.5 py-1.5">
+                                            <div className="label mb-1 leading-none">LIVE_TRANSCRIPT</div>
+                                            <div className="font-mono text-[10px] normal-case leading-relaxed text-[var(--fg-muted)]">
+                                                {liveTranscript}
                                             </div>
-                                        )}
-                                        {visibleMessages.length === 0 ? (
-                                            <div className="flex items-center justify-center py-6">
-                                                <span className="text-[9px] font-mono text-white/20 tracking-widest uppercase">AWAITING_INPUT</span>
-                                            </div>
-                                        ) : (
-                                            <div className="flex flex-col gap-2 py-1">
-                                                {visibleMessages.map((msg) => (
+                                        </div>
+                                    )}
+                                    {visibleMessages.length === 0 ? (
+                                        <div className="flex items-center justify-center py-8">
+                                            <span className="label">AWAITING_INPUT</span>
+                                        </div>
+                                    ) : (
+                                        <div className="flex flex-col gap-2 py-0.5">
+                                            {visibleMessages.map((msg) => {
+                                                const isUser = msg.role === "user";
+                                                return (
                                                     <div
                                                         key={msg.id}
-                                                        className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                                                        className={`flex flex-col gap-0.5 ${isUser ? "items-end" : "items-start"}`}
                                                     >
+                                                        <span className="label leading-none">
+                                                            {isUser ? "YOU" : "DOT"}
+                                                        </span>
                                                         <div
-                                                            className={`max-w-[85%] px-2.5 py-1.5 rounded-[6px] text-[11px] font-mono leading-relaxed ${
-                                                                msg.role === "user" ? "text-white/90" : "text-white/70"
-                                                            }`}
-                                                            style={{
-                                                                backgroundColor: msg.role === "user" ? `${accentColor}30` : "rgba(255,255,255,0.05)",
-                                                                border: msg.role === "user" ? `1px solid ${accentColor}40` : "1px solid rgba(255,255,255,0.08)",
-                                                            }}
+                                                            className="max-w-[85%] rounded-[6px] px-2.5 py-1.5 font-mono text-[11px] leading-relaxed"
+                                                            style={
+                                                                isUser
+                                                                    ? { background: "var(--fg)", color: "var(--bg)" }
+                                                                    : {
+                                                                          background: "var(--surface-raised)",
+                                                                          color: "var(--fg)",
+                                                                          border: "1px solid var(--hair-2)",
+                                                                      }
+                                                            }
                                                         >
                                                             {msg.content}
                                                         </div>
                                                     </div>
-                                                ))}
-                                                {isLoading && messages[messages.length - 1]?.role !== "assistant" && (
-                                                    <div className="flex justify-start">
-                                                        <div className="px-2.5 py-1.5 rounded-[6px] bg-white/5 border border-white/8">
-                                                            <Loader2 className="size-3 text-white/40 animate-spin" />
-                                                        </div>
+                                                );
+                                            })}
+                                            {isLoading && messages[messages.length - 1]?.role !== "assistant" && (
+                                                <div className="flex items-start">
+                                                    <div className="rounded-[6px] border border-[var(--hair-2)] bg-[var(--surface-raised)] px-2.5 py-1.5">
+                                                        <Loader2 className="size-3 animate-spin text-[var(--fg-muted)]" />
                                                     </div>
-                                                )}
-                                                <div ref={scrollRef} />
-                                            </div>
-                                        )}
-                                    </div>
+                                                </div>
+                                            )}
+                                            <div ref={scrollRef} />
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* Input */}
-                                <div className="px-4 pb-4">
-                                    <form
-                                        onSubmit={handleSubmit}
-                                        className="te-recessed p-1.5 flex gap-1.5 items-center"
+                                <form
+                                    onSubmit={handleSubmit}
+                                    className="flex items-center gap-1.5 te-recessed p-1.5"
+                                >
+                                    <input
+                                        ref={inputRef}
+                                        type="text"
+                                        value={input}
+                                        onChange={(e) => setInput(e.target.value)}
+                                        placeholder="TYPE_MSG..."
+                                        disabled={isLoading}
+                                        className="h-9 flex-1 rounded-[5px] border border-[var(--hair-2)] bg-[var(--surface-raised)] px-3 font-mono text-[11px] uppercase tracking-wider text-[var(--fg)] outline-none placeholder:text-[var(--fg-faint)] focus:border-[var(--fg)] disabled:opacity-40"
+                                    />
+                                    <button
+                                        type="submit"
+                                        disabled={isLoading || !input.trim()}
+                                        className="flex size-9 shrink-0 items-center justify-center rounded-[5px] te-button"
+                                        style={input.trim() ? {
+                                            background: "var(--accent)",
+                                            borderColor: "var(--accent)",
+                                            color: "var(--accent-foreground)",
+                                        } : undefined}
                                     >
-                                        <input
-                                            ref={inputRef}
-                                            type="text"
-                                            value={input}
-                                            onChange={(e) => setInput(e.target.value)}
-                                            placeholder="TYPE_MSG..."
-                                            disabled={isLoading}
-                                            className="flex-1 h-9 px-3 rounded-[6px] text-[11px] font-mono font-bold tracking-wider text-foreground placeholder:text-foreground/25 bg-[var(--lcd-bg)] shadow-[inset_0_2px_6px_rgba(0,0,0,0.15)] dark:shadow-[inset_0_2px_6px_rgba(0,0,0,0.6)] border-none outline-none disabled:opacity-40 uppercase"
-                                        />
-                                        <button
-                                            type="submit"
-                                            disabled={isLoading || !input.trim()}
-                                            className="size-9 shrink-0 te-button rounded-[6px] flex items-center justify-center disabled:opacity-30 transition-all"
-                                            style={input.trim() ? {
-                                                "--key-bg": accentColor,
-                                                "--key-border": `color-mix(in srgb, ${accentColor} 80%, black)`,
-                                                "--key-shadow": `color-mix(in srgb, ${accentColor} 60%, black)`,
-                                                color: "#ffffff",
-                                            } as React.CSSProperties : undefined}
-                                        >
-                                            <Send className="size-3.5" />
-                                        </button>
-                                    </form>
-                                </div>
+                                        <Send className="size-3.5" strokeWidth={1.5} />
+                                    </button>
+                                </form>
 
-                                {/* Error display */}
+                                {/* Error */}
                                 {error && (
-                                    <div className="px-4 pb-3">
-                                        <div className="text-[9px] font-mono text-[var(--te-orange)] tracking-wider bg-[var(--te-orange)]/10 px-2 py-1 rounded-[4px] border border-[var(--te-orange)]/20">
-                                            ERR: {error.slice(0, 60)}
-                                        </div>
+                                    <div
+                                        className="rounded-[5px] px-2.5 py-1.5 font-mono text-[9px] tracking-wider"
+                                        style={{
+                                            color: "var(--error)",
+                                            background: "color-mix(in srgb, var(--error) 10%, transparent)",
+                                            border: "1px solid color-mix(in srgb, var(--error) 30%, transparent)",
+                                        }}
+                                    >
+                                        ERR: {error.slice(0, 60)}
                                     </div>
                                 )}
                             </>
