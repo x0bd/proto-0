@@ -137,54 +137,7 @@
 	--info-foreground: #ffffff;
 }
 
-.dark {
-	/* ═══════════════════════════════════════════════════════════════
-	   LIME × NOTHING — DARK MODE
-	   Near-black indigo canvas, bone ink, lime stays the one signal.
-	   Overrides the base tokens; every var()-derived value follows.
-	   ═══════════════════════════════════════════════════════════════ */
-
-	/* Canvas & surfaces */
-	--bg: #0a0b14; /* near-black indigo */
-	--surface: #131426;
-	--surface-raised: #1b1c30;
-
-	/* Ink (bone) */
-	--fg: #ebebeb;
-	--fg-muted: rgba(235, 235, 235, 0.66);
-	--fg-faint: rgba(235, 235, 235, 0.42);
-	--fg-disabled: rgba(235, 235, 235, 0.3);
-
-	/* Hairlines */
-	--hair: rgba(235, 235, 235, 0.12);
-	--hair-2: rgba(235, 235, 235, 0.22);
-
-	/* Accent — lime persists, dark text on it */
-	--accent: #baff29;
-	--accent-hover: #c6ff52;
-	--accent-foreground: #0a0b14;
-
-	/* Status — brightened slightly for dark */
-	--success: #4ade80;
-	--warning: #e2b53e;
-	--error: #ff5a4d;
-
-	--ghost: rgba(235, 235, 235, 0.05);
-
-	/* chart series — bone opacity ramp + lime event */
-	--chart-2: var(--fg);
-	--chart-3: rgba(235, 235, 235, 0.6);
-	--chart-4: rgba(235, 235, 235, 0.35);
-	--chart-5: rgba(235, 235, 235, 0.18);
-
-	/* legacy readout greys → dark surfaces */
-	--lcd-bg: #0e0f1c;
-	--lcd-glow: rgba(235, 235, 235, 0.1);
-	--secondary: #1b1c30;
-	--muted: #1b1c30;
-	--face-glow: rgba(186, 255, 41, 0.4);
-	--face-bg-tint: rgba(186, 255, 41, 0.05);
-}
+/* Light-mode only — DOT is a single-theme app (warm bone canvas). */
 
 @layer base {
 	* {

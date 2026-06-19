@@ -13,12 +13,7 @@ import { AudioLab } from "../components/audio-lab";
 import { ChatModule } from "../components/chat-module";
 import { ActivePersonaChip } from "@/components/ui/active-persona-chip";
 import { Database, Calendar, AudioWaveform, X } from "lucide-react";
-import {
-	RiMoonFill,
-	RiSunFill,
-	RiSettings4Fill,
-	RiGlobalLine,
-} from "react-icons/ri";
+import { RiSettings4Fill, RiGlobalLine } from "react-icons/ri";
 import { SiNpm, SiGithub } from "react-icons/si";
 import { FaceVariant, EmotionState } from "../components/face/types";
 import { VARIANT_COLORS } from "../components/face/themes";
@@ -29,7 +24,6 @@ import {
 	getPersonaAvatarBias,
 	usePersonaSettings,
 } from "@/hooks/usePersonaSettings";
-import { useTheme } from "next-themes";
 import { getAllKeys, KEY_STORE_CHANGE_EVENT } from "@/lib/key-store";
 
 const EMOTION_PRESETS: { id: string; label: string; state: EmotionState }[] = [
@@ -113,7 +107,6 @@ export default function Home() {
 	const [mounted, setMounted] = useState(false);
 	const [hasKeys, setHasKeys] = useState(false);
 	const [isOnboardingOpen, setIsOnboardingOpen] = useState(false);
-	const { theme, setTheme } = useTheme();
 	const {
 		settings: personaTuning,
 		updateSettings: updatePersonaTuning,
@@ -530,29 +523,6 @@ export default function Home() {
 					</div>
 				</div>
 				<div className="absolute top-[max(12px,env(safe-area-inset-top))] right-3 sm:top-8 sm:right-6 z-50 nt-recess flex items-center gap-1.5 rounded-[8px] p-1.5">
-					{/* Theme Toggle */}
-					<motion.button
-						initial={{ opacity: 0, scale: 0.9 }}
-						animate={{ opacity: 1, scale: 1 }}
-						transition={{
-							delay: 0.25,
-							type: "spring",
-							damping: 25,
-							stiffness: 300,
-						}}
-						onClick={() =>
-							setTheme(theme === "dark" ? "light" : "dark")
-						}
-						className="nt-btn size-10 rounded-[5px] touch-manipulation"
-						title="Toggle Theme"
-						aria-label="Toggle theme"
-					>
-						{mounted && theme === "dark" ? (
-							<RiMoonFill className="size-[17px]" />
-						) : (
-							<RiSunFill className="size-[17px]" />
-						)}
-					</motion.button>
 					{/* Memory Button */}
 					<motion.button
 						initial={{ opacity: 0, scale: 0.9 }}
