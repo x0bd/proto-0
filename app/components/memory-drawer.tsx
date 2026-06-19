@@ -248,7 +248,6 @@ function saveMemoryEnabled(val: boolean): void {
 export function MemoryDrawer({
     open,
     onOpenChange,
-    accentColor = "#7c3aed",
     constraintsRef,
 }: MemoryDrawerProps) {
     const [searchQuery, setSearchQuery] = React.useState("");
@@ -348,53 +347,55 @@ export function MemoryDrawer({
                     dragMomentum={false}
                     style={{ x, y }}
                     onDragEnd={onDragEnd}
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.9 }}
-                    transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                    className="absolute top-24 left-12 w-[600px] h-auto te-module te-safe-panel z-[100] flex flex-col"
+                    initial={{ opacity: 0, y: 8, scale: 0.99 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 8, scale: 0.99 }}
+                    transition={{ duration: 0.22, ease: [0.25, 0.1, 0.25, 1] }}
+                    className="absolute top-24 left-12 z-[100] flex h-auto w-[600px] flex-col te-module te-safe-panel"
                 >
                     {/* Header / Drag Handle */}
-                    <div className="te-module-header">
+                    <div className="te-module-header h-10 px-3">
                         <div className="flex items-center gap-2">
-                            <div className="size-2 rounded-full bg-[var(--te-blue)]" />
-                            <span className="font-mono text-[10px] font-bold uppercase tracking-widest text-foreground">MEMORY_CORE</span>
-                            <span className="font-mono text-[8px] uppercase tracking-widest te-whisper ml-2">SN: 04-892</span>
+                            <span className="size-2 shrink-0 bg-[var(--fg)]" />
+                            <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-[var(--fg)]">MEMORY_CORE</span>
+                            <span className="label">SN 04-892</span>
                         </div>
-                        <div className="w-16 h-2 te-grip opacity-50" />
-                        <button onClick={() => onOpenChange(false)} className="size-5 te-button !rounded-full !border-b-2 flex items-center justify-center text-foreground hover:text-[var(--te-blue)]">
-                            <X className="size-3" />
+                        <div className="te-grip h-2.5 w-10 opacity-70" />
+                        <button onClick={() => onOpenChange(false)} className="size-6 shrink-0 te-button rounded-[5px]" aria-label="Close">
+                            <X className="size-3" strokeWidth={1.5} />
                         </button>
                     </div>
 
                     {/* Content - 2 Column Layout */}
-                    <div className="relative z-10 flex flex-col sm:flex-row p-3 sm:p-4 gap-4 sm:gap-5 bg-[var(--panel-bg)] h-full">
+                    <div className="fade-up relative z-10 flex h-full flex-col gap-4 p-3 sm:flex-row sm:gap-5 sm:p-4">
                         
                         {/* Left Column - Controls */}
                         <div className="flex flex-col gap-4 w-full sm:w-[240px] shrink-0">
-                            {/* LCD Status Display */}
-                            <div className="te-lcd p-3 flex flex-col justify-center relative overflow-hidden shrink-0 h-[64px] border border-black/10 dark:border-white/10">
-                                <div className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/10 to-transparent pointer-events-none" />
-                                <div className="absolute inset-0 pointer-events-none opacity-[0.04] dark:opacity-[0.08]" style={{ backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 1px, currentColor 1px, currentColor 2px)' }} />
-                                <div className="flex items-center justify-between relative z-10">
-                                    <span className="text-[8px] opacity-50 tracking-[0.2em] font-bold">STATUS</span>
-                                    <span className="text-[8px] opacity-30 tracking-[0.2em] font-bold">CAPACITY</span>
+                            {/* Status readout */}
+                            <div className="te-lcd flex h-[64px] shrink-0 flex-col justify-center gap-1.5 p-3">
+                                <div className="flex items-center justify-between">
+                                    <span className="label leading-none">STATUS</span>
+                                    <span className="label leading-none">CAPACITY</span>
                                 </div>
-                                <div className="flex items-center justify-between mt-1.5 relative z-10">
+                                <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-2">
-                                        {memoryEnabled ? (
-                                            <>
-                                                <div className="size-2.5 rounded-full bg-[var(--te-green)] shadow-[0_0_8px_var(--te-green)] animate-pulse" />
-                                                <span className="text-[14px] font-bold opacity-90 tracking-widest">REC...</span>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <div className="size-2.5 rounded-full bg-[var(--te-orange)] shadow-[0_0_8px_var(--te-orange)]" />
-                                                <span className="text-[14px] font-bold opacity-90 tracking-widest">PAUSED</span>
-                                            </>
-                                        )}
+                                        <span
+                                            className={`size-2 shrink-0 ${memoryEnabled ? "animate-pulse" : ""}`}
+                                            style={{ background: memoryEnabled ? "var(--accent)" : "var(--fg-faint)" }}
+                                        />
+                                        <span
+                                            className="text-[14px] tracking-widest text-[var(--fg)]"
+                                            style={{ fontFamily: "var(--font-display)" }}
+                                        >
+                                            {memoryEnabled ? "REC" : "PAUSED"}
+                                        </span>
                                     </div>
-                                    <span className="text-[14px] font-bold opacity-90 tracking-widest">{memories.length}/{MAX_MEMORY_ENTRIES} BLK</span>
+                                    <span
+                                        className="text-[14px] tabular-nums tracking-widest text-[var(--fg)]"
+                                        style={{ fontFamily: "var(--font-display)" }}
+                                    >
+                                        {memories.length}/{MAX_MEMORY_ENTRIES}
+                                    </span>
                                 </div>
                             </div>
 
@@ -403,21 +404,21 @@ export function MemoryDrawer({
                                 <div className="flex items-center justify-between px-1">
                                     <span className="te-label">QUERY_STR</span>
                                 </div>
-                                <div className="te-recessed p-1.5 flex items-center gap-2 relative">
-                                    <span className="absolute left-3 text-[12px] font-bold text-[var(--lcd-text)]/50 font-mono">{">"}</span>
+                                <div className="te-recessed relative flex items-center gap-2 p-1.5">
+                                    <span className="absolute left-3 font-mono text-[12px] text-[var(--fg-faint)]">{">"}</span>
                                     <input
                                         type="text"
                                         placeholder="_"
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
-                                        className="w-full h-10 rounded-[8px] pl-7 pr-8 text-[12px] font-bold text-[var(--lcd-text)] focus:outline-none transition-all font-mono uppercase tracking-widest placeholder:text-[var(--lcd-text)]/30 bg-[var(--lcd-bg)] shadow-[inset_0_2px_8px_rgba(0,0,0,0.15),inset_0_0_0_1px_rgba(0,0,0,0.1),0_1px_1px_rgba(255,255,255,0.5)] dark:shadow-[inset_0_2px_8px_rgba(0,0,0,0.8),inset_0_0_0_1px_rgba(0,0,0,0.5),0_1px_1px_rgba(255,255,255,0.05)]"
+                                        className="h-10 w-full rounded-[5px] border border-[var(--hair-2)] bg-[var(--surface-raised)] pl-7 pr-8 font-mono text-[12px] uppercase tracking-widest text-[var(--fg)] outline-none transition-colors placeholder:text-[var(--fg-faint)] focus:border-[var(--fg)]"
                                     />
                                     {searchQuery && (
                                         <button
                                             onClick={() => setSearchQuery("")}
-                                            className="absolute right-2.5 size-6 flex items-center justify-center text-[var(--lcd-text)]/50 hover:text-[var(--lcd-text)]"
+                                            className="absolute right-2.5 flex size-6 items-center justify-center text-[var(--fg-faint)] hover:text-[var(--fg)]"
                                         >
-                                            <X className="size-3.5" />
+                                            <X className="size-3.5" strokeWidth={1.5} />
                                         </button>
                                     )}
                                 </div>
@@ -429,15 +430,14 @@ export function MemoryDrawer({
                                     <div className="flex items-center justify-between px-1">
                                         <span className="te-label">FILTER_TAG</span>
                                     </div>
-                                    <div className="te-recessed p-1.5 flex flex-wrap gap-1.5">
+                                    <div className="te-recessed flex flex-wrap gap-1.5 p-1.5">
                                         <button
                                             onClick={() => setActiveFilter(null)}
-                                            className="h-9 px-3 te-button rounded-[6px] text-[9px] transition-all duration-150"
+                                            className="h-9 rounded-[5px] te-button px-3 text-[9px]"
                                             style={activeFilter === null ? {
-                                                "--key-bg": "var(--te-blue)",
-                                                "--key-border": `color-mix(in srgb, var(--te-blue) 80%, black)`,
-                                                "--key-shadow": `color-mix(in srgb, var(--te-blue) 60%, black)`,
-                                                color: "#ffffff"
+                                                background: "var(--fg)",
+                                                borderColor: "var(--fg)",
+                                                color: "var(--bg)",
                                             } as React.CSSProperties : undefined}
                                         >
                                             ALL
@@ -448,12 +448,11 @@ export function MemoryDrawer({
                                                 <button
                                                     key={tag}
                                                     onClick={() => setActiveFilter(tag)}
-                                                    className="h-9 px-3 te-button rounded-[6px] text-[9px] transition-all duration-150"
+                                                    className="h-9 rounded-[5px] te-button px-3 text-[9px]"
                                                     style={active ? {
-                                                        "--key-bg": "var(--te-blue)",
-                                                        "--key-border": `color-mix(in srgb, var(--te-blue) 80%, black)`,
-                                                        "--key-shadow": `color-mix(in srgb, var(--te-blue) 60%, black)`,
-                                                        color: "#ffffff"
+                                                        background: "var(--fg)",
+                                                        borderColor: "var(--fg)",
+                                                        color: "var(--bg)",
                                                     } as React.CSSProperties : undefined}
                                                 >
                                                     {tag}
@@ -464,7 +463,7 @@ export function MemoryDrawer({
                                     {activeFilter && (
                                         <button
                                             onClick={() => setPurgeTagConfirm(activeFilter)}
-                                            className="h-8 te-button rounded-[6px] text-[9px] tracking-widest text-[var(--te-orange)]"
+                                            className="h-8 rounded-[5px] te-button text-[9px] tracking-widest text-[var(--error)] hover:border-[var(--error)]"
                                         >
                                             PURGE_TAG · {activeFilter.toUpperCase()}
                                         </button>
@@ -475,19 +474,18 @@ export function MemoryDrawer({
                             <div className="flex-1" />
 
                             {/* Engine Settings Group */}
-                            <section className="flex items-center justify-between te-recessed p-2 shrink-0">
+                            <section className="flex shrink-0 items-center justify-between te-recessed p-2">
                                 <div className="flex items-center gap-2 px-1">
-                                    <div className="size-1.5 rounded-full" style={{ backgroundColor: memoryEnabled ? 'var(--te-green)' : 'var(--te-orange)', boxShadow: `0 0 6px ${memoryEnabled ? 'var(--te-green)' : 'var(--te-orange)'}` }} />
+                                    <span className={`size-1.5 shrink-0 ${memoryEnabled ? "animate-pulse" : ""}`} style={{ background: memoryEnabled ? "var(--accent)" : "var(--fg-faint)" }} />
                                     <span className="te-label">LEARNING_ENG</span>
                                 </div>
                                 <button
                                     onClick={toggleMemoryEnabled}
-                                    className="h-9 px-4 te-button rounded-[6px] text-[9px] transition-all duration-150"
+                                    className="h-9 rounded-[5px] te-button px-4 text-[9px]"
                                     style={memoryEnabled ? {
-                                        "--key-bg": "var(--te-green)",
-                                        "--key-border": `color-mix(in srgb, var(--te-green) 80%, black)`,
-                                        "--key-shadow": `color-mix(in srgb, var(--te-green) 60%, black)`,
-                                        color: "#ffffff"
+                                        background: "var(--accent)",
+                                        borderColor: "var(--accent)",
+                                        color: "var(--accent-foreground)",
                                     } as React.CSSProperties : undefined}
                                 >
                                     {memoryEnabled ? "ON" : "OFF"}
@@ -498,16 +496,16 @@ export function MemoryDrawer({
                             {memories.length > 0 && (
                                 <button
                                     onClick={() => setClearAllConfirm(true)}
-                                    className="w-full h-10 te-button rounded-[8px] text-[11px] flex items-center justify-center gap-2 shrink-0 text-[var(--te-orange)] hover:border-[var(--panel-border)]"
+                                    className="flex h-10 w-full shrink-0 items-center justify-center gap-2 rounded-[5px] te-button text-[11px] text-[var(--fg-muted)] hover:border-[var(--error)] hover:text-[var(--error)]"
                                 >
-                                    <Trash2 className="size-[14px]" />
+                                    <Trash2 className="size-[14px]" strokeWidth={1.5} />
                                     PURGE_ALL
                                 </button>
                             )}
                         </div>
 
                         {/* Divider */}
-                        <div className="hidden sm:block w-[1px] h-full bg-[var(--panel-border)] opacity-50 shadow-[1px_0_0_rgba(255,255,255,0.2)] dark:shadow-[1px_0_0_rgba(0,0,0,0.5)]" />
+                        <div className="hidden h-full w-px bg-[var(--hair)] sm:block" />
 
                         {/* Right Column - Data Blocks Matrix */}
                         <div className="flex flex-col flex-1 gap-1.5">
@@ -516,45 +514,45 @@ export function MemoryDrawer({
                                 <span className="te-label">PAGE {currentPage}/{totalPages}</span>
                             </div>
 
-                            <div className="te-recessed p-2 flex flex-col flex-1 h-full min-h-[280px] sm:min-h-[340px]">
+                            <div className="te-recessed flex h-full min-h-[280px] flex-1 flex-col p-2 sm:min-h-[340px]">
                                 {filteredMemories.length === 0 ? (
-                                    <div className="flex-1 flex flex-col items-center justify-center gap-3 opacity-50">
-                                        <Database className="size-6" />
+                                    <div className="flex flex-1 flex-col items-center justify-center gap-3 text-[var(--fg-faint)]">
+                                        <Database className="size-6" strokeWidth={1.5} />
                                         <span className="te-label">EMPTY_BANK</span>
                                     </div>
                                 ) : (
-                                    <div className="grid grid-cols-1 grid-rows-4 gap-2 flex-1">
+                                    <div className="grid flex-1 grid-cols-1 grid-rows-4 gap-2">
                                         {paginatedMemories.map((memory) => {
-                                            const sourceColor = memory.source === "chat" ? "var(--te-blue)" : memory.source === "voice" ? "var(--te-orange)" : "var(--te-green)";
+                                            const sourceColor = memory.source === "chat" ? "var(--fg)" : memory.source === "voice" ? "var(--warning)" : "var(--success)";
                                             return (
                                                 <div
                                                     key={memory.id}
-                                                    className="group relative flex items-center p-2 rounded-[8px] bg-[var(--key-bg)] border border-[var(--key-border)] shadow-sm transition-all hover:border-[var(--panel-border)] h-full overflow-hidden"
+                                                    className="group relative flex h-full items-center overflow-hidden rounded-[6px] border border-[var(--hair-2)] bg-[var(--surface-raised)] p-2 transition-colors hover:border-[var(--fg)]"
                                                 >
-                                                    {/* Hardware Color Tab */}
-                                                    <div className="absolute left-0 top-0 bottom-0 w-2" style={{ backgroundColor: sourceColor }} />
-                                                    
-                                                    <div className="flex flex-col flex-1 pl-4 pr-2 h-full justify-center">
-                                                        <p className="text-[11px] font-mono leading-tight text-foreground/90 uppercase tracking-wide line-clamp-2">
+                                                    {/* Source colour tab */}
+                                                    <div className="absolute bottom-0 left-0 top-0 w-1.5" style={{ background: sourceColor }} />
+
+                                                    <div className="flex h-full flex-1 flex-col justify-center pl-4 pr-2">
+                                                        <p className="line-clamp-2 font-mono text-[11px] leading-tight text-[var(--fg)]">
                                                             {memory.content}
                                                         </p>
-                                                        <div className="flex items-center gap-3 mt-2">
-                                                            <span className="text-[9px] font-mono font-bold tracking-widest uppercase flex items-center gap-1" style={{ color: sourceColor }}>
+                                                        <div className="mt-2 flex items-center gap-3">
+                                                            <span className="flex items-center gap-1 font-mono text-[9px] uppercase tracking-widest" style={{ color: sourceColor }}>
                                                                 {getSourceIcon(memory.source)}
                                                                 {memory.source}
                                                             </span>
-                                                            <span className="text-[9px] font-mono uppercase tracking-widest te-whisper">
+                                                            <span className="font-mono text-[9px] uppercase tracking-widest text-[var(--fg-faint)]">
                                                                 {formatDateLabel(memory.date)}
                                                             </span>
                                                         </div>
                                                     </div>
 
                                                     <button
-                                                        className="size-9 te-button !rounded-[6px] !border-b-[2px] opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-200 text-foreground/70 hover:text-[var(--te-orange)] shrink-0 mr-1"
+                                                        className="mr-1 size-9 shrink-0 rounded-[5px] te-button text-[var(--fg-muted)] opacity-100 transition-opacity duration-200 hover:border-[var(--error)] hover:text-[var(--error)] sm:opacity-0 sm:group-hover:opacity-100"
                                                         onClick={() => setDeleteId(memory.id)}
                                                         title="Eject Block"
                                                     >
-                                                        <span className="text-[8px] font-bold tracking-widest leading-none">EJECT</span>
+                                                        <span className="text-[8px] tracking-widest leading-none">EJECT</span>
                                                     </button>
                                                 </div>
                                             );
@@ -564,17 +562,17 @@ export function MemoryDrawer({
 
                                 {/* Pagination Controls */}
                                 {totalPages > 1 && (
-                                    <div className="flex items-center justify-between mt-2 pt-2 border-t border-[var(--panel-border)]">
+                                    <div className="mt-2 flex items-center justify-between border-t border-[var(--hair)] pt-2">
                                         <button
                                             onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                                             disabled={currentPage === 1}
-                                            className="h-9 px-3 te-button !rounded-[6px] flex items-center justify-center disabled:opacity-30 text-foreground/80 hover:text-foreground"
+                                            className="flex h-9 items-center justify-center rounded-[5px] te-button px-3 disabled:opacity-30"
                                         >
-                                            <ChevronLeft className="size-4" />
+                                            <ChevronLeft className="size-4" strokeWidth={1.5} />
                                         </button>
-                                        
-                                        <div className="te-lcd px-3 py-1 h-8 flex items-center justify-center">
-                                            <span className="text-[10px] font-bold tracking-[0.2em] opacity-80">
+
+                                        <div className="flex h-8 items-center justify-center te-lcd px-3 py-1">
+                                            <span className="text-[10px] tabular-nums tracking-[0.2em] text-[var(--fg)]">
                                                 [{currentPage}/{totalPages}]
                                             </span>
                                         </div>
@@ -582,9 +580,9 @@ export function MemoryDrawer({
                                         <button
                                             onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                                             disabled={currentPage === totalPages}
-                                            className="h-9 px-3 te-button !rounded-[6px] flex items-center justify-center disabled:opacity-30 text-foreground/80 hover:text-foreground"
+                                            className="flex h-9 items-center justify-center rounded-[5px] te-button px-3 disabled:opacity-30"
                                         >
-                                            <ChevronRight className="size-4" />
+                                            <ChevronRight className="size-4" strokeWidth={1.5} />
                                         </button>
                                     </div>
                                 )}

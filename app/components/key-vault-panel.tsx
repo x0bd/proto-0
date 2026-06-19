@@ -223,9 +223,9 @@ export function KeyVaultPanel() {
 
     const validationColor = (provider: Provider) => {
         const state = validationStates[provider];
-        if (state.status === "valid") return "var(--te-green)";
-        if (state.status === "invalid") return "var(--te-orange)";
-        if (state.status === "testing") return "var(--te-blue)";
+        if (state.status === "valid") return "var(--success)";
+        if (state.status === "invalid") return "var(--error)";
+        if (state.status === "testing") return "var(--fg)";
         return undefined;
     };
 
@@ -247,7 +247,7 @@ export function KeyVaultPanel() {
                             onKeyDown={(e) => { if (e.key === "Enter") handleUnlock(); }}
                             placeholder="VAULT_PASSPHRASE..."
                             autoFocus
-                            className="w-full h-9 px-3 pr-9 rounded-[6px] text-[11px] font-mono font-bold tracking-wider text-foreground placeholder:text-foreground/25 bg-[var(--lcd-bg)] shadow-[inset_0_2px_6px_rgba(0,0,0,0.15)] dark:shadow-[inset_0_2px_6px_rgba(0,0,0,0.6)] border-none outline-none"
+                            className="h-9 w-full rounded-[5px] border border-[var(--hair-2)] bg-[var(--surface-raised)] px-3 pr-9 font-mono text-[11px] tracking-wider text-[var(--fg)] outline-none transition-colors placeholder:text-[var(--fg-faint)] focus:border-[var(--fg)]"
                         />
                         <button
                             type="button"
@@ -259,7 +259,7 @@ export function KeyVaultPanel() {
                     </div>
 
                     {unlockError && (
-                        <span className="text-[9px] font-mono font-bold text-[var(--te-orange)] tracking-widest px-1">
+                        <span className="px-1 font-mono text-[9px] tracking-widest text-[var(--error)]">
                             ERR_WRONG_PASSPHRASE
                         </span>
                     )}
@@ -267,24 +267,23 @@ export function KeyVaultPanel() {
                     <div className="flex gap-1.5">
                         <button
                             onClick={() => { setView("list"); setUnlockInput(""); setUnlockError(false); }}
-                            className="flex-1 h-8 te-button rounded-[6px] flex items-center justify-center gap-1 text-foreground/60"
+                            className="flex h-8 flex-1 items-center justify-center gap-1 rounded-[5px] te-button"
                         >
-                            <X className="size-3" />
-                            <span className="text-[9px] font-bold tracking-widest">CANCEL</span>
+                            <X className="size-3" strokeWidth={1.5} />
+                            <span className="text-[9px] tracking-widest">CANCEL</span>
                         </button>
                         <button
                             onClick={handleUnlock}
                             disabled={!unlockInput.trim() || unlocking}
-                            className="flex-1 h-8 te-button rounded-[6px] flex items-center justify-center gap-1 disabled:opacity-30"
+                            className="flex h-8 flex-1 items-center justify-center gap-1 rounded-[5px] te-button disabled:opacity-30"
                             style={{
-                                "--key-bg": "var(--te-blue)",
-                                "--key-border": "color-mix(in srgb, var(--te-blue) 80%, black)",
-                                "--key-shadow": "color-mix(in srgb, var(--te-blue) 60%, black)",
-                                color: "#ffffff",
+                                background: "var(--accent)",
+                                borderColor: "var(--accent)",
+                                color: "var(--accent-foreground)",
                             } as React.CSSProperties}
                         >
-                            <Unlock className="size-3" />
-                            <span className="text-[9px] font-bold tracking-widest">
+                            <Unlock className="size-3" strokeWidth={1.5} />
+                            <span className="text-[9px] tracking-widest">
                                 {unlocking ? "..." : "UNLOCK"}
                             </span>
                         </button>
@@ -314,7 +313,7 @@ export function KeyVaultPanel() {
                             onKeyDown={(e) => { if (e.key === "Enter" && !isSessionOnly && passphraseValue) handleSave(); }}
                             placeholder={providerMeta.placeholder}
                             autoFocus
-                            className="w-full h-9 px-3 pr-9 rounded-[6px] text-[11px] font-mono font-bold tracking-wider text-foreground placeholder:text-foreground/25 bg-[var(--lcd-bg)] shadow-[inset_0_2px_6px_rgba(0,0,0,0.15)] dark:shadow-[inset_0_2px_6px_rgba(0,0,0,0.6)] border-none outline-none"
+                            className="h-9 w-full rounded-[5px] border border-[var(--hair-2)] bg-[var(--surface-raised)] px-3 pr-9 font-mono text-[11px] tracking-wider text-[var(--fg)] outline-none transition-colors placeholder:text-[var(--fg-faint)] focus:border-[var(--fg)]"
                         />
                         <button
                             type="button"
@@ -327,17 +326,16 @@ export function KeyVaultPanel() {
 
                     {/* Session-only toggle */}
                     <div className="flex items-center justify-between">
-                        <span className="text-[9px] font-mono font-bold tracking-widest text-foreground/40 px-1">
+                        <span className="px-1 font-mono text-[9px] tracking-widest text-[var(--fg-faint)]">
                             SESSION_ONLY
                         </span>
                         <button
                             onClick={() => setIsSessionOnly((v) => !v)}
-                            className="h-7 px-3 te-button rounded-[6px] text-[9px] transition-all duration-150"
+                            className="h-7 rounded-[5px] te-button px-3 text-[9px]"
                             style={isSessionOnly ? {
-                                "--key-bg": "var(--te-orange)",
-                                "--key-border": "color-mix(in srgb, var(--te-orange) 80%, black)",
-                                "--key-shadow": "color-mix(in srgb, var(--te-orange) 60%, black)",
-                                color: "#ffffff",
+                                background: "var(--fg)",
+                                borderColor: "var(--fg)",
+                                color: "var(--bg)",
                             } as React.CSSProperties : undefined}
                         >
                             {isSessionOnly ? "ON" : "OFF"}
@@ -352,7 +350,7 @@ export function KeyVaultPanel() {
                                 value={passphraseValue}
                                 onChange={(e) => setPassphraseValue(e.target.value)}
                                 placeholder="VAULT_PASS (optional)..."
-                                className="w-full h-9 px-3 pr-9 rounded-[6px] text-[11px] font-mono font-bold tracking-wider text-foreground placeholder:text-foreground/25 bg-[var(--lcd-bg)] shadow-[inset_0_2px_6px_rgba(0,0,0,0.15)] dark:shadow-[inset_0_2px_6px_rgba(0,0,0,0.6)] border-none outline-none"
+                                className="h-9 w-full rounded-[5px] border border-[var(--hair-2)] bg-[var(--surface-raised)] px-3 pr-9 font-mono text-[11px] tracking-wider text-[var(--fg)] outline-none transition-colors placeholder:text-[var(--fg-faint)] focus:border-[var(--fg)]"
                             />
                             <button
                                 type="button"
@@ -367,19 +365,18 @@ export function KeyVaultPanel() {
                     {/* Model picker — only for providers that have model options */}
                     {editingProvider && PROVIDER_MODELS[editingProvider] && (
                         <div className="flex flex-col gap-1">
-                            <span className="text-[9px] font-mono font-bold tracking-widest text-foreground/40 px-1">MODEL_VER</span>
-                            <div className="flex gap-1.5 flex-wrap">
+                            <span className="px-1 font-mono text-[9px] tracking-widest text-[var(--fg-faint)]">MODEL_VER</span>
+                            <div className="flex flex-wrap gap-1.5">
                                 {PROVIDER_MODELS[editingProvider]!.map((m) => (
                                     <button
                                         key={m.id}
                                         type="button"
                                         onClick={() => setModelValue(m.id)}
-                                        className="h-7 px-2 te-button rounded-[6px] text-[8px] flex-1"
+                                        className="h-7 flex-1 rounded-[5px] te-button px-2 text-[8px]"
                                         style={modelValue === m.id ? {
-                                            "--key-bg": "var(--te-blue)",
-                                            "--key-border": "color-mix(in srgb, var(--te-blue) 80%, black)",
-                                            "--key-shadow": "color-mix(in srgb, var(--te-blue) 60%, black)",
-                                            color: "#ffffff",
+                                            background: "var(--fg)",
+                                            borderColor: "var(--fg)",
+                                            color: "var(--bg)",
                                         } as React.CSSProperties : undefined}
                                     >
                                         {m.label}
@@ -391,7 +388,7 @@ export function KeyVaultPanel() {
 
                     {/* Storage mode hint */}
                     <div className="te-lcd px-2 py-1 text-center">
-                        <span className="text-[8px] font-mono font-bold tracking-widest opacity-50">
+                        <span className="font-mono text-[8px] tracking-widest text-[var(--fg-faint)]">
                             {isSessionOnly
                                 ? "EPHEMERAL · CLEARED ON TAB CLOSE"
                                 : passphraseValue.trim()
@@ -405,16 +402,16 @@ export function KeyVaultPanel() {
                             type="button"
                             onClick={() => validateKey(editingProvider, inputValue, modelValue || DEFAULT_MODELS[editingProvider])}
                             disabled={!inputValue.trim() || validationStates[editingProvider].status === "testing"}
-                            className="h-9 px-3 te-button rounded-[6px] flex items-center justify-center gap-1 text-foreground/80 disabled:opacity-30"
+                            className="flex h-9 items-center justify-center gap-1 rounded-[5px] te-button px-3 disabled:opacity-30"
                         >
-                            <span className="text-[9px] font-bold tracking-widest">
+                            <span className="text-[9px] tracking-widest">
                                 {validationStates[editingProvider].status === "testing" ? "PING..." : "PING_KEY"}
                             </span>
                         </button>
-                        <div className="flex-1 te-lcd px-2 py-1 flex items-center justify-center text-center overflow-hidden">
+                        <div className="flex flex-1 items-center justify-center overflow-hidden te-lcd px-2 py-1 text-center">
                             <span
-                                className="text-[8px] font-mono font-bold tracking-widest opacity-70 truncate"
-                                style={{ color: validationColor(editingProvider) }}
+                                className="truncate font-mono text-[8px] tracking-widest"
+                                style={{ color: validationColor(editingProvider) ?? "var(--fg-muted)" }}
                             >
                                 {validationStates[editingProvider].message || "KEY_TEST_STANDBY"}
                             </span>
@@ -424,24 +421,23 @@ export function KeyVaultPanel() {
                     <div className="flex gap-1.5">
                         <button
                             onClick={cancelEdit}
-                            className="flex-1 h-8 te-button rounded-[6px] flex items-center justify-center gap-1 text-foreground/60"
+                            className="flex h-8 flex-1 items-center justify-center gap-1 rounded-[5px] te-button"
                         >
-                            <X className="size-3" />
-                            <span className="text-[9px] font-bold tracking-widest">CANCEL</span>
+                            <X className="size-3" strokeWidth={1.5} />
+                            <span className="text-[9px] tracking-widest">CANCEL</span>
                         </button>
                         <button
                             onClick={handleSave}
                             disabled={!inputValue.trim() || saving}
-                            className="flex-1 h-8 te-button rounded-[6px] flex items-center justify-center gap-1 disabled:opacity-30"
+                            className="flex h-8 flex-1 items-center justify-center gap-1 rounded-[5px] te-button disabled:opacity-30"
                             style={{
-                                "--key-bg": "var(--te-green)",
-                                "--key-border": "color-mix(in srgb, var(--te-green) 80%, black)",
-                                "--key-shadow": "color-mix(in srgb, var(--te-green) 60%, black)",
-                                color: "#ffffff",
+                                background: "var(--accent)",
+                                borderColor: "var(--accent)",
+                                color: "var(--accent-foreground)",
                             } as React.CSSProperties}
                         >
-                            <Check className="size-3" />
-                            <span className="text-[9px] font-bold tracking-widest">
+                            <Check className="size-3" strokeWidth={1.5} />
+                            <span className="text-[9px] tracking-widest">
                                 {saving ? "..." : "SAVE"}
                             </span>
                         </button>
@@ -462,21 +458,20 @@ export function KeyVaultPanel() {
 
             {/* Vault locked banner */}
             {locked && (
-                <div className="te-recessed p-1.5 flex items-center justify-between">
+                <div className="te-recessed flex items-center justify-between p-1.5">
                     <div className="flex items-center gap-2 px-1">
-                        <Lock className="size-3 text-[var(--te-orange)]" />
-                        <span className="text-[9px] font-mono font-bold tracking-widest text-[var(--te-orange)]">
+                        <Lock className="size-3 text-[var(--warning)]" strokeWidth={1.5} />
+                        <span className="font-mono text-[9px] tracking-widest text-[var(--warning)]">
                             VAULT_LOCKED
                         </span>
                     </div>
                     <button
                         onClick={() => setView("unlock")}
-                        className="h-7 px-3 te-button rounded-[6px] text-[9px]"
+                        className="h-7 rounded-[5px] te-button px-3 text-[9px]"
                         style={{
-                            "--key-bg": "var(--te-orange)",
-                            "--key-border": "color-mix(in srgb, var(--te-orange) 80%, black)",
-                            "--key-shadow": "color-mix(in srgb, var(--te-orange) 60%, black)",
-                            color: "#ffffff",
+                            background: "var(--accent)",
+                            borderColor: "var(--accent)",
+                            color: "var(--accent-foreground)",
                         } as React.CSSProperties}
                     >
                         UNLOCK
@@ -494,31 +489,31 @@ export function KeyVaultPanel() {
                         <div key={provider.id} className="flex items-center gap-1.5">
                             <button
                                 onClick={() => isLockedEncrypted ? setView("unlock") : openEdit(provider.id)}
-                                className="flex-1 h-9 te-button rounded-[6px] flex items-center justify-between px-3 transition-all duration-150"
-                                style={isConfigured ? {
-                                    "--key-bg": "var(--te-green)",
-                                    "--key-border": "color-mix(in srgb, var(--te-green) 80%, black)",
-                                    "--key-shadow": "color-mix(in srgb, var(--te-green) 60%, black)",
-                                    color: "#ffffff",
-                                } as React.CSSProperties : isLockedEncrypted ? {
-                                    "--key-bg": "var(--te-orange)",
-                                    "--key-border": "color-mix(in srgb, var(--te-orange) 80%, black)",
-                                    "--key-shadow": "color-mix(in srgb, var(--te-orange) 60%, black)",
-                                    color: "#ffffff",
-                                } as React.CSSProperties : undefined}
+                                className="flex h-9 flex-1 items-center justify-between rounded-[5px] te-button px-3"
                             >
                                 <div className="flex items-center gap-2">
                                     {isLockedEncrypted ? (
-                                        <Lock className="size-3" />
+                                        <Lock className="size-3 text-[var(--warning)]" strokeWidth={1.5} />
                                     ) : isConfigured ? (
-                                        isEnc ? <Lock className="size-3" /> : <Check className="size-3" />
+                                        isEnc
+                                            ? <Lock className="size-3 text-[var(--success)]" strokeWidth={1.5} />
+                                            : <Check className="size-3 text-[var(--success)]" strokeWidth={1.5} />
                                     ) : (
-                                        <KeyRound className="size-3 opacity-50" />
+                                        <KeyRound className="size-3 opacity-40" strokeWidth={1.5} />
                                     )}
-                                    <span className="text-[10px] font-bold tracking-widest">{provider.label}</span>
-                                    <span className="text-[7px] font-bold tracking-widest opacity-40">{provider.purpose}</span>
+                                    <span className="text-[10px] tracking-widest text-[var(--fg)]">{provider.label}</span>
+                                    <span className="text-[7px] tracking-widest text-[var(--fg-faint)]">{provider.purpose}</span>
                                 </div>
-                                <span className="text-[8px] font-bold tracking-widest opacity-60">
+                                <span
+                                    className="text-[8px] tracking-widest"
+                                    style={{
+                                        color: isLockedEncrypted
+                                            ? "var(--warning)"
+                                            : isConfigured
+                                                ? (validationColor(provider.id) ?? "var(--success)")
+                                                : "var(--fg-faint)",
+                                    }}
+                                >
                                     {isLockedEncrypted
                                         ? "LOCK"
                                         : isConfigured
@@ -532,30 +527,22 @@ export function KeyVaultPanel() {
                                     <button
                                         onClick={() => validateSavedKey(provider.id)}
                                         disabled={validationStates[provider.id].status === "testing"}
-                                        className="h-9 px-2 shrink-0 te-button rounded-[6px] flex items-center justify-center transition-all disabled:opacity-40"
-                                        style={validationColor(provider.id) ? {
-                                            "--key-bg": validationColor(provider.id),
-                                            "--key-border": `color-mix(in srgb, ${validationColor(provider.id)} 80%, black)`,
-                                            "--key-shadow": `color-mix(in srgb, ${validationColor(provider.id)} 60%, black)`,
-                                            color: "#ffffff",
-                                        } as React.CSSProperties : undefined}
+                                        className="flex h-9 shrink-0 items-center justify-center rounded-[5px] te-button px-2 disabled:opacity-40"
                                         title="Test key"
                                     >
-                                        <span className="text-[8px] font-bold tracking-widest">
+                                        <span
+                                            className="text-[8px] tracking-widest"
+                                            style={{ color: validationColor(provider.id) ?? "var(--fg-muted)" }}
+                                        >
                                             {validationStates[provider.id].status === "testing" ? "..." : "TST"}
                                         </span>
                                     </button>
                                     <button
                                         onClick={() => setDeleteProvider(provider.id)}
-                                        className="size-9 shrink-0 te-button rounded-[6px] flex items-center justify-center transition-all"
-                                        style={{
-                                            "--key-bg": "var(--te-orange)",
-                                            "--key-border": "color-mix(in srgb, var(--te-orange) 80%, black)",
-                                            "--key-shadow": "color-mix(in srgb, var(--te-orange) 60%, black)",
-                                            color: "#ffffff",
-                                        } as React.CSSProperties}
+                                        className="flex size-9 shrink-0 items-center justify-center rounded-[5px] te-button text-[var(--fg-muted)] hover:border-[var(--error)] hover:text-[var(--error)]"
+                                        title="Eject key"
                                     >
-                                        <X className="size-3" />
+                                        <X className="size-3" strokeWidth={1.5} />
                                     </button>
                                 </>
                             )}
@@ -566,7 +553,7 @@ export function KeyVaultPanel() {
 
             {PROVIDERS.some((provider) => validationStates[provider.id].message) && (
                 <div className="te-lcd px-2 py-1 text-center">
-                    <span className="text-[8px] opacity-60 tracking-[0.2em] font-bold leading-relaxed">
+                    <span className="text-[8px] tracking-[0.2em] leading-relaxed text-[var(--fg-muted)]">
                         {PROVIDERS.map((provider) => validationStates[provider.id].message)
                             .find(Boolean)
                             ?.slice(0, 44)}
@@ -575,7 +562,7 @@ export function KeyVaultPanel() {
             )}
 
             <div className="te-lcd px-2 py-1.5 text-center">
-                <span className="text-[8px] opacity-50 tracking-[0.2em] font-bold leading-relaxed">
+                <span className="text-[8px] tracking-[0.2em] leading-relaxed text-[var(--fg-faint)]">
                     LOCAL_VAULT · PROXY_HEADER_ONLY · SERVER_NOT_STORED
                 </span>
             </div>
