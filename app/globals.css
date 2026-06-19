@@ -256,6 +256,37 @@
 		);
 		background-size: 12px 12px;
 	}
+
+	/* Slow blink for the lime status square */
+	.lime-pulse {
+		animation: lime-pulse 2.4s var(--ease) infinite;
+	}
+
+	/* Subtle entrance for instrument chrome */
+	.fade-up {
+		animation: fade-up 0.6s var(--ease) both;
+	}
+}
+
+@keyframes lime-pulse {
+	0%,
+	100% {
+		opacity: 1;
+	}
+	50% {
+		opacity: 0.3;
+	}
+}
+
+@keyframes fade-up {
+	from {
+		opacity: 0;
+		transform: translateY(6px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
 }
 
 /* === TE x APPLE HARDWARE DESIGN SYSTEM === */
