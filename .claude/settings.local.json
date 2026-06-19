@@ -5,7 +5,11 @@
       "Bash(npx tsc *)",
       "Bash(grep -aE \"Error|error|Failed|warn|Warning|\\\\.tsx|\\\\.css|line|Module\" /tmp/dotbuild.log | grep -avE \"^var|webpack|chunk\" | head -40)",
       "Read(//tmp/**)",
-      "Bash(echo \"exit: $?\")"
+      "Bash(echo \"exit: $?\")",
+      "Bash(rm -rf .next && pnpm build > /tmp/cm.log 2>&1; echo \"exit: $?\"; grep -aE \"Compiled successfully|Failed to compile|error TS|Type error\" /tmp/cm.log | grep -avE \"^var|webpack\" | head)"
+    ],
+    "additionalDirectories": [
+      "\\tmp"
     ]
   }
 }

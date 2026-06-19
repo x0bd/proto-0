@@ -66,16 +66,16 @@ const FACES: { id: FaceVariant; name: string }[] = [
 ];
 
 const SWATCHES = [
+	"#1A1B52", // brand indigo
+	"#BAFF29", // brand lime
 	"#FF6B6B",
 	"#F472B6",
 	"#C084FC",
-	"#A78BFA",
 	"#60A5FA",
 	"#06B6D4",
 	"#34D399",
 	"#FBBF24",
 	"#FB923C",
-	"#EF4444",
 ];
 
 const PERSONAS = [
@@ -200,7 +200,7 @@ function SpectrumPicker({
 			{/* SV plane */}
 			<div
 				ref={svRef}
-				className="relative w-full h-[100px] rounded-[6px] cursor-crosshair touch-none select-none overflow-hidden border-[1px] border-[var(--panel-border)] shadow-[inset_0_2px_8px_rgba(0,0,0,0.1)] dark:shadow-[inset_0_2px_8px_rgba(0,0,0,0.8)]"
+				className="relative w-full h-[100px] rounded-[6px] cursor-crosshair touch-none select-none overflow-hidden border border-[var(--hair-2)]"
 				style={{ backgroundColor: pureHue }}
 				onPointerDown={(e) => {
 					e.preventDefault();
@@ -223,13 +223,12 @@ function SpectrumPicker({
 					}}
 				/>
 				<div
-					className="absolute size-3.5 rounded-full border-[1.5px] border-white -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+					className="absolute size-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-[1.5px] border-white pointer-events-none"
 					style={{
 						left: `${s * 100}%`,
 						top: `${(1 - v) * 100}%`,
 						backgroundColor: color,
-						boxShadow:
-							"0 0 0 1px rgba(0,0,0,0.12), 0 2px 6px rgba(0,0,0,0.25)",
+						boxShadow: "0 0 0 1px rgba(26,27,82,0.45)",
 					}}
 				/>
 			</div>
@@ -237,7 +236,7 @@ function SpectrumPicker({
 			{/* Hue rail */}
 			<div
 				ref={hueRef}
-				className="relative w-full h-3.5 rounded-[4px] cursor-pointer touch-none select-none border-[1px] border-[var(--panel-border)] shadow-[inset_0_1px_4px_rgba(0,0,0,0.1)] dark:shadow-[inset_0_1px_4px_rgba(0,0,0,0.8)]"
+				className="relative w-full h-3.5 rounded-[4px] cursor-pointer touch-none select-none border border-[var(--hair-2)]"
 				style={{
 					background:
 						"linear-gradient(to right, #ff0000 0%, #ffff00 17%, #00ff00 33%, #00ffff 50%, #0000ff 67%, #ff00ff 83%, #ff0000 100%)",
@@ -249,7 +248,7 @@ function SpectrumPicker({
 				}}
 			>
 				<div
-					className="absolute top-1/2 w-1.5 h-4 bg-white border border-black/20 rounded-[2px] -translate-x-1/2 -translate-y-1/2 pointer-events-none shadow-sm"
+					className="absolute top-1/2 h-4 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-[2px] border border-[var(--fg)] bg-white pointer-events-none"
 					style={{
 						left: `${(h / 360) * 100}%`,
 					}}
@@ -291,20 +290,21 @@ function TuningSlider({
 	onChange,
 	lowLabel,
 	highLabel,
-	color = "var(--te-green)",
 }: {
 	label: string;
 	value: number;
 	onChange: (value: number) => void;
 	lowLabel: string;
 	highLabel: string;
-	color?: string;
 }) {
 	return (
-		<div className="te-recessed p-2 border border-[var(--panel-border)]">
-			<div className="flex items-center justify-between mb-2">
+		<div className="te-recessed p-2.5">
+			<div className="mb-2.5 flex items-center justify-between">
 				<span className="te-label">{label}</span>
-				<span className="te-lcd px-2 py-0.5 text-[8px] min-w-10 text-center">
+				<span
+					className="font-mono text-[11px] tabular-nums tracking-[0.06em] text-[var(--fg)]"
+					style={{ fontFamily: "var(--font-display)" }}
+				>
 					{Math.round(value).toString().padStart(2, "0")}
 				</span>
 			</div>
@@ -314,14 +314,10 @@ function TuningSlider({
 				max={100}
 				value={value}
 				onChange={(event) => onChange(Number(event.target.value))}
-				className="w-full h-2 appearance-none rounded-full bg-[var(--lcd-bg)] shadow-[inset_0_2px_6px_rgba(0,0,0,0.35)] accent-[var(--te-green)]"
-				style={
-					{
-						accentColor: color,
-					} as React.CSSProperties
-				}
+				className="h-1.5 w-full appearance-none rounded-full bg-[var(--hair-2)] outline-none"
+				style={{ accentColor: "var(--fg)" } as React.CSSProperties}
 			/>
-			<div className="flex justify-between pt-1.5 text-[8px] font-mono uppercase tracking-widest text-foreground/35">
+			<div className="flex justify-between pt-2 font-mono text-[8px] uppercase tracking-[0.18em] text-[var(--fg-faint)]">
 				<span>{lowLabel}</span>
 				<span>{highLabel}</span>
 			</div>
@@ -370,56 +366,54 @@ export const CustomizationModal = React.memo(function CustomizationModal({
 					dragMomentum={false}
 					style={{ x, y }}
 					onDragEnd={onDragEnd}
-					initial={{ opacity: 0, scale: 0.9 }}
-					animate={{ opacity: 1, scale: 1 }}
-					exit={{ opacity: 0, scale: 0.9 }}
-					transition={{ type: "spring", damping: 25, stiffness: 300 }}
+					initial={{ opacity: 0, y: 8, scale: 0.99 }}
+					animate={{ opacity: 1, y: 0, scale: 1 }}
+					exit={{ opacity: 0, y: 8, scale: 0.99 }}
+					transition={{ duration: 0.22, ease: [0.25, 0.1, 0.25, 1] }}
 					className="absolute top-24 right-12 w-[320px] h-auto pb-3 te-module te-safe-panel z-[100]"
 				>
 					{/* Header / Drag Handle */}
-					<div className="te-module-header">
+					<div className="te-module-header h-10 px-3">
 						<div className="flex items-center gap-2">
-							<div className="size-2 rounded-full bg-[var(--te-blue)]" />
-							<span className="font-mono text-[10px] font-bold uppercase tracking-widest text-foreground">
+							<span className="size-2 shrink-0 bg-[var(--fg)]" />
+							<span className="font-mono text-[10px] uppercase tracking-[0.16em] text-[var(--fg)]">
 								SYS_CONFIG
 							</span>
 						</div>
-						<div className="w-16 h-2 te-grip opacity-50" />
+						<div className="te-grip h-2.5 w-10 opacity-70" />
 						<button
 							onClick={onClose}
-							className="size-5 te-button !rounded-full !border-b-2 flex items-center justify-center text-foreground hover:text-[var(--te-blue)]"
+							className="size-6 shrink-0 te-button rounded-[5px]"
+							aria-label="Close"
 						>
-							<X className="size-3" />
+							<X className="size-3" strokeWidth={1.5} />
 						</button>
 					</div>
 
 					{/* Content */}
-					<div className="relative z-10 flex flex-col px-4 py-4 space-y-4 bg-[var(--panel-bg)] h-full">
+					<div className="relative z-10 flex h-full flex-col space-y-4 px-4 py-4">
 						<Tabs defaultValue="appearance" className="w-full">
-							<TabsList className="mb-4 w-full flex p-2 te-recessed gap-1.5">
-								<TabsTrigger
-									value="appearance"
-									className="data-[state=active]:bg-[var(--te-blue)] data-[state=active]:text-white data-[state=active]:border-b-[var(--key-shadow)] relative h-9 rounded-[8px] transition-all text-foreground/50 font-mono text-[10px] uppercase tracking-widest font-bold flex-1 te-button !border-b-2"
-								>
-									SHELL
-								</TabsTrigger>
-								<TabsTrigger
-									value="keys"
-									className="data-[state=active]:bg-[var(--te-orange)] data-[state=active]:text-white data-[state=active]:border-b-[var(--key-shadow)] relative h-9 rounded-[8px] transition-all text-foreground/50 font-mono text-[10px] uppercase tracking-widest font-bold flex-1 te-button !border-b-2"
-								>
-									KEYS
-								</TabsTrigger>
-								<TabsTrigger
-									value="persona"
-									className="data-[state=active]:bg-[var(--te-green)] data-[state=active]:text-white data-[state=active]:border-b-[var(--key-shadow)] relative h-9 rounded-[8px] transition-all text-foreground/50 font-mono text-[10px] uppercase tracking-widest font-bold flex-1 te-button !border-b-2"
-								>
-									CORE
-								</TabsTrigger>
+							<TabsList className="mb-4 flex w-full gap-1.5 te-recessed p-1.5">
+								{(
+									[
+										["appearance", "SHELL"],
+										["keys", "KEYS"],
+										["persona", "CORE"],
+									] as const
+								).map(([value, label]) => (
+									<TabsTrigger
+										key={value}
+										value={value}
+										className="relative h-9 flex-1 rounded-[5px] te-button font-mono text-[10px] uppercase tracking-[0.12em] data-[state=active]:border-[var(--fg)] data-[state=active]:bg-[var(--fg)] data-[state=active]:text-[var(--bg)]"
+									>
+										{label}
+									</TabsTrigger>
+								))}
 							</TabsList>
 
 							<TabsContent
 								value="appearance"
-								className="space-y-4 mt-0"
+								className="fade-up mt-0 space-y-4"
 							>
 								{/* ── name ── */}
 								<section className="flex flex-col gap-1.5 shrink-0">
@@ -443,7 +437,7 @@ export const CustomizationModal = React.memo(function CustomizationModal({
 											maxLength={20}
 											spellCheck={false}
 											placeholder="NAME"
-											className="w-full h-10 rounded-[8px] px-3 text-[12px] font-bold text-[var(--lcd-text)] focus:outline-none transition-all font-mono uppercase tracking-widest placeholder:text-[var(--lcd-text)]/30 bg-[var(--lcd-bg)] shadow-[inset_0_2px_8px_rgba(0,0,0,0.15),inset_0_0_0_1px_rgba(0,0,0,0.1),0_1px_1px_rgba(255,255,255,0.5)] dark:shadow-[inset_0_2px_8px_rgba(0,0,0,0.8),inset_0_0_0_1px_rgba(0,0,0,0.5),0_1px_1px_rgba(255,255,255,0.05)]"
+											className="h-10 w-full rounded-[5px] border border-[var(--hair-2)] bg-[var(--surface-raised)] px-3 font-mono text-[12px] uppercase tracking-widest text-[var(--fg)] outline-none transition-colors placeholder:text-[var(--fg-faint)] focus:border-[var(--fg)]"
 										/>
 									</div>
 								</section>
@@ -459,12 +453,6 @@ export const CustomizationModal = React.memo(function CustomizationModal({
 										{FACES.map((face) => {
 											const active =
 												currentVariant === face.id;
-											const btnColor =
-												face.id === "minimal"
-													? "var(--te-blue)"
-													: face.id === "tron"
-														? "var(--te-green)"
-														: "var(--te-orange)";
 											const shortName =
 												face.id === "minimal"
 													? "PURE"
@@ -477,15 +465,15 @@ export const CustomizationModal = React.memo(function CustomizationModal({
 													onClick={() =>
 														onVariantChange(face.id)
 													}
-													className="flex-1 h-9 te-button rounded-[8px] text-[10px] transition-all duration-150"
+													className="h-9 flex-1 rounded-[5px] te-button text-[10px]"
 													style={
 														active
 															? ({
-																	"--key-bg":
-																		btnColor,
-																	"--key-border": `color-mix(in srgb, ${btnColor} 80%, black)`,
-																	"--key-shadow": `color-mix(in srgb, ${btnColor} 60%, black)`,
-																	color: "#ffffff",
+																	background:
+																		"var(--fg)",
+																	borderColor:
+																		"var(--fg)",
+																	color: "var(--bg)",
 																} as React.CSSProperties)
 															: undefined
 													}
@@ -503,21 +491,21 @@ export const CustomizationModal = React.memo(function CustomizationModal({
 										<span className="te-label">
 											AURA_HEX
 										</span>
-										<div className="te-lcd px-2 py-0.5 text-[8px] min-w-[50px] text-center">
+										<div className="te-lcd min-w-[54px] px-2 py-0.5 text-center text-[9px] tabular-nums">
 											{accentColor}
 										</div>
 									</div>
 
 									{/* Dedicated Color Module */}
-									<div className="te-recessed p-2 flex flex-col gap-2 border-[1px] border-[var(--panel-border)] shadow-[inset_0_2px_8px_rgba(0,0,0,0.05)]">
+									<div className="te-recessed flex flex-col gap-2 p-2">
 										<SpectrumPicker
 											color={accentColor}
 											onChange={onAccentColorChange}
 										/>
 
-										<div className="h-[1px] w-full bg-[var(--panel-border)] opacity-30 my-1" />
+										<div className="my-1 h-px w-full bg-[var(--hair)]" />
 
-										{/* Hardware Swatches */}
+										{/* Swatches — the colourful pattern-break */}
 										<div className="grid grid-cols-5 gap-1.5">
 											{SWATCHES.map((hex) => {
 												const active =
@@ -531,22 +519,14 @@ export const CustomizationModal = React.memo(function CustomizationModal({
 																hex,
 															)
 														}
-														className="h-6 te-button rounded-[6px] transition-all duration-150"
-														style={
-															{
-																"--key-bg": hex,
-																"--key-border": `color-mix(in srgb, ${hex} 80%, black)`,
-																"--key-shadow": `color-mix(in srgb, ${hex} 60%, black)`,
-																transform:
-																	active
-																		? "translateY(2px)"
-																		: "none",
-																borderBottomWidth:
-																	active
-																		? "1px"
-																		: "4px",
-															} as React.CSSProperties
-														}
+														className="h-6 rounded-[4px] transition-transform duration-150 hover:scale-110"
+														style={{
+															background: hex,
+															outline: active
+																? "2px solid var(--fg)"
+																: "1px solid var(--hair-2)",
+															outlineOffset: active ? "1px" : "0px",
+														}}
 													/>
 												);
 											})}
@@ -561,34 +541,21 @@ export const CustomizationModal = React.memo(function CustomizationModal({
 
 							<TabsContent
 								value="persona"
-								className="mt-0 space-y-4"
+								className="fade-up mt-0 space-y-4"
 							>
 								<section className="flex flex-col gap-1.5 shrink-0">
 									<div className="flex items-center justify-between px-1">
 										<span className="te-label">
 											PERSONA_CORE
 										</span>
-										<span className="te-lcd px-2 py-0.5 text-[8px]">
+										<span className="te-lcd px-2 py-0.5 text-[9px]">
 											{activePersona.tone.toUpperCase()}
 										</span>
 									</div>
-									<div className="te-recessed p-1.5 flex flex-col gap-1.5">
+									<div className="te-recessed flex flex-col gap-1.5 p-1.5">
 										{PERSONAS.map((persona) => {
 											const active =
 												activePersonaId === persona.id;
-											const btnColor =
-												persona.id === "coach"
-													? "var(--te-orange)"
-													: persona.id === "playful"
-														? "var(--te-yellow)"
-														: persona.id ===
-															  "deep-thinker"
-															? "var(--te-blue)"
-															: "var(--te-green)";
-											const textColor =
-												persona.id === "playful"
-													? "#1c1c1e"
-													: "#ffffff";
 
 											return (
 												<button
@@ -598,30 +565,40 @@ export const CustomizationModal = React.memo(function CustomizationModal({
 															persona.id,
 														)
 													}
-													className="w-full min-h-11 te-button rounded-[8px] text-[10px] transition-all duration-150 flex items-center justify-between gap-3 px-3 py-2 text-left"
+													className="flex min-h-11 w-full items-center justify-between gap-3 rounded-[6px] te-button px-3 py-2 text-left text-[10px]"
 													style={
 														active
 															? ({
-																	"--key-bg":
-																		btnColor,
-																	"--key-border": `color-mix(in srgb, ${btnColor} 80%, black)`,
-																	"--key-shadow": `color-mix(in srgb, ${btnColor} 60%, black)`,
-																	color: textColor,
+																	background:
+																		"var(--fg)",
+																	borderColor:
+																		"var(--fg)",
+																	color: "var(--bg)",
 																} as React.CSSProperties)
 															: undefined
-														}
+													}
 												>
 													<span className="flex flex-col gap-0.5">
-														<span className="font-bold tracking-widest">
+														<span
+															className="text-[12px] tracking-[0.04em]"
+															style={{
+																fontFamily:
+																	"var(--font-display)",
+															}}
+														>
 															{persona.name.toUpperCase()}
 														</span>
 														<span className="text-[8px] tracking-wider opacity-60">
 															{persona.description.toUpperCase()}
 														</span>
 													</span>
-													<span className="font-mono text-[8px] font-bold tracking-widest opacity-50">
-														{active ? "ON" : "SET"}
-													</span>
+													{active ? (
+														<span className="size-2 shrink-0 bg-[var(--accent)]" />
+													) : (
+														<span className="font-mono text-[8px] tracking-widest opacity-40">
+															SET
+														</span>
+													)}
 												</button>
 											);
 										})}
@@ -645,7 +622,6 @@ export const CustomizationModal = React.memo(function CustomizationModal({
 											}
 											lowLabel="quiet"
 											highLabel="vivid"
-											color="var(--te-yellow)"
 										/>
 										<TuningSlider
 											label="DIR"
@@ -657,7 +633,6 @@ export const CustomizationModal = React.memo(function CustomizationModal({
 											}
 											lowLabel="soft"
 											highLabel="sharp"
-											color="var(--te-green)"
 										/>
 									</div>
 								</section>
@@ -675,17 +650,15 @@ export const CustomizationModal = React.memo(function CustomizationModal({
 														!personaTuning.autoVoice,
 												})
 											}
-											className="h-6 px-2 te-button rounded-[6px] text-[8px] font-bold tracking-widest"
+											className="h-6 rounded-[5px] te-button px-2.5 text-[8px] tracking-widest"
 											style={
 												personaTuning.autoVoice
 													? ({
-															"--key-bg":
-																"var(--te-green)",
-															"--key-border":
-																"color-mix(in srgb, var(--te-green) 80%, black)",
-															"--key-shadow":
-																"color-mix(in srgb, var(--te-green) 60%, black)",
-															color: "#ffffff",
+															background:
+																"var(--accent)",
+															borderColor:
+																"var(--accent)",
+															color: "var(--accent-foreground)",
 														} as React.CSSProperties)
 													: undefined
 											}
@@ -717,18 +690,16 @@ export const CustomizationModal = React.memo(function CustomizationModal({
 													disabled={
 														!personaTuning.autoVoice
 													}
-													className="h-9 te-button rounded-[8px] text-[9px] font-bold tracking-widest disabled:opacity-40"
+													className="h-9 rounded-[5px] te-button text-[9px] tracking-widest disabled:opacity-40"
 													style={
 														active &&
 														personaTuning.autoVoice
 															? ({
-																	"--key-bg":
-																		"var(--te-blue)",
-																	"--key-border":
-																		"color-mix(in srgb, var(--te-blue) 80%, black)",
-																	"--key-shadow":
-																		"color-mix(in srgb, var(--te-blue) 60%, black)",
-																	color: "#ffffff",
+																	background:
+																		"var(--fg)",
+																	borderColor:
+																		"var(--fg)",
+																	color: "var(--bg)",
 																} as React.CSSProperties)
 															: undefined
 													}
@@ -746,9 +717,9 @@ export const CustomizationModal = React.memo(function CustomizationModal({
 											PREVIEW
 										</span>
 									</div>
-									<div className="te-lcd p-3 min-h-[60px] flex items-center justify-center text-center">
-										<span className="text-[10px] leading-relaxed opacity-80">
-											{activePersona.preview.toUpperCase()}
+									<div className="te-lcd flex min-h-[60px] items-center justify-center p-3 text-center">
+										<span className="font-mono text-[10px] normal-case leading-relaxed text-[var(--fg-muted)]">
+											{activePersona.preview}
 										</span>
 									</div>
 								</section>
