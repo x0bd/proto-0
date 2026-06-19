@@ -12,7 +12,7 @@ import { RitualDrawer } from "../components/ritual-drawer";
 import { AudioLab } from "../components/audio-lab";
 import { ChatModule } from "../components/chat-module";
 import { ActivePersonaChip } from "@/components/ui/active-persona-chip";
-import { Database, Calendar, AudioWaveform } from "lucide-react";
+import { Database, Calendar, AudioWaveform, X } from "lucide-react";
 import {
 	RiMoonFill,
 	RiSunFill,
@@ -742,31 +742,27 @@ export default function Home() {
 							initial={{ opacity: 0, y: 12, scale: 0.96 }}
 							animate={{ opacity: 1, y: 0, scale: 1 }}
 							exit={{ opacity: 0, y: 12, scale: 0.96 }}
-							transition={{
-								type: "spring",
-								damping: 26,
-								stiffness: 280,
-							}}
+							transition={{ duration: 0.22, ease: [0.25, 0.1, 0.25, 1] }}
 							className="absolute left-3 right-3 sm:left-auto sm:right-6 top-[calc(max(64px,env(safe-area-inset-top))+56px)] sm:top-28 sm:w-[340px] te-module te-safe-panel z-[110]"
 						>
-							<div className="te-module-header">
+							<div className="te-module-header h-10 px-3">
 								<div className="flex items-center gap-2">
-									<div className="size-2 rounded-full bg-[var(--te-orange)]" />
-									<span className="font-mono text-[10px] font-bold uppercase tracking-widest text-foreground">
+									<span className="size-2 shrink-0 animate-pulse bg-[var(--accent)]" />
+									<span className="font-mono text-[10px] uppercase tracking-[0.16em] text-[var(--fg)]">
 										BOOT_SEQ
 									</span>
 								</div>
 								<button
 									onClick={completeOnboarding}
-									className="size-5 te-button !rounded-full !border-b-2 flex items-center justify-center text-foreground hover:text-[var(--te-orange)]"
+									className="size-6 shrink-0 te-button rounded-[5px]"
 									aria-label="Close onboarding"
 								>
-									<span className="text-[10px]">X</span>
+									<X className="size-3" strokeWidth={1.5} />
 								</button>
 							</div>
-							<div className="p-4 bg-[var(--panel-bg)] flex flex-col gap-3">
+							<div className="fade-up flex flex-col gap-3 p-4">
 								<div className="te-lcd p-3">
-									<p className="text-[10px] leading-relaxed">
+									<p className="font-mono text-[10px] leading-relaxed text-[var(--fg-muted)]">
 										DOT IS LOCAL-FIRST. ADD YOUR KEYS, ENABLE
 										MEMORY IF YOU WANT PERSONALIZATION, THEN
 										TEST VOICE.
@@ -797,20 +793,17 @@ export default function Home() {
 									].map((item) => (
 										<div
 											key={item.label}
-											className="te-recessed p-2 flex items-center justify-between"
+											className="flex items-center justify-between te-recessed p-2"
 										>
 											<span className="te-label">
 												{item.label}
 											</span>
 											<span
-												className="size-2 rounded-full"
+												className="size-2 shrink-0"
 												style={{
-													backgroundColor: item.ok
-														? "var(--te-green)"
-														: "var(--te-orange)",
-													boxShadow: item.ok
-														? "0 0 8px var(--te-green)"
-														: "0 0 8px var(--te-orange)",
+													background: item.ok
+														? "var(--success)"
+														: "var(--fg-faint)",
 												}}
 											/>
 										</div>
@@ -821,7 +814,7 @@ export default function Home() {
 										onClick={() => {
 											setIsCustomizationOpen(true);
 										}}
-										className="h-10 te-button rounded-[8px] text-[9px]"
+										className="h-10 rounded-[5px] te-button text-[9px]"
 									>
 										SET_KEYS
 									</button>
@@ -833,28 +826,24 @@ export default function Home() {
 											);
 											setIsMemoryOpen(true);
 										}}
-										className="h-10 te-button rounded-[8px] text-[9px]"
+										className="h-10 rounded-[5px] te-button text-[9px]"
 									>
 										MEMORY
 									</button>
 									<button
 										onClick={toggleMic}
-										className="h-10 te-button rounded-[8px] text-[9px]"
+										className="h-10 rounded-[5px] te-button text-[9px]"
 									>
 										VOICE_TEST
 									</button>
 									<button
 										onClick={completeOnboarding}
-										className="h-10 te-button rounded-[8px] text-[9px]"
+										className="h-10 rounded-[5px] te-button text-[9px]"
 										style={
 											{
-												"--key-bg":
-													"var(--te-green)",
-												"--key-border":
-													"color-mix(in srgb, var(--te-green) 80%, black)",
-												"--key-shadow":
-													"color-mix(in srgb, var(--te-green) 60%, black)",
-												color: "#ffffff",
+												background: "var(--accent)",
+												borderColor: "var(--accent)",
+												color: "var(--accent-foreground)",
 											} as React.CSSProperties
 										}
 									>

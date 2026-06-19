@@ -906,35 +906,31 @@ export function ShareDock({
                 <AnimatePresence>
                     {status !== "idle" && (
                         <motion.div
-                            initial={{ opacity: 0, y: 8, scale: 0.98 }}
-                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                            exit={{ opacity: 0, y: 8, scale: 0.98 }}
-                            className="rounded-full px-4 py-2 bg-background/90 backdrop-blur-md border shadow-premium flex items-center gap-2"
-                            style={{ borderColor: `${accentColor}20` }}
+                            initial={{ opacity: 0, y: 8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: 8 }}
+                            transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
+                            className="flex items-center gap-2 rounded-[6px] nt-surface px-4 py-2"
                         >
                             {status === "progress" && (
                                 <div
-                                    className="size-4 rounded-full border-2 border-t-transparent animate-spin"
-                                    style={{
-                                        borderColor: `${accentColor}70`,
-                                        borderTopColor: "transparent",
-                                    }}
+                                    className="size-4 animate-spin rounded-full border-2 border-[var(--fg)] border-t-transparent"
                                 />
                             )}
                             {status === "success" && (
-                                <Check className="size-4 text-success" />
+                                <Check className="size-4 text-[var(--success)]" strokeWidth={1.5} />
                             )}
                             {status === "error" && (
-                                <AlertCircle className="size-4 text-destructive" />
+                                <AlertCircle className="size-4 text-[var(--error)]" strokeWidth={1.5} />
                             )}
-                            <span className="text-[11px] font-mono font-bold uppercase tracking-[0.16em] text-foreground/80">
+                            <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-[var(--fg-muted)]">
                                 {statusMessage}
                             </span>
                             {status === "progress" && (
                                 <button
                                     type="button"
                                     onClick={handleCancelExport}
-                                    className="ml-1 rounded-full border border-[var(--te-orange)]/30 px-2 py-0.5 text-[9px] font-mono font-bold uppercase tracking-[0.14em] text-[var(--te-orange)] hover:bg-[var(--te-orange)]/10"
+                                    className="ml-1 rounded-[4px] border border-[var(--error)]/40 px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.14em] text-[var(--error)] hover:bg-[var(--error)]/10"
                                 >
                                     ABORT
                                 </button>
@@ -947,13 +943,10 @@ export function ShareDock({
                     whileHover={{ scale: 1.06 }}
                     whileTap={{ scale: 0.92 }}
                     onClick={() => setIsOpen(true)}
-                    className="size-12 sm:size-14 flex items-center justify-center transition-all duration-200 te-button"
-                    style={{
-                        color: accentColor,
-                    }}
+                    className="flex size-12 items-center justify-center te-button text-[var(--fg)] sm:size-14"
                     title="Share Moment"
                 >
-                    <Share2 className="size-5 sm:size-6" />
+                    <Share2 className="size-5 sm:size-6" strokeWidth={1.5} />
                 </motion.button>
             </div>
 
@@ -965,56 +958,54 @@ export function ShareDock({
                     dragMomentum={false}
                     style={{ x, y }}
                     onDragEnd={onDragEnd}
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.9 }}
-                    transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                    className="absolute top-24 right-[400px] w-[280px] h-auto pb-3 te-module te-safe-panel z-[100]"
+                    initial={{ opacity: 0, y: 8, scale: 0.99 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 8, scale: 0.99 }}
+                    transition={{ duration: 0.22, ease: [0.25, 0.1, 0.25, 1] }}
+                    className="absolute top-24 right-[400px] z-[100] h-auto w-[280px] pb-3 te-module te-safe-panel"
                 >
                     {/* Header / Drag Handle */}
-                    <div className="te-module-header">
+                    <div className="te-module-header h-10 px-3">
                         <div className="flex items-center gap-2">
-                            <div className="size-2 rounded-full bg-[var(--te-orange)]" />
-                            <span className="font-mono text-[10px] font-bold uppercase tracking-widest text-foreground">
+                            <span className="size-2 shrink-0 bg-[var(--fg)]" />
+                            <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-[var(--fg)]">
                                 EXPORT_MOD
                             </span>
                         </div>
-                        <div className="w-16 h-2 te-grip opacity-50" />
-                        <button onClick={() => setIsOpen(false)} className="size-5 te-button !rounded-full !border-b-2 flex items-center justify-center text-foreground hover:text-[var(--te-orange)]">
-                            <X className="size-3" />
+                        <div className="te-grip h-2.5 w-10 opacity-70" />
+                        <button onClick={() => setIsOpen(false)} className="size-6 shrink-0 te-button rounded-[5px]" aria-label="Close">
+                            <X className="size-3" strokeWidth={1.5} />
                         </button>
                     </div>
 
-                    <div className="relative z-10 flex flex-col px-4 py-4 space-y-4 bg-[var(--panel-bg)] h-full">
-                        
-                        {/* LCD Status Display */}
-                        <div className="te-lcd p-3 flex flex-col justify-center relative overflow-hidden shrink-0 h-[56px]">
-                            <div className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/10 to-transparent pointer-events-none" />
-                            <div className="absolute inset-0 pointer-events-none opacity-[0.04] dark:opacity-[0.08]" style={{ backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 1px, currentColor 1px, currentColor 2px)' }} />
-                            <div className="flex items-center justify-between relative z-10">
-                                <span className="text-[8px] opacity-50 tracking-[0.2em] font-bold">STATUS</span>
-                                <span className="text-[8px] opacity-30 tracking-[0.2em] font-bold">SYS_01</span>
+                    <div className="fade-up relative z-10 flex h-full flex-col space-y-4 px-4 py-4">
+
+                        {/* Status readout */}
+                        <div className="te-lcd flex h-[56px] shrink-0 flex-col justify-center gap-1 p-3">
+                            <div className="flex items-center justify-between">
+                                <span className="label leading-none">STATUS</span>
+                                <span className="label leading-none">SYS_01</span>
                             </div>
-                            <div className="flex items-center gap-2 mt-1 relative z-10">
+                            <div className="flex items-center gap-2">
                                 {status === "idle" ? (
                                     <>
-                                        <div className="size-2 rounded-full bg-current opacity-20" />
-                                        <span className="text-[12px] font-bold opacity-80">READY</span>
+                                        <span className="size-2 shrink-0 bg-[var(--fg-faint)]" />
+                                        <span className="font-mono text-[12px] tracking-wider text-[var(--fg)]">READY</span>
                                     </>
                                 ) : status === "progress" ? (
                                     <>
-                                        <div className="size-2 rounded-full bg-[var(--te-orange)] animate-pulse shadow-[0_0_8px_var(--te-orange)]" />
-                                        <span className="text-[12px] font-bold">{statusMessage.toUpperCase()}</span>
+                                        <span className="size-2 shrink-0 animate-pulse bg-[var(--accent)]" />
+                                        <span className="font-mono text-[12px] tracking-wider text-[var(--fg)]">{statusMessage.toUpperCase()}</span>
                                     </>
                                 ) : status === "success" ? (
                                     <>
-                                        <div className="size-2 rounded-full bg-[var(--te-green)] shadow-[0_0_8px_var(--te-green)]" />
-                                        <span className="text-[12px] font-bold">{statusMessage.toUpperCase()}</span>
+                                        <span className="size-2 shrink-0 bg-[var(--success)]" />
+                                        <span className="font-mono text-[12px] tracking-wider text-[var(--fg)]">{statusMessage.toUpperCase()}</span>
                                     </>
                                 ) : (
                                     <>
-                                        <div className="size-2 rounded-full bg-[var(--te-orange)] shadow-[0_0_8px_var(--te-orange)]" />
-                                        <span className="text-[12px] font-bold">ERROR</span>
+                                        <span className="size-2 shrink-0 bg-[var(--error)]" />
+                                        <span className="font-mono text-[12px] tracking-wider text-[var(--error)]">ERROR</span>
                                     </>
                                 )}
                             </div>
@@ -1025,23 +1016,20 @@ export function ShareDock({
                             <div className="flex items-center justify-between px-1">
                                 <span className="te-label">TEMPLATE</span>
                             </div>
-                            <div className="te-recessed p-1.5 flex gap-1.5">
+                            <div className="te-recessed flex gap-1.5 p-1.5">
                                 {TEMPLATES.map((item) => {
                                     const active = item.id === template;
                                     const shortName = item.id === "mood-card" ? "MOOD" : item.id === "reflection-card" ? "REFL" : "CLIP";
-                                    const btnColor = item.id === "mood-card" ? "var(--te-blue)" : item.id === "reflection-card" ? "var(--te-yellow)" : "var(--te-orange)";
-                                    const textColor = item.id === "reflection-card" ? "#1c1c1e" : "#ffffff";
-                                    
+
                                     return (
                                         <button
                                             key={item.id}
                                             onClick={() => setTemplate(item.id)}
-                                            className="flex-1 h-9 te-button rounded-[8px] text-[10px] transition-all duration-150"
+                                            className="h-9 flex-1 rounded-[5px] te-button text-[10px]"
                                             style={active ? {
-                                                "--key-bg": btnColor,
-                                                "--key-border": `color-mix(in srgb, ${btnColor} 80%, black)`,
-                                                "--key-shadow": `color-mix(in srgb, ${btnColor} 60%, black)`,
-                                                color: textColor
+                                                background: "var(--fg)",
+                                                borderColor: "var(--fg)",
+                                                color: "var(--bg)",
                                             } as React.CSSProperties : undefined}
                                         >
                                             {shortName}
@@ -1049,7 +1037,7 @@ export function ShareDock({
                                     );
                                 })}
                             </div>
-                            <div className="te-lcd px-2.5 py-2 text-[8px] font-mono font-bold uppercase tracking-[0.12em] leading-relaxed opacity-80">
+                            <div className="te-lcd px-2.5 py-2 font-mono text-[8px] uppercase leading-relaxed tracking-[0.12em] text-[var(--fg-muted)]">
                                 {selectedTemplate.description}
                             </div>
                         </section>
@@ -1059,11 +1047,11 @@ export function ShareDock({
                             <div className="flex items-center justify-between px-1">
                                 <span className="te-label">FORMAT</span>
                             </div>
-                            <div className="te-recessed p-1.5 flex gap-1.5">
+                            <div className="te-recessed flex gap-1.5 p-1.5">
                                 {[
-                                    { id: "png" as const, label: "PNG", onClick: handleExportPNG, disabled: false, color: "var(--te-green)" },
-                                    { id: "gif" as const, label: "GIF", onClick: handleExportGIF, disabled: false, color: "var(--te-blue)" },
-                                    { id: "webm" as const, label: "WEBM", onClick: handleExportWebM, disabled: false, color: "var(--te-orange)" },
+                                    { id: "png" as const, label: "PNG", onClick: handleExportPNG, disabled: false },
+                                    { id: "gif" as const, label: "GIF", onClick: handleExportGIF, disabled: false },
+                                    { id: "webm" as const, label: "WEBM", onClick: handleExportWebM, disabled: false },
                                 ].map((item) => {
                                     const active = activeFormat === item.id;
                                     return (
@@ -1071,12 +1059,11 @@ export function ShareDock({
                                             key={item.id}
                                             onClick={item.onClick}
                                             disabled={item.disabled || status === "progress"}
-                                            className="flex-1 h-9 te-button rounded-[8px] text-[10px] transition-all duration-150 disabled:opacity-30"
+                                            className="h-9 flex-1 rounded-[5px] te-button text-[10px] disabled:opacity-30"
                                             style={active ? {
-                                                "--key-bg": item.color,
-                                                "--key-border": `color-mix(in srgb, ${item.color} 80%, black)`,
-                                                "--key-shadow": `color-mix(in srgb, ${item.color} 60%, black)`,
-                                                color: "#ffffff"
+                                                background: "var(--fg)",
+                                                borderColor: "var(--fg)",
+                                                color: "var(--bg)",
                                             } as React.CSSProperties : undefined}
                                         >
                                             {item.label}
@@ -1088,7 +1075,7 @@ export function ShareDock({
                                 <button
                                     type="button"
                                     onClick={handleCancelExport}
-                                    className="h-9 te-button rounded-[8px] text-[10px] tracking-widest text-[var(--te-orange)]"
+                                    className="h-9 rounded-[5px] te-button text-[10px] tracking-widest text-[var(--error)] hover:border-[var(--error)]"
                                 >
                                     ABORT_RENDER
                                 </button>
@@ -1097,17 +1084,19 @@ export function ShareDock({
 
                         <div className="flex-1" /> {/* Spacer */}
 
-                        {/* NATIVE SHARE Button */}
+                        {/* NATIVE SHARE Button — primary go-action */}
                         <button
                             onClick={handleShareNative}
                             disabled={!canNativeShare || status === "progress"}
-                            className="w-full h-12 te-button rounded-[10px] text-[12px] flex items-center justify-center gap-2 group"
-                            style={canNativeShare ? { 
-                                color: accentColor,
+                            className="flex h-12 w-full items-center justify-center gap-2 rounded-[6px] te-button text-[12px] disabled:opacity-30"
+                            style={canNativeShare ? {
+                                background: "var(--accent)",
+                                borderColor: "var(--accent)",
+                                color: "var(--accent-foreground)",
                             } as React.CSSProperties : undefined}
                         >
-                            <Share2 className="size-[14px]" />
-                            <span className="font-bold tracking-widest">TRANSMIT</span>
+                            <Share2 className="size-[14px]" strokeWidth={1.5} />
+                            <span className="tracking-widest">TRANSMIT</span>
                         </button>
                     </div>
                 </motion.div>

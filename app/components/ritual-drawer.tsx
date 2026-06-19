@@ -21,11 +21,11 @@ const MOODS: {
     short: string;
     color: string;
 }[] = [
-    { id: "terrible", label: "Terrible", short: "TRB", color: "var(--destructive)" },
+    { id: "terrible", label: "Terrible", short: "TRB", color: "var(--error)" },
     { id: "bad", label: "Bad", short: "BAD", color: "var(--warning)" },
-    { id: "okay", label: "Okay", short: "OK", color: "var(--muted-foreground)" },
-    { id: "good", label: "Good", short: "GD", color: "var(--info)" },
-    { id: "great", label: "Great", short: "GRT", color: "var(--success)" },
+    { id: "okay", label: "Okay", short: "OK", color: "var(--fg-faint)" },
+    { id: "good", label: "Good", short: "GD", color: "var(--success)" },
+    { id: "great", label: "Great", short: "GRT", color: "var(--accent)" },
 ];
 
 const WEEK_DAYS = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
@@ -188,7 +188,6 @@ export function buildRitualContextForPrompt(limit: number = 7): string {
 export function RitualDrawer({
     open,
     onOpenChange,
-    accentColor = "#7c3aed",
     constraintsRef,
 }: RitualDrawerProps) {
     const [syncData, setSyncData] = React.useState<SyncData>(() => loadSyncData());
@@ -249,51 +248,51 @@ export function RitualDrawer({
                     dragMomentum={false}
                     style={{ x, y }}
                     onDragEnd={onDragEnd}
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.9 }}
-                    transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                    className="absolute top-24 left-1/2 -translate-x-1/2 w-[360px] h-auto te-module te-safe-panel z-[100] flex flex-col"
+                    initial={{ opacity: 0, y: 8, scale: 0.99 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 8, scale: 0.99 }}
+                    transition={{ duration: 0.22, ease: [0.25, 0.1, 0.25, 1] }}
+                    className="absolute top-24 left-1/2 z-[100] flex h-auto w-[360px] -translate-x-1/2 flex-col te-module te-safe-panel"
                 >
                     {/* Header / Drag Handle */}
-                    <div className="te-module-header">
+                    <div className="te-module-header h-10 px-3">
                         <div className="flex items-center gap-2">
-                            <div className="size-2 rounded-full bg-[var(--te-green)]" />
-                            <span className="font-mono text-[10px] font-bold uppercase tracking-widest text-foreground">SYNC_MOD</span>
-                            <span className="font-mono text-[8px] uppercase tracking-widest te-whisper ml-2">RT-09</span>
+                            <span className="size-2 shrink-0 bg-[var(--fg)]" />
+                            <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-[var(--fg)]">SYNC_MOD</span>
+                            <span className="label">RT-09</span>
                         </div>
-                        <div className="w-16 h-2 te-grip opacity-50" />
-                        <button onClick={() => onOpenChange(false)} className="size-5 te-button !rounded-full !border-b-2 flex items-center justify-center text-foreground hover:text-[var(--te-green)]">
-                            <X className="size-3" />
+                        <div className="te-grip h-2.5 w-10 opacity-70" />
+                        <button onClick={() => onOpenChange(false)} className="size-6 shrink-0 te-button rounded-[5px]" aria-label="Close">
+                            <X className="size-3" strokeWidth={1.5} />
                         </button>
                     </div>
 
-                    <div className="relative z-10 flex flex-col p-4 gap-4 bg-[var(--panel-bg)] h-full">
+                    <div className="fade-up relative z-10 flex h-full flex-col gap-4 p-4">
                         
-                        {/* LCD Main Display */}
-                        <div className="te-lcd p-3 flex flex-col justify-between relative overflow-hidden shrink-0 h-[80px] border border-black/10 dark:border-white/10">
-                            <div className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/10 to-transparent pointer-events-none" />
-                            <div className="absolute inset-0 pointer-events-none opacity-[0.04] dark:opacity-[0.08]" style={{ backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 1px, currentColor 1px, currentColor 2px)' }} />
-                            
-                            <div className="flex items-center justify-between relative z-10">
-                                <span className="text-[8px] opacity-50 tracking-[0.2em] font-bold">MODE: {hasCheckedInToday ? "REFLECTION" : "ACQUISITION"}</span>
-                                <span className="text-[8px] opacity-30 tracking-[0.2em] font-bold">SEQ_ACTIVE</span>
+                        {/* Main readout */}
+                        <div className="te-lcd flex h-[80px] shrink-0 flex-col justify-between p-3">
+                            <div className="flex items-center justify-between">
+                                <span className="label leading-none">MODE: {hasCheckedInToday ? "REFLECTION" : "ACQUISITION"}</span>
+                                <span className="label leading-none">SEQ_ACTIVE</span>
                             </div>
-                            
-                            <div className="flex flex-col relative z-10">
-                                <div className="text-[12px] font-bold opacity-90 tracking-widest line-clamp-1">
-                                    {hasCheckedInToday 
-                                        ? "> 'What is one thing you accomplished?'" 
+
+                            <div className="flex flex-col">
+                                <div className="line-clamp-1 font-mono text-[12px] tracking-wider text-[var(--fg)]">
+                                    {hasCheckedInToday
+                                        ? "> 'What is one thing you accomplished?'"
                                         : "> AWAITING_INPUT..."}
                                 </div>
-                                <div className="flex items-center justify-between mt-1 pt-1 border-t border-current/20">
-                                    <span className="text-[10px] font-bold opacity-70 tracking-widest">
-                                        STREAK: [{String(streak).padStart(3, "0")}]
+                                <div className="mt-1 flex items-center justify-between border-t border-[var(--hair)] pt-1">
+                                    <span className="font-mono text-[10px] tracking-widest text-[var(--fg-muted)]">
+                                        STREAK <span className="tabular-nums text-[var(--fg)]" style={{ fontFamily: "var(--font-display)" }}>{String(streak).padStart(3, "0")}</span>
                                     </span>
-                                    <span className="text-[10px] font-bold opacity-70 tracking-widest">
-                                        BEST: [{String(longestStreak).padStart(3, "0")}]
+                                    <span className="font-mono text-[10px] tracking-widest text-[var(--fg-muted)]">
+                                        BEST <span className="tabular-nums text-[var(--fg)]" style={{ fontFamily: "var(--font-display)" }}>{String(longestStreak).padStart(3, "0")}</span>
                                     </span>
-                                    <span className="text-[10px] font-bold opacity-70 tracking-widest" style={{ color: hasCheckedInToday && todayEntry?.mood ? MOODS.find(m => m.id === todayEntry.mood)?.color : "inherit" }}>
+                                    <span
+                                        className="font-mono text-[10px] tracking-widest"
+                                        style={{ color: hasCheckedInToday ? "var(--success)" : "var(--fg-faint)" }}
+                                    >
                                         {hasCheckedInToday ? "SYNC_OK" : "PENDING"}
                                     </span>
                                 </div>
@@ -305,23 +304,22 @@ export function RitualDrawer({
                             <div className="flex items-center justify-between px-1">
                                 <span className="te-label">WEEK_TRK</span>
                             </div>
-                            <div className="te-recessed p-1.5 flex gap-1.5">
+                            <div className="te-recessed flex gap-1.5 p-1.5">
                                 {WEEK_DAYS.map((day) => {
                                     const mood = weeklyData[day];
                                     const moodInfo = mood ? MOODS.find(m => m.id === mood) : null;
                                     const isActive = !!mood;
-                                    
+
                                     return (
-                                        <div key={day} className="flex-1 flex flex-col gap-1 items-center">
-                                            <div 
-                                                className="w-full h-2 rounded-[2px]" 
-                                                style={{ 
-                                                    backgroundColor: isActive && moodInfo ? moodInfo.color : "var(--key-bg)",
-                                                    boxShadow: isActive && moodInfo ? `0 0 6px ${moodInfo.color}` : "inset 0 1px 2px rgba(0,0,0,0.1)",
-                                                    border: "1px solid var(--panel-border)"
-                                                }} 
+                                        <div key={day} className="flex flex-1 flex-col items-center gap-1">
+                                            <div
+                                                className="h-2 w-full rounded-[2px] border"
+                                                style={{
+                                                    backgroundColor: isActive && moodInfo ? moodInfo.color : "transparent",
+                                                    borderColor: isActive && moodInfo ? moodInfo.color : "var(--hair-2)",
+                                                }}
                                             />
-                                            <span className="text-[8px] font-mono font-bold tracking-widest opacity-50">{day[0]}</span>
+                                            <span className="font-mono text-[8px] tracking-widest text-[var(--fg-faint)]">{day[0]}</span>
                                         </div>
                                     );
                                 })}
@@ -335,21 +333,21 @@ export function RitualDrawer({
                                     <div className="flex items-center justify-between px-1">
                                         <span className="te-label">STATE_PARAM</span>
                                     </div>
-                                    <div className="te-recessed p-1.5 flex gap-1.5">
+                                    <div className="te-recessed flex gap-1.5 p-1.5">
                                         {MOODS.map((mood) => {
                                             const active = selectedMood === mood.id;
                                             return (
                                                 <button
                                                     key={mood.id}
                                                     onClick={() => setSelectedMood(mood.id)}
-                                                    className="flex-1 h-9 te-button rounded-[8px] text-[10px] transition-all duration-150"
+                                                    className="flex h-9 flex-1 flex-col items-center justify-center gap-1 rounded-[5px] te-button text-[9px]"
                                                     style={active ? {
-                                                        "--key-bg": mood.color,
-                                                        "--key-border": `color-mix(in srgb, ${mood.color} 80%, black)`,
-                                                        "--key-shadow": `color-mix(in srgb, ${mood.color} 60%, black)`,
-                                                        color: "#ffffff"
+                                                        background: "var(--fg)",
+                                                        borderColor: "var(--fg)",
+                                                        color: "var(--bg)",
                                                     } as React.CSSProperties : undefined}
                                                 >
+                                                    <span className="size-1.5 shrink-0 rounded-full" style={{ background: mood.color }} />
                                                     {mood.short}
                                                 </button>
                                             );
@@ -358,29 +356,25 @@ export function RitualDrawer({
                                 </section>
 
                                 {/* Input & Execute Block */}
-                                <section className="flex gap-2 h-16 shrink-0 mt-1">
-                                    <div className="flex-1 te-recessed p-1.5 relative group">
-                                        <div className="absolute top-2.5 left-3 size-1.5 rounded-full bg-[var(--lcd-text)]/20 group-focus-within:bg-[var(--te-orange)] shadow-[0_0_8px_var(--te-orange)] transition-colors opacity-0 group-focus-within:opacity-100" />
-                                        <textarea
-                                            placeholder="LOG_DATA..."
-                                            value={note}
-                                            onChange={(e) => setNote(e.target.value)}
-                                            className="w-full h-full bg-transparent resize-none focus:outline-none text-[11px] font-mono font-bold tracking-wider placeholder:text-[var(--lcd-text)]/30 text-[var(--lcd-text)] custom-scrollbar px-3 py-1"
-                                        />
-                                    </div>
+                                <section className="mt-1 flex h-16 shrink-0 gap-2">
+                                    <textarea
+                                        placeholder="LOG_DATA..."
+                                        value={note}
+                                        onChange={(e) => setNote(e.target.value)}
+                                        className="custom-scrollbar h-full flex-1 resize-none rounded-[6px] border border-[var(--hair-2)] bg-[var(--surface-raised)] px-3 py-2 font-mono text-[11px] tracking-wider text-[var(--fg)] outline-none transition-colors placeholder:text-[var(--fg-faint)] focus:border-[var(--fg)]"
+                                    />
                                     <button
                                         onClick={handleCheckIn}
                                         disabled={!selectedMood}
-                                        className="w-16 h-full te-button rounded-[10px] flex flex-col items-center justify-center gap-1 disabled:opacity-30 transition-all text-foreground"
+                                        className="flex h-full w-16 flex-col items-center justify-center gap-1 rounded-[6px] te-button disabled:opacity-30"
                                         style={selectedMood ? {
-                                            "--key-bg": "var(--te-green)",
-                                            "--key-border": `color-mix(in srgb, var(--te-green) 80%, black)`,
-                                            "--key-shadow": `color-mix(in srgb, var(--te-green) 60%, black)`,
-                                            color: "#ffffff"
+                                            background: "var(--accent)",
+                                            borderColor: "var(--accent)",
+                                            color: "var(--accent-foreground)",
                                         } as React.CSSProperties : undefined}
                                     >
-                                        <Check className="size-4" />
-                                        <span className="text-[8px] font-bold tracking-[0.2em]">EXE</span>
+                                        <Check className="size-4" strokeWidth={1.5} />
+                                        <span className="text-[8px] tracking-[0.2em]">EXE</span>
                                     </button>
                                 </section>
                             </>
@@ -391,19 +385,19 @@ export function RitualDrawer({
                                     <div className="flex items-center justify-between px-1">
                                         <span className="te-label">LOG_ENTRY_SAVED</span>
                                     </div>
-                                    <div className="te-recessed p-3 flex-1 flex flex-col h-[115px]">
-                                        <div className="flex items-center gap-2 mb-2">
-                                            <div className="size-2 rounded-full" style={{ backgroundColor: todayEntry?.mood ? MOODS.find(m => m.id === todayEntry.mood)?.color : "var(--te-green)", boxShadow: `0 0 8px ${todayEntry?.mood ? MOODS.find(m => m.id === todayEntry.mood)?.color : "var(--te-green)"}` }} />
-                                            <span className="text-[10px] font-bold font-mono tracking-widest opacity-70">
+                                    <div className="te-recessed flex h-[115px] flex-1 flex-col p-3">
+                                        <div className="mb-2 flex items-center gap-2">
+                                            <span className="size-2 shrink-0 rounded-full" style={{ background: todayEntry?.mood ? MOODS.find(m => m.id === todayEntry.mood)?.color : "var(--success)" }} />
+                                            <span className="font-mono text-[10px] tracking-widest text-[var(--fg-muted)]">
                                                 {todayEntry?.mood ? MOODS.find(m => m.id === todayEntry.mood)?.label.toUpperCase() : "SYNC"}
                                             </span>
                                         </div>
                                         {todayEntry?.note ? (
-                                            <p className="text-[11px] font-mono font-bold tracking-wider opacity-90 custom-scrollbar overflow-y-auto">
+                                            <p className="custom-scrollbar overflow-y-auto font-mono text-[11px] tracking-wider text-[var(--fg)]">
                                                 {todayEntry.note}
                                             </p>
                                         ) : (
-                                            <p className="text-[11px] font-mono font-bold tracking-wider opacity-40 italic">
+                                            <p className="font-mono text-[11px] italic tracking-wider text-[var(--fg-faint)]">
                                                 [ NO_ADDITIONAL_DATA ]
                                             </p>
                                         )}
